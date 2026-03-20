@@ -8,16 +8,30 @@ import java.time.LocalDateTime;
  * 用户实体
  */
 public class UserEntity extends BaseEntity {
-    private Long userId; // 用户ID
-    private String account; // 账号
-    private String passwordHash; // 密码哈希
-    private String displayName; // 昵称
-    private String email; // 邮箱
-    private String phone; // 手机号
-    private String college; // 学院
-    private String grade; // 年级
-    private UserRoleEnum userRole; // 用户角色
-    private UserStatusEnum userStatus; // 用户状态
-    private Integer pointBalance; // 积分余额
-    private LocalDateTime lastLoginTime; // 最近登录时间
+    /** 用户ID */
+    private Long userId;
+    /** 账号 */
+    private String account;
+    /** 密码哈希 */
+    private String passwordHash;
+    /** 昵称 */
+    private String displayName;
+    /** 邮箱 */
+    private String email;
+    /** 手机号 */
+    private String phone;
+    /** 学院 */
+    private String college;
+    /** 年级 */
+    private String grade;
+    /** 用户角色 */
+    private UserRoleEnum userRole;
+    /** 用户状态 */
+    private UserStatusEnum userStatus;
+    /** 积分余额 */
+    private Integer pointBalance;
+    /** 最近登录时间 */
+    private LocalDateTime lastLoginTime;
 }
+
+

@@ -7,14 +7,26 @@ import java.time.LocalDateTime;
  * 积分流水实体
  */
 public class PointTransactionEntity extends BaseEntity {
-    private Long transactionId; // 流水ID
-    private Long accountId; // 账户ID
-    private Long userId; // 用户ID
-    private PointTransactionTypeEnum transactionType; // 流水类型
-    private Integer changeAmount; // 变动值
-    private Integer balanceAfterChange; // 变动后余额
-    private String transactionRemark; // 备注
-    private String sourceBizType; // 来源业务类型
-    private Long sourceBizId; // 来源业务ID
-    private LocalDateTime transactionTime; // 交易时间
+    /** 流水ID */
+    private Long transactionId;
+    /** 账户ID */
+    private Long accountId;
+    /** 用户ID */
+    private Long userId;
+    /** 流水类型 */
+    private PointTransactionTypeEnum transactionType;
+    /** 变动值 */
+    private Integer changeAmount;
+    /** 变动后余额 */
+    private Integer balanceAfterChange;
+    /** 备注 */
+    private String transactionRemark;
+    /** 来源业务类型 */
+    private String sourceBizType;
+    /** 来源业务ID */
+    private Long sourceBizId;
+    /** 交易时间 */
+    private LocalDateTime transactionTime;
 }
+
+

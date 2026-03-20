@@ -7,11 +7,20 @@ import java.time.LocalDateTime;
  * 通知实体
  */
 public class NotificationEntity extends BaseEntity {
-    private Long notificationId; // 通知ID
-    private Long receiverUserId; // 接收人ID
-    private NotificationTypeEnum notificationType; // 通知类型
-    private String title; // 标题
-    private String content; // 内容
-    private Boolean readFlag; // 已读标记
-    private LocalDateTime sendTime; // 发送时间
+    /** 通知ID */
+    private Long notificationId;
+    /** 接收人ID */
+    private Long receiverUserId;
+    /** 通知类型 */
+    private NotificationTypeEnum notificationType;
+    /** 标题 */
+    private String title;
+    /** 内容 */
+    private String content;
+    /** 已读标记 */
+    private Boolean readFlag;
+    /** 发送时间 */
+    private LocalDateTime sendTime;
 }
+
+

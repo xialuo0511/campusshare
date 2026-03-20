@@ -49,10 +49,12 @@ CampusShare 面向校内学生与教师，统一承载以下三类业务：
 ## 技术栈
 
 1. Java 17
-2. Spring Boot 3.x
-3. MyBatis
-4. MySQL 8.x
-5. Redis（可选）
+2. Spring Boot 3.5.12
+3. MyBatis Spring Boot Starter 3.0.5
+4. MySQL 8.x（`mysql-connector-j`）
+5. Redis（后续开发必用，缓存 / 验证码 / 限流 / 异步任务）
+6. Spring Security（认证与鉴权）
+7. Spring Validation（参数校验）
 
 ## 当前开发状态
 
@@ -86,7 +88,7 @@ campusshare
 
 ## 快速开始
 
-1. 准备环境：JDK 17、Maven 3.9+、MySQL 8.x
+1. 准备环境：JDK 17、Maven 3.9+、MySQL 8.x、Redis
 2. 创建数据库：`campusshare`
 3. 修改配置：`src/main/resources/application.properties`
 4. 编译项目：

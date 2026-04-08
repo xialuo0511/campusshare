@@ -1,0 +1,91 @@
+package com.xialuo.campusshare.module.user.controller;
+
+import com.xialuo.campusshare.common.api.ApiResponse;
+import com.xialuo.campusshare.common.filter.RequestIdFilter;
+import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
+import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
+import com.xialuo.campusshare.module.user.dto.UserProfileUpdateRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserRegisterRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserRegisterResponseDto;
+import com.xialuo.campusshare.module.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 用户接口
+ */
+@RestController
+@RequestMapping("/api/v1/users")
+public class UserController {
+    /** 用户服务 */
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    /**
+     * 用户注册
+     */
+    @PostMapping("/register")
+    public ApiResponse<UserRegisterResponseDto> RegisterUser(
+        @RequestBody @Valid UserRegisterRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        UserRegisterResponseDto responseDto = userService.RegisterUser(requestDto);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 用户登录
+     */
+    @PostMapping("/login")
+    public ApiResponse<UserLoginResponseDto> LoginUser(
+        @RequestBody @Valid UserLoginRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        UserLoginResponseDto responseDto = userService.LoginUser(requestDto);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 查询个人资料
+     */
+    @GetMapping("/{userId}/profile")
+    public ApiResponse<UserProfileResponseDto> GetUserProfile(
+        @PathVariable("userId") Long userId,
+        HttpServletRequest httpServletRequest
+    ) {
+        UserProfileResponseDto responseDto = userService.GetUserProfile(userId);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 更新个人资料
+     */
+    @PutMapping("/{userId}/profile")
+    public ApiResponse<UserProfileResponseDto> UpdateUserProfile(
+        @PathVariable("userId") Long userId,
+        @RequestBody @Valid UserProfileUpdateRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        UserProfileResponseDto responseDto = userService.UpdateUserProfile(userId, requestDto);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 获取请求追踪ID
+     */
+    private String GetRequestId(HttpServletRequest httpServletRequest) {
+        Object requestId = httpServletRequest.getAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE);
+        return requestId == null ? "" : requestId.toString();
+    }
+}

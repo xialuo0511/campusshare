@@ -4,19 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * 用户注册请求
+ * 用户资料更新请求
  */
-public class UserRegisterRequestDto {
-    /** 学号或工号 */
-    @NotBlank(message = "学号或工号不能为空")
-    @Size(max = 30, message = "学号或工号长度不能超过30")
-    private String account;
-
-    /** 登录密码 */
-    @NotBlank(message = "登录密码不能为空")
-    @Size(min = 8, max = 64, message = "登录密码长度需在8到64")
-    private String password;
-
+public class UserProfileUpdateRequestDto {
     /** 昵称 */
     @NotBlank(message = "昵称不能为空")
     @Size(min = 1, max = 20, message = "昵称长度需在1到20")
@@ -32,38 +22,13 @@ public class UserRegisterRequestDto {
     @Size(max = 20, message = "年级长度不能超过20")
     private String grade;
 
-    /** 联系方式 */
-    @NotBlank(message = "联系方式不能为空")
-    @Size(max = 30, message = "联系方式长度不能超过30")
-    private String contact;
+    /** 手机号 */
+    @Size(max = 30, message = "手机号长度不能超过30")
+    private String phone;
 
-    /**
-     * 获取账号
-     */
-    public String GetAccount() {
-        return account;
-    }
-
-    /**
-     * 设置账号
-     */
-    public void SetAccount(String account) {
-        this.account = account;
-    }
-
-    /**
-     * 获取密码
-     */
-    public String GetPassword() {
-        return password;
-    }
-
-    /**
-     * 设置密码
-     */
-    public void SetPassword(String password) {
-        this.password = password;
-    }
+    /** 邮箱 */
+    @Size(max = 100, message = "邮箱长度不能超过100")
+    private String email;
 
     /**
      * 获取昵称
@@ -108,16 +73,30 @@ public class UserRegisterRequestDto {
     }
 
     /**
-     * 获取联系方式
+     * 获取手机号
      */
-    public String GetContact() {
-        return contact;
+    public String GetPhone() {
+        return phone;
     }
 
     /**
-     * 设置联系方式
+     * 设置手机号
      */
-    public void SetContact(String contact) {
-        this.contact = contact;
+    public void SetPhone(String phone) {
+        this.phone = phone;
+    }
+
+    /**
+     * 获取邮箱
+     */
+    public String GetEmail() {
+        return email;
+    }
+
+    /**
+     * 设置邮箱
+     */
+    public void SetEmail(String email) {
+        this.email = email;
     }
 }

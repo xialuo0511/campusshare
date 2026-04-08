@@ -1,32 +1,30 @@
-package com.xialuo.campusshare.entity;
+package com.xialuo.campusshare.module.user.dto;
 
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.enums.UserStatusEnum;
 import java.time.LocalDateTime;
 
 /**
- * 用户实体
+ * 用户资料响应
  */
-public class UserEntity extends BaseEntity {
+public class UserProfileResponseDto {
     /** 用户ID */
     private Long userId;
     /** 账号 */
     private String account;
-    /** 密码哈希 */
-    private String passwordHash;
     /** 昵称 */
     private String displayName;
-    /** 邮箱 */
-    private String email;
-    /** 手机号 */
-    private String phone;
     /** 学院 */
     private String college;
     /** 年级 */
     private String grade;
-    /** 用户角色 */
+    /** 手机号 */
+    private String phone;
+    /** 邮箱 */
+    private String email;
+    /** 角色 */
     private UserRoleEnum userRole;
-    /** 用户状态 */
+    /** 状态 */
     private UserStatusEnum userStatus;
     /** 积分余额 */
     private Integer pointBalance;
@@ -62,20 +60,6 @@ public class UserEntity extends BaseEntity {
     }
 
     /**
-     * 获取密码哈希
-     */
-    public String GetPasswordHash() {
-        return passwordHash;
-    }
-
-    /**
-     * 设置密码哈希
-     */
-    public void SetPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    /**
      * 获取昵称
      */
     public String GetDisplayName() {
@@ -87,34 +71,6 @@ public class UserEntity extends BaseEntity {
      */
     public void SetDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-
-    /**
-     * 获取邮箱
-     */
-    public String GetEmail() {
-        return email;
-    }
-
-    /**
-     * 设置邮箱
-     */
-    public void SetEmail(String email) {
-        this.email = email;
-    }
-
-    /**
-     * 获取手机号
-     */
-    public String GetPhone() {
-        return phone;
-    }
-
-    /**
-     * 设置手机号
-     */
-    public void SetPhone(String phone) {
-        this.phone = phone;
     }
 
     /**
@@ -146,28 +102,56 @@ public class UserEntity extends BaseEntity {
     }
 
     /**
-     * 获取用户角色
+     * 获取手机号
+     */
+    public String GetPhone() {
+        return phone;
+    }
+
+    /**
+     * 设置手机号
+     */
+    public void SetPhone(String phone) {
+        this.phone = phone;
+    }
+
+    /**
+     * 获取邮箱
+     */
+    public String GetEmail() {
+        return email;
+    }
+
+    /**
+     * 设置邮箱
+     */
+    public void SetEmail(String email) {
+        this.email = email;
+    }
+
+    /**
+     * 获取角色
      */
     public UserRoleEnum GetUserRole() {
         return userRole;
     }
 
     /**
-     * 设置用户角色
+     * 设置角色
      */
     public void SetUserRole(UserRoleEnum userRole) {
         this.userRole = userRole;
     }
 
     /**
-     * 获取用户状态
+     * 获取状态
      */
     public UserStatusEnum GetUserStatus() {
         return userStatus;
     }
 
     /**
-     * 设置用户状态
+     * 设置状态
      */
     public void SetUserStatus(UserStatusEnum userStatus) {
         this.userStatus = userStatus;
@@ -201,5 +185,3 @@ public class UserEntity extends BaseEntity {
         this.lastLoginTime = lastLoginTime;
     }
 }
-
-

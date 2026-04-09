@@ -4,6 +4,7 @@ import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.enums.UserRoleEnum;
+import com.xialuo.campusshare.module.material.dto.MaterialDownloadResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialOfflineRequestDto;
 import com.xialuo.campusshare.module.material.dto.MaterialResponseDto;
 import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
@@ -79,6 +80,19 @@ public class MaterialController {
             currentUserRole,
             offlineRemark
         );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 下载资料
+     */
+    @PostMapping("/{materialId}/download")
+    public ApiResponse<MaterialDownloadResponseDto> DownloadMaterial(
+        @PathVariable("materialId") Long materialId,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        MaterialDownloadResponseDto responseDto = materialService.DownloadMaterial(materialId, currentUserId);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 

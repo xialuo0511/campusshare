@@ -51,6 +51,15 @@ public interface UserMapper {
     );
 
     /**
+     * 扣减用户积分
+     */
+    Integer DecreaseUserPointBalanceIfEnough(
+        @Param("userId") Long userId,
+        @Param("pointDelta") Integer pointDelta,
+        @Param("updateTime") LocalDateTime updateTime
+    );
+
+    /**
      * 查询有效管理员用户ID
      */
     List<Long> ListActiveAdministratorUserIds();

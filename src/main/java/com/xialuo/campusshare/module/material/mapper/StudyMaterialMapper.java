@@ -1,6 +1,7 @@
 package com.xialuo.campusshare.module.material.mapper;
 
 import com.xialuo.campusshare.entity.StudyMaterialEntity;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -29,4 +30,12 @@ public interface StudyMaterialMapper {
      * 查询用户资料
      */
     List<StudyMaterialEntity> ListMaterialsByUploader(@Param("uploaderUserId") Long uploaderUserId);
+
+    /**
+     * 增加下载次数
+     */
+    Integer IncreaseDownloadCount(
+        @Param("materialId") Long materialId,
+        @Param("updateTime") LocalDateTime updateTime
+    );
 }

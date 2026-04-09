@@ -136,6 +136,16 @@
           AND deleted = 0
     </update>
 
+    <update id="DecreaseUserPointBalanceIfEnough">
+        UPDATE user_info
+        SET
+            point_balance = point_balance - #{pointDelta},
+            update_time = #{updateTime}
+        WHERE user_id = #{userId}
+          AND deleted = 0
+          AND point_balance >= #{pointDelta}
+    </update>
+
     <select id="ListActiveAdministratorUserIds" resultType="java.lang.Long">
         SELECT user_id
         FROM user_info

@@ -48,6 +48,8 @@ public enum BizCodeEnum {
     REPORT_STATUS_INVALID(1020, "举报状态非法"),
     /** 举报无操作权限 */
     REPORT_PERMISSION_DENIED(1021, "举报无操作权限"),
+    /** 积分余额不足 */
+    POINT_BALANCE_INSUFFICIENT(1022, "积分余额不足"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

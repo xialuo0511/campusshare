@@ -120,4 +120,14 @@
           AND deleted = 0
         ORDER BY create_time DESC
     </select>
+
+    <update id="IncreaseDownloadCount">
+        UPDATE study_material_info
+        SET
+            download_count = download_count + 1,
+            update_time = #{updateTime}
+        WHERE material_id = #{materialId}
+          AND deleted = 0
+          AND material_status = 'PUBLISHED'
+    </update>
 </mapper>

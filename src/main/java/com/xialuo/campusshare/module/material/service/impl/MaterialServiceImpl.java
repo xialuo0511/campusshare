@@ -3,9 +3,11 @@ package com.xialuo.campusshare.module.material.service.impl;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.StudyMaterialEntity;
+import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.enums.ResourceStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
+import com.xialuo.campusshare.module.material.dto.MaterialDownloadResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialResponseDto;
 import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
 import com.xialuo.campusshare.module.material.mapper.StudyMaterialMapper;
@@ -32,6 +34,8 @@ public class MaterialServiceImpl implements MaterialService {
     private static final Integer MATERIAL_UPLOAD_REWARD_POINTS = 2;
     /** 下载扣减积分 */
     private static final Integer MATERIAL_DOWNLOAD_COST_POINTS = 1;
+    /** 文件访问地址模板 */
+    private static final String MATERIAL_FILE_ACCESS_URL_PATTERN = "/api/v1/materials/%d/files/%s";
 
     /** 资料Mapper */
     private final StudyMaterialMapper studyMaterialMapper;
@@ -114,6 +118,44 @@ public class MaterialServiceImpl implements MaterialService {
         return BuildMaterialResponse(materialEntity);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public MaterialDownloadResponseDto DownloadMaterial(Long materialId, Long currentUserId) {
+        StudyMaterialEntity materialEntity = GetMaterialById(materialId);
+        if (materialEntity.GetMaterialStatus() != ResourceStatusEnum.PUBLISHED) {
+            throw new BusinessException(BizCodeEnum.MATERIAL_STATUS_INVALID, "资料当前不可下载");
+        }
+
+        Integer deductedPoints = 0;
+        if (!currentUserId.equals(materialEntity.GetUploaderUserId())) {
+            deductedPoints = ResolveDownloadCostPoints(materialEntity);
+            if (deductedPoints > 0) {
+                Integer updateRows = userMapper.DecreaseUserPointBalanceIfEnough(
+                    currentUserId,
+                    deductedPoints,
+                    LocalDateTime.now()
+                );
+                if (updateRows == null || updateRows <= 0) {
+                    throw new BusinessException(BizCodeEnum.POINT_BALANCE_INSUFFICIENT, "积分不足，无法下载资料");
+                }
+            }
+        }
+
+        Integer countRows = studyMaterialMapper.IncreaseDownloadCount(materialId, LocalDateTime.now());
+        if (countRows == null || countRows <= 0) {
+            throw new BusinessException(BizCodeEnum.MATERIAL_STATUS_INVALID, "资料当前不可下载");
+        }
+
+        StudyMaterialEntity latestMaterialEntity = GetMaterialById(materialId);
+        UserEntity currentUserEntity = userMapper.FindUserById(currentUserId);
+        if (currentUserEntity == null) {
+            throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
+        }
+
+        SendDownloadNotifications(latestMaterialEntity, currentUserId, deductedPoints);
+        return BuildDownloadResponse(latestMaterialEntity, currentUserEntity.GetPointBalance(), deductedPoints);
+    }
+
     /**
      * 按ID查询资料
      */
@@ -132,6 +174,16 @@ public class MaterialServiceImpl implements MaterialService {
         return Boolean.TRUE.equals(MATERIAL_REVIEW_REQUIRED)
             ? ResourceStatusEnum.PENDING_REVIEW
             : ResourceStatusEnum.PUBLISHED;
+    }
+
+    /**
+     * 获取下载积分
+     */
+    private Integer ResolveDownloadCostPoints(StudyMaterialEntity materialEntity) {
+        if (materialEntity.GetDownloadCostPoints() == null || materialEntity.GetDownloadCostPoints() < 0) {
+            return 0;
+        }
+        return materialEntity.GetDownloadCostPoints();
     }
 
     /**
@@ -162,6 +214,34 @@ public class MaterialServiceImpl implements MaterialService {
             MATERIAL_BIZ_TYPE,
             materialEntity.GetMaterialId()
         );
+    }
+
+    /**
+     * 发送下载通知
+     */
+    private void SendDownloadNotifications(
+        StudyMaterialEntity materialEntity,
+        Long currentUserId,
+        Integer deductedPoints
+    ) {
+        notificationService.CreateNotification(
+            currentUserId,
+            NotificationTypeEnum.POINT,
+            "资料下载成功",
+            "本次下载扣减积分：" + deductedPoints,
+            MATERIAL_BIZ_TYPE,
+            materialEntity.GetMaterialId()
+        );
+        if (!currentUserId.equals(materialEntity.GetUploaderUserId())) {
+            notificationService.CreateNotification(
+                materialEntity.GetUploaderUserId(),
+                NotificationTypeEnum.SYSTEM,
+                "资料有新下载记录",
+                "你的资料被用户下载，可在资料中心查看详情",
+                MATERIAL_BIZ_TYPE,
+                materialEntity.GetMaterialId()
+            );
+        }
     }
 
     /**
@@ -246,5 +326,30 @@ public class MaterialServiceImpl implements MaterialService {
         responseDto.SetLastReviewTime(materialEntity.GetLastReviewTime());
         responseDto.SetCreateTime(materialEntity.GetCreateTime());
         return responseDto;
+    }
+
+    /**
+     * 构建下载响应
+     */
+    private MaterialDownloadResponseDto BuildDownloadResponse(
+        StudyMaterialEntity materialEntity,
+        Integer currentPointBalance,
+        Integer deductedPoints
+    ) {
+        MaterialDownloadResponseDto responseDto = new MaterialDownloadResponseDto();
+        responseDto.SetMaterialId(materialEntity.GetMaterialId());
+        responseDto.SetFileId(materialEntity.GetFileId());
+        responseDto.SetFileAccessUrl(BuildFileAccessUrl(materialEntity.GetMaterialId(), materialEntity.GetFileId()));
+        responseDto.SetDeductedPoints(deductedPoints);
+        responseDto.SetCurrentPointBalance(currentPointBalance);
+        responseDto.SetDownloadCount(materialEntity.GetDownloadCount());
+        return responseDto;
+    }
+
+    /**
+     * 构建文件访问地址
+     */
+    private String BuildFileAccessUrl(Long materialId, String fileId) {
+        return String.format(MATERIAL_FILE_ACCESS_URL_PATTERN, materialId, fileId);
     }
 }

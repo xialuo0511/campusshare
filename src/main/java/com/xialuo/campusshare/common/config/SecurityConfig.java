@@ -20,9 +20,18 @@ public class SecurityConfig {
     public SecurityFilterChain BuildSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorization -> authorization
+                .requestMatchers(
+                    "/",
+                    "/index.html",
+                    "/pages/**",
+                    "/favicon.ico",
+                    "/error"
+                ).permitAll()
                 .requestMatchers("/api/v1/**").permitAll()
-                .anyRequest().authenticated()
-            );
+                .anyRequest().permitAll()
+            )
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable);
         return httpSecurity.build();
     }
 }

@@ -16,4 +16,32 @@ public class CreateOrderRequestDto {
     @NotBlank(message = "交易地点不能为空")
     @Size(min = 1, max = 100, message = "交易地点长度需在1到100")
     private String tradeLocation;
+
+    /**
+     * 获取商品ID
+     */
+    public Long GetProductId() {
+        return productId;
+    }
+
+    /**
+     * 设置商品ID
+     */
+    public void SetProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    /**
+     * 获取交易地点
+     */
+    public String GetTradeLocation() {
+        return tradeLocation;
+    }
+
+    /**
+     * 设置交易地点
+     */
+    public void SetTradeLocation(String tradeLocation) {
+        this.tradeLocation = tradeLocation;
+    }
 }

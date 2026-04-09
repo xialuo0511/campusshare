@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.order.mapper.OrderMapper">
+
+    <resultMap id="OrderResultMap" type="com.xialuo.campusshare.entity.OrderEntity">
+        <id column="order_id" property="orderId"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="product_id" property="productId"/>
+        <result column="buyer_user_id" property="buyerUserId"/>
+        <result column="seller_user_id" property="sellerUserId"/>
+        <result column="order_status" property="orderStatus"/>
+        <result column="order_amount" property="orderAmount"/>
+        <result column="trade_location" property="tradeLocation"/>
+        <result column="seller_confirm_time" property="sellerConfirmTime"/>
+        <result column="buyer_complete_time" property="buyerCompleteTime"/>
+        <result column="close_time" property="closeTime"/>
+        <result column="close_reason" property="closeReason"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="OrderColumns">
+        order_id,
+        order_no,
+        product_id,
+        buyer_user_id,
+        seller_user_id,
+        order_status,
+        order_amount,
+        trade_location,
+        seller_confirm_time,
+        buyer_complete_time,
+        close_time,
+        close_reason,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <insert id="InsertOrder" parameterType="com.xialuo.campusshare.entity.OrderEntity" useGeneratedKeys="true" keyProperty="orderId" keyColumn="order_id">
+        INSERT INTO order_info (
+            order_no,
+            product_id,
+            buyer_user_id,
+            seller_user_id,
+            order_status,
+            order_amount,
+            trade_location,
+            seller_confirm_time,
+            buyer_complete_time,
+            close_time,
+            close_reason,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{orderNo},
+            #{productId},
+            #{buyerUserId},
+            #{sellerUserId},
+            #{orderStatus},
+            #{orderAmount},
+            #{tradeLocation},
+            #{sellerConfirmTime},
+            #{buyerCompleteTime},
+            #{closeTime},
+            #{closeReason},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateOrder" parameterType="com.xialuo.campusshare.entity.OrderEntity">
+        UPDATE order_info
+        SET
+            order_no = #{orderNo},
+            product_id = #{productId},
+            buyer_user_id = #{buyerUserId},
+            seller_user_id = #{sellerUserId},
+            order_status = #{orderStatus},
+            order_amount = #{orderAmount},
+            trade_location = #{tradeLocation},
+            seller_confirm_time = #{sellerConfirmTime},
+            buyer_complete_time = #{buyerCompleteTime},
+            close_time = #{closeTime},
+            close_reason = #{closeReason},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE order_id = #{orderId}
+    </update>
+
+    <select id="FindOrderById" resultMap="OrderResultMap">
+        SELECT
+            <include refid="OrderColumns"/>
+        FROM order_info
+        WHERE order_id = #{orderId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+</mapper>

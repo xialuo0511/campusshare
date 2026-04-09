@@ -24,6 +24,18 @@ public enum BizCodeEnum {
     USER_NOT_FOUND(1008, "用户不存在"),
     /** 密码错误 */
     PASSWORD_INVALID(1009, "密码错误"),
+    /** 商品不存在 */
+    PRODUCT_NOT_FOUND(1010, "商品不存在"),
+    /** 商品不可下单 */
+    PRODUCT_UNAVAILABLE(1011, "商品不可下单"),
+    /** 订单不存在 */
+    ORDER_NOT_FOUND(1012, "订单不存在"),
+    /** 订单状态非法 */
+    ORDER_STATUS_INVALID(1013, "订单状态非法"),
+    /** 订单无操作权限 */
+    ORDER_PERMISSION_DENIED(1014, "订单无操作权限"),
+    /** 禁止购买自己商品 */
+    ORDER_SELF_PURCHASE_DENIED(1015, "禁止购买自己商品"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

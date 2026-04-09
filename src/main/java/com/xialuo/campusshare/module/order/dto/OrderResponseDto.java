@@ -1,13 +1,13 @@
-package com.xialuo.campusshare.entity;
+package com.xialuo.campusshare.module.order.dto;
 
 import com.xialuo.campusshare.enums.OrderStatusEnum;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 订单实体
+ * 订单响应
  */
-public class OrderEntity extends BaseEntity {
+public class OrderResponseDto {
     /** 订单ID */
     private Long orderId;
     /** 订单号 */
@@ -18,9 +18,9 @@ public class OrderEntity extends BaseEntity {
     private Long buyerUserId;
     /** 卖家ID */
     private Long sellerUserId;
-    /** 订单状态 */
+    /** 状态 */
     private OrderStatusEnum orderStatus;
-    /** 订单金额 */
+    /** 金额 */
     private BigDecimal orderAmount;
     /** 交易地点 */
     private String tradeLocation;
@@ -104,28 +104,28 @@ public class OrderEntity extends BaseEntity {
     }
 
     /**
-     * 获取订单状态
+     * 获取状态
      */
     public OrderStatusEnum GetOrderStatus() {
         return orderStatus;
     }
 
     /**
-     * 设置订单状态
+     * 设置状态
      */
     public void SetOrderStatus(OrderStatusEnum orderStatus) {
         this.orderStatus = orderStatus;
     }
 
     /**
-     * 获取订单金额
+     * 获取金额
      */
     public BigDecimal GetOrderAmount() {
         return orderAmount;
     }
 
     /**
-     * 设置订单金额
+     * 设置金额
      */
     public void SetOrderAmount(BigDecimal orderAmount) {
         this.orderAmount = orderAmount;
@@ -201,5 +201,3 @@ public class OrderEntity extends BaseEntity {
         this.closeReason = closeReason;
     }
 }
-
-

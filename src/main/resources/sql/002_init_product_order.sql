@@ -1,0 +1,42 @@
+CREATE TABLE IF NOT EXISTS product_info (
+    product_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '商品ID',
+    resource_id BIGINT NULL COMMENT '资源ID',
+    category VARCHAR(50) NOT NULL COMMENT '分类',
+    condition_level VARCHAR(20) NOT NULL COMMENT '成色',
+    price DECIMAL(10, 2) NOT NULL COMMENT '价格',
+    trade_location VARCHAR(100) NOT NULL COMMENT '交易地点',
+    seller_user_id BIGINT NOT NULL COMMENT '卖家ID',
+    product_status VARCHAR(30) NOT NULL DEFAULT 'PUBLISHED' COMMENT '商品状态',
+    on_shelf TINYINT NOT NULL DEFAULT 1 COMMENT '是否上架',
+    stock_count INT NOT NULL DEFAULT 1 COMMENT '库存',
+    has_effective_order TINYINT NOT NULL DEFAULT 0 COMMENT '是否存在有效订单',
+    create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+    KEY idx_product_seller_user_id (seller_user_id),
+    KEY idx_product_status (product_status),
+    KEY idx_product_on_shelf (on_shelf)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品表';
+
+CREATE TABLE IF NOT EXISTS order_info (
+    order_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '订单ID',
+    order_no VARCHAR(50) NOT NULL COMMENT '订单号',
+    product_id BIGINT NOT NULL COMMENT '商品ID',
+    buyer_user_id BIGINT NOT NULL COMMENT '买家ID',
+    seller_user_id BIGINT NOT NULL COMMENT '卖家ID',
+    order_status VARCHAR(30) NOT NULL COMMENT '订单状态',
+    order_amount DECIMAL(10, 2) NOT NULL COMMENT '订单金额',
+    trade_location VARCHAR(100) NOT NULL COMMENT '交易地点',
+    seller_confirm_time DATETIME NULL COMMENT '卖家确认时间',
+    buyer_complete_time DATETIME NULL COMMENT '买家确认完成时间',
+    close_time DATETIME NULL COMMENT '关闭时间',
+    close_reason VARCHAR(200) NULL COMMENT '关闭原因',
+    create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+    UNIQUE KEY uk_order_no (order_no),
+    KEY idx_order_product_id (product_id),
+    KEY idx_order_buyer_user_id (buyer_user_id),
+    KEY idx_order_seller_user_id (seller_user_id),
+    KEY idx_order_status (order_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';

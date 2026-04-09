@@ -1,20 +1,21 @@
-package com.xialuo.campusshare.entity;
+package com.xialuo.campusshare.module.material.dto;
 
 import com.xialuo.campusshare.enums.ResourceStatusEnum;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * 学习资料实体
+ * 资料响应
  */
-public class StudyMaterialEntity extends BaseEntity {
+public class MaterialResponseDto {
     /** 资料ID */
     private Long materialId;
     /** 上传者ID */
     private Long uploaderUserId;
     /** 课程名 */
     private String courseName;
-    /** 标签 */
-    private String tags;
+    /** 标签列表 */
+    private List<String> tags;
     /** 资料说明 */
     private String description;
     /** 文件ID */
@@ -27,7 +28,7 @@ public class StudyMaterialEntity extends BaseEntity {
     private ResourceStatusEnum materialStatus;
     /** 下载消耗积分 */
     private Integer downloadCostPoints;
-    /** 是否声明版权 */
+    /** 版权声明 */
     private Boolean copyrightDeclared;
     /** 下载次数 */
     private Integer downloadCount;
@@ -35,6 +36,8 @@ public class StudyMaterialEntity extends BaseEntity {
     private String reviewRemark;
     /** 最近审核时间 */
     private LocalDateTime lastReviewTime;
+    /** 创建时间 */
+    private LocalDateTime createTime;
 
     /**
      * 获取资料ID
@@ -79,16 +82,16 @@ public class StudyMaterialEntity extends BaseEntity {
     }
 
     /**
-     * 获取标签
+     * 获取标签列表
      */
-    public String GetTags() {
+    public List<String> GetTags() {
         return tags;
     }
 
     /**
-     * 设置标签
+     * 设置标签列表
      */
-    public void SetTags(String tags) {
+    public void SetTags(List<String> tags) {
         this.tags = tags;
     }
 
@@ -231,6 +234,18 @@ public class StudyMaterialEntity extends BaseEntity {
     public void SetLastReviewTime(LocalDateTime lastReviewTime) {
         this.lastReviewTime = lastReviewTime;
     }
+
+    /**
+     * 获取创建时间
+     */
+    public LocalDateTime GetCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * 设置创建时间
+     */
+    public void SetCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
 }
-
-

@@ -126,4 +126,21 @@
           AND deleted = 0
         ORDER BY create_time DESC
     </select>
+
+    <update id="IncreaseUserPointBalance">
+        UPDATE user_info
+        SET
+            point_balance = point_balance + #{pointDelta},
+            update_time = #{updateTime}
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <select id="ListActiveAdministratorUserIds" resultType="java.lang.Long">
+        SELECT user_id
+        FROM user_info
+        WHERE user_role = 'ADMINISTRATOR'
+          AND user_status = 'ACTIVE'
+          AND deleted = 0
+    </select>
 </mapper>

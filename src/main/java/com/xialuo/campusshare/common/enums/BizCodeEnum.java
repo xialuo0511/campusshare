@@ -36,6 +36,18 @@ public enum BizCodeEnum {
     ORDER_PERMISSION_DENIED(1014, "订单无操作权限"),
     /** 禁止购买自己商品 */
     ORDER_SELF_PURCHASE_DENIED(1015, "禁止购买自己商品"),
+    /** 资料不存在 */
+    MATERIAL_NOT_FOUND(1016, "资料不存在"),
+    /** 资料状态非法 */
+    MATERIAL_STATUS_INVALID(1017, "资料状态非法"),
+    /** 资料无操作权限 */
+    MATERIAL_PERMISSION_DENIED(1018, "资料无操作权限"),
+    /** 举报不存在 */
+    REPORT_NOT_FOUND(1019, "举报不存在"),
+    /** 举报状态非法 */
+    REPORT_STATUS_INVALID(1020, "举报状态非法"),
+    /** 举报无操作权限 */
+    REPORT_PERMISSION_DENIED(1021, "举报无操作权限"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

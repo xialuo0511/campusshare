@@ -1,6 +1,7 @@
 package com.xialuo.campusshare.module.user.mapper;
 
 import com.xialuo.campusshare.entity.UserEntity;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -39,4 +40,18 @@ public interface UserMapper {
      * 查询待审核用户
      */
     List<UserEntity> ListPendingReviewUsers();
+
+    /**
+     * 增加用户积分
+     */
+    Integer IncreaseUserPointBalance(
+        @Param("userId") Long userId,
+        @Param("pointDelta") Integer pointDelta,
+        @Param("updateTime") LocalDateTime updateTime
+    );
+
+    /**
+     * 查询有效管理员用户ID
+     */
+    List<Long> ListActiveAdministratorUserIds();
 }

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.notification.mapper.NotificationMapper">
+
+    <resultMap id="NotificationResultMap" type="com.xialuo.campusshare.entity.NotificationEntity">
+        <id column="notification_id" property="notificationId"/>
+        <result column="receiver_user_id" property="receiverUserId"/>
+        <result column="notification_type" property="notificationType"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="related_biz_type" property="relatedBizType"/>
+        <result column="related_biz_id" property="relatedBizId"/>
+        <result column="read_flag" property="readFlag"/>
+        <result column="send_time" property="sendTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="NotificationColumns">
+        notification_id,
+        receiver_user_id,
+        notification_type,
+        title,
+        content,
+        related_biz_type,
+        related_biz_id,
+        read_flag,
+        send_time,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <insert id="InsertNotification" parameterType="com.xialuo.campusshare.entity.NotificationEntity" useGeneratedKeys="true" keyProperty="notificationId" keyColumn="notification_id">
+        INSERT INTO notification_info (
+            receiver_user_id,
+            notification_type,
+            title,
+            content,
+            related_biz_type,
+            related_biz_id,
+            read_flag,
+            send_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{receiverUserId},
+            #{notificationType},
+            #{title},
+            #{content},
+            #{relatedBizType},
+            #{relatedBizId},
+            #{readFlag},
+            #{sendTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateNotification" parameterType="com.xialuo.campusshare.entity.NotificationEntity">
+        UPDATE notification_info
+        SET
+            receiver_user_id = #{receiverUserId},
+            notification_type = #{notificationType},
+            title = #{title},
+            content = #{content},
+            related_biz_type = #{relatedBizType},
+            related_biz_id = #{relatedBizId},
+            read_flag = #{readFlag},
+            send_time = #{sendTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE notification_id = #{notificationId}
+    </update>
+
+    <select id="FindNotificationById" resultMap="NotificationResultMap">
+        SELECT
+            <include refid="NotificationColumns"/>
+        FROM notification_info
+        WHERE notification_id = #{notificationId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="ListNotificationsByReceiverUserId" resultMap="NotificationResultMap">
+        SELECT
+            <include refid="NotificationColumns"/>
+        FROM notification_info
+        WHERE receiver_user_id = #{receiverUserId}
+          AND deleted = 0
+        ORDER BY send_time DESC, notification_id DESC
+    </select>
+</mapper>

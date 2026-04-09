@@ -1,0 +1,63 @@
+CREATE TABLE IF NOT EXISTS study_material_info (
+    material_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '资料ID',
+    uploader_user_id BIGINT NOT NULL COMMENT '上传者ID',
+    course_name VARCHAR(100) NOT NULL COMMENT '课程名',
+    tags VARCHAR(300) NULL COMMENT '标签',
+    description VARCHAR(1000) NULL COMMENT '资料说明',
+    file_id VARCHAR(100) NOT NULL COMMENT '文件ID',
+    file_type VARCHAR(50) NOT NULL COMMENT '文件类型',
+    file_size_bytes BIGINT NOT NULL COMMENT '文件大小',
+    material_status VARCHAR(30) NOT NULL COMMENT '资料状态',
+    download_cost_points INT NOT NULL DEFAULT 1 COMMENT '下载消耗积分',
+    copyright_declared TINYINT NOT NULL COMMENT '版权声明',
+    download_count INT NOT NULL DEFAULT 0 COMMENT '下载次数',
+    review_remark VARCHAR(200) NULL COMMENT '审核备注',
+    last_review_time DATETIME NULL COMMENT '最近审核时间',
+    create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+    KEY idx_material_uploader_user_id (uploader_user_id),
+    KEY idx_material_status (material_status),
+    KEY idx_material_course_name (course_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学习资料表';
+
+CREATE TABLE IF NOT EXISTS report_info (
+    report_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '举报ID',
+    reporter_user_id BIGINT NOT NULL COMMENT '举报人ID',
+    target_type VARCHAR(20) NOT NULL COMMENT '对象类型',
+    target_id BIGINT NOT NULL COMMENT '对象ID',
+    reason_category VARCHAR(50) NOT NULL COMMENT '原因分类',
+    detail VARCHAR(500) NULL COMMENT '补充说明',
+    evidence_file_ids VARCHAR(500) NULL COMMENT '证据文件ID',
+    report_status VARCHAR(30) NOT NULL COMMENT '举报状态',
+    review_result_status VARCHAR(30) NULL COMMENT '处置结论',
+    disposition_action VARCHAR(50) NULL COMMENT '处置动作',
+    reviewer_admin_id BIGINT NULL COMMENT '审核管理员ID',
+    review_remark VARCHAR(500) NULL COMMENT '审核备注',
+    review_time DATETIME NULL COMMENT '审核时间',
+    close_time DATETIME NULL COMMENT '关闭时间',
+    create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+    KEY idx_report_reporter_user_id (reporter_user_id),
+    KEY idx_report_target_type_target_id (target_type, target_id),
+    KEY idx_report_status (report_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='举报表';
+
+CREATE TABLE IF NOT EXISTS notification_info (
+    notification_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '通知ID',
+    receiver_user_id BIGINT NOT NULL COMMENT '接收人ID',
+    notification_type VARCHAR(20) NOT NULL COMMENT '通知类型',
+    title VARCHAR(100) NOT NULL COMMENT '标题',
+    content VARCHAR(500) NOT NULL COMMENT '内容',
+    related_biz_type VARCHAR(30) NULL COMMENT '关联业务类型',
+    related_biz_id BIGINT NULL COMMENT '关联业务ID',
+    read_flag TINYINT NOT NULL DEFAULT 0 COMMENT '已读标记',
+    send_time DATETIME NOT NULL COMMENT '发送时间',
+    create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+    KEY idx_notification_receiver_user_id (receiver_user_id),
+    KEY idx_notification_type (notification_type),
+    KEY idx_notification_read_flag (read_flag)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知表';

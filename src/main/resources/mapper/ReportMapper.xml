@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.governance.mapper.ReportMapper">
+
+    <resultMap id="ReportResultMap" type="com.xialuo.campusshare.entity.ReportEntity">
+        <id column="report_id" property="reportId"/>
+        <result column="reporter_user_id" property="reporterUserId"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="reason_category" property="reasonCategory"/>
+        <result column="detail" property="detail"/>
+        <result column="evidence_file_ids" property="evidenceFileIds"/>
+        <result column="report_status" property="reportStatus"/>
+        <result column="review_result_status" property="reviewResultStatus"/>
+        <result column="disposition_action" property="dispositionAction"/>
+        <result column="reviewer_admin_id" property="reviewerAdminId"/>
+        <result column="review_remark" property="reviewRemark"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="close_time" property="closeTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="ReportColumns">
+        report_id,
+        reporter_user_id,
+        target_type,
+        target_id,
+        reason_category,
+        detail,
+        evidence_file_ids,
+        report_status,
+        review_result_status,
+        disposition_action,
+        reviewer_admin_id,
+        review_remark,
+        review_time,
+        close_time,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <insert id="InsertReport" parameterType="com.xialuo.campusshare.entity.ReportEntity" useGeneratedKeys="true" keyProperty="reportId" keyColumn="report_id">
+        INSERT INTO report_info (
+            reporter_user_id,
+            target_type,
+            target_id,
+            reason_category,
+            detail,
+            evidence_file_ids,
+            report_status,
+            review_result_status,
+            disposition_action,
+            reviewer_admin_id,
+            review_remark,
+            review_time,
+            close_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{reporterUserId},
+            #{targetType},
+            #{targetId},
+            #{reasonCategory},
+            #{detail},
+            #{evidenceFileIds},
+            #{reportStatus},
+            #{reviewResultStatus},
+            #{dispositionAction},
+            #{reviewerAdminId},
+            #{reviewRemark},
+            #{reviewTime},
+            #{closeTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateReport" parameterType="com.xialuo.campusshare.entity.ReportEntity">
+        UPDATE report_info
+        SET
+            reporter_user_id = #{reporterUserId},
+            target_type = #{targetType},
+            target_id = #{targetId},
+            reason_category = #{reasonCategory},
+            detail = #{detail},
+            evidence_file_ids = #{evidenceFileIds},
+            report_status = #{reportStatus},
+            review_result_status = #{reviewResultStatus},
+            disposition_action = #{dispositionAction},
+            reviewer_admin_id = #{reviewerAdminId},
+            review_remark = #{reviewRemark},
+            review_time = #{reviewTime},
+            close_time = #{closeTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE report_id = #{reportId}
+    </update>
+
+    <select id="FindReportById" resultMap="ReportResultMap">
+        SELECT
+            <include refid="ReportColumns"/>
+        FROM report_info
+        WHERE report_id = #{reportId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="ListPendingReports" resultMap="ReportResultMap">
+        SELECT
+            <include refid="ReportColumns"/>
+        FROM report_info
+        WHERE report_status = 'PENDING_REVIEW'
+          AND deleted = 0
+        ORDER BY create_time ASC
+    </select>
+</mapper>

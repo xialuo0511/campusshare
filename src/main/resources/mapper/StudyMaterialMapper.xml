@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.material.mapper.StudyMaterialMapper">
+
+    <resultMap id="MaterialResultMap" type="com.xialuo.campusshare.entity.StudyMaterialEntity">
+        <id column="material_id" property="materialId"/>
+        <result column="uploader_user_id" property="uploaderUserId"/>
+        <result column="course_name" property="courseName"/>
+        <result column="tags" property="tags"/>
+        <result column="description" property="description"/>
+        <result column="file_id" property="fileId"/>
+        <result column="file_type" property="fileType"/>
+        <result column="file_size_bytes" property="fileSizeBytes"/>
+        <result column="material_status" property="materialStatus"/>
+        <result column="download_cost_points" property="downloadCostPoints"/>
+        <result column="copyright_declared" property="copyrightDeclared"/>
+        <result column="download_count" property="downloadCount"/>
+        <result column="review_remark" property="reviewRemark"/>
+        <result column="last_review_time" property="lastReviewTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="MaterialColumns">
+        material_id,
+        uploader_user_id,
+        course_name,
+        tags,
+        description,
+        file_id,
+        file_type,
+        file_size_bytes,
+        material_status,
+        download_cost_points,
+        copyright_declared,
+        download_count,
+        review_remark,
+        last_review_time,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <insert id="InsertMaterial" parameterType="com.xialuo.campusshare.entity.StudyMaterialEntity" useGeneratedKeys="true" keyProperty="materialId" keyColumn="material_id">
+        INSERT INTO study_material_info (
+            uploader_user_id,
+            course_name,
+            tags,
+            description,
+            file_id,
+            file_type,
+            file_size_bytes,
+            material_status,
+            download_cost_points,
+            copyright_declared,
+            download_count,
+            review_remark,
+            last_review_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{uploaderUserId},
+            #{courseName},
+            #{tags},
+            #{description},
+            #{fileId},
+            #{fileType},
+            #{fileSizeBytes},
+            #{materialStatus},
+            #{downloadCostPoints},
+            #{copyrightDeclared},
+            #{downloadCount},
+            #{reviewRemark},
+            #{lastReviewTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateMaterial" parameterType="com.xialuo.campusshare.entity.StudyMaterialEntity">
+        UPDATE study_material_info
+        SET
+            uploader_user_id = #{uploaderUserId},
+            course_name = #{courseName},
+            tags = #{tags},
+            description = #{description},
+            file_id = #{fileId},
+            file_type = #{fileType},
+            file_size_bytes = #{fileSizeBytes},
+            material_status = #{materialStatus},
+            download_cost_points = #{downloadCostPoints},
+            copyright_declared = #{copyrightDeclared},
+            download_count = #{downloadCount},
+            review_remark = #{reviewRemark},
+            last_review_time = #{lastReviewTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE material_id = #{materialId}
+    </update>
+
+    <select id="FindMaterialById" resultMap="MaterialResultMap">
+        SELECT
+            <include refid="MaterialColumns"/>
+        FROM study_material_info
+        WHERE material_id = #{materialId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="ListMaterialsByUploader" resultMap="MaterialResultMap">
+        SELECT
+            <include refid="MaterialColumns"/>
+        FROM study_material_info
+        WHERE uploader_user_id = #{uploaderUserId}
+          AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+</mapper>

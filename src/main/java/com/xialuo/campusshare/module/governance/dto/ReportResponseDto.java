@@ -1,27 +1,28 @@
-package com.xialuo.campusshare.entity;
+package com.xialuo.campusshare.module.governance.dto;
 
 import com.xialuo.campusshare.enums.ReportStatusEnum;
 import com.xialuo.campusshare.module.governance.enums.ReportTargetTypeEnum;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * 举报实体
+ * 举报响应
  */
-public class ReportEntity extends BaseEntity {
+public class ReportResponseDto {
     /** 举报ID */
     private Long reportId;
     /** 举报人ID */
     private Long reporterUserId;
-    /** 举报对象类型 */
+    /** 对象类型 */
     private ReportTargetTypeEnum targetType;
-    /** 举报对象ID */
+    /** 对象ID */
     private Long targetId;
     /** 原因分类 */
     private String reasonCategory;
     /** 补充说明 */
     private String detail;
-    /** 证据文件ID */
-    private String evidenceFileIds;
+    /** 证据文件ID列表 */
+    private List<String> evidenceFileIds;
     /** 举报状态 */
     private ReportStatusEnum reportStatus;
     /** 处置结论 */
@@ -36,6 +37,8 @@ public class ReportEntity extends BaseEntity {
     private LocalDateTime reviewTime;
     /** 关闭时间 */
     private LocalDateTime closeTime;
+    /** 创建时间 */
+    private LocalDateTime createTime;
 
     /**
      * 获取举报ID
@@ -122,16 +125,16 @@ public class ReportEntity extends BaseEntity {
     }
 
     /**
-     * 获取证据文件ID
+     * 获取证据文件ID列表
      */
-    public String GetEvidenceFileIds() {
+    public List<String> GetEvidenceFileIds() {
         return evidenceFileIds;
     }
 
     /**
-     * 设置证据文件ID
+     * 设置证据文件ID列表
      */
-    public void SetEvidenceFileIds(String evidenceFileIds) {
+    public void SetEvidenceFileIds(List<String> evidenceFileIds) {
         this.evidenceFileIds = evidenceFileIds;
     }
 
@@ -232,6 +235,18 @@ public class ReportEntity extends BaseEntity {
     public void SetCloseTime(LocalDateTime closeTime) {
         this.closeTime = closeTime;
     }
+
+    /**
+     * 获取创建时间
+     */
+    public LocalDateTime GetCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * 设置创建时间
+     */
+    public void SetCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
 }
-
-

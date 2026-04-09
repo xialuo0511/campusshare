@@ -31,4 +31,74 @@ public class SubmitReportRequestDto {
     /** 证据文件ID列表 */
     @NotEmpty(message = "至少上传1个证据")
     private List<String> evidenceFileIds;
+
+    /**
+     * 获取对象类型
+     */
+    public ReportTargetTypeEnum GetTargetType() {
+        return targetType;
+    }
+
+    /**
+     * 设置对象类型
+     */
+    public void SetTargetType(ReportTargetTypeEnum targetType) {
+        this.targetType = targetType;
+    }
+
+    /**
+     * 获取对象ID
+     */
+    public Long GetTargetId() {
+        return targetId;
+    }
+
+    /**
+     * 设置对象ID
+     */
+    public void SetTargetId(Long targetId) {
+        this.targetId = targetId;
+    }
+
+    /**
+     * 获取原因分类
+     */
+    public String GetReasonCategory() {
+        return reasonCategory;
+    }
+
+    /**
+     * 设置原因分类
+     */
+    public void SetReasonCategory(String reasonCategory) {
+        this.reasonCategory = reasonCategory;
+    }
+
+    /**
+     * 获取补充说明
+     */
+    public String GetDetail() {
+        return detail;
+    }
+
+    /**
+     * 设置补充说明
+     */
+    public void SetDetail(String detail) {
+        this.detail = detail;
+    }
+
+    /**
+     * 获取证据文件ID列表
+     */
+    public List<String> GetEvidenceFileIds() {
+        return evidenceFileIds;
+    }
+
+    /**
+     * 设置证据文件ID列表
+     */
+    public void SetEvidenceFileIds(List<String> evidenceFileIds) {
+        this.evidenceFileIds = evidenceFileIds;
+    }
 }

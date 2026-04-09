@@ -1,12 +1,12 @@
-package com.xialuo.campusshare.entity;
+package com.xialuo.campusshare.module.notification.dto;
 
 import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import java.time.LocalDateTime;
 
 /**
- * 通知实体
+ * 通知响应
  */
-public class NotificationEntity extends BaseEntity {
+public class NotificationResponseDto {
     /** 通知ID */
     private Long notificationId;
     /** 接收人ID */
@@ -152,5 +152,3 @@ public class NotificationEntity extends BaseEntity {
         this.sendTime = sendTime;
     }
 }
-
-

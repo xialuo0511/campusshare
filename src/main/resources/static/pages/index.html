@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusShare 页面导航</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2a37;
+      --sub: #526277;
+      --primary: #00629d;
+      --line: #d9e1ea;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      background: linear-gradient(180deg, #f7fbff 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    .desc {
+      margin-top: 10px;
+      color: var(--sub);
+      font-size: 15px;
+    }
+    .grid {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 6px 18px rgba(0, 55, 120, 0.06);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #b9cde3;
+      box-shadow: 0 10px 24px rgba(0, 55, 120, 0.12);
+    }
+    .title {
+      margin: 0;
+      font-size: 18px;
+      color: var(--primary);
+    }
+    .meta {
+      margin-top: 8px;
+      color: var(--sub);
+      font-size: 13px;
+    }
+    .foot {
+      margin-top: 26px;
+      color: var(--sub);
+      font-size: 13px;
+      border-top: 1px dashed var(--line);
+      padding-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>CampusShare 原型页面导航</h1>
+    <p class="desc">以下页面来自 `Document/stitch`，已接入项目并统一启用 `zh-CN` 展示文本转换</p>
+
+    <section class="grid">
+      <a class="card" href="/pages/login_screen.html"><h2 class="title">登录页</h2><div class="meta">/pages/login_screen.html</div></a>
+      <a class="card" href="/pages/registration_certification.html"><h2 class="title">注册与认证</h2><div class="meta">/pages/registration_certification.html</div></a>
+      <a class="card" href="/pages/campus_home_discovery.html"><h2 class="title">校园首页发现</h2><div class="meta">/pages/campus_home_discovery.html</div></a>
+      <a class="card" href="/pages/goods_marketplace.html"><h2 class="title">闲置市场</h2><div class="meta">/pages/goods_marketplace.html</div></a>
+      <a class="card" href="/pages/study_materials_library.html"><h2 class="title">资料库</h2><div class="meta">/pages/study_materials_library.html</div></a>
+      <a class="card" href="/pages/team_recruitment_boards.html"><h2 class="title">组队广场</h2><div class="meta">/pages/team_recruitment_boards.html</div></a>
+      <a class="card" href="/pages/post_upload_flow.html"><h2 class="title">发布流程</h2><div class="meta">/pages/post_upload_flow.html</div></a>
+      <a class="card" href="/pages/order_center_history.html"><h2 class="title">订单中心</h2><div class="meta">/pages/order_center_history.html</div></a>
+      <a class="card" href="/pages/notification_center.html"><h2 class="title">通知中心</h2><div class="meta">/pages/notification_center.html</div></a>
+      <a class="card" href="/pages/profile_credit_account.html"><h2 class="title">个人中心与积分</h2><div class="meta">/pages/profile_credit_account.html</div></a>
+      <a class="card" href="/pages/admin_audit_workbench.html"><h2 class="title">管理审核工作台</h2><div class="meta">/pages/admin_audit_workbench.html</div></a>
+      <a class="card" href="/pages/system_analytics_dashboard.html"><h2 class="title">系统分析看板</h2><div class="meta">/pages/system_analytics_dashboard.html</div></a>
+    </section>
+
+    <p class="foot">说明：当前阶段为静态原型接入，后续会逐页替换为接口联动版本</p>
+  </main>
+</body>
+</html>

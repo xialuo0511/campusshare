@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CampusShare | Order Center</title>
+<!-- Font Links -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#00629d",
+                        "on-secondary-container": "#006573",
+                        "secondary": "#006876",
+                        "on-surface-variant": "#3f4852",
+                        "outline": "#6f7883",
+                        "inverse-primary": "#98cbff",
+                        "secondary-fixed-dim": "#44d8f1",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#eb8104",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "background": "#f7f9fb",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed": "#001d33",
+                        "surface-dim": "#d8dadc",
+                        "tertiary": "#904d00",
+                        "on-tertiary-container": "#522900",
+                        "on-surface": "#191c1e",
+                        "surface-bright": "#f7f9fb",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-fixed": "#2f1500",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary-container": "#58e6ff",
+                        "on-primary-container": "#00375a",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "primary-container": "#00a3ff",
+                        "on-secondary-fixed-variant": "#004e59",
+                        "primary": "#00629d",
+                        "inverse-on-surface": "#eff1f3",
+                        "secondary-fixed": "#a1efff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "primary-fixed": "#cfe5ff",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#004a77",
+                        "surface": "#f7f9fb",
+                        "on-secondary-fixed": "#001f25",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#98cbff",
+                        "outline-variant": "#bec7d4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .tonal-shift { transition: background-color 0.3s ease; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Top Navigation Bar (Shared Component Logic) -->
+<header class="fixed top-4 left-4 right-4 z-50">
+<nav class="bg-white/70 backdrop-blur-xl rounded-full px-6 py-2 shadow-xl shadow-sky-900/5 flex justify-between items-center max-w-7xl mx-auto border-none">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tighter text-sky-700 font-headline">CampusShare</span>
+<div class="hidden md:flex gap-6">
+<a class="text-slate-500 hover:text-sky-600 transition-all font-medium font-headline" href="#">Market</a>
+<a class="text-slate-500 hover:text-sky-600 transition-all font-medium font-headline" href="#">Materials</a>
+<a class="text-slate-500 hover:text-sky-600 transition-all font-medium font-headline" href="#">Teams</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-sky-50/50 rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="User profile" data-alt="Close-up portrait of a cheerful young university student with a warm smile in soft natural daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPJaGGw3ohbk9TtNfWs2cOmT83DGClI_Tri3l3vhLFPjxvvPvtq9YDAlQQvNLvV1HuN3q6V8mbAOQB-UG975H6z6JM_YQ3B2t_nmZm1f7zrm6T5J9iyPvlbrKVb3PbHwid89aWDiSp-Lwp2DMjtBQ4IKt66v9yTggzR7jABEiqQ9DLSjh3IXDbegREtHcYy4_1oS8LE-jOiCc-ojslLRWOIyGAastue3zMQqEe8FjTwVs7PGtGR2vXrQM9DiZ1J4ebKZXu2qMtSmdY"/>
+</div>
+</div>
+</nav>
+</header>
+<main class="max-w-7xl mx-auto pt-32 pb-20 px-6">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+<div>
+<h1 class="text-5xl font-extrabold font-headline tracking-tighter text-primary mb-2">Order Center</h1>
+<p class="text-on-surface-variant text-lg max-w-md">Manage your active campus trades, textbooks, and team services in one sanctuary.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-3 bg-surface-container-high text-on-surface font-semibold rounded-lg hover:bg-surface-container-highest transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">filter_list</span>
+<span>Filter</span>
+</button>
+<button class="px-6 py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary font-semibold rounded-lg shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                    Active Orders (4)
+                </button>
+</div>
+</div>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Order List -->
+<div class="lg:col-span-7 space-y-6">
+<!-- Order Card 1: Trading -->
+<div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm border-none tonal-shift hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-lg overflow-hidden bg-surface-container">
+<img alt="Textbook" data-alt="Hardcover organic chemistry textbook resting on a clean wooden library desk with soft bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE3e3ZCeQRdjlUAZeop2mYpFL83A0i5_W0siuTxLuqOVijQ2lS0jQ8uamx67d4JiPn2_c7EIh40v5IJ0mkjbfInmFoH-iOg0BOMP59Yz5nKTFnZv2ydacODz1L7FvyEYFVghfEVSoYRxaedZaZvZ43B3lELlwHx7YUEu2XREUH9FsqRtmgzx7M5ny6CYvl-A5Spy1yhBb8N8XeA0nVggeg2bdY96_CCR4suGKLZNroZ2pn323iC8jHufVyc_c7Gc0yy18SQ8cxj8bK"/>
+</div>
+<div>
+<h3 class="text-xl font-bold font-headline text-on-surface">Organic Chemistry Vol. II</h3>
+<p class="text-on-surface-variant text-sm">Order #CS-88219 • Seller: @Alex_Bio</p>
+<p class="text-primary font-bold mt-1">$45.00</p>
+</div>
+</div>
+<span class="px-5 py-2 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold tracking-widest uppercase">Trading</span>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="flex-1 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-lg font-semibold text-sm">Confirm Receipt</button>
+<button class="px-4 py-3 bg-surface-container-high text-on-primary-container rounded-lg font-semibold text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-base">forum</span>
+<span>Chat</span>
+</button>
+</div>
+</div>
+<!-- Order Card 2: Pending -->
+<div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm border-none tonal-shift hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-lg overflow-hidden bg-surface-container">
+<img alt="MacBook" data-alt="Close-up of a sleek laptop and notepad on a minimalist white desk in a sunlit student apartment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMkp8_nEHnSJPz4EIwCwRqxszqFN9ag0xwg-9UdiAYz_Fao36OgApdjqqBsnk-lNHSGeVtaavNatHlOuuovS7JK0XMV6iwuJZ6d4eh4mwp1cjcVSgtdWV60Xy52wmji84qp_M_9JkI7My9bfniCMatQ3vopEGJfD9hf8M7bMwMdkEnNWC5lJ-DyucBDwQaAyCIv0LsLIw-K8SC9s6BjaV209MOzLvfoRNo1nRzda4yYLJWJvcRKJfcAiSxt6BGBvAwLVYOeKciXuxy"/>
+</div>
+<div>
+<h3 class="text-xl font-bold font-headline text-on-surface">Web Dev Tutoring Session</h3>
+<p class="text-on-surface-variant text-sm">Order #CS-88304 • Provider: @Dev_Sarah</p>
+<p class="text-primary font-bold mt-1">$25.00/hr</p>
+</div>
+</div>
+<span class="px-5 py-2 bg-tertiary-container text-on-tertiary-container rounded-full text-xs font-bold tracking-widest uppercase">Pending</span>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="flex-1 py-3 bg-surface-container-high text-on-surface-variant rounded-lg font-semibold text-sm opacity-50 cursor-not-allowed">Awaiting Payment</button>
+<button class="px-4 py-3 bg-surface-container-high text-on-primary-container rounded-lg font-semibold text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-base">report</span>
+<span>Report</span>
+</button>
+</div>
+</div>
+<!-- Order Card 3: Completed -->
+<div class="bg-surface-container-low/50 rounded-lg p-6 border-none opacity-80">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-lg overflow-hidden bg-surface-container grayscale">
+<img alt="Desk Lamp" data-alt="Modern minimal desk lamp with warm glow in a cozy student workspace setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUTGuu7ARPuplw_88T5HAgmOPtVQc0WVcl7ix6IJRlG5RlKM4Yz4uY5Qb9G3GUb0VGeAup8Pssvt01OPNW46_JmSjLz3Usvduymogow9OGn1tRa9XoQ7AkVFlGwpqgwEUMM2MvI98f_IsPOiHPy1MK236lwIhZmn4gxGzfTQCzFvLngKyLqd-zAyc6pFF4XYSFex3xvA1RsYlTxMCq1BwIcqktSra_DEqc0fgwnJcU22gUXhCKriYUE3qp-H3h2YbH1Wu1HfkK86oi"/>
+</div>
+<div>
+<h3 class="text-xl font-bold font-headline text-on-surface/60">LED Desk Lamp Pro</h3>
+<p class="text-on-surface-variant/60 text-sm">Order #CS-87112 • Completed Feb 12</p>
+<p class="text-on-surface-variant/60 font-bold mt-1">$15.00</p>
+</div>
+</div>
+<span class="px-5 py-2 bg-surface-container-highest text-on-surface-variant rounded-full text-xs font-bold tracking-widest uppercase">Completed</span>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 py-2 border border-outline-variant text-on-surface-variant rounded-lg font-medium text-sm">View Receipt</button>
+<button class="flex-1 py-2 bg-primary/10 text-primary rounded-lg font-bold text-sm">Buy Again</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Detail View (Transaction Timeline) -->
+<div class="lg:col-span-5">
+<div class="bg-surface-container-lowest rounded-xl p-8 sticky top-28 shadow-xl shadow-sky-900/5">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold font-headline text-primary">Transaction Detail</h2>
+<span class="text-sm font-medium text-on-surface-variant">#CS-88219</span>
+</div>
+<!-- Vertical Timeline -->
+<div class="relative space-y-10 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container-high">
+<!-- Timeline Item 1 -->
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center ring-4 ring-white">
+<span class="material-symbols-outlined text-white text-xs" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Order Placed</h4>
+<p class="text-sm text-on-surface-variant">Buyer initiated purchase request.</p>
+<p class="text-[10px] uppercase tracking-tighter mt-1 font-bold text-outline">Oct 24, 09:12 AM</p>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center ring-4 ring-white">
+<span class="material-symbols-outlined text-white text-xs" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Buyer Paid</h4>
+<p class="text-sm text-on-surface-variant">Payment secured in CampusShare Escrow.</p>
+<p class="text-[10px] uppercase tracking-tighter mt-1 font-bold text-outline">Oct 24, 10:45 AM</p>
+</div>
+</div>
+<!-- Timeline Item 3 (Active) -->
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-secondary flex items-center justify-center ring-4 ring-white animate-pulse">
+<span class="material-symbols-outlined text-white text-xs">schedule</span>
+</div>
+<div>
+<h4 class="font-bold text-secondary">Meeting Scheduled</h4>
+<p class="text-sm text-on-surface-variant">Location: Library Room 302</p>
+<p class="text-sm font-semibold text-primary mt-1">Today at 4:30 PM</p>
+</div>
+</div>
+<!-- Timeline Item 4 (Upcoming) -->
+<div class="relative pl-10 opacity-40">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center ring-4 ring-white">
+<span class="material-symbols-outlined text-on-surface-variant text-xs">verified</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Confirmed</h4>
+<p class="text-sm text-on-surface-variant">Transaction completed by both parties.</p>
+</div>
+</div>
+</div>
+<!-- Detail Card Actions -->
+<div class="mt-12 pt-8 border-t border-surface-container-high">
+<div class="bg-surface-container-low rounded-lg p-4 mb-6 flex items-center gap-4">
+<div class="material-symbols-outlined text-secondary text-3xl">verified_user</div>
+<div>
+<p class="text-xs font-bold text-secondary uppercase tracking-widest">Buyer Protection</p>
+<p class="text-sm text-on-surface-variant">Funds are released only after you confirm receipt.</p>
+</div>
+</div>
+<button class="w-full py-4 bg-surface-container-highest text-error font-bold rounded-lg hover:bg-error/10 transition-colors">
+                            Report a Problem
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar (Mobile Only) -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t-0 py-3 px-6 flex justify-around items-center z-50">
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">storefront</span>
+<span class="text-[10px] font-bold">Market</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-sky-700">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-[10px] font-bold">Orders</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">chat</span>
+<span class="text-[10px] font-bold">Inbox</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Profile</span>
+</button>
+</div>
+<script defer src='/pages/assets/zh-cn-i18n.js'></script>
+</body></html>

@@ -1,0 +1,305 @@
+﻿<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CampusShare Admin Audit Workbench</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#00629d",
+                    "on-secondary-container": "#006573",
+                    "secondary": "#006876",
+                    "on-surface-variant": "#3f4852",
+                    "outline": "#6f7883",
+                    "inverse-primary": "#98cbff",
+                    "secondary-fixed-dim": "#44d8f1",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#eb8104",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-container": "#eceef0",
+                    "tertiary-fixed": "#ffdcc3",
+                    "on-background": "#191c1e",
+                    "inverse-surface": "#2d3133",
+                    "background": "#f7f9fb",
+                    "surface-container-low": "#f2f4f6",
+                    "on-primary-fixed": "#001d33",
+                    "surface-dim": "#d8dadc",
+                    "tertiary": "#904d00",
+                    "on-tertiary-container": "#522900",
+                    "on-surface": "#191c1e",
+                    "surface-bright": "#f7f9fb",
+                    "surface-variant": "#e0e3e5",
+                    "on-tertiary-fixed": "#2f1500",
+                    "surface-container-high": "#e6e8ea",
+                    "secondary-container": "#58e6ff",
+                    "on-primary-container": "#00375a",
+                    "on-error-container": "#93000a",
+                    "error": "#ba1a1a",
+                    "primary-container": "#00a3ff",
+                    "on-secondary-fixed-variant": "#004e59",
+                    "primary": "#00629d",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary-fixed": "#a1efff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "primary-fixed": "#cfe5ff",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed-variant": "#004a77",
+                    "surface": "#f7f9fb",
+                    "on-secondary-fixed": "#001f25",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#98cbff",
+                    "outline-variant": "#bec7d4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex">
+<!-- SideNavBar (Shared Component Execution) -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-slate-50 dark:bg-slate-950 font-inter text-sm antialiased flex flex-col py-6 gap-2 z-40">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-black text-slate-900 dark:text-white">Admin Console</h1>
+<p class="text-xs text-on-surface-variant/70 tracking-wide uppercase">System Oversight</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<!-- Active: Audit -->
+<a class="flex items-center px-4 py-3 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 mx-2 bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-200 rounded-xl font-bold transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+<span>Audit</span>
+</a>
+<a class="flex items-center px-4 py-3 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+<span>Users</span>
+</a>
+<a class="flex items-center px-4 py-3 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="description">description</span>
+<span>Reports</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-1 pt-4 border-t border-outline-variant/10">
+<a class="flex items-center px-4 py-3 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center px-4 py-3 mx-2 text-error hover:bg-error-container/20 transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 p-8 lg:p-12">
+<!-- Header & Stats Asymmetric Layout -->
+<header class="flex flex-col md:flex-row justify-between items-end mb-12 gap-8">
+<div class="max-w-2xl">
+<h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight text-on-surface mb-4">Audit Workbench</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed">
+                    Review and verify campus community submissions. Ensure trust through meticulous verification of certifications and item listings.
+                </p>
+</div>
+<div class="flex gap-4">
+<div class="bg-surface-container-low px-8 py-6 rounded-lg text-center">
+<span class="block text-3xl font-bold text-primary">24</span>
+<span class="text-xs uppercase tracking-widest text-on-surface-variant font-semibold">Pending Tasks</span>
+</div>
+<div class="bg-surface-container-low px-8 py-6 rounded-lg text-center">
+<span class="block text-3xl font-bold text-on-surface">142</span>
+<span class="text-xs uppercase tracking-widest text-on-surface-variant font-semibold">Resolved Today</span>
+</div>
+</div>
+</header>
+<!-- Workbench Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+<!-- Tasks Column -->
+<section class="xl:col-span-8 space-y-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold text-on-surface">Verification Queue</h3>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container-high rounded-full text-xs font-bold text-on-surface hover:bg-surface-container-highest transition-all">All Items</button>
+<button class="px-4 py-2 bg-white rounded-full text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-all">Flagged Only</button>
+</div>
+</div>
+<!-- Task Item: High Risk -->
+<div class="group bg-surface-container-lowest rounded-lg p-6 flex flex-col md:flex-row items-center gap-6 cursor-pointer hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-2 bg-error"></div>
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container">
+<img alt="Seller profile" class="w-full h-full object-cover" data-alt="portrait of a young female college student with serious expression in a library setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw6S6uiYh8A88qeRjhR-mkFF05rx9U7ofMctKa1aUu57Ezn-nfhX5_lp8uTqsugsfqTTuiOcrvmqYAHmnKpb6OiOPtyr6fKnsTMLyN2uosXyHbf0QmQhwcA-gYZN04RQ9zWjn5nggrfQF68NBddhq8EeA1oQejVXT_3nDTsZghemShrYbCw-wh-fIwwYbnJA9Nl0Xirrimqqjho1GmQ86tLigk8nKfOcu4np-2KRLH-66Pk4bZr56wO64JSn3W1QKE1h3y_f6Lz4xn"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<span class="text-xs font-black px-2 py-0.5 rounded bg-error/10 text-error uppercase tracking-tighter">High Risk</span>
+<span class="text-xs font-bold text-on-surface-variant/60">#AUD-9201</span>
+</div>
+<h4 class="text-lg font-bold text-on-surface">Seller Certification: Sarah Jenkins</h4>
+<p class="text-sm text-on-surface-variant">External document verification required for "Premium Textbook Merchant" status.</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<span class="text-xs font-semibold px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant">Reviewing</span>
+<span class="text-xs text-on-surface-variant/50">Assignee: Alex M.</span>
+</div>
+</div>
+<!-- Task Item: Medium Risk -->
+<div class="bg-surface-container-lowest rounded-lg p-6 flex flex-col md:flex-row items-center gap-6 cursor-pointer hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-2 bg-tertiary-container"></div>
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container">
+<img alt="Reported item" class="w-full h-full object-cover" data-alt="close up of a modern laptop on a wooden desk with visible screen glare and slightly blurry edges" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8BD7jCkyD71g8MuJK-TlSYyIoxFHnJea_RE4QWHX_Wh0GhBayctFc3zjZ4-JdLc5oqcKXNhGfXd9IvyuEhowzGB-CoCr6vyP5wvaRn3YikhGXL_DcFGiwFY_yj2oWXSM8pPGFvhR_Y04cuBnsLVDWmlOLf6jPUCzZ7mkOUHSd8iynuIAZEAWvHZ2_kKZKnOB2H91uWTOXxPLDmBI5E4jsP5QtLRYfjkX01ifBOm2JkVsAaGHAsZehq-SNdLfhkbvkgRz1EKnfWWOB"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<span class="text-xs font-black px-2 py-0.5 rounded bg-tertiary-container/10 text-tertiary uppercase tracking-tighter">Medium Risk</span>
+<span class="text-xs font-bold text-on-surface-variant/60">#AUD-9198</span>
+</div>
+<h4 class="text-lg font-bold text-on-surface">Reported Post: "MacBook Pro M1"</h4>
+<p class="text-sm text-on-surface-variant">Reported for "Suspiciously Low Price" and potential counterfeit images.</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<span class="text-xs font-semibold px-3 py-1 rounded-full bg-primary-container/20 text-on-primary-container">Pending</span>
+<span class="text-xs text-on-surface-variant/50 font-medium">Unassigned</span>
+</div>
+</div>
+<!-- Task Item: Low Risk -->
+<div class="bg-surface-container-lowest rounded-lg p-6 flex flex-col md:flex-row items-center gap-6 cursor-pointer hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-2 bg-outline"></div>
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="candid shot of a student holding several thick textbooks walking across a campus lawn" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCt1WXzGm4ICPyd32rK1qUlrTm57Wah2_-Tl_x0YjKGDwLgqiEvOnw3O_Pqz5KGus6X57KKNhFL0lnRWDjtDCSdgjlbeKAc2-eYSy_QU2w3R4JC_UfAdlFAXrYW-o0g_erdvz7W2QKVCeC-MGHrWFmW8STYv4ulErEFXlN9UC8qfEcf3IB6HcUTNr0h15s4yOg1QqBbjZRZv8sxquTqvJUSQ-AZL_WVe0KiYNzbxpFaodpRSlEvTi7b-n2SdKV72lht1xuXpGG97x1t"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<span class="text-xs font-black px-2 py-0.5 rounded bg-outline/10 text-outline uppercase tracking-tighter">Low Risk</span>
+<span class="text-xs font-bold text-on-surface-variant/60">#AUD-9195</span>
+</div>
+<h4 class="text-lg font-bold text-on-surface">New Post: "Biology 101 Tutoring"</h4>
+<p class="text-sm text-on-surface-variant">Standard listing review for community guidelines compliance.</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<span class="text-xs font-semibold px-3 py-1 rounded-full bg-primary-container/20 text-on-primary-container">Pending</span>
+<span class="text-xs text-on-surface-variant/50 font-medium">Unassigned</span>
+</div>
+</div>
+</section>
+<!-- Sidebar Audit Detail / Side Drawer Simulator -->
+<aside class="xl:col-span-4">
+<div class="sticky top-12 bg-surface-container-lowest rounded-xl shadow-2xl p-8 border border-outline-variant/10">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h3 class="text-2xl font-extrabold text-on-surface leading-none">Audit Details</h3>
+<p class="text-sm text-on-surface-variant mt-2 font-medium">Case #AUD-9198</p>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="space-y-8">
+<!-- Evidence Section -->
+<div>
+<span class="text-xs font-bold text-primary uppercase tracking-widest mb-4 block">Evidence Materials</span>
+<div class="grid grid-cols-2 gap-3">
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container">
+<img alt="Evidence 1" class="w-full h-full object-cover" data-alt="overhead view of student identity card resting on a clean white desk next to a library card" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCI3VzO7sXvasptuN2zULNicCHPAQQvH3CMw8wAsG2tDdvsyUULXkrXZkCl6r730Hq-zNij-YrQ-IhWh1VyHEQCMbCkfbgPzg3zYBw7D5CEP4UFJlPTmrhCSWybU8szd0yIn4KAx5wFpwHodl24WG1hfYPNtnqBtSI44z-3v5JJzcNh3vfV6-NRLFqvOMzrDLLjcrgK-gimPMl-0D5GV3MNu39wW-JyFdoTAu0_GxCb6NmK0oV0Ysvzb1Aov5tZL4et9kd25JkSt821"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container relative">
+<img alt="Evidence 2" class="w-full h-full object-cover" data-alt="a blurred photo of a graduation certificate with official seals visible but text unreadable" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbJDXRqPy1fjiNVr_T36KdX6mlEzZBSIKOUlwqj-VqIT_6nJPMSym82_0WFNKW1O_w86tWJhv3lEPqbur1_Gs2qioxkmqz5TjparES53SeNVuwGnZyol2WPt03oHrKcrfQjIEP2OfZeKZ0P7SoKpjXpt3Yz0XJwe5o436xMtC4abtELw2BMXmgGCZTKd6tJ-MHNRQjxPUc4uzK76gH9WriJF3QiQg73SNr8MPwPpzRGP9j7D6qalUY9LUknZ1gu-LspuqcteKtX8BO"/>
+<div class="absolute inset-0 bg-on-surface/40 flex items-center justify-center">
+<span class="text-white font-bold text-sm">+2 More</span>
+</div>
+</div>
+</div>
+</div>
+<!-- User Profile Info -->
+<div class="bg-surface-container-low p-4 rounded-lg">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-slate-300"></div>
+<div>
+<p class="font-bold text-on-surface leading-tight">Sarah Jenkins</p>
+<p class="text-xs text-on-surface-variant">Member since Sep 2023</p>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Trust Score</span>
+<span class="font-bold text-secondary">88%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="w-[88%] h-full bg-secondary"></div>
+</div>
+</div>
+</div>
+<!-- Decision Block -->
+<div class="space-y-4 pt-4 border-t border-outline-variant/10">
+<label class="text-xs font-bold text-on-surface uppercase tracking-widest block">Reviewer Notes</label>
+<textarea class="w-full bg-surface-container-high border-none rounded-lg text-sm p-4 h-24 focus:ring-2 focus:ring-primary/40 placeholder:text-on-surface-variant/40" placeholder="Type internal audit notes here..."></textarea>
+<div class="flex flex-col gap-3">
+<button class="w-full py-4 rounded-lg bg-gradient-to-r from-primary to-primary-container text-white font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                                    Approve Certification
+                                </button>
+<button class="w-full py-4 rounded-lg bg-surface-container-high text-error font-bold text-sm hover:bg-error/10 transition-all">
+                                    Reject &amp; Notify User
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Pagination / Status Footer -->
+<footer class="mt-12 flex justify-between items-center py-6 border-t border-outline-variant/10">
+<p class="text-sm text-on-surface-variant">Showing 3 of 24 tasks in queue</p>
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">1</button>
+<button class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors font-bold text-sm text-on-surface-variant">2</button>
+<button class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</footer>
+</main>
+<!-- Floating Quick Actions (FAB) -->
+<button class="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white shadow-2xl flex items-center justify-center group hover:scale-110 transition-all duration-300 z-50">
+<span class="material-symbols-outlined text-2xl" data-icon="add" style="font-variation-settings: 'wght' 700;">add</span>
+</button>
+<script defer src='/pages/assets/zh-cn-i18n.js'></script>
+</body></html>

@@ -19,10 +19,6 @@ public class UserReviewRequestDto {
     @Size(max = 200, message = "审核意见长度不能超过200")
     private String reviewRemark;
 
-    /** 管理员ID */
-    @NotNull(message = "管理员ID不能为空")
-    private Long adminUserId;
-
     /**
      * 获取用户ID
      */
@@ -65,17 +61,4 @@ public class UserReviewRequestDto {
         this.reviewRemark = reviewRemark;
     }
 
-    /**
-     * 获取管理员ID
-     */
-    public Long GetAdminUserId() {
-        return adminUserId;
-    }
-
-    /**
-     * 设置管理员ID
-     */
-    public void SetAdminUserId(Long adminUserId) {
-        this.adminUserId = adminUserId;
-    }
 }

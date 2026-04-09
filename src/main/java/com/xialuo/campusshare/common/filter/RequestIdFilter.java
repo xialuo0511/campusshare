@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -13,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * 请求追踪过滤器
  */
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class RequestIdFilter extends OncePerRequestFilter {
     /** 请求头字段 */
     public static final String REQUEST_ID_HEADER = "X-Request-Id";

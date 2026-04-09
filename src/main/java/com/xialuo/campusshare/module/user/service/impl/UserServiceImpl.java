@@ -134,7 +134,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserReviewResponseDto ReviewUser(UserReviewRequestDto requestDto) {
+    public UserReviewResponseDto ReviewUser(UserReviewRequestDto requestDto, Long adminUserId) {
         UserEntity userEntity = userMapper.FindUserById(requestDto.GetUserId());
         if (userEntity == null) {
             throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
         UserReviewResponseDto responseDto = new UserReviewResponseDto();
         responseDto.SetUserId(userEntity.GetUserId());
         responseDto.SetUserStatus(userEntity.GetUserStatus());
-        responseDto.SetAdminUserId(requestDto.GetAdminUserId());
+        responseDto.SetAdminUserId(adminUserId);
         responseDto.SetReviewRemark(requestDto.GetReviewRemark());
         responseDto.SetReviewTime(LocalDateTime.now());
         return responseDto;

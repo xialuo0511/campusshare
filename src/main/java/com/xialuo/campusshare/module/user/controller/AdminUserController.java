@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.user.controller;
 
 import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
+import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserReviewRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserReviewResponseDto;
@@ -47,8 +48,9 @@ public class AdminUserController {
         @RequestBody @Valid UserReviewRequestDto requestDto,
         HttpServletRequest httpServletRequest
     ) {
+        Long adminUserId = GetCurrentUserId(httpServletRequest);
         requestDto.SetUserId(userId);
-        UserReviewResponseDto responseDto = userService.ReviewUser(requestDto);
+        UserReviewResponseDto responseDto = userService.ReviewUser(requestDto, adminUserId);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -58,5 +60,16 @@ public class AdminUserController {
     private String GetRequestId(HttpServletRequest httpServletRequest) {
         Object requestId = httpServletRequest.getAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE);
         return requestId == null ? "" : requestId.toString();
+    }
+
+    /**
+     * 获取当前用户ID
+     */
+    private Long GetCurrentUserId(HttpServletRequest httpServletRequest) {
+        Object currentUserId = httpServletRequest.getAttribute(SessionAuthFilter.CURRENT_USER_ID_ATTRIBUTE);
+        if (currentUserId instanceof Long currentUserIdLong) {
+            return currentUserIdLong;
+        }
+        return Long.parseLong(currentUserId.toString());
     }
 }

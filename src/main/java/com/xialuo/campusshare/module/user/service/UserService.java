@@ -37,7 +37,7 @@ public interface UserService {
     /**
      * 审核用户
      */
-    UserReviewResponseDto ReviewUser(UserReviewRequestDto requestDto);
+    UserReviewResponseDto ReviewUser(UserReviewRequestDto requestDto, Long adminUserId);
 
     /**
      * 查询待审核用户

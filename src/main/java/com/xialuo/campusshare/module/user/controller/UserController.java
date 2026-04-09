@@ -1,7 +1,11 @@
 package com.xialuo.campusshare.module.user.controller;
 
 import com.xialuo.campusshare.common.api.ApiResponse;
+import com.xialuo.campusshare.common.enums.BizCodeEnum;
+import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
+import com.xialuo.campusshare.common.filter.SessionAuthFilter;
+import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
@@ -64,6 +68,7 @@ public class UserController {
         @PathVariable("userId") Long userId,
         HttpServletRequest httpServletRequest
     ) {
+        ValidateUserAccess(userId, httpServletRequest);
         UserProfileResponseDto responseDto = userService.GetUserProfile(userId);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
@@ -77,6 +82,7 @@ public class UserController {
         @RequestBody @Valid UserProfileUpdateRequestDto requestDto,
         HttpServletRequest httpServletRequest
     ) {
+        ValidateUserAccess(userId, httpServletRequest);
         UserProfileResponseDto responseDto = userService.UpdateUserProfile(userId, requestDto);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
@@ -87,5 +93,41 @@ public class UserController {
     private String GetRequestId(HttpServletRequest httpServletRequest) {
         Object requestId = httpServletRequest.getAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE);
         return requestId == null ? "" : requestId.toString();
+    }
+
+    /**
+     * 校验用户访问权限
+     */
+    private void ValidateUserAccess(Long targetUserId, HttpServletRequest httpServletRequest) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        UserRoleEnum currentUserRole = GetCurrentUserRole(httpServletRequest);
+        if (currentUserRole == UserRoleEnum.ADMINISTRATOR) {
+            return;
+        }
+        if (!targetUserId.equals(currentUserId)) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "无权访问其他用户资料");
+        }
+    }
+
+    /**
+     * 获取当前用户ID
+     */
+    private Long GetCurrentUserId(HttpServletRequest httpServletRequest) {
+        Object currentUserId = httpServletRequest.getAttribute(SessionAuthFilter.CURRENT_USER_ID_ATTRIBUTE);
+        if (currentUserId instanceof Long currentUserIdLong) {
+            return currentUserIdLong;
+        }
+        return Long.parseLong(currentUserId.toString());
+    }
+
+    /**
+     * 获取当前用户角色
+     */
+    private UserRoleEnum GetCurrentUserRole(HttpServletRequest httpServletRequest) {
+        Object currentUserRole = httpServletRequest.getAttribute(SessionAuthFilter.CURRENT_USER_ROLE_ATTRIBUTE);
+        if (currentUserRole instanceof UserRoleEnum userRoleEnum) {
+            return userRoleEnum;
+        }
+        return UserRoleEnum.valueOf(currentUserRole.toString());
     }
 }

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.user.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.xialuo.campusshare.entity.UserEntity">
+        <id column="user_id" property="userId"/>
+        <result column="account" property="account"/>
+        <result column="password_hash" property="passwordHash"/>
+        <result column="display_name" property="displayName"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="college" property="college"/>
+        <result column="grade" property="grade"/>
+        <result column="user_role" property="userRole"/>
+        <result column="user_status" property="userStatus"/>
+        <result column="point_balance" property="pointBalance"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="UserColumns">
+        user_id,
+        account,
+        password_hash,
+        display_name,
+        email,
+        phone,
+        college,
+        grade,
+        user_role,
+        user_status,
+        point_balance,
+        last_login_time,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <insert id="InsertUser" parameterType="com.xialuo.campusshare.entity.UserEntity" useGeneratedKeys="true" keyProperty="userId" keyColumn="user_id">
+        INSERT INTO user_info (
+            account,
+            password_hash,
+            display_name,
+            email,
+            phone,
+            college,
+            grade,
+            user_role,
+            user_status,
+            point_balance,
+            last_login_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{account},
+            #{passwordHash},
+            #{displayName},
+            #{email},
+            #{phone},
+            #{college},
+            #{grade},
+            #{userRole},
+            #{userStatus},
+            #{pointBalance},
+            #{lastLoginTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateUser" parameterType="com.xialuo.campusshare.entity.UserEntity">
+        UPDATE user_info
+        SET
+            account = #{account},
+            password_hash = #{passwordHash},
+            display_name = #{displayName},
+            email = #{email},
+            phone = #{phone},
+            college = #{college},
+            grade = #{grade},
+            user_role = #{userRole},
+            user_status = #{userStatus},
+            point_balance = #{pointBalance},
+            last_login_time = #{lastLoginTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE user_id = #{userId}
+    </update>
+
+    <select id="FindUserById" resultMap="UserResultMap">
+        SELECT
+            <include refid="UserColumns"/>
+        FROM user_info
+        WHERE user_id = #{userId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="FindUserByAccount" resultMap="UserResultMap">
+        SELECT
+            <include refid="UserColumns"/>
+        FROM user_info
+        WHERE account = #{account}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="CountByAccount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM user_info
+        WHERE account = #{account}
+          AND deleted = 0
+    </select>
+
+    <select id="ListPendingReviewUsers" resultMap="UserResultMap">
+        SELECT
+            <include refid="UserColumns"/>
+        FROM user_info
+        WHERE user_status = 'PENDING_REVIEW'
+          AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+</mapper>

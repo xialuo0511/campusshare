@@ -13,12 +13,14 @@ import com.xialuo.campusshare.module.user.dto.UserRegisterRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserReviewRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserReviewResponseDto;
-import com.xialuo.campusshare.module.user.repository.UserMemoryRepository;
+import com.xialuo.campusshare.module.user.mapper.UserMapper;
 import com.xialuo.campusshare.module.user.service.UserService;
 import com.xialuo.campusshare.module.user.util.PasswordUtil;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,17 +30,24 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
     /** 默认积分 */
     private static final Integer DEFAULT_POINT_BALANCE = 0;
+    /** 会话缓存前缀 */
+    private static final String USER_SESSION_PREFIX = "campusshare:user:session:";
+    /** 会话有效时长 */
+    private static final Duration USER_SESSION_TTL = Duration.ofDays(7);
 
-    /** 用户仓储 */
-    private final UserMemoryRepository userMemoryRepository;
+    /** 用户Mapper */
+    private final UserMapper userMapper;
+    /** Redis模板 */
+    private final StringRedisTemplate stringRedisTemplate;
 
-    public UserServiceImpl(UserMemoryRepository userMemoryRepository) {
-        this.userMemoryRepository = userMemoryRepository;
+    public UserServiceImpl(UserMapper userMapper, StringRedisTemplate stringRedisTemplate) {
+        this.userMapper = userMapper;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     @Override
     public UserRegisterResponseDto RegisterUser(UserRegisterRequestDto requestDto) {
-        if (userMemoryRepository.ExistsByAccount(requestDto.GetAccount())) {
+        if (userMapper.CountByAccount(requestDto.GetAccount()) > 0) {
             throw new BusinessException(BizCodeEnum.ACCOUNT_EXISTS, "账号已存在");
         }
 
@@ -56,18 +65,18 @@ public class UserServiceImpl implements UserService {
         userEntity.SetUpdateTime(LocalDateTime.now());
         userEntity.SetDeleted(Boolean.FALSE);
 
-        UserEntity savedUserEntity = userMemoryRepository.SaveUser(userEntity);
+        userMapper.InsertUser(userEntity);
 
         UserRegisterResponseDto responseDto = new UserRegisterResponseDto();
-        responseDto.SetUserId(savedUserEntity.GetUserId());
-        responseDto.SetUserStatus(savedUserEntity.GetUserStatus());
+        responseDto.SetUserId(userEntity.GetUserId());
+        responseDto.SetUserStatus(userEntity.GetUserStatus());
         responseDto.SetTip("注册成功，请等待管理员审核");
         return responseDto;
     }
 
     @Override
     public UserLoginResponseDto LoginUser(UserLoginRequestDto requestDto) {
-        UserEntity userEntity = userMemoryRepository.FindUserByAccount(requestDto.GetAccount());
+        UserEntity userEntity = userMapper.FindUserByAccount(requestDto.GetAccount());
         if (userEntity == null) {
             throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
         }
@@ -80,10 +89,10 @@ public class UserServiceImpl implements UserService {
 
         userEntity.SetLastLoginTime(LocalDateTime.now());
         userEntity.SetUpdateTime(LocalDateTime.now());
-        userMemoryRepository.SaveUser(userEntity);
+        userMapper.UpdateUser(userEntity);
 
         String token = UUID.randomUUID().toString().replace("-", "");
-        userMemoryRepository.SaveSession(token, userEntity.GetUserId());
+        SaveUserSession(token, userEntity.GetUserId());
 
         UserLoginResponseDto responseDto = new UserLoginResponseDto();
         responseDto.SetUserId(userEntity.GetUserId());
@@ -96,7 +105,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserProfileResponseDto GetUserProfile(Long userId) {
-        UserEntity userEntity = userMemoryRepository.FindUserById(userId);
+        UserEntity userEntity = userMapper.FindUserById(userId);
         if (userEntity == null) {
             throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
         }
@@ -105,7 +114,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserProfileResponseDto UpdateUserProfile(Long userId, UserProfileUpdateRequestDto requestDto) {
-        UserEntity userEntity = userMemoryRepository.FindUserById(userId);
+        UserEntity userEntity = userMapper.FindUserById(userId);
         if (userEntity == null) {
             throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
         }
@@ -119,14 +128,14 @@ public class UserServiceImpl implements UserService {
         userEntity.SetPhone(requestDto.GetPhone());
         userEntity.SetEmail(requestDto.GetEmail());
         userEntity.SetUpdateTime(LocalDateTime.now());
-        userMemoryRepository.SaveUser(userEntity);
+        userMapper.UpdateUser(userEntity);
 
         return BuildUserProfileResponse(userEntity);
     }
 
     @Override
     public UserReviewResponseDto ReviewUser(UserReviewRequestDto requestDto) {
-        UserEntity userEntity = userMemoryRepository.FindUserById(requestDto.GetUserId());
+        UserEntity userEntity = userMapper.FindUserById(requestDto.GetUserId());
         if (userEntity == null) {
             throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
         }
@@ -139,7 +148,7 @@ public class UserServiceImpl implements UserService {
             userEntity.SetUserRole(UserRoleEnum.VISITOR);
         }
         userEntity.SetUpdateTime(LocalDateTime.now());
-        userMemoryRepository.SaveUser(userEntity);
+        userMapper.UpdateUser(userEntity);
 
         UserReviewResponseDto responseDto = new UserReviewResponseDto();
         responseDto.SetUserId(userEntity.GetUserId());
@@ -152,10 +161,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserProfileResponseDto> ListPendingReviewUsers() {
-        return userMemoryRepository.FindAllUsers().stream()
-            .filter(userEntity -> userEntity.GetUserStatus() == UserStatusEnum.PENDING_REVIEW)
+        return userMapper.ListPendingReviewUsers().stream()
             .map(this::BuildUserProfileResponse)
             .toList();
+    }
+
+    /**
+     * 保存用户会话
+     */
+    private void SaveUserSession(String token, Long userId) {
+        try {
+            String sessionKey = USER_SESSION_PREFIX + token;
+            stringRedisTemplate.opsForValue().set(sessionKey, userId.toString(), USER_SESSION_TTL);
+        } catch (Exception exception) {
+            // Redis不可用时不中断主链路
+        }
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.xialuo.campusshare.module.governance.mapper;
 
 import com.xialuo.campusshare.entity.ReportEntity;
+import com.xialuo.campusshare.module.governance.enums.ReportTargetTypeEnum;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -29,4 +30,13 @@ public interface ReportMapper {
      * 查询待处理举报
      */
     List<ReportEntity> ListPendingReports();
+
+    /**
+     * 按对象查询同类待处理举报
+     */
+    ReportEntity FindPendingReportByTarget(
+        @Param("targetType") ReportTargetTypeEnum targetType,
+        @Param("targetId") Long targetId,
+        @Param("reasonCategory") String reasonCategory
+    );
 }

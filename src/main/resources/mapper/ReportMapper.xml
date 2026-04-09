@@ -120,4 +120,17 @@
           AND deleted = 0
         ORDER BY create_time ASC
     </select>
+
+    <select id="FindPendingReportByTarget" resultMap="ReportResultMap">
+        SELECT
+            <include refid="ReportColumns"/>
+        FROM report_info
+        WHERE target_type = #{targetType}
+          AND target_id = #{targetId}
+          AND reason_category = #{reasonCategory}
+          AND report_status = 'PENDING_REVIEW'
+          AND deleted = 0
+        ORDER BY create_time ASC
+        LIMIT 1
+    </select>
 </mapper>

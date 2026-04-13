@@ -9,6 +9,8 @@ import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileUpdateRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserRegisterCodeRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserRegisterCodeResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserReviewRequestDto;
@@ -16,11 +18,18 @@ import com.xialuo.campusshare.module.user.dto.UserReviewResponseDto;
 import com.xialuo.campusshare.module.user.mapper.UserMapper;
 import com.xialuo.campusshare.module.user.service.UserService;
 import com.xialuo.campusshare.module.user.util.PasswordUtil;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,30 +43,86 @@ public class UserServiceImpl implements UserService {
     private static final String USER_SESSION_PREFIX = "campusshare:user:session:";
     /** 会话有效时长 */
     private static final Duration USER_SESSION_TTL = Duration.ofDays(7);
+    /** 注册验证码缓存前缀 */
+    private static final String REGISTER_CODE_PREFIX = "campusshare:user:register:code:";
+    /** 验证码发送限频前缀 */
+    private static final String REGISTER_CODE_COOLDOWN_PREFIX = "campusshare:user:register:code:cooldown:";
+    /** 验证码有效时长 */
+    private static final Duration REGISTER_CODE_TTL = Duration.ofMinutes(5);
+    /** 验证码发送最小间隔 */
+    private static final Duration REGISTER_CODE_COOLDOWN = Duration.ofSeconds(60);
+    /** 邮件主题 */
+    private static final String REGISTER_CODE_MAIL_SUBJECT = "CampusShare 注册验证码";
+    /** 邮件发送人 */
+    private static final String REGISTER_CODE_MAIL_FROM = "noreply@campusshare.local";
+
+    /** 日志 */
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
+    /** 随机数 */
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /** 用户Mapper */
     private final UserMapper userMapper;
     /** Redis模板 */
     private final StringRedisTemplate stringRedisTemplate;
+    /** 邮件发送器 */
+    private final JavaMailSender javaMailSender;
 
-    public UserServiceImpl(UserMapper userMapper, StringRedisTemplate stringRedisTemplate) {
+    public UserServiceImpl(
+        UserMapper userMapper,
+        StringRedisTemplate stringRedisTemplate,
+        ObjectProvider<JavaMailSender> javaMailSenderProvider
+    ) {
         this.userMapper = userMapper;
         this.stringRedisTemplate = stringRedisTemplate;
+        this.javaMailSender = javaMailSenderProvider.getIfAvailable();
+    }
+
+    @Override
+    public UserRegisterCodeResponseDto SendRegisterCode(UserRegisterCodeRequestDto requestDto) {
+        String account = NormalizeAccount(requestDto.GetAccount());
+        String email = NormalizeEmail(requestDto.GetEmail());
+        if (userMapper.CountByAccount(account) > 0) {
+            throw new BusinessException(BizCodeEnum.ACCOUNT_EXISTS, "账号已存在");
+        }
+        ValidateSendFrequency(account);
+
+        String verificationCode = BuildVerificationCode();
+        String registerCodeKey = BuildRegisterCodeKey(account);
+        try {
+            stringRedisTemplate.opsForValue().set(registerCodeKey, verificationCode, REGISTER_CODE_TTL);
+            stringRedisTemplate.opsForValue().set(BuildRegisterCodeCooldownKey(account), "1", REGISTER_CODE_COOLDOWN);
+        } catch (Exception exception) {
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "验证码暂时不可用，请稍后重试");
+        }
+
+        boolean mailSent = TrySendRegisterCodeEmail(email, account, verificationCode);
+        UserRegisterCodeResponseDto responseDto = new UserRegisterCodeResponseDto();
+        if (mailSent) {
+            responseDto.SetTip("验证码已发送，请查收邮箱");
+        } else {
+            LOGGER.info("注册验证码回退日志: account={}, email={}, code={}", account, email, verificationCode);
+            responseDto.SetTip("邮件通道暂不可用，验证码已输出到服务日志");
+        }
+        return responseDto;
     }
 
     @Override
     public UserRegisterResponseDto RegisterUser(UserRegisterRequestDto requestDto) {
-        if (userMapper.CountByAccount(requestDto.GetAccount()) > 0) {
+        String account = NormalizeAccount(requestDto.GetAccount());
+        if (userMapper.CountByAccount(account) > 0) {
             throw new BusinessException(BizCodeEnum.ACCOUNT_EXISTS, "账号已存在");
         }
+        ValidateRegisterCode(account, requestDto.GetVerificationCode());
 
         UserEntity userEntity = new UserEntity();
-        userEntity.SetAccount(requestDto.GetAccount());
+        userEntity.SetAccount(account);
         userEntity.SetPasswordHash(PasswordUtil.HashPassword(requestDto.GetPassword()));
         userEntity.SetDisplayName(requestDto.GetDisplayName());
         userEntity.SetCollege(requestDto.GetCollege());
         userEntity.SetGrade(requestDto.GetGrade());
         userEntity.SetPhone(requestDto.GetContact());
+        userEntity.SetEmail(NormalizeEmail(requestDto.GetContact()));
         userEntity.SetPointBalance(DEFAULT_POINT_BALANCE);
         userEntity.SetUserStatus(UserStatusEnum.PENDING_REVIEW);
         userEntity.SetUserRole(UserRoleEnum.VISITOR);
@@ -66,6 +131,7 @@ public class UserServiceImpl implements UserService {
         userEntity.SetDeleted(Boolean.FALSE);
 
         userMapper.InsertUser(userEntity);
+        DeleteRegisterCode(account);
 
         UserRegisterResponseDto responseDto = new UserRegisterResponseDto();
         responseDto.SetUserId(userEntity.GetUserId());
@@ -167,6 +233,120 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 校验发送频率
+     */
+    private void ValidateSendFrequency(String account) {
+        String cooldownValue = null;
+        try {
+            cooldownValue = stringRedisTemplate.opsForValue().get(BuildRegisterCodeCooldownKey(account));
+        } catch (Exception exception) {
+            // Redis异常不阻断发送
+        }
+        if (cooldownValue != null && !cooldownValue.isBlank()) {
+            throw new BusinessException(BizCodeEnum.BUSINESS_CONFLICT, "验证码发送过于频繁，请稍后再试");
+        }
+    }
+
+    /**
+     * 校验注册验证码
+     */
+    private void ValidateRegisterCode(String account, String verificationCode) {
+        String codeFromCache;
+        try {
+            codeFromCache = stringRedisTemplate.opsForValue().get(BuildRegisterCodeKey(account));
+        } catch (Exception exception) {
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "验证码服务异常");
+        }
+        if (codeFromCache == null || codeFromCache.isBlank()) {
+            throw new BusinessException(BizCodeEnum.REGISTER_CODE_EXPIRED, "验证码已过期，请重新获取");
+        }
+        if (!codeFromCache.equals(verificationCode == null ? "" : verificationCode.trim())) {
+            throw new BusinessException(BizCodeEnum.REGISTER_CODE_INVALID, "验证码错误");
+        }
+    }
+
+    /**
+     * 删除注册验证码
+     */
+    private void DeleteRegisterCode(String account) {
+        try {
+            stringRedisTemplate.delete(BuildRegisterCodeKey(account));
+            stringRedisTemplate.delete(BuildRegisterCodeCooldownKey(account));
+        } catch (Exception exception) {
+            // Redis异常不阻断主流程
+        }
+    }
+
+    /**
+     * 尝试发送验证码邮件
+     */
+    private boolean TrySendRegisterCodeEmail(String email, String account, String verificationCode) {
+        if (javaMailSender == null) {
+            return false;
+        }
+        try {
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom(REGISTER_CODE_MAIL_FROM);
+            mailMessage.setTo(email);
+            mailMessage.setSubject(REGISTER_CODE_MAIL_SUBJECT);
+            mailMessage.setText(BuildRegisterCodeMailText(account, verificationCode));
+            javaMailSender.send(mailMessage);
+            return true;
+        } catch (Exception exception) {
+            LOGGER.warn("发送注册验证码邮件失败: account={}, email={}", account, email, exception);
+            return false;
+        }
+    }
+
+    /**
+     * 构建邮件内容
+     */
+    private String BuildRegisterCodeMailText(String account, String verificationCode) {
+        return "你好，\n\n"
+            + "你正在 CampusShare 注册账号。\n"
+            + "学号/工号: " + account + "\n"
+            + "验证码: " + verificationCode + "\n"
+            + "有效期: 5 分钟。\n\n"
+            + "如果这不是你的操作，请忽略此邮件。";
+    }
+
+    /**
+     * 构建验证码
+     */
+    private String BuildVerificationCode() {
+        int randomValue = SECURE_RANDOM.nextInt(1_000_000);
+        return String.format("%06d", randomValue);
+    }
+
+    /**
+     * 构建注册验证码缓存键
+     */
+    private String BuildRegisterCodeKey(String account) {
+        return REGISTER_CODE_PREFIX + account;
+    }
+
+    /**
+     * 构建发送冷却缓存键
+     */
+    private String BuildRegisterCodeCooldownKey(String account) {
+        return REGISTER_CODE_COOLDOWN_PREFIX + account;
+    }
+
+    /**
+     * 规范化账号
+     */
+    private String NormalizeAccount(String account) {
+        return account == null ? "" : account.trim();
+    }
+
+    /**
+     * 规范化邮箱
+     */
+    private String NormalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    /**
      * 保存用户会话
      */
     private void SaveUserSession(String token, Long userId) {
@@ -197,3 +377,4 @@ public class UserServiceImpl implements UserService {
         return responseDto;
     }
 }
+

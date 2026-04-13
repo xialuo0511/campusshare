@@ -10,6 +10,8 @@ import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileUpdateRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserRegisterCodeRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserRegisterCodeResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterResponseDto;
 import com.xialuo.campusshare.module.user.service.UserService;
@@ -34,6 +36,18 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    /**
+     * 发送注册验证码
+     */
+    @PostMapping("/register/code/send")
+    public ApiResponse<UserRegisterCodeResponseDto> SendRegisterCode(
+        @RequestBody @Valid UserRegisterCodeRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        UserRegisterCodeResponseDto responseDto = userService.SendRegisterCode(requestDto);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
     /**
@@ -131,3 +145,4 @@ public class UserController {
         return UserRoleEnum.valueOf(currentUserRole.toString());
     }
 }
+

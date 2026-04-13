@@ -1,5 +1,6 @@
 package com.xialuo.campusshare.module.user.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -32,10 +33,16 @@ public class UserRegisterRequestDto {
     @Size(max = 20, message = "年级长度不能超过20")
     private String grade;
 
-    /** 联系方式 */
-    @NotBlank(message = "联系方式不能为空")
-    @Size(max = 30, message = "联系方式长度不能超过30")
+    /** 联系方式(邮箱) */
+    @NotBlank(message = "邮箱不能为空")
+    @Email(message = "邮箱格式不正确")
+    @Size(max = 100, message = "邮箱长度不能超过100")
     private String contact;
+
+    /** 邮箱验证码 */
+    @NotBlank(message = "验证码不能为空")
+    @Size(min = 6, max = 6, message = "验证码长度必须为6位")
+    private String verificationCode;
 
     /**
      * 获取账号
@@ -120,4 +127,19 @@ public class UserRegisterRequestDto {
     public void SetContact(String contact) {
         this.contact = contact;
     }
+
+    /**
+     * 获取验证码
+     */
+    public String GetVerificationCode() {
+        return verificationCode;
+    }
+
+    /**
+     * 设置验证码
+     */
+    public void SetVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
 }
+

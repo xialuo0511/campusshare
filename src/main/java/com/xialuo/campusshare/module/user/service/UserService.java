@@ -4,6 +4,8 @@ import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileUpdateRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserRegisterCodeRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserRegisterCodeResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserReviewRequestDto;
@@ -14,6 +16,11 @@ import java.util.List;
  * 用户服务接口
  */
 public interface UserService {
+    /**
+     * 发送注册邮箱验证码
+     */
+    UserRegisterCodeResponseDto SendRegisterCode(UserRegisterCodeRequestDto requestDto);
+
     /**
      * 提交注册
      */
@@ -44,3 +51,4 @@ public interface UserService {
      */
     List<UserProfileResponseDto> ListPendingReviewUsers();
 }
+

@@ -148,6 +148,9 @@
         RegisterUser(payload) {
             return RequestApi("/api/v1/users/register", "POST", payload, false);
         },
+        SendRegisterCode(payload) {
+            return RequestApi("/api/v1/users/register/code/send", "POST", payload, false);
+        },
         LoginUser(payload) {
             return RequestApi("/api/v1/users/login", "POST", payload, false);
         },
@@ -177,4 +180,3 @@
         }
     };
 })();
-

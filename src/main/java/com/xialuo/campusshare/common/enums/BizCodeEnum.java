@@ -52,6 +52,10 @@ public enum BizCodeEnum {
     POINT_BALANCE_INSUFFICIENT(1022, "积分余额不足"),
     /** 重复请求冲突 */
     IDEMPOTENCY_CONFLICT(1023, "重复请求冲突"),
+    /** 注册验证码错误 */
+    REGISTER_CODE_INVALID(1024, "注册验证码错误"),
+    /** 注册验证码已过期 */
+    REGISTER_CODE_EXPIRED(1025, "注册验证码已过期"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

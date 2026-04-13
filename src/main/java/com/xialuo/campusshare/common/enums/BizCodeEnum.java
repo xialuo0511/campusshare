@@ -50,6 +50,8 @@ public enum BizCodeEnum {
     REPORT_PERMISSION_DENIED(1021, "举报无操作权限"),
     /** 积分余额不足 */
     POINT_BALANCE_INSUFFICIENT(1022, "积分余额不足"),
+    /** 重复请求冲突 */
+    IDEMPOTENCY_CONFLICT(1023, "重复请求冲突"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

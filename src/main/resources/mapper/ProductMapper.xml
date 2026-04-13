@@ -38,6 +38,81 @@
         deleted
     </sql>
 
+    <select id="ListPublishedProducts" resultMap="ProductResultMap">
+        SELECT
+            <include refid="ProductColumns"/>
+        FROM product_info
+        WHERE deleted = 0
+          AND on_shelf = 1
+          AND product_status = 'PUBLISHED'
+        <if test="keyword != null and keyword != ''">
+            AND (
+                CAST(product_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                OR category LIKE CONCAT('%', #{keyword}, '%')
+                OR condition_level LIKE CONCAT('%', #{keyword}, '%')
+                OR trade_location LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="conditionLevel != null and conditionLevel != ''">
+            AND condition_level = #{conditionLevel}
+        </if>
+        <if test="tradeLocation != null and tradeLocation != ''">
+            AND trade_location = #{tradeLocation}
+        </if>
+        <if test="minPrice != null">
+            AND price &gt;= #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            AND price &lt;= #{maxPrice}
+        </if>
+        <choose>
+            <when test="sortType == 'PRICE_ASC'">
+                ORDER BY price ASC, create_time DESC
+            </when>
+            <when test="sortType == 'PRICE_DESC'">
+                ORDER BY price DESC, create_time DESC
+            </when>
+            <otherwise>
+                ORDER BY create_time DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="CountPublishedProducts" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM product_info
+        WHERE deleted = 0
+          AND on_shelf = 1
+          AND product_status = 'PUBLISHED'
+        <if test="keyword != null and keyword != ''">
+            AND (
+                CAST(product_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                OR category LIKE CONCAT('%', #{keyword}, '%')
+                OR condition_level LIKE CONCAT('%', #{keyword}, '%')
+                OR trade_location LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="conditionLevel != null and conditionLevel != ''">
+            AND condition_level = #{conditionLevel}
+        </if>
+        <if test="tradeLocation != null and tradeLocation != ''">
+            AND trade_location = #{tradeLocation}
+        </if>
+        <if test="minPrice != null">
+            AND price &gt;= #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            AND price &lt;= #{maxPrice}
+        </if>
+    </select>
+
     <select id="FindProductById" resultMap="ProductResultMap">
         SELECT
             <include refid="ProductColumns"/>

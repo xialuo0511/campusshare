@@ -202,6 +202,24 @@
             formData.append("file", file);
             return RequestMultipartApi("/api/v1/materials/files/upload", "POST", formData, true);
         },
+        ListProducts(query) {
+            const searchQuery = query || {};
+            const searchParams = new URLSearchParams();
+            Object.keys(searchQuery).forEach(function AppendQuery(key) {
+                const value = searchQuery[key];
+                if (value === null || value === undefined || value === "") {
+                    return;
+                }
+                searchParams.append(key, value);
+            });
+            return RequestApi(`/api/v1/products?${searchParams.toString()}`, "GET", null, false);
+        },
+        GetProductDetail(productId) {
+            return RequestApi(`/api/v1/products/${productId}`, "GET", null, false);
+        },
+        CreateOrder(payload) {
+            return RequestApi("/api/v1/orders", "POST", payload, true);
+        },
         ListMyOrders(pageNo, pageSize) {
             return RequestApi(`/api/v1/orders/my?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
         },

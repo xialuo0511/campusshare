@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusShare 页面导航</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --line: #d7e0eb;
+      --text: #1f2a37;
+      --sub: #5b6b82;
+      --pri: #005d90;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.25;
+      color: var(--pri);
+    }
+    .desc {
+      margin-top: 10px;
+      color: var(--sub);
+      font-size: 15px;
+    }
+    .grid {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 6px 18px rgba(0, 55, 120, 0.08);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #b8cae0;
+      box-shadow: 0 10px 24px rgba(0, 55, 120, 0.14);
+    }
+    .title {
+      margin: 0;
+      font-size: 18px;
+      color: var(--pri);
+    }
+    .meta {
+      margin-top: 8px;
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .foot {
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--line);
+      color: var(--sub);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>CampusShare 页面导航</h1>
+    <p class="desc">以下为当前 stitch 最新版本页面，已完成语义化重命名，便于后续联调与维护。</p>
+
+    <section class="grid">
+      <a class="card" href="/pages/market_overview.html">
+        <h2 class="title">市场总览页</h2>
+        <div class="meta">文件：market_overview.html</div>
+      </a>
+      <a class="card" href="/pages/auth_access.html">
+        <h2 class="title">登录注册页</h2>
+        <div class="meta">文件：auth_access.html</div>
+      </a>
+      <a class="card" href="/pages/market_listing.html">
+        <h2 class="title">交易市场列表页</h2>
+        <div class="meta">文件：market_listing.html</div>
+      </a>
+      <a class="card" href="/pages/market_item_detail.html">
+        <h2 class="title">商品详情页</h2>
+        <div class="meta">文件：market_item_detail.html</div>
+      </a>
+      <a class="card" href="/pages/recruitment_board.html">
+        <h2 class="title">招募板页</h2>
+        <div class="meta">文件：recruitment_board.html</div>
+      </a>
+      <a class="card" href="/pages/publish_create.html">
+        <h2 class="title">发布创建页</h2>
+        <div class="meta">文件：publish_create.html</div>
+      </a>
+      <a class="card" href="/pages/order_center.html">
+        <h2 class="title">订单中心页</h2>
+        <div class="meta">文件：order_center.html</div>
+      </a>
+      <a class="card" href="/pages/admin_dashboard.html">
+        <h2 class="title">管理后台页</h2>
+        <div class="meta">文件：admin_dashboard.html</div>
+      </a>
+    </section>
+
+    <p class="foot">默认入口已指向本导航页：/pages/index.html</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>交易市场 | CampusShare</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f4f5",
+                    "surface-bright": "#f8f9fa",
+                    "surface": "#f8f9fa",
+                    "background": "#f8f9fa",
+                    "tertiary-fixed": "#d8e2ff",
+                    "on-primary-fixed": "#001d32",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-primary-container": "#f3f7ff",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#aec6ff",
+                    "on-primary-fixed-variant": "#004b74",
+                    "on-secondary-fixed-variant": "#004e5b",
+                    "secondary": "#006878",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-tint": "#006399",
+                    "tertiary-container": "#4770be",
+                    "error-container": "#ffdad6",
+                    "outline": "#707881",
+                    "on-tertiary-fixed-variant": "#004490",
+                    "primary-fixed-dim": "#94ccff",
+                    "on-secondary-fixed": "#001f25",
+                    "on-surface-variant": "#404850",
+                    "secondary-container": "#69e5ff",
+                    "surface-container-high": "#e7e8e9",
+                    "secondary-fixed-dim": "#58d6f1",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#001a42",
+                    "primary-container": "#0077b6",
+                    "surface-container": "#edeeef",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#2b57a4",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#cde5ff",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#006575",
+                    "surface-variant": "#e1e3e4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "outline-variant": "#bfc7d1",
+                    "on-surface": "#191c1d",
+                    "primary": "#005d90",
+                    "surface-dim": "#d9dadb",
+                    "secondary-fixed": "#a7edff",
+                    "on-tertiary-container": "#f7f7ff",
+                    "inverse-surface": "#2e3132",
+                    "inverse-primary": "#94ccff",
+                    "on-background": "#191c1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<header class="bg-[#f8f9fa] dark:bg-slate-950 docked full-width top-0 z-50">
+<div class="flex justify-between items-center w-full px-6 py-3 max-w-[1440px] mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500">CampusShare</span>
+<nav class="hidden md:flex gap-6 font-['Manrope'] text-sm tracking-wide">
+<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" href="#">交易市场</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" href="#">学术资源</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" href="#">校园论坛</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<input class="bg-surface-container-low border-none rounded-md px-4 py-2 text-sm w-64 focus:ring-1 focus:ring-primary" placeholder="搜索市场..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2 text-slate-400 text-sm">search</span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-primary transition-colors">notifications</button>
+<button class="material-symbols-outlined text-slate-600 hover:text-primary transition-colors">account_circle</button>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-lg text-sm font-semibold scale-95 active:scale-100 duration-150">发布</button>
+</div>
+</div>
+</header>
+<div class="flex max-w-[1440px] mx-auto min-h-screen">
+<!-- Left Sidebar Filter -->
+<aside class="hidden lg:block w-72 p-6 bg-surface-bright border-r-0">
+<div class="sticky top-20">
+<h2 class="text-lg font-bold mb-6 text-on-surface">筛选</h2>
+<div class="space-y-8">
+<!-- Category -->
+<section>
+<h3 class="text-xs font-bold uppercase tracking-widest text-outline mb-4">分类</h3>
+<div class="space-y-2">
+<label class="flex items-center gap-3 group cursor-pointer">
+<input checked="" class="rounded-sm border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-on-surface-variant group-hover:text-primary transition-colors">电子产品</span>
+</label>
+<label class="flex items-center gap-3 group cursor-pointer">
+<input class="rounded-sm border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-on-surface-variant group-hover:text-primary transition-colors">教材</span>
+</label>
+<label class="flex items-center gap-3 group cursor-pointer">
+<input class="rounded-sm border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-on-surface-variant group-hover:text-primary transition-colors">家具</span>
+</label>
+<label class="flex items-center gap-3 group cursor-pointer">
+<input class="rounded-sm border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-on-surface-variant group-hover:text-primary transition-colors">厨具</span>
+</label>
+</div>
+</section>
+<!-- Price Range -->
+<section>
+<h3 class="text-xs font-bold uppercase tracking-widest text-outline mb-4">价格范围</h3>
+<div class="grid grid-cols-2 gap-2">
+<input class="bg-surface-container-lowest border-0 ring-1 ring-outline-variant/20 rounded-md p-2 text-sm focus:ring-primary" placeholder="最低" type="text"/>
+<input class="bg-surface-container-lowest border-0 ring-1 ring-outline-variant/20 rounded-md p-2 text-sm focus:ring-primary" placeholder="最高" type="text"/>
+</div>
+</section>
+<!-- Condition -->
+<section>
+<h3 class="text-xs font-bold uppercase tracking-widest text-outline mb-4">新旧程度</h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-xs font-semibold">全新</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant text-xs font-medium hover:bg-surface-container-high transition-colors">良好</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant text-xs font-medium hover:bg-surface-container-high transition-colors">已使用</button>
+</div>
+</section>
+<!-- Location -->
+<section>
+<h3 class="text-xs font-bold uppercase tracking-widest text-outline mb-4">交易地点</h3>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/20 rounded-md p-2 text-sm focus:ring-primary appearance-none">
+<option>北校区图书馆</option>
+<option>学生中心</option>
+<option>工程楼</option>
+<option>西门广场</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none">expand_more</span>
+</div>
+</section>
+<button class="w-full py-2.5 bg-surface-container-highest text-on-surface font-semibold text-sm rounded-md transition-all active:translate-y-px">
+                        清除所有筛选
+                    </button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 bg-surface-container-low min-h-screen px-6 py-8">
+<!-- Header & Sorting -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+<div>
+<h1 class="text-3xl font-bold text-on-surface mb-1">校园交易市场</h1>
+<p class="text-on-surface-variant text-sm font-medium">显示 428 个精选学术资源</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 bg-surface-container-lowest p-1 rounded-md ring-1 ring-outline-variant/20">
+<button class="p-1.5 rounded bg-surface-container-high text-primary"><span class="material-symbols-outlined text-sm">grid_view</span></button>
+<button class="p-1.5 rounded text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">list</span></button>
+</div>
+<div class="relative">
+<select class="bg-surface-container-lowest border-0 ring-1 ring-outline-variant/20 rounded-md py-2 pl-4 pr-10 text-sm font-medium focus:ring-primary appearance-none">
+<option>最新发布</option>
+<option>价格：由低到高</option>
+<option>价格：由高到低</option>
+<option>热门程度</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2 text-outline pointer-events-none">sort</span>
+</div>
+</div>
+</div>
+<!-- Products Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+<!-- Product Card 1 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+<div class="relative h-56 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="high-end tablet with pencil on white studio background with soft professional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdRciXYPG_0I3qG9AGP_J4jfenW3c1vBhvcdDnEpWcWo2ywroUVy4IPdY-tZQ_qSCMCDdyR5_Cv9Zg_rf7DKY69DZQABJTXU_BswsJHwSDCqdmhJyVlaTdiveT1m1Yn5dzOmovFYttlydiXYJR2-GDaen-zPsNXZz6HUJYVHqCIC5Buwt4WOM0gLUC7bC55JHRTsdqR-2TzjaDlM9z4fjOvbsxCNZe2kvhMUgt9QKAeDFz3g1C3jox5HJ16_tdg3a5q6jg3Z_SAeA"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>
+</div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-sm uppercase tracking-tighter">全新</span>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-on-surface line-clamp-1">iPad Air (第5代) - M1 芯片</h3>
+<span class="text-primary font-bold text-lg leading-none">$450</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[14px] text-outline">location_on</span>
+<span class="text-xs text-on-surface-variant font-medium">总图书馆</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional portrait of young man wearing academic glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyt_sbxy71tZv4_oYhNghg98VD-jnctEE2ZpMcBawTA_rYsQCxyXKJFVXYbJ5aWagHxFQ7khZv7byXjxx1TsrUBOyBU3Z-lcHNzQDHVzwgWzFt4uc_igHzIKg4VPSOYUzUfD_A3UlEs9Stpj0QAnKyE9qbJy2soIbBh4h4i2ybm1lig1eYcvg1XsFcsQMPf7LDiY0o6HAnTXdrVtjSOiXTVRuLYvaWvhijftQYk-Zk2WZzaWRbaLw8GetKJQMT7AvofmnTt_9qSVA"/>
+</div>
+<span class="text-[11px] font-semibold text-outline">Alex Morgan</span>
+</div>
+<span class="text-[11px] text-outline">2 小时前</span>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+<div class="relative h-56 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="clean desk setup with ergonomic chair and minimalist wooden desk in soft daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYIkPr2Ah3pV1fsi2LZ4hD9OrqAmPzQSyctjdJuY4CvneFGqvc7cK4ANHHv3meRULg2r_FzuKNYsxUSSCCkLf9yQZXXGQoFHqYkH6_P3qsPCxdi5GHM1TL2cVe4JbdvwenST1mcjTREI8wDz8FMrb1KpKdMAnreU3jnkHIT3Q3uNeTJusl-7M6IZnBeeT9kq_SPH3mIOi5dFmY_1xS_NcuPZGs8L4ikQfyVjCenfBt2ex3uPpyDVhXhbgiZZDxCLnkgzMtHoUdwIs"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>
+</div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold rounded-sm uppercase tracking-tighter">良好</span>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-on-surface line-clamp-1">人体工学办公椅</h3>
+<span class="text-primary font-bold text-lg leading-none">$85</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[14px] text-outline">location_on</span>
+<span class="text-xs text-on-surface-variant font-medium">西门广场</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="headshot of smiling student with long dark hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADyzCjAbaa5gjSlXeB_GLjZOkDrtGBm0nvErbcRLXjnis5h07IiQukZ0i_3PHgQX6ps4zePVKUACLPP2_XS_59fVNdmO0fr-gMlF2JZkYfQR5Oyqcrv4aJntAeHop5eGGA7RWsPcftp6hp2ON8_T454L6PnZf67BBhG6WxiRujnN1Y0hlVTHBeR7rn7Gx5Rj_OZF5LC4z5OZA4CBY8zsOglsSgVPXiom9dGLWg4SZ1u7vWmAOxYrloMZjM5sQ2lcGYxpTI53bufq0"/>
+</div>
+<span class="text-[11px] font-semibold text-outline">Sarah J.</span>
+</div>
+<span class="text-[11px] text-outline">5 小时前</span>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+<div class="relative h-56 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="stack of thick hardcover academic textbooks on a rustic wooden shelf with warm indoor light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJ1gjCJANPVWwZY31ys1Yffl0_V--fofIOapVFDizZ4Q8EpMTjZcaYSeW9xpc8y9U-VqodxFSzCgqeXpvyLq-EXwJmQKGMSdRlTo9_Ry6JC_qGU56h9E7ZnqOevBSTcJ3EMI7BMWFj9zI_-IonKzdf_3TcbNpgZnMvQNBPXL0hJfE_afsOw_4f9JR4z0oztrwjWbV3KpkhE1M0fLi-J2EixHR5Svj7KJfdOtYma8sGrM7-QeOJ1GCqpOZHhnOdbXezJy2geIoW9eg"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>
+</div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-sm uppercase tracking-tighter">近全新</span>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-on-surface line-clamp-1">神经科学原理 (第6版)</h3>
+<span class="text-primary font-bold text-lg leading-none">$120</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[14px] text-outline">location_on</span>
+<span class="text-xs text-on-surface-variant font-medium">医学中心</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional male headshot with friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiJBjO8wIymI3j8-X63EG3Uajt2kFT2ZI1muJjlK6-0JnmsPwp45SjW6gj6TZSFM4FhcTE7DVjT4d3RMG6JADV5MGpUbmpCKhCe8OjWZsRDhgvxzPTBqSFd98TgAmCP5YoLIb-7O4F5gvSbat7mqZcPDeO2U90FWCMAgGwdMPsphf0v74nLQac-AFgILWfQewYXLeqO-DssY-T2nUQHf9bh7H1h1Kqr4Z3xJftOYdAa4i3nh7JB2aXFP7QgS0IiPo0BT2NCM1Dz3c"/>
+</div>
+<span class="text-[11px] font-semibold text-outline">Dr. Peterson</span>
+</div>
+<span class="text-[11px] text-outline">1 天前</span>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+<div class="relative h-56 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="gaming mechanical keyboard with colorful RGB lighting in dark atmospheric room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA4uyVyMmmQfwFuzHBRwK5l6V9901a2RpeqE2U8Z9CEaKGctEYwUgGsUojRHRE15IEUOpB8YlfGIboq7zfV0qfhVJuC1_9fUA9oX-3FVerVtl_FtPxTXn903hVaRZ0Pq2pxFMJ3ZSQDlORmD8qi8eV_RhmZjKQIkrc47D-svhotNXR_ovXjI4-1exfSxfT3cN94FFAoyZhWpcokr26Qi9pzTQ1wM4q7R-Id3CRv0T-DrBFrGPoZmzNd7tjdp2UKHoDRXEiM7BexG4"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>
+</div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold rounded-sm uppercase tracking-tighter">已使用</span>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-on-surface line-clamp-1">机械游戏键盘</h3>
+<span class="text-primary font-bold text-lg leading-none">$45</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[14px] text-outline">location_on</span>
+<span class="text-xs text-on-surface-variant font-medium">工程楼</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="young woman with glasses looking thoughtful" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-eoUKfteu13CU3UyOpXwHu1hUAJ0wg94HmATn0_SndSO15xRsbcKgtGQXkdQ4McG0Ly40BJvC2dcp_woGTtOKXC5Gkw7th82D9rslXJ5TLOwGlGlkmv6CJ6l9OwKVAkmz3Wg1QL-3gHPAokBk6vFY1JR9kgLFAQCkvjnbhuijkEIBCv_GAFDBQvUigjcpfMkIg6eEU9RfShSSy5S-k_KE04WPpriVxgk7KP-QeUSosSQcxNuWmerHOsvtrrdlO5DO1mz54u6fKLY"/>
+</div>
+<span class="text-[11px] font-semibold text-outline">Emily White</span>
+</div>
+<span class="text-[11px] text-outline">12 分钟前</span>
+</div>
+</div>
+</div>
+<!-- Product Card 5 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+<div class="relative h-56 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="modern matte black kettle on a minimalist white countertop with bright morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWNu1TZ4Hy7okkjqt-gY2Gkqi8mCaC3Ub82ZOfxUmdfg94zphPP67NLqdFBM6dqLxz9kc75BKz2vd5fsYOi5e3NWs5-uuTW99uSvd65BIp1b-vqh8zSdZ-iU12JttbYOhGMSUeuKHsGLEduIFsHJcQNx32DRI81RMB4Yg3NZu9Avg-j4pvY1Zh7-0USba2Y2ncDqnxh6IJXpOu3Pf7DJaBsAPSf2mALbrdT5OtI1cSrZKN6vCRbd_s0uLpvUNvBOxRT-2yy1Cdi5c"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>
+</div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-sm uppercase tracking-tighter">全新</span>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-on-surface line-clamp-1">电热水壶 - 1.7L 磨砂黑</h3>
+<span class="text-primary font-bold text-lg leading-none">$25</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[14px] text-outline">location_on</span>
+<span class="text-xs text-on-surface-variant font-medium">南宿舍区</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="casual student portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO-_PySLVBVMYebKRqgMqBjup6OpDRKBrhCmqqNov6sd3EIDulr6kHSNnpYJLVj2jo5PA6hhYSbAYlODOBXjjoZPWx632VcL5yAtXU05hw7bt0RA9yojuh0pO5KGEnYvwX07eOkTw2P4ZZqj0YVq_GnbwSmnMekX3ZDSJ1q_sXa8OZYR6MaaSFSfFl02DVS0OF-dIRbjjezLYW1Ge-bWGYWHSEwGvPKCmoxza7juHb2524t5vfdjA6mFXTcGm4OfsTRkvz2pDt2ls"/>
+</div>
+<span class="text-[11px] font-semibold text-outline">Kev. S</span>
+</div>
+<span class="text-[11px] text-outline">3 小时前</span>
+</div>
+</div>
+</div>
+<!-- Product Card 6 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+<div class="relative h-56 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="white wireless headphones hanging on a wooden stand in a clean modern room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXyVwohVIwby4hUADUeBY_19SsN5Ip2_8d5MqJiCJWEwPKoOD8L6iJDkct4t6dBaRSzqmjD_wk4nlGQIlDvsqpRCeoXS4IJFUvGPac13n3p5Kw6gBIhbgalOmOyX4DEYmPnF7_rmHczoY0UKw0pdkNMNZk63iWdcOg0l5jtaAP0IbElq497BmaCHmOwfes_4TgcdIjLo2Lg7Tbned4HzAh12nZNOlXprAVI5_ta7meRUDLckyz-7DJ4CzqYN9eyZa5S2iLRZu1nJY"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>
+</div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold rounded-sm uppercase tracking-tighter">良好</span>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-on-surface line-clamp-1">降噪耳机</h3>
+<span class="text-primary font-bold text-lg leading-none">$165</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[14px] text-outline">location_on</span>
+<span class="text-xs text-on-surface-variant font-medium">东门咖啡厅</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="smiling male professional avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrJLSDg_4HH6QouyFkF4dKfots6Bg65zcTCAiE3ffdZX4HGFi406tcFbDAiR3FNF8TK1Sm2w9u1qBVlQjElMfvyTLzUI_tLjhjjDsFqtz6FQ3YgKMlUY-0p6KoGJS6JSwHpxiRaL6JukJFF1WasLbDq9ctqejMjTpH33Bifr7Hhw_i7UwZpcZxuSOBDfRYlKY3g4we2PtMgmr-zI6hFofVKKZZBUObe6j_DX_dCL9oDDaxDIPX2W4RVl9vbSR3BfVTwuap2Soy0ac"/>
+</div>
+<span class="text-[11px] font-semibold text-outline">Marcus</span>
+</div>
+<span class="text-[11px] text-outline">刚刚</span>
+</div>
+</div>
+</div>
+<!-- Product Card 7 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+<div class="relative h-56 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="vintage bicycle leaning against an ivory colored wall in soft morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwCncQgfXwApYeB8Iy0MaD-TSUKr0tk9GTe5Tl5IYZwsVtFjlycqksNb_xGNqtePDuwG1MStGDrC_9lUBsPH3sIWbki4NlsQiqjMdqd0faA8EPM1qEo79Gp5kwNr1vZ8CLDSREfmHkcNHvUjKBEeJ70aSM5Auk_AdbQFEnEgCiG5nu9F_sB5UMtAM3b2KNNj72XpeLNJftoNhbq5VdIGEFZjInx1q5CzIgp4IUR6JWOuGlHGVqBPdrkP8KKLw_dQAQqmH7vO6jAyA"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>
+</div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold rounded-sm uppercase tracking-tighter">使用中</span>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-on-surface line-clamp-1">校园代步自行车</h3>
+<span class="text-primary font-bold text-lg leading-none">$50</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[14px] text-outline">location_on</span>
+<span class="text-xs text-on-surface-variant font-medium">体育中心</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional portrait of young woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3lVlFupt4OvlD-gZFHhlt0IOf_HhBzuU_EwHYIL8SX1LYPzg4KfV0Hrp38pgpwJ7j-8S_110ISxQrIE7No_tLwAW_GX16xU8Z3FBln8YnQR_hZZAM80uJHk5PPx-PxC49aYgFr7seKTRIRoVmtceZaipGX3xrQsNzcuR5opxX2ikzTnaQmUs3GrCEYrh5K2kV2ROn6-gIbHiH9crcuREh8VnAcLw2NRDsLq6y_4TdsgnKJhkMDa37lgDkzA_QhutD9xgiKMKVT44"/>
+</div>
+<span class="text-[11px] font-semibold text-outline">Lena V.</span>
+</div>
+<span class="text-[11px] text-outline">4 天前</span>
+</div>
+</div>
+</div>
+<!-- Product Card 8 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+<div class="relative h-56 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="sleek professional microscope in a bright scientific laboratory setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLQJD3UVmOVAj73RTeeGN2z-Ets2yfs_a7A17cwPKJ_VrIgWrmrO_rYTLadmeLIzZYcbSAppCjEiG2LxrM9imI_YW3x8kzYBxUoefDTibzN5kBnFd3X9IVhlPoCRvchg0rSnX8-FgmG1oZXw6ZgfTD0WPfZoMpxirWs0ggzXRPM-3Qw70Pnl9MKpNWaJfuyxlqkcf40g7XAhgLrvBqRqe-ob2JT8WJarel3Wy-ewWWJ8wb34QYPxhwKh74HtVc9C8-0uViZiRnIvY"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>
+</div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-sm uppercase tracking-tighter">优秀</span>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-on-surface line-clamp-1">便携式实验室显微镜</h3>
+<span class="text-primary font-bold text-lg leading-none">$190</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[14px] text-outline">location_on</span>
+<span class="text-xs text-on-surface-variant font-medium">科学楼 A</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional student female portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCE3FFSVu8EvB5yMIF6XrHOrgpiDzXkfVD_RYoFSq7SH76gGitJCd2WDVLpdOoUe28u_A1V2bJYpO8GCoo9OhtU7v3PxdpJwbVz2LJOk1Fr-ivO8YZVVbUBzfaXiw0ohgc2asMuWTzcqXQDeisAomU9cT2nKvxEc673c_D_CnHGyw2G3J9WRYePCby3NvfYY16j_mP3MOn_CoVMJSw62525PinyGr7eDA0ZRlZdVTcEo9tCSinPwFgTxBB4mkhYTjitA3egTXlBLp8"/>
+</div>
+<span class="text-[11px] font-semibold text-outline">Chloe M.</span>
+</div>
+<span class="text-[11px] text-outline">1 周前</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-16 flex justify-center">
+<div class="flex items-center gap-1 bg-surface-container-lowest p-1 rounded-lg ring-1 ring-outline-variant/20">
+<button class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-surface-container transition-colors text-outline">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md bg-primary text-on-primary font-bold text-sm">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-surface-container transition-colors font-semibold text-sm">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-surface-container transition-colors font-semibold text-sm">3</button>
+<span class="px-2 text-outline">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-surface-container transition-colors font-semibold text-sm">12</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-surface-container transition-colors text-outline">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-[#f8f9fa] dark:bg-slate-950 w-full py-12 px-6 mt-auto border-t border-slate-200 dark:border-slate-800">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col gap-2">
+<span class="font-['Manrope'] font-bold text-slate-900 dark:text-slate-100 text-lg uppercase tracking-wider">CampusShare</span>
+<p class="text-[10px] text-slate-500 font-['Inter'] uppercase tracking-widest leading-loose">© 2024 CampusShare 校园交易市场。保留所有权利。</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8 font-['Inter'] text-xs uppercase tracking-widest">
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#005d90] dark:hover:text-sky-400 transition-colors opacity-80 hover:opacity-100" href="#">隐私政策</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#005d90] dark:hover:text-sky-400 transition-colors opacity-80 hover:opacity-100" href="#">服务条款</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#005d90] dark:hover:text-sky-400 transition-colors opacity-80 hover:opacity-100" href="#">支持帮助</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#005d90] dark:hover:text-sky-400 transition-colors opacity-80 hover:opacity-100" href="#">联系我们</a>
+</div>
+</div>
+</footer>
+</body></html>

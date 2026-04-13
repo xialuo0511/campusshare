@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CampusShare | 机构访问</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#f3f4f5",
+                      "surface-bright": "#f8f9fa",
+                      "surface": "#f8f9fa",
+                      "background": "#f8f9fa",
+                      "tertiary-fixed": "#d8e2ff",
+                      "on-primary-fixed": "#001d32",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-primary-container": "#f3f7ff",
+                      "error": "#ba1a1a",
+                      "tertiary-fixed-dim": "#aec6ff",
+                      "on-primary-fixed-variant": "#004b74",
+                      "on-secondary-fixed-variant": "#004e5b",
+                      "secondary": "#006878",
+                      "inverse-on-surface": "#f0f1f2",
+                      "surface-tint": "#006399",
+                      "tertiary-container": "#4770be",
+                      "error-container": "#ffdad6",
+                      "outline": "#707881",
+                      "on-tertiary-fixed-variant": "#0f4490",
+                      "primary-fixed-dim": "#94ccff",
+                      "on-secondary-fixed": "#001f25",
+                      "on-surface-variant": "#404850",
+                      "secondary-container": "#69e5ff",
+                      "surface-container-high": "#e7e8e9",
+                      "secondary-fixed-dim": "#58d6f1",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed": "#001a42",
+                      "primary-container": "#0077b6",
+                      "surface-container": "#edeeef",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary": "#2b57a4",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#cde5ff",
+                      "on-error-container": "#93000a",
+                      "on-secondary-container": "#006575",
+                      "surface-variant": "#e1e3e4",
+                      "on-tertiary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#bfc7d1",
+                      "on-surface": "#191c1d",
+                      "primary": "#005d90",
+                      "surface-dim": "#d9dadb",
+                      "secondary-fixed": "#a7edff",
+                      "on-tertiary-container": "#f7f7ff",
+                      "inverse-surface": "#2e3132",
+                      "inverse-primary": "#94ccff",
+                      "on-background": "#191c1d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .headline-font { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-pattern {
+            background-color: #f8f9fa;
+            background-image: radial-gradient(#bfc7d1 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen flex flex-col">
+<main class="flex-grow flex items-center justify-center px-4 py-12">
+<div class="w-full max-w-[480px] bg-surface-container-lowest rounded-xl shadow-[0_24px_48px_-12px_rgba(25,28,29,0.08)] overflow-hidden">
+<div class="p-8 pb-4 text-center">
+<h1 class="headline-font text-3xl font-extrabold tracking-tighter text-primary mb-2">CampusShare</h1>
+<p class="text-on-surface-variant font-body text-sm">访问机构在线市场</p>
+</div>
+<div class="flex px-8 border-b border-surface-container">
+<button class="flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-colors">
+                    登录
+                </button>
+<button class="flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary">
+                    注册
+                </button>
+</div>
+<div class="p-8 space-y-6">
+<form class="space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1 md:col-span-2">
+<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">账号</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">person</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="用户名" type="text"/>
+</div>
+</div>
+<div class="space-y-1 md:col-span-2">
+<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">密码</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">lock</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div class="space-y-1 md:col-span-2">
+<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">显示名称</label>
+<input class="w-full px-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="例如：张三 教授" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">学院</label>
+<select class="w-full px-3 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm appearance-none">
+<option>工程学院</option>
+<option>理学院</option>
+<option>人文艺术学院</option>
+<option>商学院</option>
+<option>医学院</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">年级</label>
+<select class="w-full px-3 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm appearance-none">
+<option>教师</option>
+<option>教职工</option>
+<option>博士生</option>
+<option>博士后</option>
+<option>本科生</option>
+</select>
+</div>
+<div class="space-y-1 md:col-span-2">
+<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">联系方式</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">alternate_email</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="institutional.email@campus.edu" type="email"/>
+</div>
+</div>
+</div>
+<div class="pt-4">
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-semibold headline-font text-sm shadow-sm hover:bg-primary-container transition-colors active:scale-[0.98] duration-150" type="submit">
+                            创建账号
+                        </button>
+</div>
+<div class="flex items-center gap-4 py-2">
+<div class="h-[1px] flex-grow bg-surface-container-high"></div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">安全网关</span>
+<div class="h-[1px] flex-grow bg-surface-container-high"></div>
+</div>
+<div class="flex justify-center gap-6">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-base">shield</span>
+<span class="text-[11px] font-medium">SSL 加密</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-base">verified_user</span>
+<span class="text-[11px] font-medium">仅限认证域名</span>
+</div>
+</div>
+</form>
+</div>
+<div class="bg-surface-container-low p-6 text-center">
+<p class="text-xs text-on-surface-variant">
+                    访问本门户即表示您同意
+                    <a class="text-primary font-semibold underline underline-offset-2" href="#">机构条款</a>
+</p>
+</div>
+</div>
+</main>
+<footer class="w-full py-12 px-6 mt-auto bg-surface-bright border-t border-slate-200">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="font-['Manrope'] font-bold text-slate-900">CampusShare</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">隐私政策</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">服务条款</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">机构品牌</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">支持</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">联系我们</a>
+</div>
+<div class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500">
+                © 2024 CampusShare 机构在线市场。保留所有权利。
+            </div>
+</div>
+</footer>
+</body></html>

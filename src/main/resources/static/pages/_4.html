@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CampusShare | 高性能研究工作站</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f4f5",
+                    "surface-bright": "#f8f9fa",
+                    "surface": "#f8f9fa",
+                    "background": "#f8f9fa",
+                    "tertiary-fixed": "#d8e2ff",
+                    "on-primary-fixed": "#001d32",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-primary-container": "#f3f7ff",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#aec6ff",
+                    "on-primary-fixed-variant": "#004b74",
+                    "on-secondary-fixed-variant": "#004e5b",
+                    "secondary": "#006878",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-tint": "#006399",
+                    "tertiary-container": "#4770be",
+                    "error-container": "#ffdad6",
+                    "outline": "#707881",
+                    "on-tertiary-fixed-variant": "#0f4490",
+                    "primary-fixed-dim": "#94ccff",
+                    "on-secondary-fixed": "#001f25",
+                    "on-surface-variant": "#404850",
+                    "secondary-container": "#69e5ff",
+                    "surface-container-high": "#e7e8e9",
+                    "secondary-fixed-dim": "#58d6f1",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#001a42",
+                    "primary-container": "#0077b6",
+                    "surface-container": "#edeeef",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#2b57a4",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#cde5ff",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#006575",
+                    "surface-variant": "#e1e3e4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "outline-variant": "#bfc7d1",
+                    "on-surface": "#191c1d",
+                    "primary": "#005d90",
+                    "surface-dim": "#d9dadb",
+                    "secondary-fixed": "#a7edff",
+                    "on-tertiary-container": "#f7f7ff",
+                    "inverse-surface": "#2e3132",
+                    "inverse-primary": "#94ccff",
+                    "on-background": "#191c1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; color: #191c1d; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<nav class="bg-[#f8f9fa] dark:bg-slate-950 docked full-width top-0 z-50">
+<div class="flex justify-between items-center w-full px-6 py-3 max-w-[1440px] mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500 font-headline">CampusShare</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1 font-['Manrope'] text-sm tracking-wide" href="#">交易市场</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" href="#">资源</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" href="#">论坛</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-primary" placeholder="搜索校园资源..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-lg font-bold text-sm scale-95 active:scale-100 duration-150">发布</button>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined p-2 text-slate-600 cursor-pointer">notifications</span>
+<span class="material-symbols-outlined p-2 text-slate-600 cursor-pointer">account_circle</span>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-[1440px] mx-auto px-6 py-8">
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-2 text-label-md text-outline mb-6">
+<a class="hover:text-primary" href="#">交易市场</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<a class="hover:text-primary" href="#">电子产品</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-on-surface font-medium">Research Station Z-100</span>
+</nav>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left Side: Gallery -->
+<div class="lg:col-span-7 flex flex-col gap-4">
+<div class="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-container shadow-sm group">
+<img class="w-full h-full object-cover" data-alt="high-end professional computer workstation with triple monitor setup in a clean brightly lit university lab setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3yhnXPUnPHie4dHyvipdakw-fjM0hlLlUDSaIlSP8Hja6drUE2b8NtlpYos3OkAjPcwgAGo4x-y-pHnz0B1V2jqcSeLqaiAVBQjv_9XPOfkID15-lUYyuTLGXMAPZFmeWbfj0mjiK-2mAiSesNx_nRsCmbVcHoN34gVT0R38s2mlNgDNbOFJ9rY1GRGm37POA4HuJmVO1ycLuh4CeEkdzvFtrciEJsu7BtkkVjWL1ehaiQXYqSu1JfhnyhodsixwAvG0HCGnU2SY"/>
+<button class="absolute left-4 top-1/2 -translate-y-1/2 bg-surface-container-lowest/80 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 bg-surface-container-lowest/80 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-5 gap-3">
+<div class="aspect-square rounded-lg border-2 border-primary overflow-hidden cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="front view of high-performance desktop pc tower with transparent side panel showing glowing components" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqbaYe1AwU9nyUcxBBn4rXQxhVljUOsZleyXGBXXfGQVIm2pjwXXJqIylVthqzpwK0AoH2knu61HPn2G_SD0dWonwWunN0ZmiCyoivfGHas5ZVukgWXzf4-EjD908aMjTMajaFJjNWVz-pVvQFCNK6f-w7DmnlyTlID7xD0nhzNylm-gLzHlJQmOwUH7jxx0ccHbPGogyrqsRYODv9prfZ7OUypmrzPhoI_akwPALypGTojZ8kX-oQgjeZ5soqUeEPCtGgLI-Yzy4"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-outline-variant transition-all">
+<img class="w-full h-full object-cover" data-alt="close up of premium mechanical keyboard with subtle white backlight on a wooden desk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRRMwWLUVGjTx7vUoygj-lbpleK3eh8bRCQqHxkkfaVZXpPxoEPzmYw6NqA0Tj3KhFsJBayFeHL5qQxiTECRJfUuO9OYcd-ln3mXcETCdXLZqpSZEAzv12uBwIcEqMGFW4CTWLcjYAffMLrrgf85AaNhb0h4BrG5EsEOeM5Qobcfibwzuw65vXNorR1w4EUXJF78xoZ9dqSN7RJX8X0p-aVe6pq-_YswvcL9I9JIy_tf4Us2b9YTDk0O_zDZ3xOLALxpn7GOKk8kM"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-outline-variant transition-all">
+<img class="w-full h-full object-cover" data-alt="high resolution monitor displaying complex engineering schematics in a dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNkarXA40Rg-cmuH2TJ8p0_c1u5nqzlwJFEfAAMdQjW68Qu5OFF9ImsXealt5eiL6X35sDDgGk1Ez8YuSzCVROWmQVZTqs4aKQ-ySFGCP9fRFcjf-2QwM9fAwSCfpJZ0ad1fwdnY_kAT0zlZwt_MzUtJn_oBzw5SB70rW6BFiVtzgVPoFGtJtRrhjQDhGCHbKRSxRN1AjJ8YqlP_rZ6j5lQU4ZDCzJT6f2UJIDiEtKHMbbzrIkvBKvcRcenQOzGf9TOM4VYqBDRic"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-outline-variant transition-all">
+<img class="w-full h-full object-cover" data-alt="top down view of organized workstation with technical diagrams and university stationery" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApwtLYs1US9jrjptm0m2YY1825oAICPIgXBj0_tQKeK54hKrSmowr9V4_U7DrpDmuNCn0_Ye8x4Sp67TWua-_5syIzULgJOFLUpvw6HTEaIT_cgr-wZwp9dFwVfbXhK-XlOz7ldqJ2rXjlqhKjb-OJ0paBB3JE2k8KcVp6vL_tzeqsSKI5rcO04m5TxR-enC7K-rUQ2hzpUZJvQy-_0JmC3RLJiH7d27A-V7iK7HeSk5fOXQfEfcgQcBLMVkiOCrnloZ9Yc5ioy6E"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden cursor-pointer relative">
+<img class="w-full h-full object-cover opacity-40" data-alt="aesthetic lifestyle shot of laptop and coffee on a library desk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuENkHUndy_k4dX6NRB4CECSsNkJ80YgkjalfIyeiY8QrZAtsTQiuFAtipy2BQcZVxiJ98X8zIMJ8GTSxKP06UN_8TfCmxyvOzaEDk4YjNinoi4wGeXMAvtOoC0PeoGXrW2h0YD4HSAGsn1pt9sVJgsg-gxEd140sXDl55DJYcwl2fy3PuRX6jKWpCo8DKWDWeQfV8VkqninqpdiAf0t2xg76qVWkKRM9EwsvRq5ManNvITy-x5JNVHSF8eZFN9Ywa2nIULhtlv_8"/>
+<div class="absolute inset-0 flex items-center justify-center font-bold text-on-surface">+3</div>
+</div>
+</div>
+</div>
+<!-- Right Side: Info Panel -->
+<div class="lg:col-span-5 flex flex-col gap-8">
+<section class="flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase tracking-widest text-secondary font-bold">工程部</span>
+<h1 class="text-3xl font-extrabold text-on-surface leading-tight">专业研究工作站 Z-100 (全套组件)</h1>
+</div>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors text-outline">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">favorite</span>
+</button>
+</div>
+<div class="flex items-center gap-4">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter">状态极佳</span>
+<div class="flex items-center gap-1 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>主校区科技图书馆 (南翼)</span>
+</div>
+</div>
+<div class="py-6 border-y border-surface-container">
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-extrabold text-primary">$1,249.00</span>
+<span class="text-outline text-sm line-through">$1,850.00</span>
+</div>
+<p class="text-sm text-outline mt-1 italic">持有效证件的研究生可议价</p>
+</div>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-primary text-on-primary py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined">shopping_cart</span>
+                            下单
+                        </button>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center gap-2 py-3 border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined">chat</span>
+                                联系卖家
+                            </button>
+<button class="flex items-center justify-center gap-2 py-3 bg-surface-container-low text-on-surface-variant rounded-xl font-bold hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">share</span>
+                                分享发布
+                            </button>
+</div>
+</div>
+</section>
+<!-- Seller Info Section -->
+<section class="bg-surface-container-lowest p-6 rounded-xl border border-transparent shadow-sm">
+<h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+                        机构公信力
+                    </h3>
+<div class="flex items-center gap-4 mb-4">
+<div class="w-14 h-14 rounded-full bg-tertiary-fixed-dim overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a male university professor in business casual attire smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnd8o3yzQlUIc1R73thVF9deZHYXHZlQPhdBFkwa44PBPeTUiazoOR5k8ra9rlhrfoD6tPjnJKKkzR92PC04ytk_Oe6VL0IW1MxWGnpb2YbfjVxVg-MJe0856VKV3q8ypKi-hcG3DWMxaeHWmqunUg0c8ViNy6-IwlLFgM2Zx2vQihedA8IQ1xftT79DogLfELEGtQlv-n2ElRt3-z_6f4_HmOu98p83ymTIw-kL9Qoa6ctI7eCv8NHmSEpobz5BWgz28Yxn200YE"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Julian Sterling 博士</span>
+<span class="text-xs text-outline">博士后研究员 • 加入 CampusShare 4年</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4 border-t border-surface-container pt-4">
+<div class="flex flex-col items-center">
+<span class="text-xl font-bold text-primary">4.9</span>
+<span class="text-[10px] uppercase text-outline font-bold">评分</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-xl font-bold text-primary">28</span>
+<span class="text-[10px] uppercase text-outline font-bold">交易次数</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-xl font-bold text-primary">98%</span>
+<span class="text-[10px] uppercase text-outline font-bold">响应率</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Tabs Section -->
+<div class="mt-16 border-b border-surface-container flex gap-12">
+<button class="pb-4 border-b-2 border-primary font-bold text-primary">技术规格</button>
+<button class="pb-4 text-outline font-medium hover:text-on-surface transition-colors">描述</button>
+<button class="pb-4 text-outline font-medium hover:text-on-surface transition-colors">评价 (14)</button>
+<button class="pb-4 text-outline font-medium hover:text-on-surface transition-colors">政策</button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-8">
+<!-- Detailed Description -->
+<div class="lg:col-span-2 flex flex-col gap-8">
+<article class="prose prose-slate max-w-none">
+<h2 class="text-2xl font-bold text-on-surface mb-4">卓越性能，助力学术探索</h2>
+<p class="text-on-surface-variant leading-relaxed text-body-lg">
+                        于 2023 年第三季度购入，用于一项已结项的量子计算模拟项目。该 Z-100 研究工作站维护得当，配置了专门用于大规模数据处理和建筑渲染的高性能组件。
+                    </p>
+<p class="text-on-surface-variant leading-relaxed mt-4 text-body-lg">
+                        该工作站为“机构级”设备，采用企业级组件设计，支持 24/7 全天候运行。包含原装人体工程学工作站桌面支架和三显示器液压臂设置。
+                    </p>
+<div class="grid grid-cols-2 gap-4 mt-8">
+<div class="p-4 bg-surface-container-low rounded-lg">
+<span class="text-xs font-bold text-outline uppercase block mb-1">处理器</span>
+<span class="font-semibold text-on-surface">Threadripper PRO 5945WX</span>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg">
+<span class="text-xs font-bold text-outline uppercase block mb-1">内存</span>
+<span class="font-semibold text-on-surface">128GB ECC DDR4-3200</span>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg">
+<span class="text-xs font-bold text-outline uppercase block mb-1">显卡</span>
+<span class="font-semibold text-on-surface">NVIDIA RTX A5000 24GB</span>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg">
+<span class="text-xs font-bold text-outline uppercase block mb-1">存储</span>
+<span class="font-semibold text-on-surface">4TB NVMe Gen4 SSD</span>
+</div>
+</div>
+</article>
+<!-- Reviews -->
+<section class="mt-12">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-2xl font-bold">社区反馈</h2>
+<button class="text-primary font-bold text-sm">撰写评价</button>
+</div>
+<div class="flex flex-col gap-6">
+<div class="p-6 bg-surface-container-lowest rounded-xl border border-transparent hover:border-surface-container transition-all">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-bold text-outline">EM</div>
+<div>
+<div class="font-bold text-on-surface">Elena Markova</div>
+<div class="text-xs text-outline">认证买家 • 2周前</div>
+</div>
+</div>
+<div class="flex text-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm italic">"Sterling 博士是一位非常出色的卖家。设备的状况比描述的还要好，他甚至帮我把沉重的主机搬到了实验室。极高的信任度实至名归。"</p>
+</div>
+<div class="p-6 bg-surface-container-lowest rounded-xl border border-transparent hover:border-surface-container transition-all">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-bold text-outline">JW</div>
+<div>
+<div class="font-bold text-on-surface">James Wu</div>
+<div class="text-xs text-outline">研究生研究员 • 1个月前</div>
+</div>
+</div>
+<div class="flex text-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">star</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm">"交易顺利，沟通专业。产品性能完全符合我数据模型的需求。"</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Trade Location Sidebar -->
+<div class="flex flex-col gap-8">
+<section class="bg-surface-container-low p-6 rounded-xl">
+<h3 class="text-lg font-bold mb-4">验证地点</h3>
+<div class="aspect-video bg-surface-container rounded-lg mb-4 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="simplified digital map showing campus layout with a pin on the technical library" data-location="Chicago" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaaikyImjCzqYp_MtenWnXMG-QqFjYOdHA-uTw0R0SerkWc_JtB3Kc5v9BCRWoNy5DPKgSaWgoo2KNVX4JYQunfCHU5XQen2Ij_DufBdmje-dD_PDlCSMN7zkY1aRacNXJlcQQhLacRAeoCFugTFqms8xqqOWVEbilZ5qXHpSbiPmhmoO_-vFV45jcqMkDWO-gE5e9vCNEMjtC6Nr3chbtCue2jmDaREBk3X9e0YGI809Hfk0bo5LJwwHHxzDZQ3LusIxCgy4OcUs"/>
+<div class="absolute inset-0 bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+<p class="text-xs text-on-surface-variant mb-4">交易在学校指定的公共监控“交换区”进行，以确保最大程度的安全性。</p>
+<div class="flex items-center gap-2 p-3 bg-surface-container-lowest rounded-lg border border-outline-variant/20">
+<span class="material-symbols-outlined text-secondary">info</span>
+<span class="text-xs font-medium">安全交换区认证</span>
+</div>
+</section>
+<section class="border border-surface-container p-6 rounded-xl">
+<h3 class="text-lg font-bold mb-4">机构政策</h3>
+<ul class="flex flex-col gap-3">
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-outline text-lg">verified</span>
+<span>商品已通过 CampusShare 资产登记验证</span>
+</li>
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-outline text-lg">assignment_return</span>
+<span>技术缺陷 48 小时内退货期</span>
+</li>
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-outline text-lg">payments</span>
+<span>实物检查后第三方托管付款发放</span>
+</li>
+</ul>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f8f9fa] dark:bg-slate-950 w-full py-12 px-6 mt-20 border-t border-slate-200 dark:border-slate-800">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-['Manrope'] font-bold text-slate-900 dark:text-slate-100 text-lg">CampusShare</span>
+<p class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest text-center md:text-left">© 2024 CampusShare 机构市场。版权所有。</p>
+</div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">隐私政策</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">服务条款</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">机构品牌</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">支持</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">联系我们</a>
+</div>
+</div>
+</footer>
+</body></html>

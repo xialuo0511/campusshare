@@ -136,6 +136,46 @@
         return responseBody.data;
     }
 
+    /**
+     * multipart 请求入口
+     */
+    async function RequestMultipartApi(path, method, formData, needAuth) {
+        const headers = {
+            [REQUEST_ID_HEADER]: BuildRequestId()
+        };
+        if (needAuth) {
+            const token = GetAuthToken();
+            if (!token) {
+                throw new Error("请先登录后再操作");
+            }
+            headers[AUTH_TOKEN_HEADER] = token;
+        }
+
+        const response = await fetch(path, {
+            method,
+            headers,
+            body: formData
+        });
+
+        const responseText = await response.text();
+        let responseBody = null;
+        try {
+            responseBody = responseText ? JSON.parse(responseText) : null;
+        } catch (error) {
+            throw new Error("接口返回格式异常");
+        }
+        if (!response.ok) {
+            throw new Error(`请求失败(${response.status})`);
+        }
+        if (!responseBody || responseBody.code !== 0) {
+            const message = responseBody && responseBody.message
+                ? responseBody.message
+                : "请求失败";
+            throw new Error(message);
+        }
+        return responseBody.data;
+    }
+
     window.CampusShareApi = {
         GetAuthToken,
         SetAuthToken,
@@ -156,6 +196,11 @@
         },
         UploadMaterial(payload) {
             return RequestApi("/api/v1/materials", "POST", payload, true);
+        },
+        UploadMaterialFile(file) {
+            const formData = new FormData();
+            formData.append("file", file);
+            return RequestMultipartApi("/api/v1/materials/files/upload", "POST", formData, true);
         },
         ListMyOrders(pageNo, pageSize) {
             return RequestApi(`/api/v1/orders/my?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);

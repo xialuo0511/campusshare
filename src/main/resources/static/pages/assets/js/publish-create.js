@@ -2,10 +2,8 @@
  * 发布页面逻辑
  */
 (function InitPublishCreatePage() {
-    /** 资料业务默认文件类型 */
-    const DEFAULT_FILE_TYPE = "application/octet-stream";
-    /** 资料业务默认文件大小 */
-    const DEFAULT_FILE_SIZE_BYTES = 1024;
+    /** 文件选择限制 */
+    const MATERIAL_FILE_ACCEPT = ".jpg,.jpeg,.png,.pdf";
 
     /**
      * 绑定页面行为
@@ -24,6 +22,10 @@
         const priceInput = publishForm.querySelector("input[type='number']");
         const descriptionInput = publishForm.querySelector("textarea");
         const copyrightCheckbox = publishForm.querySelector("input[type='checkbox']");
+        const uploadPanel = publishForm.querySelector(".border-dashed");
+        const browseFileButton = uploadPanel ? uploadPanel.querySelector("button[type='button']") : null;
+        const uploadTipText = CreateUploadTip(uploadPanel);
+        const hiddenFileInput = BuildHiddenFileInput(publishForm);
 
         const messageBar = document.createElement("div");
         messageBar.className = "rounded-lg px-3 py-2 text-sm bg-surface-container-low text-on-surface-variant";
@@ -31,6 +33,8 @@
         publishForm.insertBefore(messageBar, publishForm.firstChild);
 
         let selectedCondition = "";
+        let uploadedFileMeta = null;
+        let isUploadingFile = false;
         const usableConditionButtons = Array.from(conditionButtons).slice(0, 3);
         usableConditionButtons.forEach(function BindConditionButton(button, index) {
             button.setAttribute("data-condition", String(index));
@@ -45,6 +49,22 @@
                 HideMessage(messageBar);
             });
         });
+        if (usableConditionButtons[0] && usableConditionButtons[0].textContent) {
+            selectedCondition = usableConditionButtons[0].textContent.trim();
+        }
+
+        if (browseFileButton && hiddenFileInput) {
+            browseFileButton.addEventListener("click", function HandleBrowseFile() {
+                hiddenFileInput.click();
+            });
+            hiddenFileInput.addEventListener("change", function HandleFileChange() {
+                const selectedFile = hiddenFileInput.files && hiddenFileInput.files[0]
+                    ? hiddenFileInput.files[0]
+                    : null;
+                UploadSelectedFile(selectedFile);
+            });
+        }
+        BindDropUpload(uploadPanel, hiddenFileInput, UploadSelectedFile);
 
         publishForm.addEventListener("submit", async function HandleSubmit(event) {
             event.preventDefault();
@@ -52,6 +72,9 @@
             submitButton.disabled = true;
             submitButton.classList.add("opacity-70");
             try {
+                if (isUploadingFile) {
+                    throw new Error("文件上传中，请稍后重试");
+                }
                 const materialPayload = BuildMaterialPayload(
                     titleInput,
                     categorySelect,
@@ -59,7 +82,8 @@
                     priceInput,
                     locationSelect,
                     descriptionInput,
-                    copyrightCheckbox
+                    copyrightCheckbox,
+                    uploadedFileMeta
                 );
                 const result = await window.CampusShareApi.UploadMaterial(materialPayload);
                 ShowSuccess(
@@ -67,7 +91,12 @@
                     `发布成功，资料ID：${result.materialId}，状态：${result.materialStatus}`
                 );
                 publishForm.reset();
-                selectedCondition = "";
+                selectedCondition = usableConditionButtons[0] && usableConditionButtons[0].textContent
+                    ? usableConditionButtons[0].textContent.trim()
+                    : "";
+                uploadedFileMeta = null;
+                SetUploadTip(uploadTipText, "尚未上传文件");
+                ResetConditionButtons(usableConditionButtons);
             } catch (error) {
                 ShowError(messageBar, error instanceof Error ? error.message : "发布失败，请稍后重试");
             } finally {
@@ -75,6 +104,43 @@
                 submitButton.classList.remove("opacity-70");
             }
         });
+
+        /**
+         * 上传选中文件
+         */
+        async function UploadSelectedFile(selectedFile) {
+            if (!selectedFile) {
+                return;
+            }
+            if (!window.CampusShareApi.GetAuthToken()) {
+                ShowError(messageBar, "请先登录后再上传文件");
+                return;
+            }
+            isUploadingFile = true;
+            submitButton.disabled = true;
+            submitButton.classList.add("opacity-70");
+            SetUploadTip(uploadTipText, `正在上传：${selectedFile.name}`);
+            try {
+                const uploadResult = await window.CampusShareApi.UploadMaterialFile(selectedFile);
+                uploadedFileMeta = uploadResult;
+                SetUploadTip(
+                    uploadTipText,
+                    `已上传：${uploadResult.fileName} (${FormatFileSize(uploadResult.fileSizeBytes)})`
+                );
+                HideMessage(messageBar);
+            } catch (error) {
+                uploadedFileMeta = null;
+                SetUploadTip(uploadTipText, "上传失败，请重试", true);
+                ShowError(messageBar, error instanceof Error ? error.message : "文件上传失败");
+            } finally {
+                isUploadingFile = false;
+                submitButton.disabled = false;
+                submitButton.classList.remove("opacity-70");
+                if (hiddenFileInput) {
+                    hiddenFileInput.value = "";
+                }
+            }
+        }
     }
 
     /**
@@ -87,8 +153,12 @@
         priceInput,
         locationSelect,
         descriptionInput,
-        copyrightCheckbox
+        copyrightCheckbox,
+        uploadedFileMeta
     ) {
+        if (!uploadedFileMeta || !uploadedFileMeta.fileId) {
+            throw new Error("请先上传资料文件");
+        }
         const courseName = titleInput && titleInput.value ? titleInput.value.trim() : "";
         const categoryText = categorySelect && categorySelect.value ? categorySelect.value.trim() : "";
         const locationText = locationSelect && locationSelect.value ? locationSelect.value.trim() : "";
@@ -117,11 +187,107 @@
             courseName,
             tags,
             description: mergedDescription,
-            fileId: `web-${Date.now()}`,
-            fileType: DEFAULT_FILE_TYPE,
-            fileSizeBytes: DEFAULT_FILE_SIZE_BYTES,
+            fileId: uploadedFileMeta.fileId,
+            fileType: uploadedFileMeta.fileType,
+            fileSizeBytes: uploadedFileMeta.fileSizeBytes,
             copyrightDeclared: !!(copyrightCheckbox && copyrightCheckbox.checked)
         };
+    }
+
+    /**
+     * 构建隐藏文件输入
+     */
+    function BuildHiddenFileInput(publishForm) {
+        if (!publishForm) {
+            return null;
+        }
+        const hiddenFileInput = document.createElement("input");
+        hiddenFileInput.type = "file";
+        hiddenFileInput.accept = MATERIAL_FILE_ACCEPT;
+        hiddenFileInput.style.display = "none";
+        publishForm.appendChild(hiddenFileInput);
+        return hiddenFileInput;
+    }
+
+    /**
+     * 创建上传提示
+     */
+    function CreateUploadTip(uploadPanel) {
+        if (!uploadPanel) {
+            return null;
+        }
+        const uploadTipText = document.createElement("p");
+        uploadTipText.className = "mt-3 text-xs text-slate-500";
+        uploadTipText.textContent = "尚未上传文件";
+        uploadPanel.appendChild(uploadTipText);
+        return uploadTipText;
+    }
+
+    /**
+     * 设置上传提示
+     */
+    function SetUploadTip(uploadTipText, tipText, isError) {
+        if (!uploadTipText) {
+            return;
+        }
+        uploadTipText.textContent = tipText;
+        if (isError) {
+            uploadTipText.className = "mt-3 text-xs text-red-600";
+            return;
+        }
+        uploadTipText.className = "mt-3 text-xs text-slate-500";
+    }
+
+    /**
+     * 绑定拖拽上传
+     */
+    function BindDropUpload(uploadPanel, hiddenFileInput, uploadFunction) {
+        if (!uploadPanel || !hiddenFileInput) {
+            return;
+        }
+        uploadPanel.addEventListener("dragover", function HandleDragOver(event) {
+            event.preventDefault();
+            uploadPanel.classList.add("border-primary", "bg-primary-container/10");
+        });
+        uploadPanel.addEventListener("dragleave", function HandleDragLeave() {
+            uploadPanel.classList.remove("border-primary", "bg-primary-container/10");
+        });
+        uploadPanel.addEventListener("drop", function HandleDrop(event) {
+            event.preventDefault();
+            uploadPanel.classList.remove("border-primary", "bg-primary-container/10");
+            const droppedFile = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]
+                ? event.dataTransfer.files[0]
+                : null;
+            uploadFunction(droppedFile);
+        });
+    }
+
+    /**
+     * 格式化文件大小
+     */
+    function FormatFileSize(fileSizeBytes) {
+        if (!fileSizeBytes || fileSizeBytes <= 0) {
+            return "0 KB";
+        }
+        if (fileSizeBytes >= 1024 * 1024) {
+            return `${(fileSizeBytes / (1024 * 1024)).toFixed(2)} MB`;
+        }
+        return `${(fileSizeBytes / 1024).toFixed(2)} KB`;
+    }
+
+    /**
+     * 重置新旧程度按钮样式
+     */
+    function ResetConditionButtons(usableConditionButtons) {
+        usableConditionButtons.forEach(function ResetConditionButtonStyle(button, index) {
+            if (index === 0) {
+                button.classList.remove("border-transparent", "bg-surface-container", "text-slate-600");
+                button.classList.add("border-primary", "bg-primary-container/10", "text-primary");
+                return;
+            }
+            button.classList.remove("border-primary", "bg-primary-container/10", "text-primary");
+            button.classList.add("border-transparent", "bg-surface-container", "text-slate-600");
+        });
     }
 
     /**
@@ -152,4 +318,3 @@
 
     document.addEventListener("DOMContentLoaded", BindPublishPage);
 })();
-

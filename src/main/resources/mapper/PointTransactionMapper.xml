@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.point.mapper.PointTransactionMapper">
+
+    <insert id="InsertPointTransaction"
+            parameterType="com.xialuo.campusshare.entity.PointTransactionEntity"
+            useGeneratedKeys="true"
+            keyProperty="transactionId"
+            keyColumn="transaction_id">
+        INSERT INTO point_transaction_info (
+            account_id,
+            user_id,
+            transaction_type,
+            change_amount,
+            balance_after_change,
+            transaction_remark,
+            source_biz_type,
+            source_biz_id,
+            transaction_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{accountId},
+            #{userId},
+            #{transactionType},
+            #{changeAmount},
+            #{balanceAfterChange},
+            #{transactionRemark},
+            #{sourceBizType},
+            #{sourceBizId},
+            #{transactionTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+</mapper>
+

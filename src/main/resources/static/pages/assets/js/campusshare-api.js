@@ -1,0 +1,97 @@
+/**
+ * CampusShare 页面接口封装
+ */
+(function InitCampusShareApi() {
+    const AUTH_TOKEN_STORAGE_KEY = "campusshare.authToken";
+    const REQUEST_ID_HEADER = "X-Request-Id";
+    const AUTH_TOKEN_HEADER = "X-Auth-Token";
+
+    /**
+     * 生成请求ID
+     */
+    function BuildRequestId() {
+        return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+    }
+
+    /**
+     * 读取令牌
+     */
+    function GetAuthToken() {
+        return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
+    }
+
+    /**
+     * 保存令牌
+     */
+    function SetAuthToken(token) {
+        if (!token) {
+            return;
+        }
+        window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+    }
+
+    /**
+     * 清理令牌
+     */
+    function ClearAuthToken() {
+        window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    }
+
+    /**
+     * 统一请求入口
+     */
+    async function RequestApi(path, method, payload, needAuth) {
+        const headers = {
+            "Content-Type": "application/json",
+            [REQUEST_ID_HEADER]: BuildRequestId()
+        };
+        if (needAuth) {
+            const token = GetAuthToken();
+            if (!token) {
+                throw new Error("请先登录后再操作");
+            }
+            headers[AUTH_TOKEN_HEADER] = token;
+        }
+
+        const response = await fetch(path, {
+            method,
+            headers,
+            body: payload ? JSON.stringify(payload) : undefined
+        });
+
+        const responseText = await response.text();
+        let responseBody = null;
+        try {
+            responseBody = responseText ? JSON.parse(responseText) : null;
+        } catch (error) {
+            throw new Error("接口返回格式异常");
+        }
+
+        if (!response.ok) {
+            throw new Error(`请求失败(${response.status})`);
+        }
+        if (!responseBody || responseBody.code !== 0) {
+            const message = responseBody && responseBody.message
+                ? responseBody.message
+                : "请求失败";
+            throw new Error(message);
+        }
+        return responseBody.data;
+    }
+
+    window.CampusShareApi = {
+        GetAuthToken,
+        SetAuthToken,
+        ClearAuthToken,
+        RegisterUser(payload) {
+            return RequestApi("/api/v1/users/register", "POST", payload, false);
+        },
+        LoginUser(payload) {
+            return RequestApi("/api/v1/users/login", "POST", payload, false);
+        },
+        UploadMaterial(payload) {
+            return RequestApi("/api/v1/materials", "POST", payload, true);
+        }
+    };
+})();
+

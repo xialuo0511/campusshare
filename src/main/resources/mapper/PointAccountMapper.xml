@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.point.mapper.PointAccountMapper">
+
+    <resultMap id="PointAccountResultMap" type="com.xialuo.campusshare.entity.PointAccountEntity">
+        <id column="account_id" property="accountId"/>
+        <result column="user_id" property="userId"/>
+        <result column="available_points" property="availablePoints"/>
+        <result column="total_earned_points" property="totalEarnedPoints"/>
+        <result column="total_consumed_points" property="totalConsumedPoints"/>
+        <result column="last_settlement_time" property="lastSettlementTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <insert id="InsertPointAccount"
+            parameterType="com.xialuo.campusshare.entity.PointAccountEntity"
+            useGeneratedKeys="true"
+            keyProperty="accountId"
+            keyColumn="account_id">
+        INSERT INTO point_account_info (
+            user_id,
+            available_points,
+            total_earned_points,
+            total_consumed_points,
+            last_settlement_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{userId},
+            #{availablePoints},
+            #{totalEarnedPoints},
+            #{totalConsumedPoints},
+            #{lastSettlementTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdatePointAccount" parameterType="com.xialuo.campusshare.entity.PointAccountEntity">
+        UPDATE point_account_info
+        SET
+            available_points = #{availablePoints},
+            total_earned_points = #{totalEarnedPoints},
+            total_consumed_points = #{totalConsumedPoints},
+            last_settlement_time = #{lastSettlementTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE account_id = #{accountId}
+          AND deleted = 0
+    </update>
+
+    <select id="FindByUserIdForUpdate" resultMap="PointAccountResultMap">
+        SELECT
+            account_id,
+            user_id,
+            available_points,
+            total_earned_points,
+            total_consumed_points,
+            last_settlement_time,
+            create_time,
+            update_time,
+            deleted
+        FROM point_account_info
+        WHERE user_id = #{userId}
+          AND deleted = 0
+        LIMIT 1
+        FOR UPDATE
+    </select>
+</mapper>
+

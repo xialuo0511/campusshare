@@ -13,6 +13,7 @@ import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
 import com.xialuo.campusshare.module.material.mapper.StudyMaterialMapper;
 import com.xialuo.campusshare.module.material.service.MaterialService;
 import com.xialuo.campusshare.module.notification.service.NotificationService;
+import com.xialuo.campusshare.module.point.service.PointLedgerService;
 import com.xialuo.campusshare.module.user.mapper.UserMapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -43,15 +44,19 @@ public class MaterialServiceImpl implements MaterialService {
     private final UserMapper userMapper;
     /** 通知服务 */
     private final NotificationService notificationService;
+    /** 积分流水服务 */
+    private final PointLedgerService pointLedgerService;
 
     public MaterialServiceImpl(
         StudyMaterialMapper studyMaterialMapper,
         UserMapper userMapper,
-        NotificationService notificationService
+        NotificationService notificationService,
+        PointLedgerService pointLedgerService
     ) {
         this.studyMaterialMapper = studyMaterialMapper;
         this.userMapper = userMapper;
         this.notificationService = notificationService;
+        this.pointLedgerService = pointLedgerService;
     }
 
     @Override
@@ -130,14 +135,13 @@ public class MaterialServiceImpl implements MaterialService {
         if (!currentUserId.equals(materialEntity.GetUploaderUserId())) {
             deductedPoints = ResolveDownloadCostPoints(materialEntity);
             if (deductedPoints > 0) {
-                Integer updateRows = userMapper.DecreaseUserPointBalanceIfEnough(
+                pointLedgerService.RecordDownloadCost(
                     currentUserId,
                     deductedPoints,
-                    LocalDateTime.now()
+                    MATERIAL_BIZ_TYPE,
+                    materialEntity.GetMaterialId(),
+                    "资料下载扣减"
                 );
-                if (updateRows == null || updateRows <= 0) {
-                    throw new BusinessException(BizCodeEnum.POINT_BALANCE_INSUFFICIENT, "积分不足，无法下载资料");
-                }
             }
         }
 
@@ -191,10 +195,12 @@ public class MaterialServiceImpl implements MaterialService {
      */
     private void SendUploadNotifications(StudyMaterialEntity materialEntity, Long currentUserId) {
         if (materialEntity.GetMaterialStatus() == ResourceStatusEnum.PUBLISHED) {
-            userMapper.IncreaseUserPointBalance(
+            pointLedgerService.RecordUploadReward(
                 currentUserId,
                 MATERIAL_UPLOAD_REWARD_POINTS,
-                LocalDateTime.now()
+                MATERIAL_BIZ_TYPE,
+                materialEntity.GetMaterialId(),
+                "资料上传奖励"
             );
             notificationService.CreateNotification(
                 currentUserId,
@@ -353,3 +359,4 @@ public class MaterialServiceImpl implements MaterialService {
         return String.format(MATERIAL_FILE_ACCESS_URL_PATTERN, materialId, fileId);
     }
 }
+

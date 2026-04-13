@@ -16,6 +16,18 @@
         <result column="deleted" property="deleted"/>
     </resultMap>
 
+    <sql id="PointAccountColumns">
+        account_id,
+        user_id,
+        available_points,
+        total_earned_points,
+        total_consumed_points,
+        last_settlement_time,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
     <insert id="InsertPointAccount"
             parameterType="com.xialuo.campusshare.entity.PointAccountEntity"
             useGeneratedKeys="true"
@@ -55,17 +67,18 @@
           AND deleted = 0
     </update>
 
+    <select id="FindByUserId" resultMap="PointAccountResultMap">
+        SELECT
+            <include refid="PointAccountColumns"/>
+        FROM point_account_info
+        WHERE user_id = #{userId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
     <select id="FindByUserIdForUpdate" resultMap="PointAccountResultMap">
         SELECT
-            account_id,
-            user_id,
-            available_points,
-            total_earned_points,
-            total_consumed_points,
-            last_settlement_time,
-            create_time,
-            update_time,
-            deleted
+            <include refid="PointAccountColumns"/>
         FROM point_account_info
         WHERE user_id = #{userId}
           AND deleted = 0

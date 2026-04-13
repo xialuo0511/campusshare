@@ -87,6 +87,14 @@
     }
 
     /**
+     * 清理登录会话信息
+     */
+    function ClearSession() {
+        ClearAuthToken();
+        ClearCurrentUserProfile();
+    }
+
+    /**
      * 统一请求入口
      */
     async function RequestApi(path, method, payload, needAuth) {
@@ -136,6 +144,7 @@
         SetCurrentUserProfile,
         ClearCurrentUserProfile,
         SetSessionFromLogin,
+        ClearSession,
         RegisterUser(payload) {
             return RequestApi("/api/v1/users/register", "POST", payload, false);
         },
@@ -162,6 +171,9 @@
         },
         CloseOrder(orderId, closeReason) {
             return RequestApi(`/api/v1/orders/${orderId}/close`, "POST", { closeReason }, true);
+        },
+        ListPointLedger(pageNo, pageSize) {
+            return RequestApi(`/api/v1/points/ledger?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
         }
     };
 })();

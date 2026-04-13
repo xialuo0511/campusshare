@@ -4,6 +4,7 @@
 (function InitOrderCenterPage() {
     const DEFAULT_PAGE_NO = 1;
     const DEFAULT_PAGE_SIZE = 10;
+    const LEDGER_PREVIEW_SIZE = 5;
 
     const STATUS_TEXT_MAP = {
         PENDING_SELLER_CONFIRM: "待卖家确认",
@@ -26,7 +27,8 @@
         const summaryNumberList = document.querySelectorAll("main .grid p.text-3xl");
         const filterButtonList = document.querySelectorAll(".px-6.py-4.border-b button");
         const paginationText = document.querySelector(".bg-surface-container-low p.text-xs");
-        if (!tableBody || summaryNumberList.length < 4) {
+        const historyCard = document.querySelector("main .bg-surface-container-lowest.rounded-xl.shadow-sm.overflow-hidden");
+        if (!tableBody || summaryNumberList.length < 4 || !historyCard) {
             return;
         }
 
@@ -36,7 +38,10 @@
         const messageBar = document.createElement("div");
         messageBar.className = "rounded-lg px-3 py-2 text-sm bg-surface-container-low text-on-surface-variant mb-4";
         messageBar.style.display = "none";
-        tableBody.parentElement.parentElement.insertBefore(messageBar, tableBody.parentElement);
+        historyCard.parentElement.insertBefore(messageBar, historyCard);
+
+        const pointPanel = BuildPointPanel();
+        historyCard.insertAdjacentElement("afterend", pointPanel.panel);
 
         if (!window.CampusShareApi.GetAuthToken()) {
             ShowError(messageBar, "请先登录后再查看订单中心");
@@ -86,6 +91,7 @@
                     return;
                 }
                 await LoadOrderList(state, currentUserId, summaryNumberList, tableBody, paginationText, messageBar);
+                await LoadPointLedger(pointPanel, summaryNumberList, messageBar);
             } catch (error) {
                 ShowError(messageBar, error instanceof Error ? error.message : "订单操作失败");
             } finally {
@@ -94,6 +100,92 @@
         });
 
         LoadOrderList(state, currentUserId, summaryNumberList, tableBody, paginationText, messageBar);
+        LoadPointLedger(pointPanel, summaryNumberList, messageBar);
+    }
+
+    /**
+     * 加载积分流水
+     */
+    async function LoadPointLedger(pointPanel, summaryNumberList, messageBar) {
+        try {
+            const ledgerResult = await window.CampusShareApi.ListPointLedger(DEFAULT_PAGE_NO, LEDGER_PREVIEW_SIZE);
+            RenderPointSummary(summaryNumberList, ledgerResult);
+            RenderPointLedgerList(pointPanel, ledgerResult);
+        } catch (error) {
+            ShowError(messageBar, error instanceof Error ? error.message : "积分流水加载失败");
+        }
+    }
+
+    /**
+     * 构建积分面板
+     */
+    function BuildPointPanel() {
+        const panel = document.createElement("section");
+        panel.className = "bg-surface-container-lowest rounded-xl shadow-sm p-6 mt-8";
+        panel.innerHTML = [
+            "<div class=\"flex items-center justify-between mb-4\">",
+            "<h3 class=\"text-lg font-bold text-on-surface\">最近积分流水</h3>",
+            "<span class=\"text-xs text-slate-500\">最近 5 条</span>",
+            "</div>",
+            "<div class=\"overflow-x-auto\">",
+            "<table class=\"w-full text-left border-collapse\">",
+            "<thead><tr class=\"bg-surface-container-low/50\">",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">时间</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">类型</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">变动</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">余额</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">备注</th>",
+            "</tr></thead>",
+            "<tbody class=\"divide-y divide-surface-container\"></tbody>",
+            "</table>",
+            "</div>"
+        ].join("");
+        const listBody = panel.querySelector("tbody");
+        return { panel, listBody };
+    }
+
+    /**
+     * 渲染积分摘要
+     */
+    function RenderPointSummary(summaryNumberList, ledgerResult) {
+        summaryNumberList[3].textContent = `${SafeNumber(ledgerResult.availablePoints)}`;
+
+        const summaryCardList = document.querySelectorAll("main .max-w-6xl > .grid > div");
+        if (summaryCardList.length < 4) {
+            return;
+        }
+        const pointCard = summaryCardList[3];
+        const labelNode = pointCard.querySelector("p.text-xs");
+        const helperNode = pointCard.querySelector("div.text-xs");
+        if (labelNode) {
+            labelNode.textContent = "当前积分";
+        }
+        if (helperNode) {
+            helperNode.className = "mt-2 text-xs text-slate-500 font-medium";
+            helperNode.textContent = `累计获得 ${SafeNumber(ledgerResult.totalEarnedPoints)} / 累计消耗 ${SafeNumber(ledgerResult.totalConsumedPoints)}`;
+        }
+    }
+
+    /**
+     * 渲染积分流水列表
+     */
+    function RenderPointLedgerList(pointPanel, ledgerResult) {
+        const transactionList = Array.isArray(ledgerResult.transactionList) ? ledgerResult.transactionList : [];
+        if (transactionList.length === 0) {
+            pointPanel.listBody.innerHTML = "<tr><td colspan=\"5\" class=\"px-4 py-6 text-sm text-slate-400 text-center\">暂无积分流水</td></tr>";
+            return;
+        }
+        pointPanel.listBody.innerHTML = transactionList.map(function BuildLedgerRow(item) {
+            return [
+                "<tr class=\"hover:bg-surface-container-low transition-colors\">",
+                `<td class="px-4 py-3 text-xs text-slate-500">${EscapeHtml(FormatTime(item.transactionTime))}</td>`,
+                `<td class="px-4 py-3 text-xs text-on-surface">${EscapeHtml(FormatTransactionType(item.transactionType))}</td>`,
+                `<td class="px-4 py-3 text-xs text-right ${ResolvePointChangeClass(item.changeAmount)}">${EscapeHtml(FormatChangeAmount(item.changeAmount))}</td>`,
+                `<td class="px-4 py-3 text-xs text-right text-on-surface">${EscapeHtml(String(SafeNumber(item.balanceAfterChange)))}</td>`,
+                `<td class="px-4 py-3 text-xs text-slate-500">${EscapeHtml(item.transactionRemark || "-")}</td>`,
+                "</tr>"
+            ].join("");
+        }).join("");
     }
 
     /**
@@ -151,7 +243,6 @@
         summaryNumberList[0].textContent = `${SafeNumber(listResult.totalCount)}`;
         summaryNumberList[1].textContent = `${SafeNumber(listResult.ongoingCount)}`;
         summaryNumberList[2].textContent = `${SafeNumber(listResult.completedCount)}`;
-        summaryNumberList[3].textContent = `${SafeNumber(listResult.canceledCount)}`;
     }
 
     /**
@@ -178,11 +269,7 @@
      */
     function RenderOrderTable(orderList, currentUserId, tableBody) {
         if (!orderList || orderList.length === 0) {
-            tableBody.innerHTML = [
-                "<tr>",
-                "<td colspan=\"7\" class=\"px-6 py-8 text-center text-sm text-slate-400\">暂无订单数据</td>",
-                "</tr>"
-            ].join("");
+            tableBody.innerHTML = "<tr><td colspan=\"7\" class=\"px-6 py-8 text-center text-sm text-slate-400\">暂无订单数据</td></tr>";
             return;
         }
 
@@ -194,14 +281,14 @@
 
             return [
                 "<tr class=\"hover:bg-surface-container-low transition-colors group\">",
-                `<td class=\"px-6 py-4 text-xs font-mono text-slate-500\">#${EscapeHtml(orderItem.orderNo || "")}</td>`,
-                `<td class=\"px-6 py-4\"><p class=\"text-sm font-bold text-on-surface\">商品ID: ${EscapeHtml(String(orderItem.productId || ""))}</p>`,
-                `<p class=\"text-[10px] text-slate-400\">交易地点: ${EscapeHtml(orderItem.tradeLocation || "-")}</p></td>`,
-                `<td class=\"px-6 py-4 text-sm text-on-surface\">${EscapeHtml(counterpartText)}</td>`,
-                `<td class=\"px-6 py-4 text-xs text-slate-500\">${EscapeHtml(FormatTime(orderItem.updateTime))}</td>`,
-                `<td class=\"px-6 py-4 text-sm font-bold text-on-surface text-right\">￥${EscapeHtml(FormatAmount(orderItem.orderAmount))}</td>`,
-                `<td class=\"px-6 py-4 text-center\"><span class=\"px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter ${statusClass}\">${EscapeHtml(statusText)}</span></td>`,
-                `<td class=\"px-6 py-4 text-right\">${actionButtons}</td>`,
+                `<td class="px-6 py-4 text-xs font-mono text-slate-500">#${EscapeHtml(orderItem.orderNo || "")}</td>`,
+                `<td class="px-6 py-4"><p class="text-sm font-bold text-on-surface">商品ID: ${EscapeHtml(String(orderItem.productId || ""))}</p>`,
+                `<p class="text-[10px] text-slate-400">交易地点: ${EscapeHtml(orderItem.tradeLocation || "-")}</p></td>`,
+                `<td class="px-6 py-4 text-sm text-on-surface">${EscapeHtml(counterpartText)}</td>`,
+                `<td class="px-6 py-4 text-xs text-slate-500">${EscapeHtml(FormatTime(orderItem.updateTime))}</td>`,
+                `<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">￥${EscapeHtml(FormatAmount(orderItem.orderAmount))}</td>`,
+                `<td class="px-6 py-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter ${statusClass}">${EscapeHtml(statusText)}</span></td>`,
+                `<td class="px-6 py-4 text-right">${actionButtons}</td>`,
                 "</tr>"
             ].join("");
         }).join("");
@@ -280,6 +367,46 @@
     }
 
     /**
+     * 解析积分变动样式
+     */
+    function ResolvePointChangeClass(changeAmount) {
+        if (Number(changeAmount) >= 0) {
+            return "text-green-700";
+        }
+        return "text-red-700";
+    }
+
+    /**
+     * 格式化积分变动
+     */
+    function FormatChangeAmount(changeAmount) {
+        const numericAmount = Number(changeAmount || 0);
+        if (numericAmount >= 0) {
+            return `+${numericAmount}`;
+        }
+        return `${numericAmount}`;
+    }
+
+    /**
+     * 格式化流水类型
+     */
+    function FormatTransactionType(transactionType) {
+        if (transactionType === "UPLOAD_REWARD") {
+            return "上传奖励";
+        }
+        if (transactionType === "DOWNLOAD_COST") {
+            return "下载扣减";
+        }
+        if (transactionType === "MANUAL_ADJUST") {
+            return "人工调整";
+        }
+        if (transactionType === "SYSTEM_COMPENSATE") {
+            return "系统补偿";
+        }
+        return transactionType || "-";
+    }
+
+    /**
      * 金额格式化
      */
     function FormatAmount(orderAmount) {
@@ -351,3 +478,4 @@
 
     document.addEventListener("DOMContentLoaded", BindOrderCenterPage);
 })();
+

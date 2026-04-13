@@ -10,6 +10,11 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface PointAccountMapper {
     /**
+     * 按用户ID查询积分账户
+     */
+    PointAccountEntity FindByUserId(@Param("userId") Long userId);
+
+    /**
      * 按用户ID查询积分账户并加锁
      */
     PointAccountEntity FindByUserIdForUpdate(@Param("userId") Long userId);

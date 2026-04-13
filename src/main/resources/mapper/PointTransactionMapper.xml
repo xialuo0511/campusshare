@@ -4,6 +4,22 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xialuo.campusshare.module.point.mapper.PointTransactionMapper">
 
+    <resultMap id="PointTransactionResultMap" type="com.xialuo.campusshare.entity.PointTransactionEntity">
+        <id column="transaction_id" property="transactionId"/>
+        <result column="account_id" property="accountId"/>
+        <result column="user_id" property="userId"/>
+        <result column="transaction_type" property="transactionType"/>
+        <result column="change_amount" property="changeAmount"/>
+        <result column="balance_after_change" property="balanceAfterChange"/>
+        <result column="transaction_remark" property="transactionRemark"/>
+        <result column="source_biz_type" property="sourceBizType"/>
+        <result column="source_biz_id" property="sourceBizId"/>
+        <result column="transaction_time" property="transactionTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
     <insert id="InsertPointTransaction"
             parameterType="com.xialuo.campusshare.entity.PointTransactionEntity"
             useGeneratedKeys="true"
@@ -37,5 +53,34 @@
             #{deleted}
         )
     </insert>
+
+    <select id="ListByUserId" resultMap="PointTransactionResultMap">
+        SELECT
+            transaction_id,
+            account_id,
+            user_id,
+            transaction_type,
+            change_amount,
+            balance_after_change,
+            transaction_remark,
+            source_biz_type,
+            source_biz_id,
+            transaction_time,
+            create_time,
+            update_time,
+            deleted
+        FROM point_transaction_info
+        WHERE user_id = #{userId}
+          AND deleted = 0
+        ORDER BY transaction_time DESC, transaction_id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="CountByUserId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM point_transaction_info
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </select>
 </mapper>
 

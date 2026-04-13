@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.team.mapper.TeamRecruitmentMapper">
+
+    <resultMap id="TeamRecruitmentResultMap" type="com.xialuo.campusshare.entity.TeamRecruitmentEntity">
+        <id column="recruitment_id" property="recruitmentId"/>
+        <result column="resource_id" property="resourceId"/>
+        <result column="publisher_user_id" property="publisherUserId"/>
+        <result column="event_name" property="eventName"/>
+        <result column="direction" property="direction"/>
+        <result column="skill_requirement" property="skillRequirement"/>
+        <result column="member_limit" property="memberLimit"/>
+        <result column="current_member_count" property="currentMemberCount"/>
+        <result column="recruitment_status" property="recruitmentStatus"/>
+        <result column="deadline" property="deadline"/>
+        <result column="close_time" property="closeTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="TeamRecruitmentColumns">
+        recruitment_id,
+        resource_id,
+        publisher_user_id,
+        event_name,
+        direction,
+        skill_requirement,
+        member_limit,
+        current_member_count,
+        recruitment_status,
+        deadline,
+        close_time,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <insert id="InsertRecruitment" parameterType="com.xialuo.campusshare.entity.TeamRecruitmentEntity" useGeneratedKeys="true" keyProperty="recruitmentId" keyColumn="recruitment_id">
+        INSERT INTO team_recruitment_info (
+            resource_id,
+            publisher_user_id,
+            event_name,
+            direction,
+            skill_requirement,
+            member_limit,
+            current_member_count,
+            recruitment_status,
+            deadline,
+            close_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{resourceId},
+            #{publisherUserId},
+            #{eventName},
+            #{direction},
+            #{skillRequirement},
+            #{memberLimit},
+            #{currentMemberCount},
+            #{recruitmentStatus},
+            #{deadline},
+            #{closeTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateRecruitment" parameterType="com.xialuo.campusshare.entity.TeamRecruitmentEntity">
+        UPDATE team_recruitment_info
+        SET
+            resource_id = #{resourceId},
+            publisher_user_id = #{publisherUserId},
+            event_name = #{eventName},
+            direction = #{direction},
+            skill_requirement = #{skillRequirement},
+            member_limit = #{memberLimit},
+            current_member_count = #{currentMemberCount},
+            recruitment_status = #{recruitmentStatus},
+            deadline = #{deadline},
+            close_time = #{closeTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE recruitment_id = #{recruitmentId}
+    </update>
+
+    <select id="FindRecruitmentById" resultMap="TeamRecruitmentResultMap">
+        SELECT
+            <include refid="TeamRecruitmentColumns"/>
+        FROM team_recruitment_info
+        WHERE recruitment_id = #{recruitmentId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="ListRecruitments" resultMap="TeamRecruitmentResultMap">
+        SELECT
+            <include refid="TeamRecruitmentColumns"/>
+        FROM team_recruitment_info
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (
+                event_name LIKE CONCAT('%', #{keyword}, '%')
+                OR direction LIKE CONCAT('%', #{keyword}, '%')
+                OR skill_requirement LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="direction != null and direction != ''">
+            AND direction = #{direction}
+        </if>
+        <if test="recruitmentStatus != null">
+            AND recruitment_status = #{recruitmentStatus}
+        </if>
+        ORDER BY
+            CASE recruitment_status
+                WHEN 'RECRUITING' THEN 1
+                WHEN 'FULL' THEN 2
+                WHEN 'CLOSED' THEN 3
+                WHEN 'EXPIRED' THEN 4
+                ELSE 99
+            END ASC,
+            deadline ASC,
+            create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="CountRecruitments" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM team_recruitment_info
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (
+                event_name LIKE CONCAT('%', #{keyword}, '%')
+                OR direction LIKE CONCAT('%', #{keyword}, '%')
+                OR skill_requirement LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="direction != null and direction != ''">
+            AND direction = #{direction}
+        </if>
+        <if test="recruitmentStatus != null">
+            AND recruitment_status = #{recruitmentStatus}
+        </if>
+    </select>
+
+    <select id="CountRecruitmentsByStatus" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM team_recruitment_info
+        WHERE deleted = 0
+          AND recruitment_status = #{recruitmentStatus}
+    </select>
+
+    <update id="MarkExpiredRecruitments">
+        UPDATE team_recruitment_info
+        SET
+            recruitment_status = 'EXPIRED',
+            update_time = #{updateTime}
+        WHERE deleted = 0
+          AND recruitment_status IN ('RECRUITING', 'FULL')
+          AND deadline &lt;= #{deadlineTime}
+    </update>
+
+    <update id="IncreaseCurrentMemberCount">
+        UPDATE team_recruitment_info
+        SET
+            current_member_count = current_member_count + 1,
+            recruitment_status = CASE
+                WHEN current_member_count + 1 &gt;= member_limit THEN 'FULL'
+                ELSE 'RECRUITING'
+            END,
+            update_time = #{updateTime}
+        WHERE recruitment_id = #{recruitmentId}
+          AND deleted = 0
+          AND recruitment_status = 'RECRUITING'
+          AND current_member_count &lt; member_limit
+    </update>
+</mapper>
+

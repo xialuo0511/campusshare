@@ -56,6 +56,18 @@ public enum BizCodeEnum {
     REGISTER_CODE_INVALID(1024, "注册验证码错误"),
     /** 注册验证码已过期 */
     REGISTER_CODE_EXPIRED(1025, "注册验证码已过期"),
+    /** 招募不存在 */
+    TEAM_RECRUITMENT_NOT_FOUND(1026, "招募不存在"),
+    /** 招募状态非法 */
+    TEAM_RECRUITMENT_STATUS_INVALID(1027, "招募状态非法"),
+    /** 招募无操作权限 */
+    TEAM_RECRUITMENT_PERMISSION_DENIED(1028, "招募无操作权限"),
+    /** 重复申请招募 */
+    TEAM_RECRUITMENT_APPLICATION_DUPLICATED(1029, "重复申请招募"),
+    /** 招募申请不存在 */
+    TEAM_RECRUITMENT_APPLICATION_NOT_FOUND(1030, "招募申请不存在"),
+    /** 招募申请状态非法 */
+    TEAM_RECRUITMENT_APPLICATION_STATUS_INVALID(1031, "招募申请状态非法"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

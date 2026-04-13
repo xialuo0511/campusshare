@@ -1,19 +1,19 @@
-package com.xialuo.campusshare.entity;
+package com.xialuo.campusshare.module.team.dto;
 
 import com.xialuo.campusshare.enums.TeamRecruitmentStatusEnum;
 import java.time.LocalDateTime;
 
 /**
- * 组队招募实体
+ * 组队招募摘要响应
  */
-public class TeamRecruitmentEntity extends BaseEntity {
+public class TeamRecruitmentSummaryResponseDto {
     /** 招募ID */
     private Long recruitmentId;
-    /** 关联资源ID */
-    private Long resourceId;
     /** 发起人ID */
     private Long publisherUserId;
-    /** 赛事或项目名 */
+    /** 发起人昵称 */
+    private String publisherDisplayName;
+    /** 赛事名称 */
     private String eventName;
     /** 方向 */
     private String direction;
@@ -27,8 +27,12 @@ public class TeamRecruitmentEntity extends BaseEntity {
     private TeamRecruitmentStatusEnum recruitmentStatus;
     /** 截止时间 */
     private LocalDateTime deadline;
-    /** 关闭时间 */
-    private LocalDateTime closeTime;
+    /** 创建时间 */
+    private LocalDateTime createTime;
+    /** 当前用户是否可申请 */
+    private Boolean canApply;
+    /** 当前用户是否已申请 */
+    private Boolean hasApplied;
 
     /**
      * 获取招募ID
@@ -45,20 +49,6 @@ public class TeamRecruitmentEntity extends BaseEntity {
     }
 
     /**
-     * 获取资源ID
-     */
-    public Long GetResourceId() {
-        return resourceId;
-    }
-
-    /**
-     * 设置资源ID
-     */
-    public void SetResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    /**
      * 获取发起人ID
      */
     public Long GetPublisherUserId() {
@@ -70,6 +60,20 @@ public class TeamRecruitmentEntity extends BaseEntity {
      */
     public void SetPublisherUserId(Long publisherUserId) {
         this.publisherUserId = publisherUserId;
+    }
+
+    /**
+     * 获取发起人昵称
+     */
+    public String GetPublisherDisplayName() {
+        return publisherDisplayName;
+    }
+
+    /**
+     * 设置发起人昵称
+     */
+    public void SetPublisherDisplayName(String publisherDisplayName) {
+        this.publisherDisplayName = publisherDisplayName;
     }
 
     /**
@@ -171,18 +175,45 @@ public class TeamRecruitmentEntity extends BaseEntity {
     }
 
     /**
-     * 获取关闭时间
+     * 获取创建时间
      */
-    public LocalDateTime GetCloseTime() {
-        return closeTime;
+    public LocalDateTime GetCreateTime() {
+        return createTime;
     }
 
     /**
-     * 设置关闭时间
+     * 设置创建时间
      */
-    public void SetCloseTime(LocalDateTime closeTime) {
-        this.closeTime = closeTime;
+    public void SetCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    /**
+     * 获取可申请标记
+     */
+    public Boolean GetCanApply() {
+        return canApply;
+    }
+
+    /**
+     * 设置可申请标记
+     */
+    public void SetCanApply(Boolean canApply) {
+        this.canApply = canApply;
+    }
+
+    /**
+     * 获取已申请标记
+     */
+    public Boolean GetHasApplied() {
+        return hasApplied;
+    }
+
+    /**
+     * 设置已申请标记
+     */
+    public void SetHasApplied(Boolean hasApplied) {
+        this.hasApplied = hasApplied;
     }
 }
-
 

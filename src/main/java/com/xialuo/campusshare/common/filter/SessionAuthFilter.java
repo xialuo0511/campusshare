@@ -12,6 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.regex.Pattern;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -32,6 +33,9 @@ public class SessionAuthFilter extends OncePerRequestFilter {
     public static final String CURRENT_USER_ROLE_ATTRIBUTE = "currentUserRole";
     /** 会话缓存前缀 */
     private static final String USER_SESSION_PREFIX = "campusshare:user:session:";
+    /** 招募详情公开路径 */
+    private static final Pattern TEAM_RECRUITMENT_DETAIL_PATH_PATTERN =
+        Pattern.compile("^/api/v1/team/recruitments/\\d+$");
 
     /** Redis模板 */
     private final StringRedisTemplate stringRedisTemplate;
@@ -58,7 +62,8 @@ public class SessionAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        if (IsPublicPath(requestPath)) {
+        if (IsPublicPath(request)) {
+            TryBindOptionalUserContext(request);
             filterChain.doFilter(request, response);
             return;
         }
@@ -69,23 +74,9 @@ public class SessionAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        String userIdText = stringRedisTemplate.opsForValue().get(USER_SESSION_PREFIX + token);
-        if (userIdText == null || userIdText.isBlank()) {
+        UserEntity userEntity = ResolveUserByToken(token);
+        if (userEntity == null) {
             WriteFailureResponse(response, request, BizCodeEnum.UNAUTHORIZED, "未登录或登录已失效");
-            return;
-        }
-
-        Long userId;
-        try {
-            userId = Long.parseLong(userIdText);
-        } catch (NumberFormatException exception) {
-            WriteFailureResponse(response, request, BizCodeEnum.UNAUTHORIZED, "会话数据异常");
-            return;
-        }
-
-        UserEntity userEntity = userMapper.FindUserById(userId);
-        if (userEntity == null || userEntity.GetUserStatus() != UserStatusEnum.ACTIVE) {
-            WriteFailureResponse(response, request, BizCodeEnum.UNAUTHORIZED, "账号状态异常");
             return;
         }
 
@@ -104,12 +95,61 @@ public class SessionAuthFilter extends OncePerRequestFilter {
     /**
      * 是否公开路径
      */
-    private boolean IsPublicPath(String requestPath) {
+    private boolean IsPublicPath(HttpServletRequest request) {
+        String requestPath = request.getRequestURI();
+        String requestMethod = request.getMethod();
         return "/api/v1/users/register".equals(requestPath)
             || "/api/v1/users/register/code/send".equals(requestPath)
             || "/api/v1/users/login".equals(requestPath)
             || requestPath.startsWith("/api/v1/products")
-            || requestPath.startsWith("/api/v1/market");
+            || requestPath.startsWith("/api/v1/market")
+            || (IsGetMethod(requestMethod)
+                && ("/api/v1/team/recruitments".equals(requestPath)
+                || TEAM_RECRUITMENT_DETAIL_PATH_PATTERN.matcher(requestPath).matches()));
+    }
+
+    /**
+     * 公开接口尝试绑定用户上下文
+     */
+    private void TryBindOptionalUserContext(HttpServletRequest request) {
+        String token = request.getHeader(AUTH_TOKEN_HEADER);
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        UserEntity userEntity = ResolveUserByToken(token);
+        if (userEntity == null) {
+            return;
+        }
+        request.setAttribute(CURRENT_USER_ID_ATTRIBUTE, userEntity.GetUserId());
+        request.setAttribute(CURRENT_USER_ROLE_ATTRIBUTE, userEntity.GetUserRole());
+    }
+
+    /**
+     * 解析会话用户
+     */
+    private UserEntity ResolveUserByToken(String token) {
+        String userIdText = stringRedisTemplate.opsForValue().get(USER_SESSION_PREFIX + token);
+        if (userIdText == null || userIdText.isBlank()) {
+            return null;
+        }
+        Long userId;
+        try {
+            userId = Long.parseLong(userIdText);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+        UserEntity userEntity = userMapper.FindUserById(userId);
+        if (userEntity == null || userEntity.GetUserStatus() != UserStatusEnum.ACTIVE) {
+            return null;
+        }
+        return userEntity;
+    }
+
+    /**
+     * 判断GET方法
+     */
+    private boolean IsGetMethod(String requestMethod) {
+        return requestMethod != null && "GET".equalsIgnoreCase(requestMethod);
     }
 
     /**

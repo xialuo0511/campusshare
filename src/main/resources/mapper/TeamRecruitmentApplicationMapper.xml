@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.team.mapper.TeamRecruitmentApplicationMapper">
+
+    <resultMap id="TeamRecruitmentApplicationResultMap" type="com.xialuo.campusshare.entity.TeamRecruitmentApplicationEntity">
+        <id column="application_id" property="applicationId"/>
+        <result column="recruitment_id" property="recruitmentId"/>
+        <result column="applicant_user_id" property="applicantUserId"/>
+        <result column="application_status" property="applicationStatus"/>
+        <result column="apply_remark" property="applyRemark"/>
+        <result column="review_remark" property="reviewRemark"/>
+        <result column="reviewer_user_id" property="reviewerUserId"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="TeamRecruitmentApplicationColumns">
+        application_id,
+        recruitment_id,
+        applicant_user_id,
+        application_status,
+        apply_remark,
+        review_remark,
+        reviewer_user_id,
+        review_time,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <insert id="InsertApplication" parameterType="com.xialuo.campusshare.entity.TeamRecruitmentApplicationEntity" useGeneratedKeys="true" keyProperty="applicationId" keyColumn="application_id">
+        INSERT INTO team_recruitment_application_info (
+            recruitment_id,
+            applicant_user_id,
+            application_status,
+            apply_remark,
+            review_remark,
+            reviewer_user_id,
+            review_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{recruitmentId},
+            #{applicantUserId},
+            #{applicationStatus},
+            #{applyRemark},
+            #{reviewRemark},
+            #{reviewerUserId},
+            #{reviewTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateApplication" parameterType="com.xialuo.campusshare.entity.TeamRecruitmentApplicationEntity">
+        UPDATE team_recruitment_application_info
+        SET
+            recruitment_id = #{recruitmentId},
+            applicant_user_id = #{applicantUserId},
+            application_status = #{applicationStatus},
+            apply_remark = #{applyRemark},
+            review_remark = #{reviewRemark},
+            reviewer_user_id = #{reviewerUserId},
+            review_time = #{reviewTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE application_id = #{applicationId}
+    </update>
+
+    <select id="FindApplicationById" resultMap="TeamRecruitmentApplicationResultMap">
+        SELECT
+            <include refid="TeamRecruitmentApplicationColumns"/>
+        FROM team_recruitment_application_info
+        WHERE application_id = #{applicationId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="FindApplicationByRecruitmentAndApplicant" resultMap="TeamRecruitmentApplicationResultMap">
+        SELECT
+            <include refid="TeamRecruitmentApplicationColumns"/>
+        FROM team_recruitment_application_info
+        WHERE recruitment_id = #{recruitmentId}
+          AND applicant_user_id = #{applicantUserId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="ListApplicationsByRecruitmentId" resultMap="TeamRecruitmentApplicationResultMap">
+        SELECT
+            <include refid="TeamRecruitmentApplicationColumns"/>
+        FROM team_recruitment_application_info
+        WHERE recruitment_id = #{recruitmentId}
+          AND deleted = 0
+        ORDER BY
+            CASE application_status
+                WHEN 'PENDING' THEN 1
+                WHEN 'APPROVED' THEN 2
+                WHEN 'REJECTED' THEN 3
+                ELSE 99
+            END ASC,
+            create_time DESC
+    </select>
+
+    <select id="CountApplicationsByRecruitmentId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM team_recruitment_application_info
+        WHERE recruitment_id = #{recruitmentId}
+          AND deleted = 0
+    </select>
+
+    <select id="ListAppliedRecruitmentIdsByApplicant" resultType="java.lang.Long">
+        SELECT recruitment_id
+        FROM team_recruitment_application_info
+        WHERE applicant_user_id = #{applicantUserId}
+          AND deleted = 0
+        <if test="recruitmentIdList != null and recruitmentIdList.size() &gt; 0">
+            AND recruitment_id IN
+            <foreach item="recruitmentId" collection="recruitmentIdList" open="(" separator="," close=")">
+                #{recruitmentId}
+            </foreach>
+        </if>
+        GROUP BY recruitment_id
+    </select>
+</mapper>
+

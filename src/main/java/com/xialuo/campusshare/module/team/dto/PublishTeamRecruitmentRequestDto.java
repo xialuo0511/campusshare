@@ -34,4 +34,74 @@ public class PublishTeamRecruitmentRequestDto {
     /** 技能要求 */
     @Size(max = 500, message = "技能要求长度不能超过500")
     private String skillRequirement;
+
+    /**
+     * 获取赛事名
+     */
+    public String GetEventName() {
+        return eventName;
+    }
+
+    /**
+     * 设置赛事名
+     */
+    public void SetEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    /**
+     * 获取方向
+     */
+    public String GetDirection() {
+        return direction;
+    }
+
+    /**
+     * 设置方向
+     */
+    public void SetDirection(String direction) {
+        this.direction = direction;
+    }
+
+    /**
+     * 获取人数上限
+     */
+    public Integer GetMemberLimit() {
+        return memberLimit;
+    }
+
+    /**
+     * 设置人数上限
+     */
+    public void SetMemberLimit(Integer memberLimit) {
+        this.memberLimit = memberLimit;
+    }
+
+    /**
+     * 获取截止时间
+     */
+    public LocalDateTime GetDeadline() {
+        return deadline;
+    }
+
+    /**
+     * 设置截止时间
+     */
+    public void SetDeadline(LocalDateTime deadline) {
+        this.deadline = deadline;
+    }
+
+    /**
+     * 获取技能要求
+     */
+    public String GetSkillRequirement() {
+        return skillRequirement;
+    }
+
+    /**
+     * 设置技能要求
+     */
+    public void SetSkillRequirement(String skillRequirement) {
+        this.skillRequirement = skillRequirement;
+    }
 }

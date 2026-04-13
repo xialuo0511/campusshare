@@ -246,6 +246,49 @@
         },
         ListPointLedger(pageNo, pageSize) {
             return RequestApi(`/api/v1/points/ledger?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
+        },
+        ListTeamRecruitments(query) {
+            const searchQuery = query || {};
+            const searchParams = new URLSearchParams();
+            Object.keys(searchQuery).forEach(function AppendQuery(key) {
+                const value = searchQuery[key];
+                if (value === null || value === undefined || value === "") {
+                    return;
+                }
+                searchParams.append(key, value);
+            });
+            return RequestApi(`/api/v1/team/recruitments?${searchParams.toString()}`, "GET", null, false);
+        },
+        GetTeamRecruitmentDetail(recruitmentId) {
+            return RequestApi(`/api/v1/team/recruitments/${recruitmentId}`, "GET", null, false);
+        },
+        PublishTeamRecruitment(payload) {
+            return RequestApi("/api/v1/team/recruitments", "POST", payload, true);
+        },
+        ApplyTeamRecruitment(recruitmentId, payload) {
+            return RequestApi(`/api/v1/team/recruitments/${recruitmentId}/apply`, "POST", payload || {}, true);
+        },
+        ListTeamRecruitmentApplications(recruitmentId) {
+            return RequestApi(`/api/v1/team/recruitments/${recruitmentId}/applications`, "GET", null, true);
+        },
+        ApproveTeamRecruitmentApplication(recruitmentId, applicationId, reviewRemark) {
+            return RequestApi(
+                `/api/v1/team/recruitments/${recruitmentId}/applications/${applicationId}/approve`,
+                "POST",
+                { reviewRemark: reviewRemark || "" },
+                true
+            );
+        },
+        RejectTeamRecruitmentApplication(recruitmentId, applicationId, reviewRemark) {
+            return RequestApi(
+                `/api/v1/team/recruitments/${recruitmentId}/applications/${applicationId}/reject`,
+                "POST",
+                { reviewRemark: reviewRemark || "" },
+                true
+            );
+        },
+        CloseTeamRecruitment(recruitmentId) {
+            return RequestApi(`/api/v1/team/recruitments/${recruitmentId}/close`, "POST", {}, true);
         }
     };
 })();

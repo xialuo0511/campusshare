@@ -32,6 +32,10 @@ public class OrderResponseDto {
     private LocalDateTime closeTime;
     /** 关闭原因 */
     private String closeReason;
+    /** 创建时间 */
+    private LocalDateTime createTime;
+    /** 更新时间 */
+    private LocalDateTime updateTime;
 
     /**
      * 获取订单ID
@@ -200,4 +204,33 @@ public class OrderResponseDto {
     public void SetCloseReason(String closeReason) {
         this.closeReason = closeReason;
     }
+
+    /**
+     * 获取创建时间
+     */
+    public LocalDateTime GetCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * 设置创建时间
+     */
+    public void SetCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    /**
+     * 获取更新时间
+     */
+    public LocalDateTime GetUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * 设置更新时间
+     */
+    public void SetUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
+    }
 }
+

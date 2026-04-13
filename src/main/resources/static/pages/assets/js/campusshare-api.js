@@ -3,6 +3,7 @@
  */
 (function InitCampusShareApi() {
     const AUTH_TOKEN_STORAGE_KEY = "campusshare.authToken";
+    const USER_PROFILE_STORAGE_KEY = "campusshare.currentUser";
     const REQUEST_ID_HEADER = "X-Request-Id";
     const AUTH_TOKEN_HEADER = "X-Auth-Token";
 
@@ -35,6 +36,54 @@
      */
     function ClearAuthToken() {
         window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    }
+
+    /**
+     * 读取当前用户信息
+     */
+    function GetCurrentUserProfile() {
+        const profileText = window.localStorage.getItem(USER_PROFILE_STORAGE_KEY);
+        if (!profileText) {
+            return null;
+        }
+        try {
+            return JSON.parse(profileText);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * 保存当前用户信息
+     */
+    function SetCurrentUserProfile(profile) {
+        if (!profile) {
+            return;
+        }
+        window.localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+    }
+
+    /**
+     * 清理当前用户信息
+     */
+    function ClearCurrentUserProfile() {
+        window.localStorage.removeItem(USER_PROFILE_STORAGE_KEY);
+    }
+
+    /**
+     * 保存登录会话信息
+     */
+    function SetSessionFromLogin(loginData) {
+        if (!loginData) {
+            return;
+        }
+        SetAuthToken(loginData.token || "");
+        SetCurrentUserProfile({
+            userId: loginData.userId,
+            account: loginData.account,
+            displayName: loginData.displayName,
+            userRole: loginData.userRole
+        });
     }
 
     /**
@@ -83,6 +132,10 @@
         GetAuthToken,
         SetAuthToken,
         ClearAuthToken,
+        GetCurrentUserProfile,
+        SetCurrentUserProfile,
+        ClearCurrentUserProfile,
+        SetSessionFromLogin,
         RegisterUser(payload) {
             return RequestApi("/api/v1/users/register", "POST", payload, false);
         },
@@ -91,6 +144,24 @@
         },
         UploadMaterial(payload) {
             return RequestApi("/api/v1/materials", "POST", payload, true);
+        },
+        ListMyOrders(pageNo, pageSize) {
+            return RequestApi(`/api/v1/orders/my?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
+        },
+        GetOrderDetail(orderId) {
+            return RequestApi(`/api/v1/orders/${orderId}`, "GET", null, true);
+        },
+        CancelOrder(orderId) {
+            return RequestApi(`/api/v1/orders/${orderId}/cancel`, "POST", {}, true);
+        },
+        ConfirmOrder(orderId) {
+            return RequestApi(`/api/v1/orders/${orderId}/confirm`, "POST", {}, true);
+        },
+        CompleteOrder(orderId) {
+            return RequestApi(`/api/v1/orders/${orderId}/complete`, "POST", {}, true);
+        },
+        CloseOrder(orderId, closeReason) {
+            return RequestApi(`/api/v1/orders/${orderId}/close`, "POST", { closeReason }, true);
         }
     };
 })();

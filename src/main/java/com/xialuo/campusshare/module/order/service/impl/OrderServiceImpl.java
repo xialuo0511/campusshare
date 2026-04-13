@@ -1,5 +1,6 @@
 package com.xialuo.campusshare.module.order.service.impl;
 
+import com.xialuo.campusshare.common.api.PageQuery;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.OrderEntity;
@@ -8,12 +9,14 @@ import com.xialuo.campusshare.enums.OrderStatusEnum;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.order.dto.CreateOrderRequestDto;
+import com.xialuo.campusshare.module.order.dto.OrderListResponseDto;
 import com.xialuo.campusshare.module.order.dto.OrderResponseDto;
 import com.xialuo.campusshare.module.order.mapper.OrderMapper;
 import com.xialuo.campusshare.module.order.service.OrderService;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -134,6 +137,52 @@ public class OrderServiceImpl implements OrderService {
         return BuildOrderResponse(orderEntity);
     }
 
+    @Override
+    public OrderListResponseDto ListMyOrders(
+        Long currentUserId,
+        UserRoleEnum currentUserRole,
+        Integer pageNo,
+        Integer pageSize
+    ) {
+        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer resolvedPageSize = ResolvePageSize(pageSize);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
+        Boolean isAdministrator = currentUserRole == UserRoleEnum.ADMINISTRATOR;
+
+        List<OrderResponseDto> orderResponseList = orderMapper.ListOrdersByUser(
+            currentUserId,
+            isAdministrator,
+            offset,
+            resolvedPageSize
+        ).stream().map(this::BuildOrderResponse).toList();
+
+        Long totalCount = SafeCount(orderMapper.CountOrdersByUser(currentUserId, isAdministrator));
+        Long ongoingCount =
+            SafeCount(orderMapper.CountOrdersByUserAndStatus(currentUserId, isAdministrator, OrderStatusEnum.PENDING_SELLER_CONFIRM))
+            + SafeCount(orderMapper.CountOrdersByUserAndStatus(currentUserId, isAdministrator, OrderStatusEnum.PENDING_OFFLINE_TRADE))
+            + SafeCount(orderMapper.CountOrdersByUserAndStatus(currentUserId, isAdministrator, OrderStatusEnum.PENDING_BUYER_CONFIRM));
+        Long completedCount = SafeCount(
+            orderMapper.CountOrdersByUserAndStatus(currentUserId, isAdministrator, OrderStatusEnum.COMPLETED)
+        );
+        Long canceledCount = SafeCount(
+            orderMapper.CountOrdersByUserAndStatus(currentUserId, isAdministrator, OrderStatusEnum.CANCELED)
+        );
+        Long closedCount = SafeCount(
+            orderMapper.CountOrdersByUserAndStatus(currentUserId, isAdministrator, OrderStatusEnum.CLOSED)
+        );
+
+        OrderListResponseDto responseDto = new OrderListResponseDto();
+        responseDto.SetPageNo(resolvedPageNo);
+        responseDto.SetPageSize(resolvedPageSize);
+        responseDto.SetTotalCount(totalCount);
+        responseDto.SetOngoingCount(ongoingCount);
+        responseDto.SetCompletedCount(completedCount);
+        responseDto.SetCanceledCount(canceledCount);
+        responseDto.SetClosedCount(closedCount);
+        responseDto.SetOrderList(orderResponseList);
+        return responseDto;
+    }
+
     /**
      * 构建订单号
      */
@@ -159,7 +208,7 @@ public class OrderServiceImpl implements OrderService {
      */
     private void ValidateProductPurchasable(ProductEntity productEntity, Long currentUserId) {
         if (currentUserId.equals(productEntity.GetSellerUserId())) {
-            throw new BusinessException(BizCodeEnum.ORDER_SELF_PURCHASE_DENIED, "禁止购买自己商品");
+            throw new BusinessException(BizCodeEnum.ORDER_SELF_PURCHASE_DENIED, "禁止购买自己的商品");
         }
         if (!Boolean.TRUE.equals(productEntity.GetOnShelf())
             || productEntity.GetHasEffectiveOrder()
@@ -232,6 +281,39 @@ public class OrderServiceImpl implements OrderService {
         responseDto.SetBuyerCompleteTime(orderEntity.GetBuyerCompleteTime());
         responseDto.SetCloseTime(orderEntity.GetCloseTime());
         responseDto.SetCloseReason(orderEntity.GetCloseReason());
+        responseDto.SetCreateTime(orderEntity.GetCreateTime());
+        responseDto.SetUpdateTime(orderEntity.GetUpdateTime());
         return responseDto;
     }
+
+    /**
+     * 解析页码
+     */
+    private Integer ResolvePageNo(Integer pageNo) {
+        if (pageNo == null || pageNo < 1) {
+            return PageQuery.DEFAULT_PAGE_NO;
+        }
+        return pageNo;
+    }
+
+    /**
+     * 解析分页大小
+     */
+    private Integer ResolvePageSize(Integer pageSize) {
+        if (pageSize == null || pageSize < 1) {
+            return PageQuery.DEFAULT_PAGE_SIZE;
+        }
+        if (pageSize > PageQuery.MAX_PAGE_SIZE) {
+            return PageQuery.MAX_PAGE_SIZE;
+        }
+        return pageSize;
+    }
+
+    /**
+     * 兜底统计值
+     */
+    private Long SafeCount(Long count) {
+        return count == null ? 0L : count;
+    }
 }
+

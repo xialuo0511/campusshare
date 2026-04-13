@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.order.service;
 
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.order.dto.CreateOrderRequestDto;
+import com.xialuo.campusshare.module.order.dto.OrderListResponseDto;
 import com.xialuo.campusshare.module.order.dto.OrderResponseDto;
 
 /**
@@ -37,4 +38,15 @@ public interface OrderService {
      * 查询订单详情
      */
     OrderResponseDto GetOrderDetail(Long orderId, Long currentUserId, UserRoleEnum currentUserRole);
+
+    /**
+     * 查询我的订单列表
+     */
+    OrderListResponseDto ListMyOrders(
+        Long currentUserId,
+        UserRoleEnum currentUserRole,
+        Integer pageNo,
+        Integer pageSize
+    );
 }
+

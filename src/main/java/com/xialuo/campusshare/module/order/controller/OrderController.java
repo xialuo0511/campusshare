@@ -6,6 +6,7 @@ import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.order.dto.CreateOrderRequestDto;
 import com.xialuo.campusshare.module.order.dto.OrderCloseRequestDto;
+import com.xialuo.campusshare.module.order.dto.OrderListResponseDto;
 import com.xialuo.campusshare.module.order.dto.OrderResponseDto;
 import com.xialuo.campusshare.module.order.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -54,6 +56,26 @@ public class OrderController {
         Long currentUserId = GetCurrentUserId(httpServletRequest);
         UserRoleEnum currentUserRole = GetCurrentUserRole(httpServletRequest);
         OrderResponseDto responseDto = orderService.GetOrderDetail(orderId, currentUserId, currentUserRole);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 分页查询我的订单
+     */
+    @GetMapping("/my")
+    public ApiResponse<OrderListResponseDto> ListMyOrders(
+        @RequestParam(value = "pageNo", required = false) Integer pageNo,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        UserRoleEnum currentUserRole = GetCurrentUserRole(httpServletRequest);
+        OrderListResponseDto responseDto = orderService.ListMyOrders(
+            currentUserId,
+            currentUserRole,
+            pageNo,
+            pageSize
+        );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -143,3 +165,4 @@ public class OrderController {
         return requestId == null ? "" : requestId.toString();
     }
 }
+

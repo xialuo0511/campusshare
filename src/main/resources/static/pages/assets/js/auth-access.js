@@ -1,12 +1,12 @@
-/**
- * 登录注册页面逻辑
+﻿/**
+ * 鐧诲綍娉ㄥ唽椤甸潰閫昏緫
  */
 (function InitAuthAccessPage() {
     const AUTH_MODE_LOGIN = "login";
     const AUTH_MODE_REGISTER = "register";
 
     /**
-     * 绑定页面行为
+     * 缁戝畾椤甸潰琛屼负
      */
     function BindAuthPage() {
         const authForm = document.querySelector("main form");
@@ -54,8 +54,8 @@
                         password: passwordInput && passwordInput.value ? passwordInput.value : ""
                     };
                     const loginResult = await window.CampusShareApi.LoginUser(loginPayload);
-                    window.CampusShareApi.SetAuthToken(loginResult.token);
-                    ShowSuccess(messageBar, `登录成功，欢迎你 ${loginResult.displayName}`);
+                    window.CampusShareApi.SetSessionFromLogin(loginResult);
+                    ShowSuccess(messageBar, `鐧诲綍鎴愬姛锛屾杩庝綘 ${loginResult.displayName}`);
                     window.setTimeout(function RedirectToPublish() {
                         window.location.href = "/pages/publish_create.html";
                     }, 800);
@@ -64,10 +64,10 @@
 
                 const registerPayload = BuildRegisterPayload(authForm);
                 await window.CampusShareApi.RegisterUser(registerPayload);
-                ShowSuccess(messageBar, "注册成功，请等待管理员审核通过");
+                ShowSuccess(messageBar, "娉ㄥ唽鎴愬姛锛岃绛夊緟绠＄悊鍛樺鏍搁€氳繃");
                 authForm.reset();
             } catch (error) {
-                ShowError(messageBar, error instanceof Error ? error.message : "提交失败，请稍后重试");
+                ShowError(messageBar, error instanceof Error ? error.message : "鎻愪氦澶辫触锛岃绋嶅悗閲嶈瘯");
             } finally {
                 submitButton.disabled = false;
                 submitButton.classList.remove("opacity-70");
@@ -78,7 +78,7 @@
     }
 
     /**
-     * 构建注册参数
+     * 鏋勫缓娉ㄥ唽鍙傛暟
      */
     function BuildRegisterPayload(authForm) {
         const textInputs = authForm.querySelectorAll("input[type='text']");
@@ -101,7 +101,7 @@
     }
 
     /**
-     * 切换模式UI
+     * 鍒囨崲妯″紡UI
      */
     function SetModeUi(tabButtons, registerOnlyInputs, submitButton, currentMode) {
         const loginButton = tabButtons[0];
@@ -115,7 +115,7 @@
                     group.style.display = "none";
                 }
             });
-            submitButton.textContent = "登录";
+            submitButton.textContent = "鐧诲綍";
             return;
         }
 
@@ -127,11 +127,11 @@
                 group.style.display = "";
             }
         });
-        submitButton.textContent = "创建账号";
+        submitButton.textContent = "鍒涘缓璐﹀彿";
     }
 
     /**
-     * 显示成功信息
+     * 鏄剧ず鎴愬姛淇℃伅
      */
     function ShowSuccess(messageBar, message) {
         messageBar.style.display = "block";
@@ -140,7 +140,7 @@
     }
 
     /**
-     * 显示错误信息
+     * 鏄剧ず閿欒淇℃伅
      */
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";
@@ -149,7 +149,7 @@
     }
 
     /**
-     * 隐藏提示信息
+     * 闅愯棌鎻愮ず淇℃伅
      */
     function HideMessage(messageBar) {
         messageBar.style.display = "none";
@@ -158,4 +158,5 @@
 
     document.addEventListener("DOMContentLoaded", BindAuthPage);
 })();
+
 

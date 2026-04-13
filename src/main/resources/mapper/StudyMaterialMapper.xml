@@ -44,6 +44,23 @@
         deleted
     </sql>
 
+    <select id="CountPublishedMaterials" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM study_material_info
+        WHERE deleted = 0
+          AND material_status = 'PUBLISHED'
+    </select>
+
+    <select id="ListRecentPublishedMaterials" resultMap="MaterialResultMap">
+        SELECT
+            <include refid="MaterialColumns"/>
+        FROM study_material_info
+        WHERE deleted = 0
+          AND material_status = 'PUBLISHED'
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+
     <insert id="InsertMaterial" parameterType="com.xialuo.campusshare.entity.StudyMaterialEntity" useGeneratedKeys="true" keyProperty="materialId" keyColumn="material_id">
         INSERT INTO study_material_info (
             uploader_user_id,

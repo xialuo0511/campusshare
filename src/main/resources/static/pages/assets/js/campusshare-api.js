@@ -202,6 +202,9 @@
             formData.append("file", file);
             return RequestMultipartApi("/api/v1/materials/files/upload", "POST", formData, true);
         },
+        DownloadMaterial(materialId) {
+            return RequestApi(`/api/v1/materials/${materialId}/download`, "POST", {}, true);
+        },
         ListProducts(query) {
             const searchQuery = query || {};
             const searchParams = new URLSearchParams();
@@ -216,6 +219,9 @@
         },
         GetProductDetail(productId) {
             return RequestApi(`/api/v1/products/${productId}`, "GET", null, false);
+        },
+        GetMarketOverview() {
+            return RequestApi("/api/v1/market/overview", "GET", null, false);
         },
         CreateOrder(payload) {
             return RequestApi("/api/v1/orders", "POST", payload, true);

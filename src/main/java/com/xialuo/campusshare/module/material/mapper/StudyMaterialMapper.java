@@ -12,6 +12,16 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface StudyMaterialMapper {
     /**
+     * 统计已发布资料总数
+     */
+    Long CountPublishedMaterials();
+
+    /**
+     * 查询最新已发布资料
+     */
+    List<StudyMaterialEntity> ListRecentPublishedMaterials(@Param("limit") Integer limit);
+
+    /**
      * 新增资料
      */
     Integer InsertMaterial(StudyMaterialEntity materialEntity);

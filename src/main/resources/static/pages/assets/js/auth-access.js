@@ -4,7 +4,7 @@
 (function InitAuthAccessPage() {
     const AUTH_MODE_LOGIN = "login";
     const AUTH_MODE_REGISTER = "register";
-    const FIELD_SWITCH_ANIMATION_MS = 260;
+    const FIELD_SWITCH_ANIMATION_MS = 200;
 
     /**
      * 绑定页面行为
@@ -239,11 +239,17 @@
         if (!passwordInput || !passwordToggleButton || !passwordToggleIcon) {
             return;
         }
+
+        function SyncPasswordToggleState() {
+            const hiddenMode = passwordInput.type === "password";
+            passwordToggleIcon.textContent = hiddenMode ? "visibility_off" : "visibility";
+            passwordToggleButton.setAttribute("aria-label", hiddenMode ? "显示密码" : "隐藏密码");
+        }
+
+        SyncPasswordToggleState();
         passwordToggleButton.addEventListener("click", function HandlePasswordToggle() {
-            const isPasswordMode = passwordInput.type === "password";
-            passwordInput.type = isPasswordMode ? "text" : "password";
-            passwordToggleIcon.textContent = isPasswordMode ? "visibility_off" : "visibility";
-            passwordToggleButton.setAttribute("aria-label", isPasswordMode ? "隐藏密码" : "显示密码");
+            passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+            SyncPasswordToggleState();
         });
     }
 
@@ -304,8 +310,9 @@
         if (!fieldGroup || fieldGroup.dataset.transitionReady === "true") {
             return;
         }
-        fieldGroup.style.transition = "opacity 220ms ease, transform 220ms ease, max-height 260ms ease";
+        fieldGroup.style.transition = "opacity 180ms ease, transform 180ms ease";
         fieldGroup.style.transformOrigin = "top";
+        fieldGroup.style.willChange = "opacity, transform";
         fieldGroup.dataset.transitionReady = "true";
     }
 
@@ -316,6 +323,11 @@
         if (!fieldGroup) {
             return;
         }
+        const timerIdText = fieldGroup.dataset.visibilityTimerId;
+        if (timerIdText) {
+            window.clearTimeout(Number(timerIdText));
+            delete fieldGroup.dataset.visibilityTimerId;
+        }
         const visibleFlag = visible ? "true" : "false";
         const previousVisibleFlag = fieldGroup.dataset.visibleFlag;
         fieldGroup.dataset.visibleFlag = visibleFlag;
@@ -324,8 +336,6 @@
             fieldGroup.style.display = visible ? "" : "none";
             fieldGroup.style.opacity = visible ? "1" : "0";
             fieldGroup.style.transform = visible ? "translateY(0)" : "translateY(-6px)";
-            fieldGroup.style.maxHeight = "";
-            fieldGroup.style.overflow = "";
             fieldGroup.style.pointerEvents = visible ? "auto" : "none";
             return;
         }
@@ -335,43 +345,31 @@
 
         if (visible) {
             fieldGroup.style.display = "";
-            fieldGroup.style.overflow = "hidden";
-            fieldGroup.style.maxHeight = "0px";
             fieldGroup.style.opacity = "0";
-            fieldGroup.style.transform = "translateY(-6px)";
+            fieldGroup.style.transform = "translateY(-4px)";
             fieldGroup.style.pointerEvents = "none";
             window.requestAnimationFrame(function AnimateShow() {
-                fieldGroup.style.maxHeight = `${fieldGroup.scrollHeight + 8}px`;
                 fieldGroup.style.opacity = "1";
                 fieldGroup.style.transform = "translateY(0)";
                 fieldGroup.style.pointerEvents = "auto";
             });
-            window.setTimeout(function ClearShowState() {
-                if (fieldGroup.dataset.visibleFlag !== "true") {
-                    return;
-                }
-                fieldGroup.style.maxHeight = "";
-                fieldGroup.style.overflow = "";
-            }, FIELD_SWITCH_ANIMATION_MS);
             return;
         }
 
-        fieldGroup.style.overflow = "hidden";
-        fieldGroup.style.maxHeight = `${fieldGroup.scrollHeight}px`;
         fieldGroup.style.opacity = "1";
         fieldGroup.style.transform = "translateY(0)";
         fieldGroup.style.pointerEvents = "none";
         window.requestAnimationFrame(function AnimateHide() {
-            fieldGroup.style.maxHeight = "0px";
             fieldGroup.style.opacity = "0";
-            fieldGroup.style.transform = "translateY(-6px)";
+            fieldGroup.style.transform = "translateY(-4px)";
         });
-        window.setTimeout(function FinalizeHide() {
+        const hideTimerId = window.setTimeout(function FinalizeHide() {
             if (fieldGroup.dataset.visibleFlag !== "false") {
                 return;
             }
             fieldGroup.style.display = "none";
         }, FIELD_SWITCH_ANIMATION_MS);
+        fieldGroup.dataset.visibilityTimerId = String(hideTimerId);
     }
 
     /**

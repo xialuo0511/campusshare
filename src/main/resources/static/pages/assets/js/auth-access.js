@@ -4,6 +4,7 @@
 (function InitAuthAccessPage() {
     const AUTH_MODE_LOGIN = "login";
     const AUTH_MODE_REGISTER = "register";
+    const FIELD_SWITCH_ANIMATION_MS = 260;
 
     /**
      * 绑定页面行为
@@ -29,6 +30,8 @@
         const accountInput = textInputs[0];
         const userNameInput = textInputs[1];
         const passwordInput = authForm.querySelector("input[type='password']");
+        const passwordToggleButton = authForm.querySelector("[data-password-toggle]");
+        const passwordToggleIcon = authForm.querySelector("[data-password-toggle-icon]");
         const emailInput = authForm.querySelector("input[type='email']");
         const collegeSelect = authForm.querySelectorAll("select")[0];
         const gradeSelect = authForm.querySelectorAll("select")[1];
@@ -39,17 +42,47 @@
         const verificationCodeInput = verifyCodeRow.querySelector("input");
         const sendCodeButton = verifyCodeRow.querySelector("button");
 
-        SetupLabels(authForm, submitButton, sendCodeButton, accountInput, userNameInput, emailInput, verificationCodeInput);
+        SetupLabels(
+            authForm,
+            submitButton,
+            sendCodeButton,
+            accountInput,
+            passwordInput,
+            userNameInput,
+            emailInput,
+            verificationCodeInput
+        );
+        BindPasswordToggle(passwordInput, passwordToggleButton, passwordToggleIcon);
 
         let currentMode = AUTH_MODE_REGISTER;
         tabButtons[0].addEventListener("click", function HandleLoginModeClick() {
             currentMode = AUTH_MODE_LOGIN;
-            SetModeUi(currentMode, tabButtons, userNameInput, collegeSelect, gradeSelect, emailInput, verifyCodeRow, submitButton);
+            SetModeUi(
+                currentMode,
+                tabButtons,
+                userNameInput,
+                collegeSelect,
+                gradeSelect,
+                emailInput,
+                verifyCodeRow,
+                submitButton,
+                true
+            );
             HideMessage(messageBar);
         });
         tabButtons[1].addEventListener("click", function HandleRegisterModeClick() {
             currentMode = AUTH_MODE_REGISTER;
-            SetModeUi(currentMode, tabButtons, userNameInput, collegeSelect, gradeSelect, emailInput, verifyCodeRow, submitButton);
+            SetModeUi(
+                currentMode,
+                tabButtons,
+                userNameInput,
+                collegeSelect,
+                gradeSelect,
+                emailInput,
+                verifyCodeRow,
+                submitButton,
+                true
+            );
             HideMessage(messageBar);
         });
 
@@ -115,13 +148,32 @@
             }
         });
 
-        SetModeUi(currentMode, tabButtons, userNameInput, collegeSelect, gradeSelect, emailInput, verifyCodeRow, submitButton);
+        SetModeUi(
+            currentMode,
+            tabButtons,
+            userNameInput,
+            collegeSelect,
+            gradeSelect,
+            emailInput,
+            verifyCodeRow,
+            submitButton,
+            false
+        );
     }
 
     /**
      * 配置页面标签
      */
-    function SetupLabels(authForm, submitButton, sendCodeButton, accountInput, userNameInput, emailInput, verificationCodeInput) {
+    function SetupLabels(
+        authForm,
+        submitButton,
+        sendCodeButton,
+        accountInput,
+        passwordInput,
+        userNameInput,
+        emailInput,
+        verificationCodeInput
+    ) {
         const labelList = authForm.querySelectorAll("label");
         if (labelList[0]) {
             labelList[0].textContent = "学号";
@@ -143,6 +195,7 @@
         }
 
         accountInput.placeholder = "请输入学号";
+        passwordInput.placeholder = "请输入密码";
         userNameInput.placeholder = "请输入用户名";
         emailInput.placeholder = "请输入邮箱";
         verificationCodeInput.placeholder = "请输入6位验证码";
@@ -180,6 +233,21 @@
     }
 
     /**
+     * 绑定密码显示切换
+     */
+    function BindPasswordToggle(passwordInput, passwordToggleButton, passwordToggleIcon) {
+        if (!passwordInput || !passwordToggleButton || !passwordToggleIcon) {
+            return;
+        }
+        passwordToggleButton.addEventListener("click", function HandlePasswordToggle() {
+            const isPasswordMode = passwordInput.type === "password";
+            passwordInput.type = isPasswordMode ? "text" : "password";
+            passwordToggleIcon.textContent = isPasswordMode ? "visibility_off" : "visibility";
+            passwordToggleButton.setAttribute("aria-label", isPasswordMode ? "隐藏密码" : "显示密码");
+        });
+    }
+
+    /**
      * 切换模式UI
      */
     function SetModeUi(
@@ -190,7 +258,8 @@
         gradeSelect,
         emailInput,
         verifyCodeRow,
-        submitButton
+        submitButton,
+        withAnimation
     ) {
         const loginButton = tabButtons[0];
         const registerButton = tabButtons[1];
@@ -198,27 +267,111 @@
         const collegeGroup = collegeSelect.closest(".space-y-1");
         const gradeGroup = gradeSelect.closest(".space-y-1");
         const emailGroup = emailInput.closest(".space-y-1");
+        const registerOnlyGroupList = [
+            userNameGroup,
+            collegeGroup,
+            gradeGroup,
+            emailGroup,
+            verifyCodeRow
+        ];
+
+        registerOnlyGroupList.forEach(function InitTransition(group) {
+            InitFieldTransition(group);
+        });
 
         if (currentMode === AUTH_MODE_LOGIN) {
-            loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary";
-            registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-colors";
-            userNameGroup.style.display = "none";
-            collegeGroup.style.display = "none";
-            gradeGroup.style.display = "none";
-            emailGroup.style.display = "none";
-            verifyCodeRow.style.display = "none";
+            loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200";
+            registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200";
+            registerOnlyGroupList.forEach(function HideRegisterField(group) {
+                SetFieldVisible(group, false, withAnimation);
+            });
             submitButton.textContent = "登录";
             return;
         }
 
-        loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-colors";
-        registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary";
-        userNameGroup.style.display = "";
-        collegeGroup.style.display = "";
-        gradeGroup.style.display = "";
-        emailGroup.style.display = "";
-        verifyCodeRow.style.display = "";
+        loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200";
+        registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200";
+        registerOnlyGroupList.forEach(function ShowRegisterField(group) {
+            SetFieldVisible(group, true, withAnimation);
+        });
         submitButton.textContent = "注册";
+    }
+
+    /**
+     * 初始化字段过渡样式
+     */
+    function InitFieldTransition(fieldGroup) {
+        if (!fieldGroup || fieldGroup.dataset.transitionReady === "true") {
+            return;
+        }
+        fieldGroup.style.transition = "opacity 220ms ease, transform 220ms ease, max-height 260ms ease";
+        fieldGroup.style.transformOrigin = "top";
+        fieldGroup.dataset.transitionReady = "true";
+    }
+
+    /**
+     * 设置字段可见性
+     */
+    function SetFieldVisible(fieldGroup, visible, withAnimation) {
+        if (!fieldGroup) {
+            return;
+        }
+        const visibleFlag = visible ? "true" : "false";
+        const previousVisibleFlag = fieldGroup.dataset.visibleFlag;
+        fieldGroup.dataset.visibleFlag = visibleFlag;
+
+        if (!withAnimation || previousVisibleFlag === undefined) {
+            fieldGroup.style.display = visible ? "" : "none";
+            fieldGroup.style.opacity = visible ? "1" : "0";
+            fieldGroup.style.transform = visible ? "translateY(0)" : "translateY(-6px)";
+            fieldGroup.style.maxHeight = "";
+            fieldGroup.style.overflow = "";
+            fieldGroup.style.pointerEvents = visible ? "auto" : "none";
+            return;
+        }
+        if (previousVisibleFlag === visibleFlag) {
+            return;
+        }
+
+        if (visible) {
+            fieldGroup.style.display = "";
+            fieldGroup.style.overflow = "hidden";
+            fieldGroup.style.maxHeight = "0px";
+            fieldGroup.style.opacity = "0";
+            fieldGroup.style.transform = "translateY(-6px)";
+            fieldGroup.style.pointerEvents = "none";
+            window.requestAnimationFrame(function AnimateShow() {
+                fieldGroup.style.maxHeight = `${fieldGroup.scrollHeight + 8}px`;
+                fieldGroup.style.opacity = "1";
+                fieldGroup.style.transform = "translateY(0)";
+                fieldGroup.style.pointerEvents = "auto";
+            });
+            window.setTimeout(function ClearShowState() {
+                if (fieldGroup.dataset.visibleFlag !== "true") {
+                    return;
+                }
+                fieldGroup.style.maxHeight = "";
+                fieldGroup.style.overflow = "";
+            }, FIELD_SWITCH_ANIMATION_MS);
+            return;
+        }
+
+        fieldGroup.style.overflow = "hidden";
+        fieldGroup.style.maxHeight = `${fieldGroup.scrollHeight}px`;
+        fieldGroup.style.opacity = "1";
+        fieldGroup.style.transform = "translateY(0)";
+        fieldGroup.style.pointerEvents = "none";
+        window.requestAnimationFrame(function AnimateHide() {
+            fieldGroup.style.maxHeight = "0px";
+            fieldGroup.style.opacity = "0";
+            fieldGroup.style.transform = "translateY(-6px)";
+        });
+        window.setTimeout(function FinalizeHide() {
+            if (fieldGroup.dataset.visibleFlag !== "false") {
+                return;
+            }
+            fieldGroup.style.display = "none";
+        }, FIELD_SWITCH_ANIMATION_MS);
     }
 
     /**

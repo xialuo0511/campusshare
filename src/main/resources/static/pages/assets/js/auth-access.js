@@ -4,8 +4,9 @@
 (function InitAuthAccessPage() {
     const AUTH_MODE_LOGIN = "login";
     const AUTH_MODE_REGISTER = "register";
-    const FIELD_SWITCH_ANIMATION_MS = 240;
-    const MODE_SWITCH_ANIMATION_MS = 260;
+    const FIELD_HIDE_ANIMATION_MS = 170;
+    const FIELD_SHOW_ANIMATION_MS = 220;
+    const MODE_SWITCH_ANIMATION_MS = 320;
 
     /**
      * 绑定页面行为
@@ -291,12 +292,20 @@
         if (!formContainer) {
             return;
         }
-        formContainer.classList.remove("auth-mode-switching");
-        void formContainer.offsetWidth;
-        formContainer.classList.add("auth-mode-switching");
-        window.setTimeout(function RemoveModeSwitchClass() {
-            formContainer.classList.remove("auth-mode-switching");
-        }, MODE_SWITCH_ANIMATION_MS);
+        formContainer.getAnimations().forEach(function CancelAnimation(animation) {
+            animation.cancel();
+        });
+        formContainer.animate(
+            [
+                { opacity: 0.78, transform: "translateY(14px) scale(0.985)" },
+                { opacity: 1, transform: "translateY(-2px) scale(1.004)", offset: 0.68 },
+                { opacity: 1, transform: "translateY(0) scale(1)" }
+            ],
+            {
+                duration: MODE_SWITCH_ANIMATION_MS,
+                easing: "cubic-bezier(0.22, 0.61, 0.36, 1)"
+            }
+        );
     }
 
     /**
@@ -327,95 +336,98 @@
             verifyCodeRow
         ];
 
-        registerOnlyGroupList.forEach(function InitTransition(group) {
-            InitFieldTransition(group);
-        });
-
         if (currentMode === AUTH_MODE_LOGIN) {
             loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200";
             registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200";
-            registerOnlyGroupList.forEach(function HideRegisterField(group) {
-                SetFieldVisible(group, false, withAnimation);
-            });
+            SetRegisterFieldsVisible(registerOnlyGroupList, false, withAnimation);
             submitButton.textContent = "登录";
             return;
         }
 
         loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200";
         registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200";
-        registerOnlyGroupList.forEach(function ShowRegisterField(group) {
-            SetFieldVisible(group, true, withAnimation);
-        });
+        SetRegisterFieldsVisible(registerOnlyGroupList, true, withAnimation);
         submitButton.textContent = "注册";
     }
 
     /**
-     * 初始化字段过渡样式
+     * 设置注册字段显隐
      */
-    function InitFieldTransition(fieldGroup) {
-        if (!fieldGroup || fieldGroup.dataset.transitionReady === "true") {
-            return;
-        }
-        fieldGroup.style.transition = "opacity 220ms ease, transform 220ms ease";
-        fieldGroup.style.transformOrigin = "top";
-        fieldGroup.style.willChange = "opacity, transform";
-        fieldGroup.dataset.transitionReady = "true";
+    function SetRegisterFieldsVisible(fieldGroupList, visible, withAnimation) {
+        fieldGroupList.forEach(function ToggleSingleField(fieldGroup) {
+            if (!fieldGroup) {
+                return;
+            }
+            const timerIdText = fieldGroup.dataset.visibilityTimerId;
+            if (timerIdText) {
+                window.clearTimeout(Number(timerIdText));
+                delete fieldGroup.dataset.visibilityTimerId;
+            }
+            fieldGroup.getAnimations().forEach(function CancelAnimation(animation) {
+                animation.cancel();
+            });
+
+            if (!withAnimation) {
+                SetRegisterFieldImmediate(fieldGroup, visible);
+                return;
+            }
+
+            if (visible) {
+                fieldGroup.style.display = "";
+                fieldGroup.style.opacity = "0";
+                fieldGroup.style.transform = "translateY(-10px)";
+                fieldGroup.style.pointerEvents = "none";
+                fieldGroup.animate(
+                    [
+                        { opacity: 0, transform: "translateY(-10px)" },
+                        { opacity: 1, transform: "translateY(0)" }
+                    ],
+                    {
+                        duration: FIELD_SHOW_ANIMATION_MS,
+                        easing: "cubic-bezier(0.22, 0.61, 0.36, 1)",
+                        fill: "forwards"
+                    }
+                );
+                const showTimerId = window.setTimeout(function FinalizeShow() {
+                    fieldGroup.style.opacity = "1";
+                    fieldGroup.style.transform = "translateY(0)";
+                    fieldGroup.style.pointerEvents = "auto";
+                }, FIELD_SHOW_ANIMATION_MS);
+                fieldGroup.dataset.visibilityTimerId = String(showTimerId);
+                return;
+            }
+
+            fieldGroup.style.opacity = "1";
+            fieldGroup.style.transform = "translateY(0)";
+            fieldGroup.style.pointerEvents = "none";
+            fieldGroup.animate(
+                [
+                    { opacity: 1, transform: "translateY(0)" },
+                    { opacity: 0, transform: "translateY(-10px)" }
+                ],
+                {
+                    duration: FIELD_HIDE_ANIMATION_MS,
+                    easing: "ease-out",
+                    fill: "forwards"
+                }
+            );
+            const hideTimerId = window.setTimeout(function FinalizeHide() {
+                fieldGroup.style.display = "none";
+                fieldGroup.style.opacity = "1";
+                fieldGroup.style.transform = "translateY(0)";
+            }, FIELD_HIDE_ANIMATION_MS);
+            fieldGroup.dataset.visibilityTimerId = String(hideTimerId);
+        });
     }
 
     /**
-     * 设置字段可见性
+     * 注册字段即时显隐
      */
-    function SetFieldVisible(fieldGroup, visible, withAnimation) {
-        if (!fieldGroup) {
-            return;
-        }
-        const timerIdText = fieldGroup.dataset.visibilityTimerId;
-        if (timerIdText) {
-            window.clearTimeout(Number(timerIdText));
-            delete fieldGroup.dataset.visibilityTimerId;
-        }
-        const visibleFlag = visible ? "true" : "false";
-        const previousVisibleFlag = fieldGroup.dataset.visibleFlag;
-        fieldGroup.dataset.visibleFlag = visibleFlag;
-
-        if (!withAnimation || previousVisibleFlag === undefined) {
-            fieldGroup.style.display = visible ? "" : "none";
-            fieldGroup.style.opacity = visible ? "1" : "0";
-            fieldGroup.style.transform = visible ? "translateY(0)" : "translateY(-10px)";
-            fieldGroup.style.pointerEvents = visible ? "auto" : "none";
-            return;
-        }
-        if (previousVisibleFlag === visibleFlag) {
-            return;
-        }
-
-        if (visible) {
-            fieldGroup.style.display = "";
-            fieldGroup.style.opacity = "0";
-            fieldGroup.style.transform = "translateY(-10px)";
-            fieldGroup.style.pointerEvents = "none";
-            window.requestAnimationFrame(function AnimateShow() {
-                fieldGroup.style.opacity = "1";
-                fieldGroup.style.transform = "translateY(0)";
-                fieldGroup.style.pointerEvents = "auto";
-            });
-            return;
-        }
-
+    function SetRegisterFieldImmediate(fieldGroup, visible) {
+        fieldGroup.style.display = visible ? "" : "none";
         fieldGroup.style.opacity = "1";
         fieldGroup.style.transform = "translateY(0)";
-        fieldGroup.style.pointerEvents = "none";
-        window.requestAnimationFrame(function AnimateHide() {
-            fieldGroup.style.opacity = "0";
-            fieldGroup.style.transform = "translateY(-10px)";
-        });
-        const hideTimerId = window.setTimeout(function FinalizeHide() {
-            if (fieldGroup.dataset.visibleFlag !== "false") {
-                return;
-            }
-            fieldGroup.style.display = "none";
-        }, FIELD_SWITCH_ANIMATION_MS);
-        fieldGroup.dataset.visibilityTimerId = String(hideTimerId);
+        fieldGroup.style.pointerEvents = visible ? "auto" : "none";
     }
 
     /**

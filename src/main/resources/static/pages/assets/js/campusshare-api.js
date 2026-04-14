@@ -289,6 +289,32 @@
         },
         CloseTeamRecruitment(recruitmentId) {
             return RequestApi(`/api/v1/team/recruitments/${recruitmentId}/close`, "POST", {}, true);
+        },
+        ListPendingUsers() {
+            return RequestApi("/api/v1/admin/users/pending", "GET", null, true);
+        },
+        ReviewUser(userId, approved, reviewRemark) {
+            return RequestApi(
+                `/api/v1/admin/users/${userId}/review`,
+                "POST",
+                { approved: !!approved, reviewRemark: reviewRemark || "" },
+                true
+            );
+        },
+        ListPendingReports() {
+            return RequestApi("/api/v1/admin/reports/pending", "GET", null, true);
+        },
+        ReviewReport(reportId, approved, dispositionAction, reviewRemark) {
+            return RequestApi(
+                `/api/v1/admin/reports/${reportId}/review`,
+                "POST",
+                {
+                    approved: !!approved,
+                    dispositionAction: dispositionAction || "",
+                    reviewRemark: reviewRemark || ""
+                },
+                true
+            );
         }
     };
 })();

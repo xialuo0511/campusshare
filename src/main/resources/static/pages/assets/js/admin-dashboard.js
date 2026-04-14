@@ -64,12 +64,14 @@
                 teamRecruitmentList,
                 pendingReportList,
                 pendingUserList,
+                pendingTeamApplicationList,
                 orderListResult
             ] = await Promise.all([
                 window.CampusShareApi.GetMarketOverview(),
                 window.CampusShareApi.ListTeamRecruitments({ pageNo: 1, pageSize: 1 }),
                 window.CampusShareApi.ListPendingReports(),
                 window.CampusShareApi.ListPendingUsers(),
+                window.CampusShareApi.ListPendingTeamRecruitmentApplications(),
                 window.CampusShareApi.ListMyOrders(1, DEFAULT_ORDER_PAGE_SIZE)
             ]);
 
@@ -81,7 +83,11 @@
                 orderListResult
             );
 
-            reviewState.reviewTaskList = BuildReviewTaskList(pendingReportList, pendingUserList);
+            reviewState.reviewTaskList = BuildReviewTaskList(
+                pendingReportList,
+                pendingUserList,
+                pendingTeamApplicationList
+            );
             reviewState.pageNo = 1;
             RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
             HideMessage(messageBar);
@@ -161,10 +167,11 @@
     /**
      * 构建审核任务
      */
-    function BuildReviewTaskList(pendingReportList, pendingUserList) {
+    function BuildReviewTaskList(pendingReportList, pendingUserList, pendingTeamApplicationList) {
         const reportTaskList = BuildReportReviewTaskList(pendingReportList);
         const userTaskList = BuildUserReviewTaskList(pendingUserList);
-        return reportTaskList.concat(userTaskList)
+        const teamTaskList = BuildTeamApplicationReviewTaskList(pendingTeamApplicationList);
+        return reportTaskList.concat(userTaskList).concat(teamTaskList)
             .sort(function SortReviewTask(a, b) {
                 return ResolveTimeValue(b.createTime) - ResolveTimeValue(a.createTime);
             });
@@ -191,24 +198,38 @@
         reviewTableBody.innerHTML = pageTaskList.map(function BuildTaskRow(taskItem) {
             const resourceTitle = taskItem.taskType === "REPORT"
                 ? `举报 #${taskItem.taskId} (${taskItem.reason})`
-                : `用户审核 #${taskItem.taskId} (${taskItem.account})`;
+                : (taskItem.taskType === "USER"
+                    ? `用户审核 #${taskItem.taskId} (${taskItem.account})`
+                    : `组队申请 #${taskItem.taskId} (招募 #${taskItem.recruitmentId})`);
             const resourceMeta = taskItem.taskType === "REPORT"
                 ? `${taskItem.targetType} #${taskItem.targetId}`
-                : `${taskItem.college || "-"} · ${taskItem.grade || "-"}`;
+                : (taskItem.taskType === "USER"
+                    ? `${taskItem.college || "-"} · ${taskItem.grade || "-"}`
+                    : (taskItem.applyRemark || "未填写申请备注"));
             const contributor = taskItem.taskType === "REPORT"
                 ? `举报人ID: ${taskItem.reporterUserId}`
-                : (taskItem.displayName || taskItem.account || `用户#${taskItem.taskId}`);
-            const statusText = taskItem.taskType === "REPORT" ? "举报待审" : "用户待审";
+                : (taskItem.taskType === "USER"
+                    ? (taskItem.displayName || taskItem.account || `用户#${taskItem.taskId}`)
+                    : (taskItem.applicantDisplayName || `申请人#${taskItem.applicantUserId}`));
+            const statusText = taskItem.taskType === "REPORT"
+                ? "举报待审"
+                : (taskItem.taskType === "USER" ? "用户待审" : "申请待审");
             const statusClass = taskItem.taskType === "REPORT"
                 ? "bg-secondary-container text-on-secondary-container"
-                : "bg-surface-container text-slate-600";
+                : (taskItem.taskType === "USER"
+                    ? "bg-surface-container text-slate-600"
+                    : "bg-primary/10 text-primary");
+            const iconName = taskItem.taskType === "REPORT"
+                ? "gavel"
+                : (taskItem.taskType === "USER" ? "badge" : "groups");
+            const recruitmentIdValue = taskItem.recruitmentId || "";
 
             return [
                 "<tr class=\"hover:bg-surface-container-low transition-colors group\">",
                 "<td class=\"px-6 py-4\">",
                 "<div class=\"flex items-center gap-3\">",
                 "<div class=\"w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center\">",
-                `<span class=\"material-symbols-outlined text-outline\">${taskItem.taskType === "REPORT" ? "gavel" : "badge"}</span>`,
+                `<span class=\"material-symbols-outlined text-outline\">${iconName}</span>`,
                 "</div>",
                 "<div>",
                 `<p class=\"text-sm font-semibold text-on-surface\">${EscapeHtml(resourceTitle)}</p>`,
@@ -219,8 +240,8 @@
                 `<td class=\"px-6 py-4\"><span class=\"${statusClass} text-[10px] font-bold px-2 py-0.5 rounded-full\">${EscapeHtml(statusText)}</span></td>`,
                 "<td class=\"px-6 py-4 text-right\">",
                 "<div class=\"flex justify-end gap-2\">",
-                `<button data-task-action=\"approve\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" class=\"p-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100\"><span class=\"material-symbols-outlined text-sm\">check</span></button>`,
-                `<button data-task-action=\"reject\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" class=\"p-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100\"><span class=\"material-symbols-outlined text-sm\">close</span></button>`,
+                `<button data-task-action=\"approve\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" data-recruitment-id=\"${recruitmentIdValue}\" class=\"p-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100\"><span class=\"material-symbols-outlined text-sm\">check</span></button>`,
+                `<button data-task-action=\"reject\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" data-recruitment-id=\"${recruitmentIdValue}\" class=\"p-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100\"><span class=\"material-symbols-outlined text-sm\">close</span></button>`,
                 "</div></td></tr>"
             ].join("");
         }).join("");
@@ -254,6 +275,10 @@
                 taskItem.displayName || "",
                 taskItem.targetType || "",
                 String(taskItem.targetId || ""),
+                String(taskItem.recruitmentId || ""),
+                String(taskItem.applicantUserId || ""),
+                taskItem.applicantDisplayName || "",
+                taskItem.applyRemark || "",
                 taskItem.college || "",
                 taskItem.grade || ""
             ].join(" ").toLowerCase();
@@ -273,6 +298,7 @@
             const taskAction = actionButton.getAttribute("data-task-action");
             const taskType = actionButton.getAttribute("data-task-type");
             const taskId = Number(actionButton.getAttribute("data-task-id"));
+            const recruitmentId = Number(actionButton.getAttribute("data-recruitment-id"));
             if (!taskAction || !taskType || !taskId) {
                 return;
             }
@@ -297,6 +323,23 @@
                         approved,
                         approved ? "后台快速通过" : "后台快速驳回"
                     );
+                } else if (taskType === "TEAM") {
+                    if (!recruitmentId) {
+                        throw new Error("组队申请缺少招募ID");
+                    }
+                    if (approved) {
+                        await window.CampusShareApi.ApproveTeamRecruitmentApplication(
+                            recruitmentId,
+                            taskId,
+                            "后台快速通过"
+                        );
+                    } else {
+                        await window.CampusShareApi.RejectTeamRecruitmentApplication(
+                            recruitmentId,
+                            taskId,
+                            "后台快速驳回"
+                        );
+                    }
                 } else {
                     return;
                 }
@@ -324,6 +367,7 @@
             "<option value=\"ALL\">全部</option>",
             "<option value=\"REPORT\">举报</option>",
             "<option value=\"USER\">用户审核</option>",
+            "<option value=\"TEAM\">组队申请</option>",
             "</select>",
             "</div>",
             "<div class=\"flex items-center gap-2\">",
@@ -460,6 +504,26 @@
                 college: userItem.college || "-",
                 grade: userItem.grade || "-",
                 createTime: userItem.lastLoginTime || null
+            };
+        });
+    }
+
+    /**
+     * 构建组队申请任务列表
+     */
+    function BuildTeamApplicationReviewTaskList(pendingTeamApplicationList) {
+        if (!Array.isArray(pendingTeamApplicationList)) {
+            return [];
+        }
+        return pendingTeamApplicationList.map(function MapApplication(applicationItem) {
+            return {
+                taskType: "TEAM",
+                taskId: SafeNumber(applicationItem.applicationId),
+                recruitmentId: SafeNumber(applicationItem.recruitmentId),
+                applicantUserId: SafeNumber(applicationItem.applicantUserId),
+                applicantDisplayName: applicationItem.applicantDisplayName || "-",
+                applyRemark: applicationItem.applyRemark || "",
+                createTime: applicationItem.createTime || null
             };
         });
     }

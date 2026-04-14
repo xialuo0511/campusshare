@@ -208,6 +208,23 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
     }
 
     @Override
+    public List<TeamRecruitmentApplicationResponseDto> ListPendingApplications(
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    ) {
+        if (currentUserId == null || currentUserId <= 0L) {
+            throw new BusinessException(BizCodeEnum.UNAUTHORIZED, "未登录或登录已失效");
+        }
+        if (currentUserRole != UserRoleEnum.ADMINISTRATOR) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "仅管理员可查看全局待审批申请");
+        }
+        return teamRecruitmentApplicationMapper.ListPendingApplications()
+            .stream()
+            .map(this::BuildApplicationResponse)
+            .toList();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public TeamRecruitmentApplicationResponseDto ApproveApplication(
         Long recruitmentId,
@@ -601,4 +618,3 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
         return text == null ? "" : text.trim();
     }
 }
-

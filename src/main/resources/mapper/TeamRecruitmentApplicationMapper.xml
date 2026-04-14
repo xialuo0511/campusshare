@@ -128,5 +128,13 @@
         </if>
         GROUP BY recruitment_id
     </select>
-</mapper>
 
+    <select id="ListPendingApplications" resultMap="TeamRecruitmentApplicationResultMap">
+        SELECT
+            <include refid="TeamRecruitmentApplicationColumns"/>
+        FROM team_recruitment_application_info
+        WHERE application_status = 'PENDING'
+          AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+</mapper>

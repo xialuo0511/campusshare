@@ -54,6 +54,14 @@ public interface TeamRecruitmentService {
     );
 
     /**
+     * 查询全局待审批申请
+     */
+    List<TeamRecruitmentApplicationResponseDto> ListPendingApplications(
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    );
+
+    /**
      * 审批通过
      */
     TeamRecruitmentApplicationResponseDto ApproveApplication(
@@ -80,4 +88,3 @@ public interface TeamRecruitmentService {
      */
     TeamRecruitmentResponseDto CloseRecruitment(Long recruitmentId, Long currentUserId, UserRoleEnum currentUserRole);
 }
-

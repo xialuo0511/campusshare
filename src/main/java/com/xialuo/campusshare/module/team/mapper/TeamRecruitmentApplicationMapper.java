@@ -50,5 +50,9 @@ public interface TeamRecruitmentApplicationMapper {
         @Param("applicantUserId") Long applicantUserId,
         @Param("recruitmentIdList") List<Long> recruitmentIdList
     );
-}
 
+    /**
+     * 查询全局待审批申请
+     */
+    List<TeamRecruitmentApplicationEntity> ListPendingApplications();
+}

@@ -315,6 +315,9 @@
                 },
                 true
             );
+        },
+        ListPendingTeamRecruitmentApplications() {
+            return RequestApi("/api/v1/admin/team/applications/pending", "GET", null, true);
         }
     };
 })();

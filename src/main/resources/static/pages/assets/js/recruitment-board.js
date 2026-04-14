@@ -199,12 +199,22 @@
                 return;
             }
             if (action === "goAuth") {
-                window.location.href = "/pages/auth_access.html";
+                if (window.CampusShareApi.RedirectToAuthPage) {
+                    window.CampusShareApi.RedirectToAuthPage("/pages/recruitment_board.html");
+                } else {
+                    window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Frecruitment_board.html";
+                }
                 return;
             }
             if (!window.CampusShareApi.GetAuthToken()) {
                 ShowError(messageBar, "请先登录后再操作");
-                window.location.href = "/pages/auth_access.html";
+                window.setTimeout(function RedirectToAuthPage() {
+                    if (window.CampusShareApi.RedirectToAuthPage) {
+                        window.CampusShareApi.RedirectToAuthPage("/pages/recruitment_board.html");
+                        return;
+                    }
+                    window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Frecruitment_board.html";
+                }, 700);
                 return;
             }
 
@@ -255,7 +265,13 @@
         publishButton.addEventListener("click", async function HandlePublishClick() {
             if (!window.CampusShareApi.GetAuthToken()) {
                 ShowError(messageBar, "请先登录后再发布招募");
-                window.location.href = "/pages/auth_access.html";
+                window.setTimeout(function RedirectToAuthPage() {
+                    if (window.CampusShareApi.RedirectToAuthPage) {
+                        window.CampusShareApi.RedirectToAuthPage("/pages/recruitment_board.html");
+                        return;
+                    }
+                    window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Frecruitment_board.html";
+                }, 700);
                 return;
             }
             const payload = BuildPublishPayloadByPrompt();

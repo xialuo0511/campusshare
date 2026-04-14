@@ -59,6 +59,13 @@
             }
             if (!window.CampusShareApi.GetAuthToken()) {
                 ShowError(messageBar, "请先登录后再下载资料");
+                window.setTimeout(function RedirectToAuthPage() {
+                    if (window.CampusShareApi.RedirectToAuthPage) {
+                        window.CampusShareApi.RedirectToAuthPage("/pages/market_overview.html");
+                        return;
+                    }
+                    window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Fmarket_overview.html";
+                }, 700);
                 return;
             }
             downloadButton.disabled = true;

@@ -15,6 +15,16 @@
             return;
         }
 
+        const existingToken = window.CampusShareApi.GetAuthToken();
+        const existingProfile = window.CampusShareApi.GetCurrentUserProfile();
+        if (existingToken && existingProfile && existingProfile.userId) {
+            const redirectPath = ResolveRedirectPath(null);
+            if (redirectPath) {
+                window.location.href = redirectPath;
+                return;
+            }
+        }
+
         const textInputs = authForm.querySelectorAll("input[type='text']");
         const accountInput = textInputs[0];
         const userNameInput = textInputs[1];
@@ -81,7 +91,7 @@
                     window.CampusShareApi.SetSessionFromLogin(loginResult);
                     ShowSuccess(messageBar, `登录成功，欢迎你 ${loginResult.displayName}`);
                     window.setTimeout(function RedirectToOrderCenter() {
-                        window.location.href = "/pages/order_center.html";
+                        window.location.href = ResolveRedirectPath(loginResult);
                     }, 800);
                     return;
                 }
@@ -254,6 +264,20 @@
     function HideMessage(messageBar) {
         messageBar.style.display = "none";
         messageBar.textContent = "";
+    }
+
+    /**
+     * 解析登录后跳转路径
+     */
+    function ResolveRedirectPath(loginResult) {
+        if (window.CampusShareApi.ResolveLoginSuccessRedirect) {
+            return window.CampusShareApi.ResolveLoginSuccessRedirect(loginResult);
+        }
+        const userRole = loginResult && loginResult.userRole ? loginResult.userRole : "";
+        if (userRole === "ADMINISTRATOR") {
+            return "/pages/admin_dashboard.html";
+        }
+        return "/pages/market_overview.html";
     }
 
     document.addEventListener("DOMContentLoaded", BindAuthPage);

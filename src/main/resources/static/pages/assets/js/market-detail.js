@@ -42,6 +42,14 @@
             buyButton.addEventListener("click", async function HandleCreateOrder() {
                 if (!window.CampusShareApi.GetAuthToken()) {
                     ShowError(messageBar, "请先登录后再下单");
+                    window.setTimeout(function RedirectToAuthPage() {
+                        const currentPath = window.location.pathname + window.location.search;
+                        if (window.CampusShareApi.RedirectToAuthPage) {
+                            window.CampusShareApi.RedirectToAuthPage(currentPath);
+                            return;
+                        }
+                        window.location.href = "/pages/auth_access.html";
+                    }, 700);
                     return;
                 }
                 buyButton.disabled = true;

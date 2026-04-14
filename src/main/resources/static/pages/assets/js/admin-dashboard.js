@@ -25,11 +25,20 @@
         const profile = window.CampusShareApi.GetCurrentUserProfile();
         if (!profile || !profile.userId) {
             ShowError(messageBar, "请先登录管理员账号后再访问后台");
-            window.location.href = "/pages/auth_access.html";
+            window.setTimeout(function RedirectToAuthPage() {
+                if (window.CampusShareApi.RedirectToAuthPage) {
+                    window.CampusShareApi.RedirectToAuthPage("/pages/admin_dashboard.html");
+                    return;
+                }
+                window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Fadmin_dashboard.html";
+            }, 700);
             return;
         }
         if (profile.userRole !== "ADMINISTRATOR") {
             ShowError(messageBar, "当前账号不是管理员，无法访问后台");
+            window.setTimeout(function RedirectToOverviewPage() {
+                window.location.href = "/pages/market_overview.html";
+            }, 900);
             return;
         }
 

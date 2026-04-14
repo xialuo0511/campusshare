@@ -32,6 +32,18 @@
         messageBar.style.display = "none";
         publishForm.insertBefore(messageBar, publishForm.firstChild);
 
+        if (!window.CampusShareApi.GetAuthToken()) {
+            ShowError(messageBar, "请先登录后再发布资源");
+            window.setTimeout(function RedirectToAuthPage() {
+                if (window.CampusShareApi.RedirectToAuthPage) {
+                    window.CampusShareApi.RedirectToAuthPage("/pages/publish_create.html");
+                    return;
+                }
+                window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Fpublish_create.html";
+            }, 700);
+            return;
+        }
+
         let selectedCondition = "";
         let uploadedFileMeta = null;
         let isUploadingFile = false;

@@ -45,6 +45,13 @@
 
         if (!window.CampusShareApi.GetAuthToken()) {
             ShowError(messageBar, "请先登录后再查看订单中心");
+            window.setTimeout(function RedirectToAuthPage() {
+                if (window.CampusShareApi.RedirectToAuthPage) {
+                    window.CampusShareApi.RedirectToAuthPage("/pages/order_center.html");
+                    return;
+                }
+                window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Forder_center.html";
+            }, 700);
             return;
         }
 
@@ -478,4 +485,3 @@
 
     document.addEventListener("DOMContentLoaded", BindOrderCenterPage);
 })();
-

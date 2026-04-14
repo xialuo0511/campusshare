@@ -87,6 +87,21 @@
             background-image: radial-gradient(#bfc7d1 0.5px, transparent 0.5px);
             background-size: 24px 24px;
         }
+        @keyframes authModeSwitch {
+            0% { opacity: 0.76; transform: translateY(8px) scale(0.992); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes authFieldShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-7px); }
+            40%, 80% { transform: translateX(7px); }
+        }
+        .auth-mode-switching {
+            animation: authModeSwitch 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+        .auth-field-shake {
+            animation: authFieldShake 360ms ease;
+        }
     </style>
 </head>
 <body class="bg-pattern min-h-screen flex flex-col">

@@ -4,7 +4,8 @@
 (function InitAuthAccessPage() {
     const AUTH_MODE_LOGIN = "login";
     const AUTH_MODE_REGISTER = "register";
-    const FIELD_SWITCH_ANIMATION_MS = 200;
+    const FIELD_SWITCH_ANIMATION_MS = 240;
+    const MODE_SWITCH_ANIMATION_MS = 260;
 
     /**
      * 绑定页面行为
@@ -15,6 +16,7 @@
         if (!authForm || tabButtons.length < 2 || !window.CampusShareApi) {
             return;
         }
+        const formContainer = authForm.closest(".p-8.space-y-6") || authForm.parentElement;
 
         const existingToken = window.CampusShareApi.GetAuthToken();
         const existingProfile = window.CampusShareApi.GetCurrentUserProfile();
@@ -36,6 +38,10 @@
         const collegeSelect = authForm.querySelectorAll("select")[0];
         const gradeSelect = authForm.querySelectorAll("select")[1];
         const submitButton = authForm.querySelector("button[type='submit']");
+        const accountGroup = accountInput.closest(".space-y-1");
+        const passwordGroup = passwordInput ? passwordInput.closest(".space-y-1") : null;
+        const userNameGroup = userNameInput.closest(".space-y-1");
+        const emailGroup = emailInput.closest(".space-y-1");
 
         const messageBar = BuildMessageBar(authForm);
         const verifyCodeRow = BuildVerifyCodeRow(emailInput, authForm);
@@ -56,6 +62,7 @@
 
         let currentMode = AUTH_MODE_REGISTER;
         tabButtons[0].addEventListener("click", function HandleLoginModeClick() {
+            PlayModeSwitchAnimation(formContainer);
             currentMode = AUTH_MODE_LOGIN;
             SetModeUi(
                 currentMode,
@@ -71,6 +78,7 @@
             HideMessage(messageBar);
         });
         tabButtons[1].addEventListener("click", function HandleRegisterModeClick() {
+            PlayModeSwitchAnimation(formContainer);
             currentMode = AUTH_MODE_REGISTER;
             SetModeUi(
                 currentMode,
@@ -88,12 +96,15 @@
 
         sendCodeButton.addEventListener("click", async function HandleSendCode() {
             HideMessage(messageBar);
+            ClearFieldErrorStyles(authForm);
             if (!emailInput.value.trim()) {
                 ShowError(messageBar, "请先输入邮箱");
+                MarkFieldError(emailGroup, emailInput);
                 return;
             }
             if (!accountInput.value.trim()) {
                 ShowError(messageBar, "请先输入学号");
+                MarkFieldError(accountGroup, accountInput);
                 return;
             }
             sendCodeButton.disabled = true;
@@ -113,6 +124,26 @@
         authForm.addEventListener("submit", async function HandleSubmit(event) {
             event.preventDefault();
             HideMessage(messageBar);
+            ClearFieldErrorStyles(authForm);
+            const validResult = ValidateBeforeSubmit(
+                currentMode,
+                {
+                    accountInput,
+                    passwordInput,
+                    userNameInput,
+                    emailInput,
+                    verificationCodeInput,
+                    accountGroup,
+                    passwordGroup,
+                    userNameGroup,
+                    emailGroup,
+                    verificationCodeGroup: verifyCodeRow
+                },
+                messageBar
+            );
+            if (!validResult) {
+                return;
+            }
             submitButton.disabled = true;
             submitButton.classList.add("opacity-70");
             try {
@@ -254,6 +285,21 @@
     }
 
     /**
+     * 切换动画
+     */
+    function PlayModeSwitchAnimation(formContainer) {
+        if (!formContainer) {
+            return;
+        }
+        formContainer.classList.remove("auth-mode-switching");
+        void formContainer.offsetWidth;
+        formContainer.classList.add("auth-mode-switching");
+        window.setTimeout(function RemoveModeSwitchClass() {
+            formContainer.classList.remove("auth-mode-switching");
+        }, MODE_SWITCH_ANIMATION_MS);
+    }
+
+    /**
      * 切换模式UI
      */
     function SetModeUi(
@@ -310,7 +356,7 @@
         if (!fieldGroup || fieldGroup.dataset.transitionReady === "true") {
             return;
         }
-        fieldGroup.style.transition = "opacity 180ms ease, transform 180ms ease";
+        fieldGroup.style.transition = "opacity 220ms ease, transform 220ms ease";
         fieldGroup.style.transformOrigin = "top";
         fieldGroup.style.willChange = "opacity, transform";
         fieldGroup.dataset.transitionReady = "true";
@@ -335,7 +381,7 @@
         if (!withAnimation || previousVisibleFlag === undefined) {
             fieldGroup.style.display = visible ? "" : "none";
             fieldGroup.style.opacity = visible ? "1" : "0";
-            fieldGroup.style.transform = visible ? "translateY(0)" : "translateY(-6px)";
+            fieldGroup.style.transform = visible ? "translateY(0)" : "translateY(-10px)";
             fieldGroup.style.pointerEvents = visible ? "auto" : "none";
             return;
         }
@@ -346,7 +392,7 @@
         if (visible) {
             fieldGroup.style.display = "";
             fieldGroup.style.opacity = "0";
-            fieldGroup.style.transform = "translateY(-4px)";
+            fieldGroup.style.transform = "translateY(-10px)";
             fieldGroup.style.pointerEvents = "none";
             window.requestAnimationFrame(function AnimateShow() {
                 fieldGroup.style.opacity = "1";
@@ -361,7 +407,7 @@
         fieldGroup.style.pointerEvents = "none";
         window.requestAnimationFrame(function AnimateHide() {
             fieldGroup.style.opacity = "0";
-            fieldGroup.style.transform = "translateY(-4px)";
+            fieldGroup.style.transform = "translateY(-10px)";
         });
         const hideTimerId = window.setTimeout(function FinalizeHide() {
             if (fieldGroup.dataset.visibleFlag !== "false") {
@@ -370,6 +416,106 @@
             fieldGroup.style.display = "none";
         }, FIELD_SWITCH_ANIMATION_MS);
         fieldGroup.dataset.visibilityTimerId = String(hideTimerId);
+    }
+
+    /**
+     * 提交前校验
+     */
+    function ValidateBeforeSubmit(currentMode, fieldContext, messageBar) {
+        const accountValue = ReadValue(fieldContext.accountInput);
+        const passwordValue = ReadValue(fieldContext.passwordInput);
+        const displayNameValue = ReadValue(fieldContext.userNameInput);
+        const emailValue = ReadValue(fieldContext.emailInput);
+        const verificationCodeValue = ReadValue(fieldContext.verificationCodeInput);
+
+        if (!accountValue) {
+            ShowError(messageBar, "学号不能为空");
+            MarkFieldError(fieldContext.accountGroup, fieldContext.accountInput);
+            return false;
+        }
+        if (!passwordValue) {
+            ShowError(messageBar, "密码不能为空");
+            MarkFieldError(fieldContext.passwordGroup, fieldContext.passwordInput);
+            return false;
+        }
+
+        if (currentMode === AUTH_MODE_LOGIN) {
+            return true;
+        }
+
+        if (!displayNameValue) {
+            ShowError(messageBar, "用户名不能为空");
+            MarkFieldError(fieldContext.userNameGroup, fieldContext.userNameInput);
+            return false;
+        }
+        if (!emailValue) {
+            ShowError(messageBar, "邮箱不能为空");
+            MarkFieldError(fieldContext.emailGroup, fieldContext.emailInput);
+            return false;
+        }
+        if (!verificationCodeValue) {
+            ShowError(messageBar, "验证码不能为空");
+            MarkFieldError(fieldContext.verificationCodeGroup, fieldContext.verificationCodeInput);
+            return false;
+        }
+        if (passwordValue.length < 8) {
+            ShowError(messageBar, "密码长度至少8位");
+            MarkFieldError(fieldContext.passwordGroup, fieldContext.passwordInput);
+            return false;
+        }
+        if (!IsValidEmail(emailValue)) {
+            ShowError(messageBar, "邮箱格式不正确");
+            MarkFieldError(fieldContext.emailGroup, fieldContext.emailInput);
+            return false;
+        }
+        if (verificationCodeValue.length !== 6) {
+            ShowError(messageBar, "验证码长度必须为6位");
+            MarkFieldError(fieldContext.verificationCodeGroup, fieldContext.verificationCodeInput);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 读取输入值
+     */
+    function ReadValue(inputElement) {
+        return inputElement && inputElement.value ? inputElement.value.trim() : "";
+    }
+
+    /**
+     * 邮箱格式
+     */
+    function IsValidEmail(emailText) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailText);
+    }
+
+    /**
+     * 标记字段错误
+     */
+    function MarkFieldError(fieldGroup, fieldInput) {
+        if (fieldGroup) {
+            fieldGroup.classList.remove("auth-field-shake");
+            void fieldGroup.offsetWidth;
+            fieldGroup.classList.add("auth-field-shake");
+            window.setTimeout(function RemoveShakeClass() {
+                fieldGroup.classList.remove("auth-field-shake");
+            }, 380);
+        }
+        if (fieldInput) {
+            fieldInput.classList.add("border-red-300", "ring-2", "ring-red-100");
+            fieldInput.focus();
+        }
+    }
+
+    /**
+     * 清理字段错误样式
+     */
+    function ClearFieldErrorStyles(authForm) {
+        const fieldList = authForm.querySelectorAll("input,select");
+        fieldList.forEach(function ClearFieldClass(fieldElement) {
+            fieldElement.classList.remove("border-red-300", "ring-2", "ring-red-100");
+        });
     }
 
     /**

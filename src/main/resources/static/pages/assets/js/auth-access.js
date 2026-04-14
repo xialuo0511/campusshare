@@ -48,6 +48,13 @@
         const verifyCodeRow = BuildVerifyCodeRow(emailInput, authForm);
         const verificationCodeInput = verifyCodeRow.querySelector("input");
         const sendCodeButton = verifyCodeRow.querySelector("button");
+        const registerFieldsContainer = BuildRegisterFieldsContainer(
+            userNameInput,
+            collegeSelect,
+            gradeSelect,
+            emailInput,
+            verifyCodeRow
+        );
 
         SetupLabels(
             authForm,
@@ -73,6 +80,7 @@
                 gradeSelect,
                 emailInput,
                 verifyCodeRow,
+                registerFieldsContainer,
                 submitButton,
                 true
             );
@@ -89,6 +97,7 @@
                 gradeSelect,
                 emailInput,
                 verifyCodeRow,
+                registerFieldsContainer,
                 submitButton,
                 true
             );
@@ -188,6 +197,7 @@
             gradeSelect,
             emailInput,
             verifyCodeRow,
+            registerFieldsContainer,
             submitButton,
             false
         );
@@ -265,6 +275,41 @@
     }
 
     /**
+     * 构建注册字段容器
+     */
+    function BuildRegisterFieldsContainer(
+        userNameInput,
+        collegeSelect,
+        gradeSelect,
+        emailInput,
+        verifyCodeRow
+    ) {
+        const userNameGroup = userNameInput.closest(".space-y-1");
+        const collegeGroup = collegeSelect.closest(".space-y-1");
+        const gradeGroup = gradeSelect.closest(".space-y-1");
+        const emailGroup = emailInput.closest(".space-y-1");
+        const gridContainer = userNameGroup ? userNameGroup.parentElement : null;
+        if (!gridContainer || !userNameGroup || !collegeGroup || !gradeGroup || !emailGroup || !verifyCodeRow) {
+            return null;
+        }
+
+        const registerFieldsContainer = document.createElement("div");
+        registerFieldsContainer.className = "md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4";
+        registerFieldsContainer.setAttribute("data-register-fields", "true");
+        userNameGroup.insertAdjacentElement("beforebegin", registerFieldsContainer);
+        [
+            userNameGroup,
+            collegeGroup,
+            gradeGroup,
+            emailGroup,
+            verifyCodeRow
+        ].forEach(function AppendGroup(group) {
+            registerFieldsContainer.appendChild(group);
+        });
+        return registerFieldsContainer;
+    }
+
+    /**
      * 绑定密码显示切换
      */
     function BindPasswordToggle(passwordInput, passwordToggleButton, passwordToggleIcon) {
@@ -319,105 +364,93 @@
         gradeSelect,
         emailInput,
         verifyCodeRow,
+        registerFieldsContainer,
         submitButton,
         withAnimation
     ) {
         const loginButton = tabButtons[0];
         const registerButton = tabButtons[1];
-        const userNameGroup = userNameInput.closest(".space-y-1");
-        const collegeGroup = collegeSelect.closest(".space-y-1");
-        const gradeGroup = gradeSelect.closest(".space-y-1");
-        const emailGroup = emailInput.closest(".space-y-1");
-        const registerOnlyGroupList = [
-            userNameGroup,
-            collegeGroup,
-            gradeGroup,
-            emailGroup,
-            verifyCodeRow
-        ];
 
         if (currentMode === AUTH_MODE_LOGIN) {
             loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200";
             registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200";
-            SetRegisterFieldsVisible(registerOnlyGroupList, false, withAnimation);
+            SetRegisterContainerVisible(registerFieldsContainer, false, withAnimation);
             submitButton.textContent = "登录";
             return;
         }
 
         loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200";
         registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200";
-        SetRegisterFieldsVisible(registerOnlyGroupList, true, withAnimation);
+        SetRegisterContainerVisible(registerFieldsContainer, true, withAnimation);
         submitButton.textContent = "注册";
     }
 
     /**
-     * 设置注册字段显隐
+     * 设置注册容器显隐
      */
-    function SetRegisterFieldsVisible(fieldGroupList, visible, withAnimation) {
-        fieldGroupList.forEach(function ToggleSingleField(fieldGroup) {
-            if (!fieldGroup) {
-                return;
-            }
-            const timerIdText = fieldGroup.dataset.visibilityTimerId;
-            if (timerIdText) {
-                window.clearTimeout(Number(timerIdText));
-                delete fieldGroup.dataset.visibilityTimerId;
-            }
-            fieldGroup.getAnimations().forEach(function CancelAnimation(animation) {
-                animation.cancel();
-            });
+    function SetRegisterContainerVisible(registerFieldsContainer, visible, withAnimation) {
+        if (!registerFieldsContainer) {
+            return;
+        }
+        const timerIdText = registerFieldsContainer.dataset.visibilityTimerId;
+        if (timerIdText) {
+            window.clearTimeout(Number(timerIdText));
+            delete registerFieldsContainer.dataset.visibilityTimerId;
+        }
+        registerFieldsContainer.getAnimations().forEach(function CancelAnimation(animation) {
+            animation.cancel();
+        });
 
-            if (!withAnimation) {
-                SetRegisterFieldImmediate(fieldGroup, visible);
-                return;
-            }
+        if (!withAnimation) {
+            SetRegisterFieldImmediate(registerFieldsContainer, visible);
+            return;
+        }
 
-            if (visible) {
-                fieldGroup.style.display = "";
-                fieldGroup.style.opacity = "0";
-                fieldGroup.style.transform = "translateY(-10px)";
-                fieldGroup.style.pointerEvents = "none";
-                fieldGroup.animate(
-                    [
-                        { opacity: 0, transform: "translateY(-10px)" },
-                        { opacity: 1, transform: "translateY(0)" }
-                    ],
-                    {
-                        duration: FIELD_SHOW_ANIMATION_MS,
-                        easing: "cubic-bezier(0.22, 0.61, 0.36, 1)",
-                        fill: "forwards"
-                    }
-                );
-                const showTimerId = window.setTimeout(function FinalizeShow() {
-                    fieldGroup.style.opacity = "1";
-                    fieldGroup.style.transform = "translateY(0)";
-                    fieldGroup.style.pointerEvents = "auto";
-                }, FIELD_SHOW_ANIMATION_MS);
-                fieldGroup.dataset.visibilityTimerId = String(showTimerId);
-                return;
-            }
-
-            fieldGroup.style.opacity = "1";
-            fieldGroup.style.transform = "translateY(0)";
-            fieldGroup.style.pointerEvents = "none";
-            fieldGroup.animate(
+        if (visible) {
+            registerFieldsContainer.style.display = "";
+            registerFieldsContainer.style.opacity = "0";
+            registerFieldsContainer.style.transform = "translateY(-10px)";
+            registerFieldsContainer.style.pointerEvents = "none";
+            registerFieldsContainer.animate(
                 [
-                    { opacity: 1, transform: "translateY(0)" },
-                    { opacity: 0, transform: "translateY(-10px)" }
+                    { opacity: 0, transform: "translateY(-10px)" },
+                    { opacity: 1, transform: "translateY(0)" }
                 ],
                 {
-                    duration: FIELD_HIDE_ANIMATION_MS,
-                    easing: "ease-out",
+                    duration: FIELD_SHOW_ANIMATION_MS,
+                    easing: "cubic-bezier(0.22, 0.61, 0.36, 1)",
                     fill: "forwards"
                 }
             );
-            const hideTimerId = window.setTimeout(function FinalizeHide() {
-                fieldGroup.style.display = "none";
-                fieldGroup.style.opacity = "1";
-                fieldGroup.style.transform = "translateY(0)";
-            }, FIELD_HIDE_ANIMATION_MS);
-            fieldGroup.dataset.visibilityTimerId = String(hideTimerId);
-        });
+            const showTimerId = window.setTimeout(function FinalizeShow() {
+                registerFieldsContainer.style.opacity = "1";
+                registerFieldsContainer.style.transform = "translateY(0)";
+                registerFieldsContainer.style.pointerEvents = "auto";
+            }, FIELD_SHOW_ANIMATION_MS);
+            registerFieldsContainer.dataset.visibilityTimerId = String(showTimerId);
+            return;
+        }
+
+        registerFieldsContainer.style.opacity = "1";
+        registerFieldsContainer.style.transform = "translateY(0)";
+        registerFieldsContainer.style.pointerEvents = "none";
+        registerFieldsContainer.animate(
+            [
+                { opacity: 1, transform: "translateY(0)" },
+                { opacity: 0, transform: "translateY(-10px)" }
+            ],
+            {
+                duration: FIELD_HIDE_ANIMATION_MS,
+                easing: "ease-out",
+                fill: "forwards"
+            }
+        );
+        const hideTimerId = window.setTimeout(function FinalizeHide() {
+            registerFieldsContainer.style.display = "none";
+            registerFieldsContainer.style.opacity = "1";
+            registerFieldsContainer.style.transform = "translateY(0)";
+        }, FIELD_HIDE_ANIMATION_MS);
+        registerFieldsContainer.dataset.visibilityTimerId = String(hideTimerId);
     }
 
     /**

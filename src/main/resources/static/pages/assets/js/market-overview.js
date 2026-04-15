@@ -2,6 +2,13 @@
  * 市场总览页面逻辑
  */
 (function InitMarketOverviewPage() {
+    const RECRUITMENT_HIGHLIGHT_SIZE = 2;
+    const RECRUITMENT_STATUS_TEXT_MAP = {
+        RECRUITING: "招募中",
+        FULL: "已满员",
+        CLOSED: "已关闭",
+        EXPIRED: "已过期"
+    };
     const PRODUCT_IMAGE_LIST = [
         "https://lh3.googleusercontent.com/aida-public/AB6AXuApdsaVW3k1rzHTiDBbt9C8imJfX2GeM8ktoMJcLKshJ-s4j-Kl3vGCKjeEOOprwxXNoCFivzhW996tfni4B6i8ALn0fF1ZxG4pyLiS29_KFoFP7WNDPPhYK7wZjGuMqZlSsX5E4fqdggYUCoPqOlFMOGMbEvrKXuba5FLPRrq0KYLU3P0mBn7d7V8ErooQX5PVn6dl5YycT3IpTfFZ-h6KJoy_YL7pACzuoC6KPn778cYD9vVz1SDoGHAA8c1cluhoukLhA9ieyy8",
         "https://lh3.googleusercontent.com/aida-public/AB6AXuBN2BWozkoCD8G1NuF9UkPfYJItLL0Mgp3N_fpjU4lGYDs1slryVrlD77nZtVI55nhkSOIt5PJX_e_Iih0M6-SsH2CRMo6N-lo3gxoGiWQfpr4w3Cz6dou_-JAfO4VWcHD_DX2BX-fBN59OG4dnUdIWeCv2x_3LugMfjXeyaZzEQEyHOGSB4Q3H_nefzu3tdnWKVqMyn0JMkxSvMTFwZ_K91Ecp7o3qZH5xUWk088PFzIitje1JvqW1imSCA38j2CK1yPqjkJQeBPo",
@@ -22,6 +29,7 @@
         }
 
         const messageBar = BuildMessageBar(pageSection);
+        SyncProfilePanel();
         const recommendedHeading = FindHeadingByText("h2", "推荐交易");
         const materialsHeading = FindHeadingByText("h2", "精选资料");
         if (!recommendedHeading || !materialsHeading) {
@@ -33,7 +41,8 @@
         const recommendedSubtitle = recommendedBlock ? recommendedBlock.querySelector("p.text-sm.text-outline") : null;
         const materialsBlock = materialsHeading.closest("div.bg-surface-container-low.rounded-xl.p-6");
         const materialsList = materialsBlock ? materialsBlock.querySelector("div.space-y-3") : null;
-        if (!recommendedGrid || !materialsList) {
+        const recruitmentList = document.querySelector("[data-role='overview-recruitment-list']");
+        if (!recommendedGrid || !materialsList || !recruitmentList) {
             return;
         }
 
@@ -82,17 +91,26 @@
             }
         });
 
-        LoadOverviewData(recommendedGrid, recommendedSubtitle, materialsList, messageBar);
+        LoadOverviewData(recommendedGrid, recommendedSubtitle, materialsList, recruitmentList, messageBar);
     }
 
     /**
      * 加载总览数据
      */
-    async function LoadOverviewData(recommendedGrid, recommendedSubtitle, materialsList, messageBar) {
+    async function LoadOverviewData(recommendedGrid, recommendedSubtitle, materialsList, recruitmentList, messageBar) {
         try {
-            const overviewResult = await window.CampusShareApi.GetMarketOverview();
+            const resultList = await Promise.all([
+                window.CampusShareApi.GetMarketOverview(),
+                window.CampusShareApi.ListTeamRecruitments({
+                    pageNo: 1,
+                    pageSize: RECRUITMENT_HIGHLIGHT_SIZE
+                })
+            ]);
+            const overviewResult = resultList[0];
+            const recruitmentResult = resultList[1];
             RenderRecommendedProducts(recommendedGrid, overviewResult && overviewResult.recommendedProductList);
             RenderFeaturedMaterials(materialsList, overviewResult && overviewResult.featuredMaterialList);
+            RenderRecruitmentHighlights(recruitmentList, recruitmentResult && recruitmentResult.recruitmentList);
             if (recommendedSubtitle) {
                 recommendedSubtitle.textContent = `当前在架商品 ${SafeNumber(overviewResult.publishedProductCount)} 件，资料 ${SafeNumber(overviewResult.publishedMaterialCount)} 份`;
             }
@@ -100,8 +118,35 @@
         } catch (error) {
             RenderRecommendedProducts(recommendedGrid, []);
             RenderFeaturedMaterials(materialsList, []);
+            RenderRecruitmentHighlights(recruitmentList, []);
             ShowError(messageBar, error instanceof Error ? error.message : "首页数据加载失败");
         }
+    }
+
+    /**
+     * 同步侧边栏用户信息
+     */
+    function SyncProfilePanel() {
+        const profileNameNode = document.querySelector("[data-role='overview-profile-name']");
+        const profileRoleNode = document.querySelector("[data-role='overview-profile-role']");
+        const profileAvatarNode = document.querySelector("[data-role='overview-profile-avatar']");
+        const profile = window.CampusShareApi.GetCurrentUserProfile();
+        const hasLoginSession = profile && profile.userId;
+        if (!profileNameNode || !profileRoleNode || !profileAvatarNode) {
+            return;
+        }
+        if (!hasLoginSession) {
+            profileNameNode.textContent = "未登录用户";
+            profileRoleNode.textContent = "游客模式";
+            profileAvatarNode.textContent = "未";
+            return;
+        }
+
+        const displayName = profile.displayName || profile.account || "已登录用户";
+        const roleText = profile.userRole === "ADMINISTRATOR" ? "管理员" : "普通用户";
+        profileNameNode.textContent = displayName;
+        profileRoleNode.textContent = roleText;
+        profileAvatarNode.textContent = ResolveAvatarText(displayName);
     }
 
     /**
@@ -164,6 +209,36 @@
     }
 
     /**
+     * 渲染招募精选
+     */
+    function RenderRecruitmentHighlights(recruitmentList, teamRecruitmentList) {
+        const safeList = Array.isArray(teamRecruitmentList)
+            ? teamRecruitmentList.slice(0, RECRUITMENT_HIGHLIGHT_SIZE)
+            : [];
+        if (safeList.length === 0) {
+            recruitmentList.innerHTML = "<div class=\"p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20\"><p class=\"text-xs opacity-80\">暂无招募项目</p></div>";
+            return;
+        }
+        recruitmentList.innerHTML = safeList.map(function BuildRecruitmentCard(item, index) {
+            const directionText = item.direction || "综合";
+            const memberLimit = SafeNumber(item.memberLimit);
+            const currentMemberCount = SafeNumber(item.currentMemberCount);
+            const remainingSeats = Math.max(0, memberLimit - currentMemberCount);
+            const statusText = ResolveRecruitmentStatusText(item.recruitmentStatus);
+            return [
+                "<div class=\"p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20\">",
+                "<div class=\"flex items-center gap-2 mb-2\">",
+                `<span class=\"text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${ResolveRecruitmentTagClass(index)}\">${EscapeHtml(directionText)}</span>`,
+                `<span class=\"text-[10px] opacity-70\">${EscapeHtml(statusText)} · 剩余 ${EscapeHtml(String(remainingSeats))} 个名额</span>`,
+                "</div>",
+                `<h4 class=\"text-sm font-bold mb-1\">${EscapeHtml(item.eventName || "未命名招募")}</h4>`,
+                `<p class=\"text-xs opacity-80 line-clamp-2\">${EscapeHtml(item.skillRequirement || "暂无技能要求")}</p>`,
+                "</div>"
+            ].join("");
+        }).join("");
+    }
+
+    /**
      * 构建消息条
      */
     function BuildMessageBar(pageSection) {
@@ -189,6 +264,34 @@
      */
     function ResolveProductImage(index) {
         return PRODUCT_IMAGE_LIST[index % PRODUCT_IMAGE_LIST.length];
+    }
+
+    /**
+     * 招募状态文本
+     */
+    function ResolveRecruitmentStatusText(recruitmentStatus) {
+        return RECRUITMENT_STATUS_TEXT_MAP[recruitmentStatus] || "状态未知";
+    }
+
+    /**
+     * 招募标签颜色
+     */
+    function ResolveRecruitmentTagClass(index) {
+        if (index % 2 === 0) {
+            return "bg-tertiary-fixed-dim text-on-tertiary";
+        }
+        return "bg-secondary-container text-on-secondary-container";
+    }
+
+    /**
+     * 头像文本
+     */
+    function ResolveAvatarText(displayName) {
+        const safeText = String(displayName || "").trim();
+        if (!safeText) {
+            return "U";
+        }
+        return safeText.slice(0, 1).toUpperCase();
     }
 
     /**

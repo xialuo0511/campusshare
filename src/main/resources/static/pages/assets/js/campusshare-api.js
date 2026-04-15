@@ -19,9 +19,12 @@
         ORDER: "/pages/order_center.html",
         PUBLISH: "/pages/publish_create.html",
         RECRUITMENT: "/pages/recruitment_board.html",
-        ADMIN: "/pages/admin_dashboard.html",
-        NAV_INDEX: "/pages/index.html"
+        ADMIN: "/pages/admin_dashboard.html"
     };
+    const PUBLIC_PAGE_PATH_SET = new Set([
+        PAGE_PATH_MAP.AUTH,
+        PAGE_PATH_MAP.OVERVIEW
+    ]);
 
     let notificationPanelElement = null;
     let notificationSummaryElement = null;
@@ -137,6 +140,43 @@
     }
 
     /**
+     * 归一化页面路径
+     */
+    function NormalizePagePath(path) {
+        const safePath = ResolveSafePagePath(path);
+        if (!safePath) {
+            return "";
+        }
+        const queryIndex = safePath.indexOf("?");
+        if (queryIndex >= 0) {
+            return safePath.slice(0, queryIndex);
+        }
+        return safePath;
+    }
+
+    /**
+     * 是否为公开页面
+     */
+    function IsPublicPagePath(path) {
+        const normalizedPath = NormalizePagePath(path);
+        if (!normalizedPath) {
+            return false;
+        }
+        return PUBLIC_PAGE_PATH_SET.has(normalizedPath);
+    }
+
+    /**
+     * 是否需要登录
+     */
+    function IsAuthRequiredPagePath(path) {
+        const normalizedPath = NormalizePagePath(path);
+        if (!normalizedPath) {
+            return false;
+        }
+        return !IsPublicPagePath(normalizedPath);
+    }
+
+    /**
      * 当前页面路径
      */
     function ResolveCurrentPagePathWithQuery() {
@@ -208,6 +248,10 @@
     function NavigateToPage(targetPath) {
         const safePath = ResolveSafePagePath(targetPath);
         if (!safePath) {
+            return;
+        }
+        if (!GetAuthToken() && IsAuthRequiredPagePath(safePath)) {
+            RedirectToAuthPage(safePath);
             return;
         }
         window.location.href = safePath;
@@ -767,11 +811,35 @@
     }
 
     /**
+     * 绑定页面跳转
+     */
+    function BindPageNavigation(element, targetPath) {
+        const safePath = ResolveSafePagePath(targetPath);
+        if (!element || !safePath) {
+            return;
+        }
+        element.setAttribute("href", safePath);
+        if (element.dataset.pageNavigationBound === "true") {
+            return;
+        }
+        element.dataset.pageNavigationBound = "true";
+        element.addEventListener("click", function HandlePageNavigationClick(event) {
+            event.preventDefault();
+            NavigateToPage(safePath);
+        });
+    }
+
+    /**
      * 绑定链接导航
      */
     function BindAnchorNavigation() {
         const anchorList = Array.from(document.querySelectorAll("a"));
         anchorList.forEach(function BindAnchor(anchorElement) {
+            const dataTargetPath = anchorElement.getAttribute("data-nav-target") || "";
+            if (dataTargetPath) {
+                BindPageNavigation(anchorElement, dataTargetPath);
+                return;
+            }
             const text = anchorElement.textContent ? anchorElement.textContent.trim() : "";
             if (!text) {
                 return;
@@ -790,6 +858,11 @@
                 return;
             }
             const currentHref = anchorElement.getAttribute("href") || "";
+            const explicitTargetPath = ResolveSafePagePath(currentHref);
+            if (explicitTargetPath) {
+                BindPageNavigation(anchorElement, explicitTargetPath);
+                return;
+            }
             if (currentHref !== "#" && currentHref !== "" && currentHref !== "javascript:void(0)") {
                 return;
             }
@@ -797,7 +870,7 @@
             if (!targetPath) {
                 return;
             }
-            anchorElement.href = targetPath;
+            BindPageNavigation(anchorElement, targetPath);
         });
     }
 
@@ -807,11 +880,20 @@
     function BindButtonNavigation() {
         const buttonList = Array.from(document.querySelectorAll("button"));
         buttonList.forEach(function BindButton(buttonElement) {
+            const dataTargetPath = buttonElement.getAttribute("data-nav-target") || "";
+            if (dataTargetPath && buttonElement.dataset.pageNavigationBound !== "true") {
+                buttonElement.dataset.pageNavigationBound = "true";
+                buttonElement.addEventListener("click", function HandleDataTargetNavigation(event) {
+                    event.preventDefault();
+                    NavigateToPage(dataTargetPath);
+                });
+            }
             const buttonText = buttonElement.textContent ? buttonElement.textContent.trim() : "";
             if (!buttonText) {
                 return;
             }
             if ((buttonText.includes("发布") || buttonText.includes("去发布"))
+                && !dataTargetPath
                 && !buttonElement.closest("form")
                 && !buttonElement.hasAttribute("data-action")
                 && !buttonElement.hasAttribute("data-task-action")
@@ -827,6 +909,22 @@
                 });
             }
         });
+    }
+
+    /**
+     * 页面访问控制
+     */
+    function EnsurePageAccessControl() {
+        const currentPagePath = ResolveCurrentPagePathWithQuery();
+        const normalizedCurrentPagePath = NormalizePagePath(currentPagePath);
+        if (!normalizedCurrentPagePath) {
+            return true;
+        }
+        if (!GetAuthToken() && IsAuthRequiredPagePath(normalizedCurrentPagePath)) {
+            RedirectToAuthPage(currentPagePath);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -1136,5 +1234,10 @@
         }
     };
 
-    document.addEventListener("DOMContentLoaded", BindGlobalShellNavigation);
+    document.addEventListener("DOMContentLoaded", function InitGlobalShellNavigation() {
+        if (!EnsurePageAccessControl()) {
+            return;
+        }
+        BindGlobalShellNavigation();
+    });
 })();

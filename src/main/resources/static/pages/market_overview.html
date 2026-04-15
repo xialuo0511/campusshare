@@ -103,14 +103,14 @@
 </div>
 <div class="flex items-center gap-6">
 <div class="hidden lg:flex items-center gap-6">
-<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" href="#">交易市场</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" href="#">学习资料</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" href="#">招募板</a>
+<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" data-nav-target="/pages/market_overview.html" href="#">交易市场</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-nav-target="/pages/market_listing.html" href="#">学习资料</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-nav-target="/pages/recruitment_board.html" href="#">招募板</a>
 </div>
 <div class="flex items-center gap-4">
 <span class="material-symbols-outlined text-slate-600 cursor-pointer scale-95 active:scale-100 duration-150">notifications</span>
 <span class="material-symbols-outlined text-slate-600 cursor-pointer scale-95 active:scale-100 duration-150">account_circle</span>
-<button class="bg-primary text-on-primary px-5 py-2 rounded-lg font-semibold hover:bg-primary-container transition-all">发布</button>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-lg font-semibold hover:bg-primary-container transition-all" data-nav-target="/pages/publish_create.html">发布</button>
 </div>
 </div>
 </nav>
@@ -120,10 +120,10 @@
 <aside class="hidden xl:flex flex-col w-64 h-[calc(100vh-100px)] sticky top-24 gap-8">
 <div class="bg-surface-container-low rounded-xl p-4 flex flex-col gap-2">
 <div class="flex items-center gap-3 mb-4 px-2">
-<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">JD</div>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold" data-role="overview-profile-avatar">未</div>
 <div>
-<p class="text-sm font-semibold text-primary">个人中心</p>
-<p class="text-[10px] text-outline uppercase tracking-wider">学术馆员</p>
+<p class="text-sm font-semibold text-primary" data-role="overview-profile-name">未登录用户</p>
+<p class="text-[10px] text-outline uppercase tracking-wider" data-role="overview-profile-role">游客模式</p>
 </div>
 </div>
 <a class="flex items-center gap-3 px-3 py-2.5 bg-white dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm transition-all translate-x-1" href="#">
@@ -183,12 +183,12 @@
 <div>
 <h2 class="text-white text-xl font-bold mb-4">快捷链接</h2>
 <ul class="space-y-4">
-<li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" href="#">二手市场 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
-<li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" href="#">学习资料 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
-<li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" href="#">组队招募 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
+<li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" data-nav-target="/pages/market_listing.html" href="#">二手市场 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
+<li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" data-nav-target="/pages/market_listing.html" href="#">学习资料 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
+<li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" data-nav-target="/pages/recruitment_board.html" href="#">组队招募 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
 </ul>
 </div>
-<button class="bg-white text-primary w-full py-3 rounded-lg font-bold text-sm hover:bg-surface-container transition-colors">开始发布</button>
+<button class="bg-white text-primary w-full py-3 rounded-lg font-bold text-sm hover:bg-surface-container transition-colors" data-nav-target="/pages/publish_create.html">开始发布</button>
 </div>
 </div>
 <!-- Recommended Products Grid (High Density) -->
@@ -198,7 +198,7 @@
 <h2 class="text-2xl font-bold text-on-surface">推荐交易</h2>
 <p class="text-sm text-outline">根据您的学术轨迹精心挑选的项目</p>
 </div>
-<a class="text-primary font-bold text-sm flex items-center gap-1 hover:underline" href="#">查看全部 <span class="material-symbols-outlined text-sm">chevron_right</span></a>
+<a class="text-primary font-bold text-sm flex items-center gap-1 hover:underline" data-nav-target="/pages/market_listing.html" href="#">查看全部 <span class="material-symbols-outlined text-sm">chevron_right</span></a>
 </div>
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
 <!-- Product Card 1 -->
@@ -273,7 +273,7 @@
 <div class="lg:col-span-2 bg-surface-container-low rounded-xl p-6">
 <div class="flex justify-between items-center mb-6">
 <h2 class="text-xl font-bold text-on-surface">精选资料</h2>
-<button class="text-xs font-bold text-primary flex items-center gap-1 uppercase tracking-widest">
+<button class="text-xs font-bold text-primary flex items-center gap-1 uppercase tracking-widest" data-nav-target="/pages/publish_create.html">
                             上传文档
                             <span class="material-symbols-outlined text-sm">upload_file</span>
 </button>
@@ -320,7 +320,7 @@
 <!-- Team Recruitment Highlights -->
 <div class="bg-tertiary-container text-on-tertiary-container rounded-xl p-6 flex flex-col">
 <h2 class="text-xl font-bold mb-6">招募精选</h2>
-<div class="space-y-4 flex-1">
+<div class="space-y-4 flex-1" data-role="overview-recruitment-list">
 <div class="p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
 <div class="flex items-center gap-2 mb-2">
 <span class="text-[10px] font-bold uppercase tracking-widest bg-tertiary-fixed-dim text-on-tertiary px-2 py-0.5 rounded">调研</span>
@@ -338,7 +338,7 @@
 <p class="text-xs opacity-80 line-clamp-2">即将到来的春季赛需要一名可靠的守门员。</p>
 </div>
 </div>
-<button class="mt-6 w-full py-3 bg-on-tertiary-container text-tertiary-container rounded-lg font-bold text-sm">浏览所有项目</button>
+<button class="mt-6 w-full py-3 bg-on-tertiary-container text-tertiary-container rounded-lg font-bold text-sm" data-nav-target="/pages/recruitment_board.html">浏览所有项目</button>
 </div>
 </div>
 </section>

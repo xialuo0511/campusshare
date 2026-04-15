@@ -68,6 +68,8 @@ public enum BizCodeEnum {
     TEAM_RECRUITMENT_APPLICATION_NOT_FOUND(1030, "招募申请不存在"),
     /** 招募申请状态非法 */
     TEAM_RECRUITMENT_APPLICATION_STATUS_INVALID(1031, "招募申请状态非法"),
+    /** 请求过于频繁 */
+    RATE_LIMIT_EXCEEDED(1032, "请求过于频繁"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

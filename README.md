@@ -152,6 +152,12 @@ mvn spring-boot:run
 4. 当前环境 `environment`
 5. 检查时间 `checkTime`
 
+## 默认接口限流（Redis）
+
+1. `POST /api/v1/users/login`：1分钟最多10次（按 IP）
+2. `POST /api/v1/users/register/code/send`：10分钟最多5次（按 IP）
+3. `POST /api/v1/users/register`：10分钟最多10次（按 IP）
+
 ## Docker 部署（推荐预上线联调）
 
 1. 复制环境文件：

@@ -14,7 +14,7 @@
     function BindAuthPage() {
         const authForm = document.querySelector("main form");
         const tabButtons = document.querySelectorAll("main .border-b button");
-        if (!authForm || tabButtons.length < 2 || !window.CampusShareApi) {
+        if (!authForm || tabButtons.length < 2) {
             return;
         }
 
@@ -107,6 +107,10 @@
         sendCodeButton.addEventListener("click", async function HandleSendCode() {
             HideMessage(messageBar);
             ClearFieldErrorStyles(authForm);
+            if (!window.CampusShareApi) {
+                ShowError(messageBar, "页面初始化失败，请刷新后重试");
+                return;
+            }
             if (!emailInput.value.trim()) {
                 ShowError(messageBar, "请先输入邮箱");
                 MarkFieldError(emailGroup, emailInput);
@@ -145,6 +149,10 @@
             event.preventDefault();
             HideMessage(messageBar);
             ClearFieldErrorStyles(authForm);
+            if (!window.CampusShareApi) {
+                ShowError(messageBar, "页面初始化失败，请刷新后重试");
+                return;
+            }
             const validResult = ValidateBeforeSubmit(
                 currentMode,
                 {

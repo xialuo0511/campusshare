@@ -163,8 +163,9 @@ mvn spring-boot:run
 
 1. 登录接口：`POST /api/v1/users/login`
 2. 登出接口：`POST /api/v1/users/logout`（服务端删除 Redis 会话）
-3. 前端请求默认超时：15秒
-4. 会话失效时（`code=1002`）前端自动清理本地会话并跳转登录页
+3. 当前用户资料接口：`GET /api/v1/users/me/profile`
+4. 前端请求默认超时：15秒
+5. 会话失效时（`code=1002`）前端自动清理本地会话并跳转登录页
 
 ## Docker 部署（推荐预上线联调）
 

@@ -903,6 +903,27 @@
     }
 
     /**
+     * 同步当前会话资料
+     */
+    async function SyncSessionProfile() {
+        const token = GetAuthToken();
+        if (!token) {
+            return null;
+        }
+        const profileResponse = await RequestApi("/api/v1/users/me/profile", "GET", null, true);
+        if (!profileResponse || !profileResponse.userId) {
+            return null;
+        }
+        SetCurrentUserProfile({
+            userId: profileResponse.userId,
+            account: profileResponse.account,
+            displayName: profileResponse.displayName,
+            userRole: profileResponse.userRole
+        });
+        return profileResponse;
+    }
+
+    /**
      * 绑定链接导航
      */
     function BindAnchorNavigation() {
@@ -1207,6 +1228,7 @@
         BuildAuthPageUrl,
         RedirectToAuthPage,
         NavigateToPage,
+        SyncSessionProfile,
         RegisterUser(payload) {
             return RequestApi("/api/v1/users/register", "POST", payload, false);
         },
@@ -1383,5 +1405,10 @@
             return;
         }
         BindGlobalShellNavigation();
+        if (GetAuthToken()) {
+            SyncSessionProfile().catch(function IgnoreProfileSyncError() {
+                // 未登录或会话失效由统一请求层处理
+            });
+        }
     });
 })();

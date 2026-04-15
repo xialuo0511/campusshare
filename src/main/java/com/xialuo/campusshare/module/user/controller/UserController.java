@@ -85,6 +85,16 @@ public class UserController {
     }
 
     /**
+     * 查询当前用户资料
+     */
+    @GetMapping("/me/profile")
+    public ApiResponse<UserProfileResponseDto> GetCurrentUserProfile(HttpServletRequest httpServletRequest) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        UserProfileResponseDto responseDto = userService.GetUserProfile(currentUserId);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 查询个人资料
      */
     @GetMapping("/{userId}/profile")

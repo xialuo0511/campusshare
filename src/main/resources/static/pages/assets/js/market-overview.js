@@ -76,8 +76,8 @@
      * 同步左侧用户信息
      */
     function SyncProfilePanel(view) {
+        const hasLoginSession = !!window.CampusShareApi.GetAuthToken();
         const profile = window.CampusShareApi.GetCurrentUserProfile();
-        const hasLoginSession = profile && profile.userId;
         if (!view.profileNameNode || !view.profileRoleNode || !view.profileAvatarNode) {
             return;
         }
@@ -87,11 +87,38 @@
             view.profileAvatarNode.textContent = "未";
             return;
         }
-        const displayName = profile.displayName || profile.account || "已登录用户";
-        const roleText = profile.userRole === "ADMINISTRATOR" ? "管理员" : "普通用户";
+        const displayName = profile && (profile.displayName || profile.account)
+            ? (profile.displayName || profile.account)
+            : "已登录用户";
+        const roleText = profile && profile.userRole === "ADMINISTRATOR" ? "管理员" : "普通用户";
         view.profileNameNode.textContent = displayName;
         view.profileRoleNode.textContent = roleText;
         view.profileAvatarNode.textContent = ResolveAvatarText(displayName);
+    }
+
+    /**
+     * 初始化会话视图
+     */
+    async function InitializeSessionView(view) {
+        SyncTopActionButton(view.primaryActionButton);
+        const token = window.CampusShareApi.GetAuthToken();
+        if (!token) {
+            SyncProfilePanel(view);
+            return;
+        }
+        const profile = window.CampusShareApi.GetCurrentUserProfile();
+        if (!profile && window.CampusShareApi.SyncSessionProfile) {
+            try {
+                await window.CampusShareApi.SyncSessionProfile();
+            } catch (error) {
+                // 同步失败说明会话已失效，清理脏数据回退到未登录
+                if (window.CampusShareApi.ClearSession) {
+                    window.CampusShareApi.ClearSession();
+                }
+            }
+        }
+        SyncTopActionButton(view.primaryActionButton);
+        SyncProfilePanel(view);
     }
 
     /**
@@ -576,23 +603,3 @@
 
     document.addEventListener("DOMContentLoaded", BindMarketOverviewPage);
 })();
-    /**
-     * 初始化会话视图
-     */
-    async function InitializeSessionView(view) {
-        SyncTopActionButton(view.primaryActionButton);
-        const token = window.CampusShareApi.GetAuthToken();
-        if (!token) {
-            SyncProfilePanel(view);
-            return;
-        }
-        if (!window.CampusShareApi.GetCurrentUserProfile() && window.CampusShareApi.SyncSessionProfile) {
-            try {
-                await window.CampusShareApi.SyncSessionProfile();
-            } catch (error) {
-                // 会话同步失败时由全局请求层处理
-            }
-        }
-        SyncTopActionButton(view.primaryActionButton);
-        SyncProfilePanel(view);
-    }

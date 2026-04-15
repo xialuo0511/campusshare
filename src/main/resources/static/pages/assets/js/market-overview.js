@@ -29,6 +29,7 @@
         }
 
         const messageBar = BuildMessageBar(pageSection);
+        SyncTopActionButton();
         SyncProfilePanel();
         const recommendedHeading = FindHeadingByText("h2", "推荐交易");
         const materialsHeading = FindHeadingByText("h2", "精选资料");
@@ -147,6 +148,26 @@
         profileNameNode.textContent = displayName;
         profileRoleNode.textContent = roleText;
         profileAvatarNode.textContent = ResolveAvatarText(displayName);
+    }
+
+    /**
+     * 同步顶部主按钮
+     */
+    function SyncTopActionButton() {
+        const actionButton = document.querySelector("[data-role='overview-primary-action']");
+        if (!actionButton) {
+            return;
+        }
+        const hasLoginSession = !!window.CampusShareApi.GetAuthToken();
+        if (hasLoginSession) {
+            actionButton.textContent = "发布";
+            actionButton.setAttribute("data-nav-target", "/pages/publish_create.html");
+            actionButton.setAttribute("aria-label", "发布");
+            return;
+        }
+        actionButton.textContent = "登录";
+        actionButton.setAttribute("data-nav-target", "/pages/auth_access.html");
+        actionButton.setAttribute("aria-label", "登录");
     }
 
     /**

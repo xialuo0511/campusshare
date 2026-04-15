@@ -1013,7 +1013,8 @@
                 buttonElement.dataset.pageNavigationBound = "true";
                 buttonElement.addEventListener("click", function HandleDataTargetNavigation(event) {
                     event.preventDefault();
-                    NavigateToPage(dataTargetPath);
+                    const currentTargetPath = buttonElement.getAttribute("data-nav-target") || "";
+                    NavigateToPage(currentTargetPath);
                 });
             }
             const buttonText = buttonElement.textContent ? buttonElement.textContent.trim() : "";

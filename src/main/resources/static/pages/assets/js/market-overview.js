@@ -19,7 +19,7 @@
     /**
      * 页面初始化
      */
-    function BindMarketOverviewPage() {
+    async function BindMarketOverviewPage() {
         if (!window.CampusShareApi) {
             return;
         }
@@ -43,8 +43,7 @@
         };
         view.messageBarNode = BuildMessageBar(pageSection);
 
-        SyncTopActionButton(view.primaryActionButton);
-        SyncProfilePanel(view);
+        await InitializeSessionView(view);
         BindRecommendedProductClick(view.productGridNode);
         BindMaterialDownload(view, view.materialListNode);
         RenderLoadingState(view);
@@ -577,3 +576,23 @@
 
     document.addEventListener("DOMContentLoaded", BindMarketOverviewPage);
 })();
+    /**
+     * 初始化会话视图
+     */
+    async function InitializeSessionView(view) {
+        SyncTopActionButton(view.primaryActionButton);
+        const token = window.CampusShareApi.GetAuthToken();
+        if (!token) {
+            SyncProfilePanel(view);
+            return;
+        }
+        if (!window.CampusShareApi.GetCurrentUserProfile() && window.CampusShareApi.SyncSessionProfile) {
+            try {
+                await window.CampusShareApi.SyncSessionProfile();
+            } catch (error) {
+                // 会话同步失败时由全局请求层处理
+            }
+        }
+        SyncTopActionButton(view.primaryActionButton);
+        SyncProfilePanel(view);
+    }

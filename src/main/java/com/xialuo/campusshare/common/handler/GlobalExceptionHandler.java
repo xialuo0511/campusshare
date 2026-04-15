@@ -6,6 +6,7 @@ import com.xialuo.campusshare.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
+import org.springframework.dao.DataAccessException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -39,6 +40,14 @@ public class GlobalExceptionHandler {
             return ApiResponse.Failure(BizCodeEnum.PARAM_INVALID, message, GetRequestId(request));
         }
         return ApiResponse.Failure(BizCodeEnum.PARAM_INVALID, "请求参数不合法", GetRequestId(request));
+    }
+
+    /**
+     * 处理数据库访问异常
+     */
+    @ExceptionHandler(DataAccessException.class)
+    public ApiResponse<Object> HandleDataAccessException(DataAccessException exception, HttpServletRequest request) {
+        return ApiResponse.Failure(BizCodeEnum.SYSTEM_ERROR, "数据库访问异常，请确认数据库与建表脚本已初始化", GetRequestId(request));
     }
 
     /**

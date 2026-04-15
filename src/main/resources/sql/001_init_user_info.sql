@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS user_info (
     user_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '用户ID',
-    account VARCHAR(30) NOT NULL COMMENT '账号',
+    account VARCHAR(11) NOT NULL COMMENT '学号',
     password_hash VARCHAR(200) NOT NULL COMMENT '密码哈希',
     display_name VARCHAR(20) NOT NULL COMMENT '昵称',
     email VARCHAR(100) NULL COMMENT '邮箱',

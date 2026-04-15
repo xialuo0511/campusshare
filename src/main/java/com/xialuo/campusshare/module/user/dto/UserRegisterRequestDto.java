@@ -2,15 +2,16 @@ package com.xialuo.campusshare.module.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
  * 用户注册请求
  */
 public class UserRegisterRequestDto {
-    /** 学号或工号 */
-    @NotBlank(message = "学号或工号不能为空")
-    @Size(max = 30, message = "学号或工号长度不能超过30")
+    /** 学号 */
+    @NotBlank(message = "学号不能为空")
+    @Pattern(regexp = "^\\d{11}$", message = "学号必须为11位数字")
     private String account;
 
     /** 登录密码 */
@@ -142,4 +143,3 @@ public class UserRegisterRequestDto {
         this.verificationCode = verificationCode;
     }
 }
-

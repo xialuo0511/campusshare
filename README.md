@@ -58,18 +58,14 @@ CampusShare 面向校内学生与教师，统一承载以下三类业务：
 
 ## 当前开发状态
 
-当前仓库处于基础搭建阶段，已完成：
+当前仓库已完成首批核心闭环并可联调：
 
-1. Spring Boot 工程初始化
-2. 基础领域实体类（User、Resource、Order、Report、Point 等）骨架
-3. 基础业务枚举（角色、状态、通知类型、积分流水类型等）定义
-
-尚未完成：
-
-1. 数据库建表脚本与 Mapper/XML
-2. 业务 Service 与接口 Controller
-3. 权限体系落地（RBAC 细化）
-4. 单元测试与集成测试
+1. 用户注册登录、邮箱验证码、管理员审核
+2. 商品发布/列表/详情、下单与订单状态流转
+3. 学习资料上传下载、积分流水与通知
+4. 招募发布申请审批、后台待办聚合
+5. 商品收藏、评论、举报闭环
+6. 前端核心页面已接入真实接口（登录、市场、详情、发布、招募、后台、订单）
 
 ## 目录结构
 
@@ -90,18 +86,87 @@ campusshare
 
 1. 准备环境：JDK 17、Maven 3.9+、MySQL 8.x、Redis
 2. 创建数据库：`campusshare`
-3. 修改配置：`src/main/resources/application.properties`
-4. 编译项目：
+3. 设置环境变量（或直接用默认值启动）：
+
+```bash
+set SPRING_PROFILES_ACTIVE=dev
+set DATASOURCE_URL=jdbc:mysql://localhost:3306/campusshare?useSSL=false^&serverTimezone=Asia/Shanghai^&characterEncoding=utf8
+set DATASOURCE_USERNAME=root
+set DATASOURCE_PASSWORD=你的密码
+set REDIS_HOST=localhost
+set REDIS_PORT=6379
+```
+
+4. 开发环境默认会执行建表脚本（`spring.sql.init.mode=always`）
+5. 编译项目：
 
 ```bash
 mvn -DskipTests compile
 ```
 
-5. 启动项目：
+6. 启动项目：
 
 ```bash
 mvn spring-boot:run
 ```
+
+7. 打开首页：
+   - `http://localhost:8080/`
+
+## 关键环境变量
+
+1. 服务端口：`SERVER_PORT`（默认 `8080`）
+2. 运行环境：`SPRING_PROFILES_ACTIVE`（`dev` / `prod`）
+3. 数据库：
+   - `DATASOURCE_URL`
+   - `DATASOURCE_USERNAME`
+   - `DATASOURCE_PASSWORD`
+4. Redis：
+   - `REDIS_HOST`
+   - `REDIS_PORT`
+   - `REDIS_PASSWORD`
+5. SQL 初始化：
+   - `SPRING_SQL_INIT_MODE`（开发建议 `always`，生产建议 `never`）
+6. 邮件通知：
+   - `MAIL_HOST`
+   - `MAIL_PORT`
+   - `MAIL_USERNAME`
+   - `MAIL_PASSWORD`
+   - `MAIL_SMTP_AUTH`
+   - `MAIL_SMTP_STARTTLS_ENABLE`
+
+## 健康检查
+
+提供公共接口：
+
+1. `GET /api/v1/system/health`
+
+返回项包含：
+
+1. 总体状态 `overallStatus`
+2. 数据库状态 `databaseStatus`
+3. Redis状态 `redisStatus`
+4. 当前环境 `environment`
+5. 检查时间 `checkTime`
+
+## Docker 部署（推荐预上线联调）
+
+1. 复制环境文件：
+
+```bash
+cd deploy
+copy .env.example .env
+```
+
+2. 根据实际环境修改 `.env`（至少修改数据库密码）
+3. 启动：
+
+```bash
+docker compose --env-file .env -f docker-compose.yml up -d --build
+```
+
+4. 访问：
+   - `http://localhost:${APP_PORT}`
 
 ## 非功能目标（来自 SRS）
 

@@ -1,5 +1,5 @@
-﻿/**
- * CampusShare 椤甸潰鎺ュ彛灏佽
+/**
+ * CampusShare 页面接口封装
  */
 (function InitCampusShareApi() {
     const AUTH_TOKEN_STORAGE_KEY = "campusshare.authToken";
@@ -7,9 +7,6 @@
     const AUTH_NOTICE_STORAGE_KEY = "campusshare.authNotice";
     const REQUEST_ID_HEADER = "X-Request-Id";
     const AUTH_TOKEN_HEADER = "X-Auth-Token";
-    const REQUEST_TIMEOUT_MS = 15000;
-    const BIZ_CODE_SUCCESS = 0;
-    const BIZ_CODE_UNAUTHORIZED = 1002;
     const ADMINISTRATOR_ROLE = "ADMINISTRATOR";
     const NOTIFICATION_PANEL_ID = "campusshare-notification-panel";
     const NOTIFICATION_PANEL_STYLE_ID = "campusshare-notification-panel-style";
@@ -45,24 +42,23 @@
     let notificationPanelVisible = false;
     let notificationRequestSequence = 0;
     let notificationDataList = [];
-    let authRedirecting = false;
 
     /**
-     * 鐢熸垚璇锋眰ID
+     * 生成请求ID
      */
     function BuildRequestId() {
         return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
     }
 
     /**
-     * 璇诲彇浠ょ墝
+     * 读取令牌
      */
     function GetAuthToken() {
         return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
     }
 
     /**
-     * 淇濆瓨浠ょ墝
+     * 保存令牌
      */
     function SetAuthToken(token) {
         if (!token) {
@@ -72,14 +68,14 @@
     }
 
     /**
-     * 娓呯悊浠ょ墝
+     * 清理令牌
      */
     function ClearAuthToken() {
         window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
     }
 
     /**
-     * 璇诲彇褰撳墠鐢ㄦ埛淇℃伅
+     * 读取当前用户信息
      */
     function GetCurrentUserProfile() {
         const profileText = window.localStorage.getItem(USER_PROFILE_STORAGE_KEY);
@@ -94,7 +90,7 @@
     }
 
     /**
-     * 淇濆瓨褰撳墠鐢ㄦ埛淇℃伅
+     * 保存当前用户信息
      */
     function SetCurrentUserProfile(profile) {
         if (!profile) {
@@ -104,14 +100,14 @@
     }
 
     /**
-     * 娓呯悊褰撳墠鐢ㄦ埛淇℃伅
+     * 清理当前用户信息
      */
     function ClearCurrentUserProfile() {
         window.localStorage.removeItem(USER_PROFILE_STORAGE_KEY);
     }
 
     /**
-     * 淇濆瓨鐧诲綍浼氳瘽淇℃伅
+     * 保存登录会话信息
      */
     function SetSessionFromLogin(loginData) {
         if (!loginData) {
@@ -127,7 +123,7 @@
     }
 
     /**
-     * 娓呯悊鐧诲綍浼氳瘽淇℃伅
+     * 清理登录会话信息
      */
     function ClearSession() {
         ClearAuthToken();
@@ -135,7 +131,7 @@
     }
 
     /**
-     * 鍐欏叆鐧诲綍鎻愮ず
+     * 写入登录提示
      */
     function SetAuthNotice(noticeText) {
         const safeNoticeText = noticeText == null ? "" : String(noticeText).trim();
@@ -145,12 +141,13 @@
         try {
             window.sessionStorage.setItem(AUTH_NOTICE_STORAGE_KEY, safeNoticeText);
         } catch (error) {
-            // 浼氳瘽瀛樺偍涓嶅彲鐢ㄦ椂蹇界暐
+            // 忽略会话存储异常
         }
     }
 
     /**
-     * 璇诲彇骞舵竻鐞嗙櫥褰曟彁绀?     */
+     * 读取并清理登录提示
+     */
     function ConsumeAuthNotice() {
         try {
             const noticeText = window.sessionStorage.getItem(AUTH_NOTICE_STORAGE_KEY) || "";
@@ -162,7 +159,7 @@
     }
 
     /**
-     * 瑙ｆ瀽瀹夊叏椤甸潰璺緞
+     * 解析安全页面路径
      */
     function ResolveSafePagePath(path) {
         if (!path || typeof path !== "string") {
@@ -179,7 +176,7 @@
     }
 
     /**
-     * 鏋勫缓鍏紑鏂囦欢璁块棶鍦板潃
+     * 构建公开文件访问地址
      */
     function BuildPublicFileUrl(fileId) {
         const safeFileId = fileId == null ? "" : String(fileId).trim();
@@ -190,7 +187,8 @@
     }
 
     /**
-     * 褰掍竴鍖栭〉闈㈣矾寰?     */
+     * 归一化页面路径
+     */
     function NormalizePagePath(path) {
         const safePath = ResolveSafePagePath(path);
         if (!safePath) {
@@ -204,7 +202,7 @@
     }
 
     /**
-     * 鏄惁涓哄叕寮€椤甸潰
+     * 是否为公开页面
      */
     function IsPublicPagePath(path) {
         const normalizedPath = NormalizePagePath(path);
@@ -215,7 +213,8 @@
     }
 
     /**
-     * 鏄惁闇€瑕佺櫥褰?     */
+     * 是否需要登录
+     */
     function IsAuthRequiredPagePath(path) {
         const normalizedPath = NormalizePagePath(path);
         if (!normalizedPath) {
@@ -225,7 +224,7 @@
     }
 
     /**
-     * 褰撳墠椤甸潰璺緞
+     * 当前页面路径
      */
     function ResolveCurrentPagePathWithQuery() {
         const pathname = window.location.pathname || "";
@@ -238,7 +237,7 @@
     }
 
     /**
-     * 鏋勫缓鐧诲綍椤靛湴鍧€
+     * 构建登录页地址
      */
     function BuildAuthPageUrl(redirectPath) {
         const safeRedirectPath = ResolveSafePagePath(redirectPath || "");
@@ -249,7 +248,8 @@
     }
 
     /**
-     * 瑙ｆ瀽URL涓殑閲嶅畾鍚戣矾寰?     */
+     * 解析URL中的重定向路径
+     */
     function ResolveRedirectPathFromQuery() {
         const searchParams = new URLSearchParams(window.location.search || "");
         const redirectPath = searchParams.get("redirect");
@@ -257,7 +257,7 @@
     }
 
     /**
-     * 瑙ｆ瀽榛樿棣栭〉
+     * 解析默认首页
      */
     function ResolveDefaultHomePathByRole(userRole) {
         if (userRole === ADMINISTRATOR_ROLE) {
@@ -267,7 +267,7 @@
     }
 
     /**
-     * 瑙ｆ瀽鐧诲綍鎴愬姛璺宠浆鍦板潃
+     * 解析登录成功跳转地址
      */
     function ResolveLoginSuccessRedirect(loginData) {
         const redirectPath = ResolveRedirectPathFromQuery();
@@ -282,7 +282,8 @@
     }
 
     /**
-     * 璺宠浆鐧诲綍椤?     */
+     * 跳转登录页
+     */
     function RedirectToAuthPage(redirectPath, noticeText) {
         const targetPath = redirectPath || ResolveCurrentPagePathWithQuery();
         SetAuthNotice(noticeText);
@@ -290,7 +291,7 @@
     }
 
     /**
-     * 椤甸潰璺宠浆
+     * 页面跳转
      */
     function NavigateToPage(targetPath) {
         const safePath = ResolveSafePagePath(targetPath);
@@ -305,7 +306,7 @@
     }
 
     /**
-     * 瑙ｆ瀽瀵艰埅鏂囨湰瀵瑰簲璺緞
+     * 解析导航文本对应路径
      */
     function ResolvePathByNavText(navText) {
         const text = (navText || "").trim();
@@ -315,6 +316,8 @@
         const lowerText = text.toLowerCase();
         if (
             text.includes("管理员")
+            || text.includes("仪表板")
+            || text.includes("工作台")
             || lowerText.includes("dashboard")
             || lowerText.includes("admin")
         ) {
@@ -322,6 +325,7 @@
         }
         if (
             text.includes("交易市场")
+            || text === "市场"
             || text.includes("首页")
             || lowerText.includes("marketplace")
             || lowerText.includes("home")
@@ -346,14 +350,11 @@
         if (text.includes("设置") || lowerText.includes("setting")) {
             return PAGE_PATH_MAP.PROFILE;
         }
-        if (lowerText.includes("textbook") || lowerText.includes("equipment") || lowerText.includes("lab")) {
-            return PAGE_PATH_MAP.LISTING;
-        }
         return "";
     }
 
     /**
-     * 鏌ユ壘鍥炬爣鑺傜偣
+     * 查找图标节点
      */
     function FindMaterialIconElement(iconName) {
         if (!iconName) {
@@ -370,7 +371,7 @@
     }
 
     /**
-     * 瑙ｆ瀽鍥炬爣瑙﹀彂鑺傜偣
+     * 解析图标触发节点
      */
     function ResolveIconTriggerElement(iconElement) {
         if (!iconElement) {
@@ -383,7 +384,8 @@
     }
 
     /**
-     * 纭繚鑺傜偣鍙偣鍑?     */
+     * 确保节点可点击
+     */
     function EnsureInteractiveElement(triggerElement) {
         if (!triggerElement) {
             return;
@@ -412,7 +414,7 @@
     }
 
     /**
-     * 娉ㄥ叆閫氱煡闈㈡澘鏍峰紡
+     * 注入通知面板样式
      */
     function EnsureNotificationPanelStyle() {
         if (document.getElementById(NOTIFICATION_PANEL_STYLE_ID)) {
@@ -555,7 +557,7 @@
     }
 
     /**
-     * 鏋勫缓閫氱煡闈㈡澘鑺傜偣
+     * 构建通知面板节点
      */
     function EnsureNotificationPanelElement() {
         if (notificationPanelElement) {
@@ -568,12 +570,12 @@
         notificationPanelElement.setAttribute("aria-hidden", "true");
         notificationPanelElement.innerHTML = `
             <div class="campusshare-notification-header">
-                <span class="campusshare-notification-title">娑堟伅閫氱煡</span>
-                <button type="button" class="campusshare-notification-mark-all" data-action="mark-all-read">鍏ㄩ儴宸茶</button>
+                <span class="campusshare-notification-title">消息通知</span>
+                <button type="button" class="campusshare-notification-mark-all" data-action="mark-all-read">全部已读</button>
             </div>
-            <div class="campusshare-notification-summary" data-role="notification-summary">姝ｅ湪鍔犺浇...</div>
+            <div class="campusshare-notification-summary" data-role="notification-summary">正在加载...</div>
             <div class="campusshare-notification-list" data-role="notification-list">
-                <div class="campusshare-notification-empty">鏆傛棤閫氱煡</div>
+                <div class="campusshare-notification-empty">暂无通知</div>
             </div>
         `;
         document.body.appendChild(notificationPanelElement);
@@ -588,17 +590,17 @@
     }
 
     /**
-     * 鏇存柊闈㈡澘鎽樿
+     * 更新面板摘要
      */
     function SetNotificationSummary(totalCount, unreadCount) {
         if (!notificationSummaryElement) {
             return;
         }
-        notificationSummaryElement.textContent = `鍏?${totalCount} 鏉★紝鏈 ${unreadCount} 鏉;
+        notificationSummaryElement.textContent = `共 ${totalCount} 条，未读 ${unreadCount} 条`;
     }
 
     /**
-     * 鏇存柊閾冮摏瑙掓爣
+     * 更新铃铛角标
      */
     function UpdateNotificationBadge(unreadCount) {
         const notificationIcon = FindMaterialIconElement("notifications");
@@ -625,7 +627,7 @@
     }
 
     /**
-     * 鍏抽棴閫氱煡闈㈡澘
+     * 关闭通知面板
      */
     function CloseNotificationPanel() {
         if (!notificationPanelElement) {
@@ -637,7 +639,8 @@
     }
 
     /**
-     * 鏍煎紡鍖栨椂闂?     */
+     * 格式化时间
+     */
     function FormatNotificationTime(timeText) {
         if (!timeText) {
             return "";
@@ -655,7 +658,7 @@
     }
 
     /**
-     * 娓叉煋閫氱煡鍒楄〃
+     * 渲染通知列表
      */
     function RenderNotificationList() {
         const limitedNotificationList = (notificationDataList || []).slice(0, NOTIFICATION_MAX_RENDER_COUNT);
@@ -674,7 +677,7 @@
         if (!limitedNotificationList.length) {
             const emptyElement = document.createElement("div");
             emptyElement.className = "campusshare-notification-empty";
-            emptyElement.textContent = "鏆傛棤閫氱煡";
+            emptyElement.textContent = "暂无通知";
             notificationListElement.appendChild(emptyElement);
             return;
         }
@@ -683,7 +686,7 @@
             itemElement.className = `campusshare-notification-item${notificationItem.readFlag ? "" : " is-unread"}`;
             const titleElement = document.createElement("span");
             titleElement.className = "campusshare-notification-item-title";
-            titleElement.textContent = notificationItem.title || "绯荤粺閫氱煡";
+            titleElement.textContent = notificationItem.title || "系统通知";
 
             const contentElement = document.createElement("div");
             contentElement.className = "campusshare-notification-item-content";
@@ -699,7 +702,7 @@
             const readButton = document.createElement("button");
             readButton.type = "button";
             readButton.className = "campusshare-notification-item-action";
-            readButton.textContent = notificationItem.readFlag ? "宸茶" : "鏍囪宸茶";
+            readButton.textContent = notificationItem.readFlag ? "已读" : "标记已读";
             readButton.disabled = !!notificationItem.readFlag;
             readButton.addEventListener("click", function HandleReadNotification() {
                 MarkSingleNotificationRead(notificationItem.notificationId);
@@ -714,12 +717,12 @@
     }
 
     /**
-     * 鎷夊彇閫氱煡鍒楄〃
+     * 拉取通知列表
      */
     async function RefreshNotificationData() {
         const currentSequence = ++notificationRequestSequence;
         if (notificationSummaryElement) {
-            notificationSummaryElement.textContent = "姝ｅ湪鍔犺浇...";
+            notificationSummaryElement.textContent = "正在加载...";
         }
         try {
             const notificationList = await RequestApi("/api/v1/notifications", "GET", null, true);
@@ -737,18 +740,18 @@
                 notificationListElement.innerHTML = "";
                 const failElement = document.createElement("div");
                 failElement.className = "campusshare-notification-empty";
-                failElement.textContent = error.message || "閫氱煡鍔犺浇澶辫触";
+                failElement.textContent = error.message || "通知加载失败";
                 notificationListElement.appendChild(failElement);
             }
             UpdateNotificationBadge(0);
             if (notificationSummaryElement) {
-                notificationSummaryElement.textContent = "閫氱煡鍔犺浇澶辫触";
+                notificationSummaryElement.textContent = "通知加载失败";
             }
         }
     }
 
     /**
-     * 鏍囪鍗曟潯閫氱煡宸茶
+     * 标记单条通知已读
      */
     async function MarkSingleNotificationRead(notificationId) {
         if (!notificationId) {
@@ -764,12 +767,12 @@
             });
             RenderNotificationList();
         } catch (error) {
-            window.alert(error.message || "鏍囪宸茶澶辫触");
+            window.alert(error.message || "标记已读失败");
         }
     }
 
     /**
-     * 鍏ㄩ儴鏍囪宸茶
+     * 全部标记已读
      */
     async function MarkAllNotificationRead() {
         const unreadNotificationList = (notificationDataList || []).filter(function FilterUnread(notificationItem) {
@@ -780,7 +783,7 @@
         }
         if (notificationMarkAllReadButton) {
             notificationMarkAllReadButton.disabled = true;
-            notificationMarkAllReadButton.textContent = "澶勭悊涓?..";
+            notificationMarkAllReadButton.textContent = "处理中...";
         }
         try {
             for (const notificationItem of unreadNotificationList) {
@@ -791,17 +794,17 @@
             });
             RenderNotificationList();
         } catch (error) {
-            window.alert(error.message || "鎵归噺宸茶澶辫触");
+            window.alert(error.message || "批量已读失败");
             RenderNotificationList();
         } finally {
             if (notificationMarkAllReadButton) {
-                notificationMarkAllReadButton.textContent = "鍏ㄩ儴宸茶";
+                notificationMarkAllReadButton.textContent = "全部已读";
             }
         }
     }
 
     /**
-     * 瀹氫綅閫氱煡闈㈡澘
+     * 定位通知面板
      */
     function PositionNotificationPanel(triggerElement) {
         if (!triggerElement || !notificationPanelElement) {
@@ -827,7 +830,7 @@
     }
 
     /**
-     * 鎵撳紑閫氱煡闈㈡澘
+     * 打开通知面板
      */
     async function OpenNotificationPanel(triggerElement) {
         notificationPanelTriggerElement = triggerElement;
@@ -841,7 +844,7 @@
     }
 
     /**
-     * 鍒囨崲閫氱煡闈㈡澘
+     * 切换通知面板
      */
     async function ToggleNotificationPanel(triggerElement) {
         if (notificationPanelVisible) {
@@ -852,7 +855,7 @@
     }
 
     /**
-     * 鏂囨。鐐瑰嚮鏃跺鐞嗛€氱煡闈㈡澘鍏抽棴
+     * 文档点击时处理通知面板关闭
      */
     function HandleDocumentClickForNotification(event) {
         if (!notificationPanelVisible || !notificationPanelElement) {
@@ -869,7 +872,7 @@
     }
 
     /**
-     * 閿洏鍏抽棴閫氱煡闈㈡澘
+     * 键盘关闭通知面板
      */
     function HandleEscapeForNotification(event) {
         if (event.key === "Escape") {
@@ -878,7 +881,7 @@
     }
 
     /**
-     * 缁戝畾椤甸潰璺宠浆
+     * 绑定页面跳转
      */
     function BindPageNavigation(element, targetPath) {
         const safePath = ResolveSafePagePath(targetPath);
@@ -897,65 +900,7 @@
     }
 
     /**
-     * 澶勭悊浼氳瘽澶辨晥
-     */
-    function HandleUnauthorizedState(messageText, needAuth) {
-        ClearSession();
-        const currentPathWithQuery = ResolveCurrentPagePathWithQuery();
-        const currentNormalizedPath = NormalizePagePath(currentPathWithQuery);
-        if (currentNormalizedPath === PAGE_PATH_MAP.AUTH) {
-            return;
-        }
-        if (!needAuth && !IsAuthRequiredPagePath(currentNormalizedPath)) {
-            return;
-        }
-        if (authRedirecting) {
-            return;
-        }
-        authRedirecting = true;
-        const noticeText = (messageText || "").trim() || "鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍";
-        window.setTimeout(function RedirectAfterUnauthorized() {
-            RedirectToAuthPage(currentPathWithQuery, noticeText);
-        }, 80);
-    }
-
-    /**
-     * 閫€鍑哄苟璺宠浆鐧诲綍椤?     */
-    async function PerformLogoutAndRedirect() {
-        const token = GetAuthToken();
-        if (token) {
-            try {
-                await RequestApi("/api/v1/users/logout", "POST", {}, true);
-            } catch (error) {
-                // 鐧诲嚭澶辫触鏃剁户缁竻鐞嗘湰鍦颁細璇?            }
-        }
-        ClearSession();
-        window.location.href = PAGE_PATH_MAP.AUTH;
-    }
-
-    /**
-     * 鍚屾褰撳墠浼氳瘽璧勬枡
-     */
-    async function SyncSessionProfile() {
-        const token = GetAuthToken();
-        if (!token) {
-            return null;
-        }
-        const profileResponse = await RequestApi("/api/v1/users/me/profile", "GET", null, true);
-        if (!profileResponse || !profileResponse.userId) {
-            return null;
-        }
-        SetCurrentUserProfile({
-            userId: profileResponse.userId,
-            account: profileResponse.account,
-            displayName: profileResponse.displayName,
-            userRole: profileResponse.userRole
-        });
-        return profileResponse;
-    }
-
-    /**
-     * 缁戝畾閾炬帴瀵艰埅
+     * 绑定链接导航
      */
     function BindAnchorNavigation() {
         const anchorList = Array.from(document.querySelectorAll("a"));
@@ -969,19 +914,16 @@
             if (!text) {
                 return;
             }
-            if (text.includes("鐧诲嚭") || text.toLowerCase().includes("logout")) {
+            if (text.includes("登出") || text.toLowerCase().includes("logout")) {
                 anchorElement.href = "javascript:void(0)";
-                if (anchorElement.dataset.logoutNavigationBound === "true") {
-                    return;
-                }
-                anchorElement.dataset.logoutNavigationBound = "true";
-                anchorElement.addEventListener("click", async function HandleLogoutClick(event) {
+                anchorElement.addEventListener("click", function HandleLogoutClick(event) {
                     event.preventDefault();
-                    await PerformLogoutAndRedirect();
+                    ClearSession();
+                    window.location.href = PAGE_PATH_MAP.AUTH;
                 });
                 return;
             }
-            if (text.includes("鐧诲綍") || text.includes("娉ㄥ唽")) {
+            if (text.includes("登录") || text.includes("注册")) {
                 anchorElement.href = PAGE_PATH_MAP.AUTH;
                 return;
             }
@@ -1003,7 +945,7 @@
     }
 
     /**
-     * 缁戝畾鎸夐挳瀵艰埅
+     * 绑定按钮导航
      */
     function BindButtonNavigation() {
         const buttonList = Array.from(document.querySelectorAll("button"));
@@ -1021,7 +963,7 @@
             if (!buttonText) {
                 return;
             }
-            if ((buttonText.includes("鍙戝竷") || buttonText.includes("鍘诲彂甯?))
+            if ((buttonText.includes("发布") || buttonText.includes("去发布"))
                 && !dataTargetPath
                 && !buttonElement.closest("form")
                 && !buttonElement.hasAttribute("data-action")
@@ -1031,20 +973,17 @@
                     NavigateToPage(PAGE_PATH_MAP.PUBLISH);
                 });
             }
-            if (buttonText.includes("鐧诲嚭") && !buttonElement.hasAttribute("data-action")) {
-                if (buttonElement.dataset.logoutNavigationBound === "true") {
-                    return;
-                }
-                buttonElement.dataset.logoutNavigationBound = "true";
-                buttonElement.addEventListener("click", async function HandleButtonLogout() {
-                    await PerformLogoutAndRedirect();
+            if (buttonText.includes("登出") && !buttonElement.hasAttribute("data-action")) {
+                buttonElement.addEventListener("click", function HandleButtonLogout() {
+                    ClearSession();
+                    window.location.href = PAGE_PATH_MAP.AUTH;
                 });
             }
         });
     }
 
     /**
-     * 椤甸潰璁块棶鎺у埗
+     * 页面访问控制
      */
     function EnsurePageAccessControl() {
         const currentPagePath = ResolveCurrentPagePathWithQuery();
@@ -1060,7 +999,7 @@
     }
 
     /**
-     * 缁戝畾鍥炬爣瀵艰埅
+     * 绑定图标导航
      */
     function BindIconNavigation() {
         const accountIcon = FindMaterialIconElement("account_circle");
@@ -1101,7 +1040,7 @@
     }
 
     /**
-     * 缁戝畾鍏ㄥ眬澹冲眰瀵艰埅
+     * 绑定全局壳层导航
      */
     function BindGlobalShellNavigation() {
         BindAnchorNavigation();
@@ -1122,80 +1061,28 @@
     }
 
     /**
-     * 缁熶竴璇锋眰鍏ュ彛
+     * 同步当前会话资料
      */
-    async function FetchWithTimeout(path, requestInit) {
-        const abortController = new AbortController();
-        const timeoutId = window.setTimeout(function HandleRequestTimeout() {
-            abortController.abort();
-        }, REQUEST_TIMEOUT_MS);
-        try {
-            return await fetch(path, {
-                ...requestInit,
-                signal: abortController.signal
-            });
-        } catch (error) {
-            if (error && error.name === "AbortError") {
-                throw new Error("璇锋眰瓒呮椂锛岃绋嶅悗閲嶈瘯");
-            }
-            throw new Error("缃戠粶寮傚父锛岃妫€鏌ョ綉缁滆繛鎺?);
-        } finally {
-            window.clearTimeout(timeoutId);
-        }
-    }
-
-    /**
-     * 瑙ｆ瀽鎺ュ彛鍝嶅簲浣?     */
-    function ParseApiResponseBody(responseText) {
-        if (!responseText) {
+    async function SyncSessionProfile() {
+        const token = GetAuthToken();
+        if (!token) {
             return null;
         }
-        try {
-            return JSON.parse(responseText);
-        } catch (error) {
-            throw new Error("鎺ュ彛杩斿洖鏍煎紡寮傚父");
+        const profileResponse = await RequestApi("/api/v1/users/me/profile", "GET", null, true);
+        if (!profileResponse || !profileResponse.userId) {
+            return null;
         }
+        SetCurrentUserProfile({
+            userId: profileResponse.userId,
+            account: profileResponse.account,
+            displayName: profileResponse.displayName,
+            userRole: profileResponse.userRole
+        });
+        return profileResponse;
     }
 
     /**
-     * 瑙ｆ瀽鎺ュ彛閿欒鏂囨
-     */
-    function ResolveApiErrorMessage(responseBody, fallbackMessage) {
-        if (responseBody && responseBody.message) {
-            return responseBody.message;
-        }
-        return fallbackMessage;
-    }
-
-    /**
-     * 澶勭悊涓氬姟澶辫触
-     */
-    function HandleApiBusinessFailure(responseBody, needAuth) {
-        const codeValue = responseBody ? Number(responseBody.code) : -1;
-        const messageText = ResolveApiErrorMessage(responseBody, "璇锋眰澶辫触");
-        if (codeValue === BIZ_CODE_UNAUTHORIZED) {
-            HandleUnauthorizedState(messageText, needAuth);
-        }
-        throw new Error(messageText);
-    }
-
-    /**
-     * 缁熶竴瑙ｆ瀽鎺ュ彛鎴愬姛鍝嶅簲
-     */
-    async function ResolveApiData(response, needAuth) {
-        const responseText = await response.text();
-        const responseBody = ParseApiResponseBody(responseText);
-        if (!response.ok) {
-            throw new Error(ResolveApiErrorMessage(responseBody, `璇锋眰澶辫触(${response.status})`));
-        }
-        if (!responseBody || Number(responseBody.code) !== BIZ_CODE_SUCCESS) {
-            HandleApiBusinessFailure(responseBody, needAuth);
-        }
-        return responseBody.data;
-    }
-
-    /**
-     * 缁熶竴璇锋眰鍏ュ彛
+     * 统一请求入口
      */
     async function RequestApi(path, method, payload, needAuth) {
         const headers = {
@@ -1205,22 +1092,39 @@
         if (needAuth) {
             const token = GetAuthToken();
             if (!token) {
-                HandleUnauthorizedState("璇峰厛鐧诲綍鍚庡啀鎿嶄綔", true);
-                throw new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔");
+                throw new Error("请先登录后再操作");
             }
             headers[AUTH_TOKEN_HEADER] = token;
         }
 
-        const response = await FetchWithTimeout(path, {
+        const response = await fetch(path, {
             method,
             headers,
             body: payload ? JSON.stringify(payload) : undefined
         });
-        return ResolveApiData(response, needAuth);
+
+        const responseText = await response.text();
+        let responseBody = null;
+        try {
+            responseBody = responseText ? JSON.parse(responseText) : null;
+        } catch (error) {
+            throw new Error("接口返回格式异常");
+        }
+
+        if (!response.ok) {
+            throw new Error(`请求失败(${response.status})`);
+        }
+        if (!responseBody || responseBody.code !== 0) {
+            const message = responseBody && responseBody.message
+                ? responseBody.message
+                : "请求失败";
+            throw new Error(message);
+        }
+        return responseBody.data;
     }
 
     /**
-     * multipart 璇锋眰鍏ュ彛
+     * multipart 请求入口
      */
     async function RequestMultipartApi(path, method, formData, needAuth) {
         const headers = {
@@ -1229,18 +1133,34 @@
         if (needAuth) {
             const token = GetAuthToken();
             if (!token) {
-                HandleUnauthorizedState("璇峰厛鐧诲綍鍚庡啀鎿嶄綔", true);
-                throw new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔");
+                throw new Error("请先登录后再操作");
             }
             headers[AUTH_TOKEN_HEADER] = token;
         }
 
-        const response = await FetchWithTimeout(path, {
+        const response = await fetch(path, {
             method,
             headers,
             body: formData
         });
-        return ResolveApiData(response, needAuth);
+
+        const responseText = await response.text();
+        let responseBody = null;
+        try {
+            responseBody = responseText ? JSON.parse(responseText) : null;
+        } catch (error) {
+            throw new Error("接口返回格式异常");
+        }
+        if (!response.ok) {
+            throw new Error(`请求失败(${response.status})`);
+        }
+        if (!responseBody || responseBody.code !== 0) {
+            const message = responseBody && responseBody.message
+                ? responseBody.message
+                : "请求失败";
+            throw new Error(message);
+        }
+        return responseBody.data;
     }
 
     window.CampusShareApi = {
@@ -1273,14 +1193,22 @@
         LoginUser(payload) {
             return RequestApi("/api/v1/users/login", "POST", payload, false);
         },
-        LogoutUser() {
-            return RequestApi("/api/v1/users/logout", "POST", {}, true);
-        },
-        LogoutAndRedirect() {
-            return PerformLogoutAndRedirect();
-        },
         UploadMaterial(payload) {
             return RequestApi("/api/v1/materials", "POST", payload, true);
+        },
+        PublishProduct(payload) {
+            return RequestApi("/api/v1/products", "POST", payload, true);
+        },
+        UploadMaterialFile(file) {
+            const formData = new FormData();
+            formData.append("file", file);
+            return RequestMultipartApi("/api/v1/materials/files/upload", "POST", formData, true);
+        },
+        DownloadMaterial(materialId) {
+            return RequestApi(`/api/v1/materials/${materialId}/download`, "POST", {}, true);
+        },
+        GetMaterialDetail(materialId) {
+            return RequestApi(`/api/v1/materials/${materialId}`, "GET", null, true);
         },
         ListMyMaterials(query) {
             const searchQuery = query || {};
@@ -1302,9 +1230,6 @@
                 true
             );
         },
-        PublishProduct(payload) {
-            return RequestApi("/api/v1/products", "POST", payload, true);
-        },
         ListMyProducts(query) {
             const searchQuery = query || {};
             const searchParams = new URLSearchParams();
@@ -1324,17 +1249,6 @@
                 { offlineRemark: offlineRemark || "" },
                 true
             );
-        },
-        UploadMaterialFile(file) {
-            const formData = new FormData();
-            formData.append("file", file);
-            return RequestMultipartApi("/api/v1/materials/files/upload", "POST", formData, true);
-        },
-        DownloadMaterial(materialId) {
-            return RequestApi(`/api/v1/materials/${materialId}/download`, "POST", {}, true);
-        },
-        GetMaterialDetail(materialId) {
-            return RequestApi(`/api/v1/materials/${materialId}`, "GET", null, true);
         },
         ListProducts(query) {
             const searchQuery = query || {};
@@ -1492,8 +1406,8 @@
         BindGlobalShellNavigation();
         if (GetAuthToken()) {
             SyncSessionProfile().catch(function IgnoreProfileSyncError() {
-                // 鏈櫥褰曟垨浼氳瘽澶辨晥鐢辩粺涓€璇锋眰灞傚鐞?            });
+                // 会话失效由页面请求层提示
+            });
         }
     });
 })();
-

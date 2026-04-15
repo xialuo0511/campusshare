@@ -7,6 +7,8 @@
     const AUTH_NOTICE_STORAGE_KEY = "campusshare.authNotice";
     const REQUEST_ID_HEADER = "X-Request-Id";
     const AUTH_TOKEN_HEADER = "X-Auth-Token";
+    const REQUEST_TIMEOUT_MS = 15000;
+    const BIZ_CODE_UNAUTHORIZED = 1002;
     const ADMINISTRATOR_ROLE = "ADMINISTRATOR";
     const NOTIFICATION_PANEL_ID = "campusshare-notification-panel";
     const NOTIFICATION_PANEL_STYLE_ID = "campusshare-notification-panel-style";
@@ -42,6 +44,7 @@
     let notificationPanelVisible = false;
     let notificationRequestSequence = 0;
     let notificationDataList = [];
+    let authRedirecting = false;
 
     /**
      * 生成请求ID
@@ -900,6 +903,45 @@
     }
 
     /**
+     * 处理会话失效
+     */
+    function HandleUnauthorizedState(messageText, needAuth) {
+        ClearSession();
+        const currentPathWithQuery = ResolveCurrentPagePathWithQuery();
+        const currentNormalizedPath = NormalizePagePath(currentPathWithQuery);
+        if (currentNormalizedPath === PAGE_PATH_MAP.AUTH) {
+            return;
+        }
+        if (!needAuth && !IsAuthRequiredPagePath(currentNormalizedPath)) {
+            return;
+        }
+        if (authRedirecting) {
+            return;
+        }
+        authRedirecting = true;
+        const noticeText = (messageText || "").trim() || "登录状态已失效，请重新登录";
+        window.setTimeout(function RedirectAfterUnauthorized() {
+            RedirectToAuthPage(currentPathWithQuery, noticeText);
+        }, 80);
+    }
+
+    /**
+     * 执行登出并跳转
+     */
+    async function PerformLogoutAndRedirect() {
+        const token = GetAuthToken();
+        if (token) {
+            try {
+                await RequestApi("/api/v1/users/logout", "POST", {}, true);
+            } catch (error) {
+                // 登出失败不阻塞本地清理
+            }
+        }
+        ClearSession();
+        window.location.href = PAGE_PATH_MAP.AUTH;
+    }
+
+    /**
      * 绑定链接导航
      */
     function BindAnchorNavigation() {
@@ -916,10 +958,13 @@
             }
             if (text.includes("登出") || text.toLowerCase().includes("logout")) {
                 anchorElement.href = "javascript:void(0)";
+                if (anchorElement.dataset.logoutNavigationBound === "true") {
+                    return;
+                }
+                anchorElement.dataset.logoutNavigationBound = "true";
                 anchorElement.addEventListener("click", function HandleLogoutClick(event) {
                     event.preventDefault();
-                    ClearSession();
-                    window.location.href = PAGE_PATH_MAP.AUTH;
+                    PerformLogoutAndRedirect();
                 });
                 return;
             }
@@ -974,9 +1019,12 @@
                 });
             }
             if (buttonText.includes("登出") && !buttonElement.hasAttribute("data-action")) {
+                if (buttonElement.dataset.logoutNavigationBound === "true") {
+                    return;
+                }
+                buttonElement.dataset.logoutNavigationBound = "true";
                 buttonElement.addEventListener("click", function HandleButtonLogout() {
-                    ClearSession();
-                    window.location.href = PAGE_PATH_MAP.AUTH;
+                    PerformLogoutAndRedirect();
                 });
             }
         });
@@ -1082,6 +1130,29 @@
     }
 
     /**
+     * 带超时的请求
+     */
+    async function FetchWithTimeout(path, requestInit) {
+        const abortController = new AbortController();
+        const timeoutId = window.setTimeout(function HandleRequestTimeout() {
+            abortController.abort();
+        }, REQUEST_TIMEOUT_MS);
+        try {
+            return await fetch(path, {
+                ...requestInit,
+                signal: abortController.signal
+            });
+        } catch (error) {
+            if (error && error.name === "AbortError") {
+                throw new Error("请求超时，请稍后重试");
+            }
+            throw new Error("网络异常，请检查网络连接");
+        } finally {
+            window.clearTimeout(timeoutId);
+        }
+    }
+
+    /**
      * 统一请求入口
      */
     async function RequestApi(path, method, payload, needAuth) {
@@ -1092,12 +1163,13 @@
         if (needAuth) {
             const token = GetAuthToken();
             if (!token) {
+                HandleUnauthorizedState("请先登录后再操作", true);
                 throw new Error("请先登录后再操作");
             }
             headers[AUTH_TOKEN_HEADER] = token;
         }
 
-        const response = await fetch(path, {
+        const response = await FetchWithTimeout(path, {
             method,
             headers,
             body: payload ? JSON.stringify(payload) : undefined
@@ -1112,12 +1184,19 @@
         }
 
         if (!response.ok) {
+            if (needAuth && (response.status === 401 || response.status === 403)) {
+                HandleUnauthorizedState("登录状态已失效，请重新登录", true);
+                throw new Error("登录状态已失效，请重新登录");
+            }
             throw new Error(`请求失败(${response.status})`);
         }
         if (!responseBody || responseBody.code !== 0) {
             const message = responseBody && responseBody.message
                 ? responseBody.message
                 : "请求失败";
+            if (responseBody && responseBody.code === BIZ_CODE_UNAUTHORIZED) {
+                HandleUnauthorizedState(message, needAuth);
+            }
             throw new Error(message);
         }
         return responseBody.data;
@@ -1133,12 +1212,13 @@
         if (needAuth) {
             const token = GetAuthToken();
             if (!token) {
+                HandleUnauthorizedState("请先登录后再操作", true);
                 throw new Error("请先登录后再操作");
             }
             headers[AUTH_TOKEN_HEADER] = token;
         }
 
-        const response = await fetch(path, {
+        const response = await FetchWithTimeout(path, {
             method,
             headers,
             body: formData
@@ -1152,12 +1232,19 @@
             throw new Error("接口返回格式异常");
         }
         if (!response.ok) {
+            if (needAuth && (response.status === 401 || response.status === 403)) {
+                HandleUnauthorizedState("登录状态已失效，请重新登录", true);
+                throw new Error("登录状态已失效，请重新登录");
+            }
             throw new Error(`请求失败(${response.status})`);
         }
         if (!responseBody || responseBody.code !== 0) {
             const message = responseBody && responseBody.message
                 ? responseBody.message
                 : "请求失败";
+            if (responseBody && responseBody.code === BIZ_CODE_UNAUTHORIZED) {
+                HandleUnauthorizedState(message, needAuth);
+            }
             throw new Error(message);
         }
         return responseBody.data;
@@ -1192,6 +1279,12 @@
         },
         LoginUser(payload) {
             return RequestApi("/api/v1/users/login", "POST", payload, false);
+        },
+        LogoutUser() {
+            return RequestApi("/api/v1/users/logout", "POST", {}, true);
+        },
+        LogoutAndRedirect() {
+            return PerformLogoutAndRedirect();
         },
         UploadMaterial(payload) {
             return RequestApi("/api/v1/materials", "POST", payload, true);

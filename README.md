@@ -134,6 +134,9 @@ mvn spring-boot:run
    - `MAIL_PASSWORD`
    - `MAIL_SMTP_AUTH`
    - `MAIL_SMTP_STARTTLS_ENABLE`
+7. 注册验证码邮件：
+   - `REGISTER_CODE_MAIL_FROM`
+   - `REGISTER_CODE_LOG_ENABLED`（生产建议 `false`）
 
 ## 健康检查
 

@@ -27,6 +27,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -53,8 +54,6 @@ public class UserServiceImpl implements UserService {
     private static final Duration REGISTER_CODE_COOLDOWN = Duration.ofSeconds(60);
     /** 邮件主题 */
     private static final String REGISTER_CODE_MAIL_SUBJECT = "CampusShare 注册验证码";
-    /** 邮件发送人 */
-    private static final String REGISTER_CODE_MAIL_FROM = "noreply@campusshare.local";
 
     /** 日志 */
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -67,15 +66,23 @@ public class UserServiceImpl implements UserService {
     private final StringRedisTemplate stringRedisTemplate;
     /** 邮件发送器 */
     private final JavaMailSender javaMailSender;
+    /** 邮件发送人 */
+    private final String registerCodeMailFrom;
+    /** 验证码回退日志开关 */
+    private final Boolean registerCodeLogEnabled;
 
     public UserServiceImpl(
         UserMapper userMapper,
         StringRedisTemplate stringRedisTemplate,
-        ObjectProvider<JavaMailSender> javaMailSenderProvider
+        ObjectProvider<JavaMailSender> javaMailSenderProvider,
+        @Value("${campusshare.mail.register.from:noreply@campusshare.local}") String registerCodeMailFrom,
+        @Value("${campusshare.mail.register.log-code-enabled:true}") Boolean registerCodeLogEnabled
     ) {
         this.userMapper = userMapper;
         this.stringRedisTemplate = stringRedisTemplate;
         this.javaMailSender = javaMailSenderProvider.getIfAvailable();
+        this.registerCodeMailFrom = registerCodeMailFrom;
+        this.registerCodeLogEnabled = registerCodeLogEnabled;
     }
 
     @Override
@@ -101,8 +108,12 @@ public class UserServiceImpl implements UserService {
         if (mailSent) {
             responseDto.SetTip("验证码已发送，请查收邮箱");
         } else {
-            LOGGER.info("注册验证码回退日志: account={}, email={}, code={}", account, email, verificationCode);
-            responseDto.SetTip("邮件通道暂不可用，验证码已输出到服务日志");
+            if (Boolean.TRUE.equals(registerCodeLogEnabled)) {
+                LOGGER.info("注册验证码回退日志: account={}, email={}, code={}", account, email, verificationCode);
+                responseDto.SetTip("邮件通道暂不可用，验证码已输出到服务日志");
+            } else {
+                responseDto.SetTip("邮件通道暂不可用，请联系管理员处理");
+            }
         }
         return responseDto;
     }
@@ -286,7 +297,7 @@ public class UserServiceImpl implements UserService {
         }
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
-            mailMessage.setFrom(REGISTER_CODE_MAIL_FROM);
+            mailMessage.setFrom(registerCodeMailFrom);
             mailMessage.setTo(email);
             mailMessage.setSubject(REGISTER_CODE_MAIL_SUBJECT);
             mailMessage.setText(BuildRegisterCodeMailText(account, verificationCode));
@@ -377,4 +388,3 @@ public class UserServiceImpl implements UserService {
         return responseDto;
     }
 }
-

@@ -18,16 +18,6 @@
             return;
         }
 
-        const existingToken = window.CampusShareApi.GetAuthToken();
-        const existingProfile = window.CampusShareApi.GetCurrentUserProfile();
-        if (existingToken && existingProfile && existingProfile.userId) {
-            const redirectPath = ResolveRedirectPath(null);
-            if (redirectPath) {
-                window.location.href = redirectPath;
-                return;
-            }
-        }
-
         const textInputs = authForm.querySelectorAll("input[type='text']");
         const accountInput = textInputs[0];
         const userNameInput = textInputs[1];
@@ -38,6 +28,17 @@
         const collegeSelect = authForm.querySelectorAll("select")[0];
         const gradeSelect = authForm.querySelectorAll("select")[1];
         const submitButton = authForm.querySelector("button[type='submit']");
+        if (
+            !accountInput
+            || !userNameInput
+            || !passwordInput
+            || !emailInput
+            || !collegeSelect
+            || !gradeSelect
+            || !submitButton
+        ) {
+            return;
+        }
         const accountGroup = accountInput.closest(".space-y-1");
         const passwordGroup = passwordInput ? passwordInput.closest(".space-y-1") : null;
         const userNameGroup = userNameInput.closest(".space-y-1");
@@ -67,7 +68,7 @@
         );
         BindPasswordToggle(passwordInput, passwordToggleButton, passwordToggleIcon);
 
-        let currentMode = AUTH_MODE_REGISTER;
+        let currentMode = AUTH_MODE_LOGIN;
         tabButtons[0].addEventListener("click", function HandleLoginModeClick() {
             if (currentMode === AUTH_MODE_LOGIN) {
                 return;

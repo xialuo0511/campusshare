@@ -173,6 +173,17 @@
     }
 
     /**
+     * 构建公开文件访问地址
+     */
+    function BuildPublicFileUrl(fileId) {
+        const safeFileId = fileId == null ? "" : String(fileId).trim();
+        if (!safeFileId) {
+            return "";
+        }
+        return `/api/v1/files/${encodeURIComponent(safeFileId)}`;
+    }
+
+    /**
      * 归一化页面路径
      */
     function NormalizePagePath(path) {
@@ -1226,6 +1237,7 @@
         ResolveRedirectPathFromQuery,
         ResolveDefaultHomePathByRole,
         BuildAuthPageUrl,
+        BuildPublicFileUrl,
         RedirectToAuthPage,
         NavigateToPage,
         SyncSessionProfile,

@@ -10,6 +10,7 @@ import com.xialuo.campusshare.module.statistics.dto.MarketOverviewProductDto;
 import com.xialuo.campusshare.module.statistics.dto.MarketOverviewResponseDto;
 import com.xialuo.campusshare.module.statistics.service.MarketOverviewService;
 import com.xialuo.campusshare.module.user.mapper.UserMapper;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +80,7 @@ public class MarketOverviewServiceImpl implements MarketOverviewService {
         responseDto.SetPrice(productEntity.GetPrice());
         responseDto.SetTradeLocation(productEntity.GetTradeLocation());
         responseDto.SetSellerDisplayName(ResolveDisplayName(productEntity.GetSellerUserId()));
+        responseDto.SetImageFileIds(SplitImageFileIds(productEntity.GetImageFileIds()));
         responseDto.SetCreateTime(productEntity.GetCreateTime());
         return responseDto;
     }
@@ -102,8 +104,29 @@ public class MarketOverviewServiceImpl implements MarketOverviewService {
      * 构建商品标题
      */
     private String BuildProductTitle(ProductEntity productEntity) {
-        String category = productEntity.GetCategory() == null ? "校园商品" : productEntity.GetCategory().trim();
+        String title = productEntity.GetTitle() == null ? "" : productEntity.GetTitle().trim();
+        if (!title.isBlank()) {
+            return title;
+        }
+        String category = productEntity.GetCategory() == null ? "" : productEntity.GetCategory().trim();
+        if (category.isBlank()) {
+            category = "校园商品";
+        }
         return category + " #" + productEntity.GetProductId();
+    }
+
+    /**
+     * 拆分图片ID
+     */
+    private List<String> SplitImageFileIds(String imageFileIds) {
+        if (imageFileIds == null || imageFileIds.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(imageFileIds.split(","))
+            .map(fileId -> fileId == null ? "" : fileId.trim())
+            .filter(fileId -> !fileId.isBlank())
+            .distinct()
+            .toList();
     }
 
     /**

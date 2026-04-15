@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.statistics.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 总览商品信息
@@ -19,6 +20,8 @@ public class MarketOverviewProductDto {
     private String tradeLocation;
     /** 卖家昵称 */
     private String sellerDisplayName;
+    /** 图片文件ID列表 */
+    private List<String> imageFileIds;
     /** 发布时间 */
     private LocalDateTime createTime;
 
@@ -104,6 +107,20 @@ public class MarketOverviewProductDto {
      */
     public void SetSellerDisplayName(String sellerDisplayName) {
         this.sellerDisplayName = sellerDisplayName;
+    }
+
+    /**
+     * 获取图片文件ID列表
+     */
+    public List<String> GetImageFileIds() {
+        return imageFileIds;
+    }
+
+    /**
+     * 设置图片文件ID列表
+     */
+    public void SetImageFileIds(List<String> imageFileIds) {
+        this.imageFileIds = imageFileIds;
     }
 
     /**

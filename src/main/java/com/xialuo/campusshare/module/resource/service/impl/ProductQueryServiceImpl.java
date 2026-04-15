@@ -97,7 +97,6 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         ProductDetailResponseDto responseDto = new ProductDetailResponseDto();
         FillCommonProductFields(responseDto, productEntity);
         responseDto.SetDescription(BuildProductDescription(productEntity));
-        responseDto.SetImageFileIds(SplitImageFileIds(productEntity.GetImageFileIds()));
         responseDto.SetOnShelf(productEntity.GetOnShelf());
         responseDto.SetStockCount(productEntity.GetStockCount());
         return responseDto;
@@ -124,6 +123,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         responseDto.SetTradeLocation(productEntity.GetTradeLocation());
         responseDto.SetSellerUserId(productEntity.GetSellerUserId());
         responseDto.SetSellerDisplayName(ResolveSellerDisplayName(productEntity.GetSellerUserId()));
+        responseDto.SetImageFileIds(SplitImageFileIds(productEntity.GetImageFileIds()));
         responseDto.SetProductStatus(productEntity.GetProductStatus());
         responseDto.SetCreateTime(productEntity.GetCreateTime());
     }

@@ -163,7 +163,7 @@
             return [
                 `<div class="bg-surface-container-lowest rounded-xl p-3 border-transparent hover:bg-surface-container-low transition-all cursor-pointer group" data-product-id="${EscapeHtml(String(item.productId || ""))}">`,
                 "<div class=\"aspect-square rounded-lg overflow-hidden mb-3 bg-surface-container\">",
-                `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="${ResolveProductImage(index)}" alt="推荐商品"/>`,
+                `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="${ResolveProductImage(item, index)}" alt="推荐商品"/>`,
                 "</div>",
                 "<div class=\"flex flex-col gap-1\">",
                 "<div class=\"flex justify-between items-start\">",
@@ -262,7 +262,19 @@
     /**
      * 解析商品图
      */
-    function ResolveProductImage(index) {
+    function ResolveProductImage(productItem, index) {
+        const imageFileIds = productItem && Array.isArray(productItem.imageFileIds)
+            ? productItem.imageFileIds
+            : [];
+        const firstFileId = imageFileIds.find(function FindFileId(fileId) {
+            return fileId && String(fileId).trim();
+        });
+        if (firstFileId && window.CampusShareApi && window.CampusShareApi.BuildPublicFileUrl) {
+            const fileUrl = window.CampusShareApi.BuildPublicFileUrl(firstFileId);
+            if (fileUrl) {
+                return fileUrl;
+            }
+        }
         return PRODUCT_IMAGE_LIST[index % PRODUCT_IMAGE_LIST.length];
     }
 

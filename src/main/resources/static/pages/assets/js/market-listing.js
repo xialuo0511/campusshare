@@ -132,7 +132,7 @@
             return [
                 `<div class="group bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer" data-product-id="${EscapeHtml(String(item.productId))}">`,
                 "<div class=\"relative h-56 overflow-hidden\">",
-                `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${ResolveCardImage(item.productId)}" alt="商品图片"/>`,
+                `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${ResolveCardImage(item)}" alt="商品图片"/>`,
                 "<div class=\"absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center\">",
                 `<button type="button" data-product-id="${EscapeHtml(String(item.productId))}" data-role="quick-view" class="bg-surface-container-lowest text-primary px-4 py-2 rounded-md font-bold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">快速查看</button>`,
                 "</div>",
@@ -593,14 +593,26 @@
     /**
      * 获取卡片图片
      */
-    function ResolveCardImage(productId) {
+    function ResolveCardImage(productItem) {
+        const imageFileIds = productItem && Array.isArray(productItem.imageFileIds)
+            ? productItem.imageFileIds
+            : [];
+        const firstFileId = imageFileIds.find(function FindFileId(fileId) {
+            return fileId && String(fileId).trim();
+        });
+        if (firstFileId && window.CampusShareApi && window.CampusShareApi.BuildPublicFileUrl) {
+            const fileUrl = window.CampusShareApi.BuildPublicFileUrl(firstFileId);
+            if (fileUrl) {
+                return fileUrl;
+            }
+        }
         const imageList = [
             "https://lh3.googleusercontent.com/aida-public/AB6AXuDdRciXYPG_0I3qG9AGP_J4jfenW3c1vBhvcdDnEpWcWo2ywroUVy4IPdY-tZQ_qSCMCDdyR5_Cv9Zg_rf7DKY69DZQABJTXU_BswsJHwSDCqdmhJyVlaTdiveT1m1Yn5dzOmovFYttlydiXYJR2-GDaen-zPsNXZz6HUJYVHqCIC5Buwt4WOM0gLUC7bC55JHRTsdqR-2TzjaDlM9z4fjOvbsxCNZe2kvhMUgt9QKAeDFz3g1C3jox5HJ16_tdg3a5q6jg3Z_SAeA",
             "https://lh3.googleusercontent.com/aida-public/AB6AXuBYIkPr2Ah3pV1fsi2LZ4hD9OrqAmPzQSyctjdJuY4CvneFGqvc7cK4ANHHv3meRULg2r_FzuKNYsxUSSCCkLf9yQZXXGQoFHqYkH6_P3qsPCxdi5GHM1TL2cVe4JbdvwenST1mcjTREI8wDz8FMrb1KpKdMAnreU3jnkHIT3Q3uNeTJusl-7M6IZnBeeT9kq_SPH3mIOi5dFmY_1xS_NcuPZGs8L4ikQfyVjCenfBt2ex3uPpyDVhXhbgiZZDxCLnkgzMtHoUdwIs",
             "https://lh3.googleusercontent.com/aida-public/AB6AXuAJ1gjCJANPVWwZY31ys1Yffl0_V--fofIOapVFDizZ4Q8EpMTjZcaYSeW9xpc8y9U-VqodxFSzCgqeXpvyLq-EXwJmQKGMSdRlTo9_Ry6JC_qGU56h9E7ZnqOevBSTcJ3EMI7BMWFj9zI_-IonKzdf_3TcbNpgZnMvQNBPXL0hJfE_afsOw_4f9JR4z0oztrwjWbV3KpkhE1M0fLi-J2EixHR5Svj7KJfdOtYma8sGrM7-QeOJ1GCqpOZHhnOdbXezJy2geIoW9eg",
             "https://lh3.googleusercontent.com/aida-public/AB6AXuBA4uyVyMmmQfwFuzHBRwK5l6V9901a2RpeqE2U8Z9CEaKGctEYwUgGsUojRHRE15IEUOpB8YlfGIboq7zfV0qfhVJuC1_9fUA9oX-3FVerVtl_FtPxTXn903hVaRZ0Pq2pxFMJ3ZSQDlORmD8qi8eV_RhmZjKQIkrc47D-svhotNXR_ovXjI4-1exfSxfT3cN94FFAoyZhWpcokr26Qi9pzTQ1wM4q7R-Id3CRv0T-DrBFrGPoZmzNd7tjdp2UKHoDRXEiM7BexG4"
         ];
-        const numericId = Number(productId || 0);
+        const numericId = Number(productItem && productItem.productId ? productItem.productId : 0);
         const imageIndex = Number.isNaN(numericId) ? 0 : Math.abs(numericId) % imageList.length;
         return imageList[imageIndex];
     }

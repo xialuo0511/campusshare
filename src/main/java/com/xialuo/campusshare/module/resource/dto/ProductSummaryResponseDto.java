@@ -3,6 +3,7 @@ package com.xialuo.campusshare.module.resource.dto;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 商品摘要响应
@@ -24,6 +25,8 @@ public class ProductSummaryResponseDto {
     private Long sellerUserId;
     /** 卖家名称 */
     private String sellerDisplayName;
+    /** 图片文件ID列表 */
+    private List<String> imageFileIds;
     /** 状态 */
     private ProductStatusEnum productStatus;
     /** 发布时间 */
@@ -139,6 +142,20 @@ public class ProductSummaryResponseDto {
      */
     public void SetSellerDisplayName(String sellerDisplayName) {
         this.sellerDisplayName = sellerDisplayName;
+    }
+
+    /**
+     * 获取图片文件ID列表
+     */
+    public List<String> GetImageFileIds() {
+        return imageFileIds;
+    }
+
+    /**
+     * 设置图片文件ID列表
+     */
+    public void SetImageFileIds(List<String> imageFileIds) {
+        this.imageFileIds = imageFileIds;
     }
 
     /**

@@ -185,8 +185,47 @@
             breadCrumbNode.textContent = detailResult.title || `商品 #${productId}`;
         }
         document.title = `CampusShare | ${detailResult.title || `商品 #${productId}`}`;
+        RenderProductGallery(detailResult.imageFileIds);
         HideMessage(messageBar);
         return detailResult;
+    }
+
+    /**
+     * 渲染商品图片
+     */
+    function RenderProductGallery(imageFileIds) {
+        const galleryImageList = Array.from(document.querySelectorAll("main div.lg\\:col-span-7 img"));
+        if (!galleryImageList.length) {
+            return;
+        }
+        const previewUrlList = BuildProductPreviewUrlList(imageFileIds);
+        if (!previewUrlList.length) {
+            return;
+        }
+        galleryImageList.forEach(function UpdateGalleryImage(imageElement, index) {
+            const previewUrl = previewUrlList[index % previewUrlList.length];
+            if (!previewUrl) {
+                return;
+            }
+            imageElement.src = previewUrl;
+        });
+    }
+
+    /**
+     * 构建预览地址列表
+     */
+    function BuildProductPreviewUrlList(imageFileIds) {
+        const safeImageFileIdList = Array.isArray(imageFileIds) ? imageFileIds : [];
+        return safeImageFileIdList
+            .map(function ResolveFileUrl(fileId) {
+                if (!window.CampusShareApi || !window.CampusShareApi.BuildPublicFileUrl) {
+                    return "";
+                }
+                return window.CampusShareApi.BuildPublicFileUrl(fileId);
+            })
+            .filter(function FilterValidUrl(fileUrl) {
+                return !!fileUrl;
+            });
     }
 
     /**

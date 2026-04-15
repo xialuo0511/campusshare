@@ -4,8 +4,12 @@
 (function InitCampusShareApi() {
     const AUTH_TOKEN_STORAGE_KEY = "campusshare.authToken";
     const USER_PROFILE_STORAGE_KEY = "campusshare.currentUser";
+    const AUTH_NOTICE_STORAGE_KEY = "campusshare.authNotice";
     const REQUEST_ID_HEADER = "X-Request-Id";
     const AUTH_TOKEN_HEADER = "X-Auth-Token";
+    const REQUEST_TIMEOUT_MS = 15000;
+    const BIZ_CODE_SUCCESS = 0;
+    const BIZ_CODE_UNAUTHORIZED = 1002;
     const ADMINISTRATOR_ROLE = "ADMINISTRATOR";
     const NOTIFICATION_PANEL_ID = "campusshare-notification-panel";
     const NOTIFICATION_PANEL_STYLE_ID = "campusshare-notification-panel-style";
@@ -34,6 +38,7 @@
     let notificationPanelVisible = false;
     let notificationRequestSequence = 0;
     let notificationDataList = [];
+    let authRedirecting = false;
 
     /**
      * 生成请求ID
@@ -120,6 +125,34 @@
     function ClearSession() {
         ClearAuthToken();
         ClearCurrentUserProfile();
+    }
+
+    /**
+     * 写入登录提示
+     */
+    function SetAuthNotice(noticeText) {
+        const safeNoticeText = noticeText == null ? "" : String(noticeText).trim();
+        if (!safeNoticeText) {
+            return;
+        }
+        try {
+            window.sessionStorage.setItem(AUTH_NOTICE_STORAGE_KEY, safeNoticeText);
+        } catch (error) {
+            // 会话存储不可用时忽略
+        }
+    }
+
+    /**
+     * 读取并清理登录提示
+     */
+    function ConsumeAuthNotice() {
+        try {
+            const noticeText = window.sessionStorage.getItem(AUTH_NOTICE_STORAGE_KEY) || "";
+            window.sessionStorage.removeItem(AUTH_NOTICE_STORAGE_KEY);
+            return noticeText;
+        } catch (error) {
+            return "";
+        }
     }
 
     /**
@@ -237,8 +270,9 @@
     /**
      * 跳转登录页
      */
-    function RedirectToAuthPage(redirectPath) {
+    function RedirectToAuthPage(redirectPath, noticeText) {
         const targetPath = redirectPath || ResolveCurrentPagePathWithQuery();
+        SetAuthNotice(noticeText);
         window.location.href = BuildAuthPageUrl(targetPath);
     }
 
@@ -830,6 +864,45 @@
     }
 
     /**
+     * 处理会话失效
+     */
+    function HandleUnauthorizedState(messageText, needAuth) {
+        ClearSession();
+        const currentPathWithQuery = ResolveCurrentPagePathWithQuery();
+        const currentNormalizedPath = NormalizePagePath(currentPathWithQuery);
+        if (currentNormalizedPath === PAGE_PATH_MAP.AUTH) {
+            return;
+        }
+        if (!needAuth && !IsAuthRequiredPagePath(currentNormalizedPath)) {
+            return;
+        }
+        if (authRedirecting) {
+            return;
+        }
+        authRedirecting = true;
+        const noticeText = (messageText || "").trim() || "登录状态已失效，请重新登录";
+        window.setTimeout(function RedirectAfterUnauthorized() {
+            RedirectToAuthPage(currentPathWithQuery, noticeText);
+        }, 80);
+    }
+
+    /**
+     * 退出并跳转登录页
+     */
+    async function PerformLogoutAndRedirect() {
+        const token = GetAuthToken();
+        if (token) {
+            try {
+                await RequestApi("/api/v1/users/logout", "POST", {}, true);
+            } catch (error) {
+                // 登出失败时继续清理本地会话
+            }
+        }
+        ClearSession();
+        window.location.href = PAGE_PATH_MAP.AUTH;
+    }
+
+    /**
      * 绑定链接导航
      */
     function BindAnchorNavigation() {
@@ -846,10 +919,13 @@
             }
             if (text.includes("登出") || text.toLowerCase().includes("logout")) {
                 anchorElement.href = "javascript:void(0)";
-                anchorElement.addEventListener("click", function HandleLogoutClick(event) {
+                if (anchorElement.dataset.logoutNavigationBound === "true") {
+                    return;
+                }
+                anchorElement.dataset.logoutNavigationBound = "true";
+                anchorElement.addEventListener("click", async function HandleLogoutClick(event) {
                     event.preventDefault();
-                    ClearSession();
-                    window.location.href = PAGE_PATH_MAP.AUTH;
+                    await PerformLogoutAndRedirect();
                 });
                 return;
             }
@@ -903,9 +979,12 @@
                 });
             }
             if (buttonText.includes("登出") && !buttonElement.hasAttribute("data-action")) {
-                buttonElement.addEventListener("click", function HandleButtonLogout() {
-                    ClearSession();
-                    window.location.href = PAGE_PATH_MAP.AUTH;
+                if (buttonElement.dataset.logoutNavigationBound === "true") {
+                    return;
+                }
+                buttonElement.dataset.logoutNavigationBound = "true";
+                buttonElement.addEventListener("click", async function HandleButtonLogout() {
+                    await PerformLogoutAndRedirect();
                 });
             }
         });
@@ -992,6 +1071,80 @@
     /**
      * 统一请求入口
      */
+    async function FetchWithTimeout(path, requestInit) {
+        const abortController = new AbortController();
+        const timeoutId = window.setTimeout(function HandleRequestTimeout() {
+            abortController.abort();
+        }, REQUEST_TIMEOUT_MS);
+        try {
+            return await fetch(path, {
+                ...requestInit,
+                signal: abortController.signal
+            });
+        } catch (error) {
+            if (error && error.name === "AbortError") {
+                throw new Error("请求超时，请稍后重试");
+            }
+            throw new Error("网络异常，请检查网络连接");
+        } finally {
+            window.clearTimeout(timeoutId);
+        }
+    }
+
+    /**
+     * 解析接口响应体
+     */
+    function ParseApiResponseBody(responseText) {
+        if (!responseText) {
+            return null;
+        }
+        try {
+            return JSON.parse(responseText);
+        } catch (error) {
+            throw new Error("接口返回格式异常");
+        }
+    }
+
+    /**
+     * 解析接口错误文案
+     */
+    function ResolveApiErrorMessage(responseBody, fallbackMessage) {
+        if (responseBody && responseBody.message) {
+            return responseBody.message;
+        }
+        return fallbackMessage;
+    }
+
+    /**
+     * 处理业务失败
+     */
+    function HandleApiBusinessFailure(responseBody, needAuth) {
+        const codeValue = responseBody ? Number(responseBody.code) : -1;
+        const messageText = ResolveApiErrorMessage(responseBody, "请求失败");
+        if (codeValue === BIZ_CODE_UNAUTHORIZED) {
+            HandleUnauthorizedState(messageText, needAuth);
+        }
+        throw new Error(messageText);
+    }
+
+    /**
+     * 统一解析接口成功响应
+     */
+    async function ResolveApiData(response, needAuth) {
+        const responseText = await response.text();
+        const responseBody = ParseApiResponseBody(responseText);
+        if (!response.ok) {
+            throw new Error(ResolveApiErrorMessage(responseBody, `请求失败(${response.status})`));
+        }
+        if (!responseBody || Number(responseBody.code) !== BIZ_CODE_SUCCESS) {
+            HandleApiBusinessFailure(responseBody, needAuth);
+        }
+        return responseBody.data;
+    }
+
+    /**
+     * 统一请求入口
+     */
     async function RequestApi(path, method, payload, needAuth) {
         const headers = {
             "Content-Type": "application/json",
@@ -1000,35 +1153,18 @@
         if (needAuth) {
             const token = GetAuthToken();
             if (!token) {
+                HandleUnauthorizedState("请先登录后再操作", true);
                 throw new Error("请先登录后再操作");
             }
             headers[AUTH_TOKEN_HEADER] = token;
         }
 
-        const response = await fetch(path, {
+        const response = await FetchWithTimeout(path, {
             method,
             headers,
             body: payload ? JSON.stringify(payload) : undefined
         });
-
-        const responseText = await response.text();
-        let responseBody = null;
-        try {
-            responseBody = responseText ? JSON.parse(responseText) : null;
-        } catch (error) {
-            throw new Error("接口返回格式异常");
-        }
-
-        if (!response.ok) {
-            throw new Error(`请求失败(${response.status})`);
-        }
-        if (!responseBody || responseBody.code !== 0) {
-            const message = responseBody && responseBody.message
-                ? responseBody.message
-                : "请求失败";
-            throw new Error(message);
-        }
-        return responseBody.data;
+        return ResolveApiData(response, needAuth);
     }
 
     /**
@@ -1041,34 +1177,18 @@
         if (needAuth) {
             const token = GetAuthToken();
             if (!token) {
+                HandleUnauthorizedState("请先登录后再操作", true);
                 throw new Error("请先登录后再操作");
             }
             headers[AUTH_TOKEN_HEADER] = token;
         }
 
-        const response = await fetch(path, {
+        const response = await FetchWithTimeout(path, {
             method,
             headers,
             body: formData
         });
-
-        const responseText = await response.text();
-        let responseBody = null;
-        try {
-            responseBody = responseText ? JSON.parse(responseText) : null;
-        } catch (error) {
-            throw new Error("接口返回格式异常");
-        }
-        if (!response.ok) {
-            throw new Error(`请求失败(${response.status})`);
-        }
-        if (!responseBody || responseBody.code !== 0) {
-            const message = responseBody && responseBody.message
-                ? responseBody.message
-                : "请求失败";
-            throw new Error(message);
-        }
-        return responseBody.data;
+        return ResolveApiData(response, needAuth);
     }
 
     window.CampusShareApi = {
@@ -1080,6 +1200,7 @@
         ClearCurrentUserProfile,
         SetSessionFromLogin,
         ClearSession,
+        ConsumeAuthNotice,
         ResolveLoginSuccessRedirect,
         ResolveRedirectPathFromQuery,
         ResolveDefaultHomePathByRole,
@@ -1094,6 +1215,12 @@
         },
         LoginUser(payload) {
             return RequestApi("/api/v1/users/login", "POST", payload, false);
+        },
+        LogoutUser() {
+            return RequestApi("/api/v1/users/logout", "POST", {}, true);
+        },
+        LogoutAndRedirect() {
+            return PerformLogoutAndRedirect();
         },
         UploadMaterial(payload) {
             return RequestApi("/api/v1/materials", "POST", payload, true);

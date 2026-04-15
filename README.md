@@ -66,6 +66,7 @@ CampusShare 面向校内学生与教师，统一承载以下三类业务：
 4. 招募发布申请审批、后台待办聚合
 5. 商品收藏、评论、举报闭环
 6. 前端核心页面已接入真实接口（登录、市场、详情、发布、招募、后台、订单）
+7. 会话登出、会话失效回跳、前端统一超时/网络异常兜底
 
 ## 目录结构
 
@@ -157,6 +158,13 @@ mvn spring-boot:run
 1. `POST /api/v1/users/login`：1分钟最多10次（按 IP）
 2. `POST /api/v1/users/register/code/send`：10分钟最多5次（按 IP）
 3. `POST /api/v1/users/register`：10分钟最多10次（按 IP）
+
+## 会话与登录态
+
+1. 登录接口：`POST /api/v1/users/login`
+2. 登出接口：`POST /api/v1/users/logout`（服务端删除 Redis 会话）
+3. 前端请求默认超时：15秒
+4. 会话失效时（`code=1002`）前端自动清理本地会话并跳转登录页
 
 ## Docker 部署（推荐预上线联调）
 

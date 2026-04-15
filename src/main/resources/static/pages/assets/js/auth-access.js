@@ -45,6 +45,12 @@
         const emailGroup = emailInput.closest(".space-y-1");
 
         const messageBar = BuildMessageBar(authForm);
+        const authNoticeText = window.CampusShareApi.ConsumeAuthNotice
+            ? window.CampusShareApi.ConsumeAuthNotice()
+            : "";
+        if (authNoticeText) {
+            ShowError(messageBar, authNoticeText);
+        }
         const verifyCodeRow = BuildVerifyCodeRow(emailInput, authForm);
         const verificationCodeInput = verifyCodeRow.querySelector("input");
         const sendCodeButton = verifyCodeRow.querySelector("button");

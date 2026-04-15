@@ -32,6 +32,11 @@ public interface UserService {
     UserLoginResponseDto LoginUser(UserLoginRequestDto requestDto);
 
     /**
+     * 用户登出
+     */
+    void LogoutUser(String token);
+
+    /**
      * 查询资料
      */
     UserProfileResponseDto GetUserProfile(Long userId);
@@ -51,4 +56,3 @@ public interface UserService {
      */
     List<UserProfileResponseDto> ListPendingReviewUsers();
 }
-

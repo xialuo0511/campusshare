@@ -75,6 +75,16 @@ public class UserController {
     }
 
     /**
+     * 用户登出
+     */
+    @PostMapping("/logout")
+    public ApiResponse<Object> LogoutUser(HttpServletRequest httpServletRequest) {
+        String token = ResolveAuthToken(httpServletRequest);
+        userService.LogoutUser(token);
+        return ApiResponse.Success(null, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 查询个人资料
      */
     @GetMapping("/{userId}/profile")
@@ -107,6 +117,14 @@ public class UserController {
     private String GetRequestId(HttpServletRequest httpServletRequest) {
         Object requestId = httpServletRequest.getAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE);
         return requestId == null ? "" : requestId.toString();
+    }
+
+    /**
+     * 获取登录令牌
+     */
+    private String ResolveAuthToken(HttpServletRequest httpServletRequest) {
+        String token = httpServletRequest.getHeader(SessionAuthFilter.AUTH_TOKEN_HEADER);
+        return token == null ? "" : token.trim();
     }
 
     /**
@@ -145,4 +163,3 @@ public class UserController {
         return UserRoleEnum.valueOf(currentUserRole.toString());
     }
 }
-

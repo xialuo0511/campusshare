@@ -181,6 +181,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void LogoutUser(String token) {
+        DeleteUserSession(token);
+    }
+
+    @Override
     public UserProfileResponseDto GetUserProfile(Long userId) {
         UserEntity userEntity = userMapper.FindUserById(userId);
         if (userEntity == null) {
@@ -366,6 +371,20 @@ public class UserServiceImpl implements UserService {
             stringRedisTemplate.opsForValue().set(sessionKey, userId.toString(), USER_SESSION_TTL);
         } catch (Exception exception) {
             // Redis不可用时不中断主链路
+        }
+    }
+
+    /**
+     * 删除用户会话
+     */
+    private void DeleteUserSession(String token) {
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        try {
+            stringRedisTemplate.delete(USER_SESSION_PREFIX + token);
+        } catch (Exception exception) {
+            LOGGER.warn("删除用户会话失败: token={}", token, exception);
         }
     }
 

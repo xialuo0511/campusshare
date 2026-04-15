@@ -12,6 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.regex.Pattern;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -33,6 +34,8 @@ public class SessionAuthFilter extends OncePerRequestFilter {
     public static final String CURRENT_USER_ROLE_ATTRIBUTE = "currentUserRole";
     /** 会话缓存前缀 */
     private static final String USER_SESSION_PREFIX = "campusshare:user:session:";
+    /** 会话续期时长 */
+    private static final Duration USER_SESSION_TTL = Duration.ofDays(7);
     /** 招募详情公开路径 */
     private static final Pattern TEAM_RECRUITMENT_DETAIL_PATH_PATTERN =
         Pattern.compile("^/api/v1/team/recruitments/\\d+$");
@@ -129,7 +132,13 @@ public class SessionAuthFilter extends OncePerRequestFilter {
      * 解析会话用户
      */
     private UserEntity ResolveUserByToken(String token) {
-        String userIdText = stringRedisTemplate.opsForValue().get(USER_SESSION_PREFIX + token);
+        String sessionKey = USER_SESSION_PREFIX + token;
+        String userIdText;
+        try {
+            userIdText = stringRedisTemplate.opsForValue().get(sessionKey);
+        } catch (Exception exception) {
+            return null;
+        }
         if (userIdText == null || userIdText.isBlank()) {
             return null;
         }
@@ -143,7 +152,19 @@ public class SessionAuthFilter extends OncePerRequestFilter {
         if (userEntity == null || userEntity.GetUserStatus() != UserStatusEnum.ACTIVE) {
             return null;
         }
+        RefreshSessionTtl(sessionKey);
         return userEntity;
+    }
+
+    /**
+     * 刷新会话过期时间
+     */
+    private void RefreshSessionTtl(String sessionKey) {
+        try {
+            stringRedisTemplate.expire(sessionKey, USER_SESSION_TTL);
+        } catch (Exception exception) {
+            // Redis异常不阻断鉴权流程
+        }
     }
 
     /**

@@ -45,9 +45,35 @@ public interface ProductMapper {
     );
 
     /**
+     * 分页查询卖家商品
+     */
+    List<ProductEntity> ListProductsBySeller(
+        @Param("sellerUserId") Long sellerUserId,
+        @Param("productStatus") String productStatus,
+        @Param("offset") Integer offset,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 统计卖家商品数量
+     */
+    Long CountProductsBySeller(
+        @Param("sellerUserId") Long sellerUserId,
+        @Param("productStatus") String productStatus
+    );
+
+    /**
      * 按ID查询商品
      */
     ProductEntity FindProductById(@Param("productId") Long productId);
+
+    /**
+     * 下架商品
+     */
+    Integer OfflineProduct(
+        @Param("productId") Long productId,
+        @Param("updateTime") LocalDateTime updateTime
+    );
 
     /**
      * 锁定商品

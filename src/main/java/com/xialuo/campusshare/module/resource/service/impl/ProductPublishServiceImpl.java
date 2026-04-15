@@ -5,6 +5,7 @@ import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.ProductEntity;
 import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
+import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
@@ -45,6 +46,60 @@ public class ProductPublishServiceImpl implements ProductPublishService {
             throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
         }
         return BuildProductDetailResponse(latestProductEntity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProductDetailResponseDto OfflineProduct(
+        Long productId,
+        Long currentUserId,
+        UserRoleEnum currentUserRole,
+        String offlineRemark
+    ) {
+        ProductEntity productEntity = productMapper.FindProductById(productId);
+        if (productEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        ValidateOfflinePermission(productEntity, currentUserId, currentUserRole);
+        if (Boolean.TRUE.equals(productEntity.GetHasEffectiveOrder())) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品存在进行中订单，不可下架");
+        }
+        if (!Boolean.TRUE.equals(productEntity.GetOnShelf()) || productEntity.GetProductStatus() == ProductStatusEnum.OFFLINE) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品已下架");
+        }
+
+        String normalizedOfflineRemark = NormalizeText(offlineRemark);
+        if (!normalizedOfflineRemark.isBlank()) {
+            // 预留备注字段，当前版本先保留入参
+        }
+
+        Integer updatedRows = productMapper.OfflineProduct(productId, LocalDateTime.now());
+        if (updatedRows == null || updatedRows <= 0) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品当前不可下架");
+        }
+
+        ProductEntity latestProductEntity = productMapper.FindProductById(productId);
+        if (latestProductEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        return BuildProductDetailResponse(latestProductEntity);
+    }
+
+    /**
+     * 校验下架权限
+     */
+    private void ValidateOfflinePermission(
+        ProductEntity productEntity,
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    ) {
+        if (currentUserRole == UserRoleEnum.ADMINISTRATOR) {
+            return;
+        }
+        if (currentUserId != null && currentUserId.equals(productEntity.GetSellerUserId())) {
+            return;
+        }
+        throw new BusinessException(BizCodeEnum.FORBIDDEN, "无权下架该商品");
     }
 
     /**
@@ -183,4 +238,3 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         return normalizedText;
     }
 }
-

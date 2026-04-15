@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>订单详情 - CampusShare</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e7e8e9",
+                        "primary-fixed-dim": "#94ccff",
+                        "secondary": "#006878",
+                        "primary-fixed": "#cde5ff",
+                        "on-secondary-fixed-variant": "#004e5b",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#94ccff",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#0077b6",
+                        "outline-variant": "#bfc7d1",
+                        "secondary-fixed": "#a7edff",
+                        "on-secondary-fixed": "#001f25",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-primary-fixed": "#001d32",
+                        "error-container": "#ffdad6",
+                        "primary": "#005d90",
+                        "on-primary-container": "#f3f7ff",
+                        "surface-container-highest": "#e1e3e4",
+                        "tertiary-container": "#4770be",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-bright": "#f8f9fa",
+                        "secondary-container": "#69e5ff",
+                        "surface": "#f8f9fa",
+                        "secondary-fixed-dim": "#58d6f1",
+                        "on-primary-fixed-variant": "#004b74",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#d9dadb",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#d8e2ff",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "tertiary-fixed-dim": "#aec6ff",
+                        "on-secondary-container": "#006575",
+                        "surface-tint": "#006399",
+                        "on-tertiary-fixed-variant": "#004490",
+                        "on-tertiary-container": "#f7f7ff",
+                        "on-surface-variant": "#404850",
+                        "tertiary": "#2b57a4",
+                        "surface-container": "#edeeef",
+                        "surface-variant": "#e1e3e4",
+                        "inverse-surface": "#2e3132",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#001a42",
+                        "on-background": "#191c1d",
+                        "outline": "#707881",
+                        "background": "#f8f9fa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Top Navigation Shell -->
+<nav class="w-full top-0 sticky bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-8 h-16 z-50">
+<div class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100 font-headline">CampusShare</div>
+<div class="hidden md:flex items-center space-x-8 font-['Manrope'] font-semibold">
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="#">Marketplace</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="#">Textbooks</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="#">Equipment</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="#">Lab Space</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="#">Research</a>
+</div>
+<div class="flex items-center space-x-4">
+<span class="material-symbols-outlined text-sky-800 cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-sky-800 cursor-pointer">account_circle</span>
+</div>
+</nav>
+<div class="flex min-h-screen">
+<!-- Side Navigation Shell -->
+<aside class="h-screen w-64 fixed left-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 px-4 z-40">
+<div class="flex items-center mb-8 px-2 space-x-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="Avatar" data-alt="professional headshot of a smiling university professor in a library setting, warm natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJ_2VnZoY3ol9lVSzck8XqGxzkgYa8Sis4_NhdCJG10a5rYK4q4L8MCSPBpvdVGxREFKltwvnuqBuvdW_eD6Z9ysundo9NP7XManIra0IIpn5t16HP1ZzigK3PtuLZNHZT-cbe-EB9AoxdDpgkOkCUwFxA6U9HHWvwKKIPzT59vf_MYsF65hU3W2X5k_Vlyw1oq4uCeh_0-r91O7Yb47_H8qRs1P5RP-Md7MbQ7qky84id9NlyDF3Z_WdUfAiRYUCHfAjK8ni9Pzs"/>
+</div>
+<div>
+<div class="font-['Inter'] text-sm font-bold text-sky-800">Personal Center</div>
+<div class="text-[10px] uppercase text-slate-500 tracking-tighter">Verified Faculty/Student</div>
+</div>
+</div>
+<nav class="space-y-1 flex-1">
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">list_alt</span>
+<span class="font-medium text-sm">My Listings</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg bg-white shadow-sm text-sky-800 font-bold" href="#">
+<span class="material-symbols-outlined text-xl">swap_horiz</span>
+<span class="font-medium text-sm">Trade Requests</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">chat_bubble_outline</span>
+<span class="font-medium text-sm">Messages</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">bookmark</span>
+<span class="font-medium text-sm">Saved Items</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+</nav>
+<div class="border-t border-slate-200 pt-4 space-y-1">
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-500 hover:bg-slate-100 transition-all text-sm uppercase" href="#">
+<span class="material-symbols-outlined text-xl">help_outline</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-500 hover:bg-slate-100 transition-all text-sm uppercase" href="#">
+<span class="material-symbols-outlined text-xl">logout</span>
+<span>Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 bg-surface-container-low min-h-screen px-12 py-10">
+<div class="max-w-6xl mx-auto">
+<!-- Header & Breadcrumbs -->
+<div class="mb-8">
+<nav class="flex items-center text-xs font-medium text-outline space-x-2 mb-2 uppercase tracking-widest">
+<a href="#">我的交易</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-bold">订单详情</span>
+</nav>
+<div class="flex justify-between items-end">
+<h1 class="text-3xl font-bold text-on-surface tracking-tight">订单编号: CS-8924001</h1>
+<div class="bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide">
+                            等待线下交易 (Pending Offline Trade)
+                        </div>
+</div>
+</div>
+<!-- Transaction Timeline -->
+<div class="bg-surface-container-lowest rounded-xl p-10 mb-8 border border-outline-variant/10">
+<div class="relative flex justify-between">
+<!-- Connecting Line -->
+<div class="absolute top-5 left-0 w-full h-[2px] bg-surface-container-high z-0">
+<div class="h-full bg-primary" style="width: 50%;"></div>
+</div>
+<!-- Step 1 -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined">check</span>
+</div>
+<span class="mt-3 text-xs font-bold text-on-surface">提交订单</span>
+<span class="text-[10px] text-outline">2024-05-12 14:20</span>
+</div>
+<!-- Step 2 -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined">check</span>
+</div>
+<span class="mt-3 text-xs font-bold text-on-surface">卖家确认</span>
+<span class="text-[10px] text-outline">2024-05-12 15:45</span>
+</div>
+<!-- Step 3 (Active) -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest border-4 border-primary text-primary flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">handshake</span>
+</div>
+<span class="mt-3 text-xs font-bold text-primary">等待交易</span>
+<span class="text-[10px] text-outline">预计 2024-05-14</span>
+</div>
+<!-- Step 4 -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined">verified</span>
+</div>
+<span class="mt-3 text-xs font-bold text-outline-variant">确认收货</span>
+<span class="text-[10px] text-outline-variant">--</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Details -->
+<div class="col-span-8 space-y-8">
+<!-- Product Snapshot -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden">
+<div class="p-6 border-b border-surface-container">
+<h2 class="text-sm font-bold uppercase tracking-wider text-outline">物品清单</h2>
+</div>
+<div class="p-6 flex items-start space-x-6">
+<div class="w-32 h-32 rounded-lg bg-surface-container-high overflow-hidden flex-shrink-0">
+<img alt="Microscope" data-alt="professional laboratory compound microscope on a clean white desk, high-end scientific equipment, soft lab lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPojHwG2zwuZL06IWyVwVJFa5TSoOEcOF-XlojKRFY-qXk0N7XAODeQJee32VE8nNKbUOX_k_bjnSW0HVXMmTJBWKXDyVA3hRSlrgXGKqACcaaH9Wcq49OVuK-LXoeZCal15msoA2P4IcnoWboid_acJGWZJDsiOdc7C1l4QPkcA0tszTKXxRcgdrP4DiIGRPjCUtbl9zM0vcoQex6v3rJkC5IruWYICfBw_o-aIT05VVlfey8ttLk0S1e3T0NtezW1OIDm88MHuk"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="text-xl font-bold text-on-surface">Olympus CX23 教学用生物显微镜</h3>
+<span class="text-2xl font-bold text-primary">¥ 3,200.00</span>
+</div>
+<div class="mt-2 space-y-1">
+<div class="flex items-center text-sm text-on-surface-variant">
+<span class="font-semibold w-20">物品状况:</span>
+<span class="bg-surface-container px-2 py-0.5 rounded text-xs">9.5成新</span>
+</div>
+<div class="flex items-center text-sm text-on-surface-variant">
+<span class="font-semibold w-20">分类:</span>
+<span>实验器材 / 生命科学</span>
+</div>
+<div class="flex items-start text-sm text-on-surface-variant mt-3">
+<span class="material-symbols-outlined text-sm mr-1 mt-0.5 text-secondary">info</span>
+<p class="text-xs leading-relaxed">卖家备注: 仅在研一期间实验课使用，保养良好，附带原装防尘罩和目镜盖。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Buyer/Seller Grid -->
+<div class="grid grid-cols-2 gap-6">
+<div class="bg-surface-container-lowest rounded-xl p-6">
+<div class="flex items-center space-x-3 mb-4">
+<span class="material-symbols-outlined text-secondary">person</span>
+<h3 class="text-xs font-bold uppercase tracking-wider text-outline">买家信息</h3>
+</div>
+<div class="flex items-center space-x-4">
+<div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Buyer" data-alt="close up profile portrait of a young male university student wearing a professional navy sweater, natural office lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7Upy_zBk7wiX0s_Sl5V6FFyA-3Yrq_tNAlAWLIqFGg94LNoBCuzpwSY3VTDdFWyKfNLUQKqpN-bINPNfqxIusjLNKDb2NwipZUk0m_fWA1dtPFHXfjvZRT5skoacw-6Rhutps-NjA-TXAji_006jobQ1JUKgyzTwXH0AS5_Ij-t7EaTdVp3Pmk8iqAO-a8k9QrP-oL0h3K59VJdFwGVB00Irgmiz9dWgdawjCD8H_IIK_wtab7KBfltRFb4kBaqABxiW76hcrusg"/>
+</div>
+<div>
+<div class="font-bold text-on-surface">张伟杰 (LiAM)</div>
+<div class="text-[10px] text-outline font-medium">Verified Graduate Student</div>
+<div class="flex mt-1">
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-6">
+<div class="flex items-center space-x-3 mb-4">
+<span class="material-symbols-outlined text-secondary">storefront</span>
+<h3 class="text-xs font-bold uppercase tracking-wider text-outline">卖家信息</h3>
+</div>
+<div class="flex items-center space-x-4">
+<div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Seller" data-alt="professional male academic professor smiling, academic campus background blurred, warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXXw5GDhhWbk1PdPYh9PgxseqIELSbSV-2x6wIEKXoBs7LjHaL3GuMnNvTeA9Vdb42w1NqGpI9oMBW3omdlPODwwox1O0m_l0FL4lvYYh3rBKyNxbJFdHKqsYleLfIBmo9Xc8mCA9K2B1-9cVhHLC3fLIz_6S86JbGwRcLkHH1-QQnmF4qOGs8RxgMSkxkx59DaJEwKWRRFQObYZT6n79gK13Gt0AeJZ32Pb7_EipOc9kU88wDv1F2NY0NEwsZqI6zMvng59LtRlM"/>
+</div>
+<div>
+<div class="font-bold text-on-surface">王建国 教授</div>
+<div class="text-[10px] text-outline font-medium">Verified Faculty Member</div>
+<div class="flex mt-1">
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Location and Map Section (Bento Style) -->
+<div class="grid grid-cols-5 gap-6">
+<div class="col-span-3 bg-surface-container-lowest rounded-xl p-6 relative overflow-hidden h-64">
+<div class="absolute inset-0 grayscale opacity-40 z-0">
+<img alt="Map" class="w-full h-full object-cover" data-location="Shanghai" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhLacuA5wCyEk03eo_-LKmAWpzmLgMtH3AFk64JXMB8rHNSlF4S5aLrZUY0W3AWAgH8gb-MHFtKpg7VrGHOxSWF2-EMpksGXMFlGgqpwc0Q8LOD4AxAqemnOUqWReLCqCEZwl_Fm7ifnBVVm5kTaMQrOQ55D6yR5cNc0WP5NuKfLnpHptYZ7g5-zklPmoI0adBznUb-t63xzhJ6l73nAjUh1f-hsT2CGtUg-_iwoZFDSCAkejwiA-h7O6RaEKkzFdGjlVxwR6xWug"/>
+</div>
+<div class="relative z-10">
+<h3 class="text-xs font-bold uppercase tracking-wider text-outline mb-4">交易地点</h3>
+<div class="flex items-center space-x-2 text-on-surface font-bold text-lg">
+<span class="material-symbols-outlined text-error">location_on</span>
+<span>理科楼 302 实验室前</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1 ml-8">华东师范大学 闵行校区</p>
+<div class="mt-12">
+<button class="bg-white/80 backdrop-blur-sm border border-outline-variant/30 px-4 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-white transition-all flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm">map</span>
+<span>查看详细地图</span>
+</button>
+</div>
+</div>
+</div>
+<div class="col-span-2 bg-primary text-on-primary rounded-xl p-6 flex flex-col justify-between">
+<div>
+<h3 class="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-4">交易安全提示</h3>
+<p class="text-sm font-medium leading-relaxed">
+                                        线下交易时请务必在公共场所或监控区域进行。请核对物品状态后再行确认付款。
+                                    </p>
+</div>
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined">security</span>
+<span class="text-xs font-bold">学术诚信交易保障</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Summary & Actions -->
+<div class="col-span-4 space-y-6">
+<!-- Action Panel -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<h3 class="text-sm font-bold text-on-surface mb-6">操作面板</h3>
+<div class="space-y-3">
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary py-4 rounded-xl font-bold flex items-center justify-center space-x-2 transition-all scale-100 active:scale-95">
+<span class="material-symbols-outlined">verified</span>
+<span>确认交易已完成</span>
+</button>
+<button class="w-full bg-white border border-outline-variant text-on-surface py-4 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span>联系卖家</span>
+</button>
+<button class="w-full text-error font-bold py-4 text-xs uppercase tracking-widest hover:bg-error-container/20 rounded-xl transition-all">
+                                    取消订单 (Cancel Order)
+                                </button>
+</div>
+<div class="mt-8 pt-8 border-t border-surface-container">
+<div class="flex justify-between items-center mb-4">
+<span class="text-xs text-outline font-medium">支付金额</span>
+<span class="text-2xl font-bold text-on-surface tracking-tighter">¥ 3,200.00</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between text-xs">
+<span class="text-outline">商品总价</span>
+<span class="text-on-surface-variant">¥ 3,200.00</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-outline">校园服务费</span>
+<span class="text-secondary font-bold">免手续费</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-outline">支付方式</span>
+<span class="text-on-surface-variant font-medium">担保交易 - 线下确认</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Metadata Info -->
+<div class="bg-surface-container-high/50 rounded-xl p-6">
+<h3 class="text-[10px] font-bold text-outline uppercase tracking-widest mb-4">交易详情明细</h3>
+<div class="space-y-4">
+<div>
+<div class="text-[10px] text-outline uppercase font-bold">Order Creation Time</div>
+<div class="text-xs font-semibold text-on-surface">2024-05-12 14:20:05</div>
+</div>
+<div>
+<div class="text-[10px] text-outline uppercase font-bold">Payment Hash</div>
+<div class="text-[10px] font-mono bg-surface-container px-2 py-1 rounded mt-1 break-all">0x7d2a...8c9f2b1</div>
+</div>
+<div>
+<div class="text-[10px] text-outline uppercase font-bold">Verification Status</div>
+<div class="flex items-center space-x-1 mt-1">
+<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-xs font-bold text-secondary">EDU Trust Certified</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer Shell -->
+<footer class="w-full py-12 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center px-12 ml-64 relative z-10">
+<div class="mb-6 md:mb-0">
+<div class="font-bold text-sky-900 dark:text-sky-100 font-headline mb-2">CampusShare</div>
+<p class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500">© 2024 CampusShare Academic Resources. Institutional Trust Guaranteed.</p>
+</div>
+<div class="flex space-x-8">
+<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 transition-colors" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 transition-colors" href="#">Accessibility</a>
+<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 transition-colors" href="#">Contact Support</a>
+</div>
+</footer>
+<!-- Confirmation Modal (Hidden by Default/Mockup state) -->
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/40 backdrop-blur-sm">
+<div class="bg-white rounded-xl max-w-md w-full p-8 shadow-2xl">
+<div class="w-16 h-16 rounded-full bg-error-container text-error flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-4xl">warning</span>
+</div>
+<h2 class="text-xl font-bold text-on-surface text-center mb-2">确认取消订单？</h2>
+<p class="text-center text-sm text-outline mb-8 leading-relaxed">
+                取消订单后，支付金额将原路返还，但过多的主动取消行为可能会影响您的“学术诚信积分”。
+            </p>
+<div class="grid grid-cols-2 gap-4">
+<button class="bg-surface-container-high py-3 rounded-xl font-bold text-on-surface-variant hover:bg-surface-container-highest transition-all">
+                    暂不取消
+                </button>
+<button class="bg-error text-on-error py-3 rounded-xl font-bold hover:bg-red-700 transition-all">
+                    确认取消
+                </button>
+</div>
+</div>
+</div>
+<script src="/pages/assets/js/campusshare-api.js"></script>
+<script src="/pages/assets/js/order-detail.js"></script>
+</body></html>

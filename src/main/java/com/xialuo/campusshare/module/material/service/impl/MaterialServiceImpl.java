@@ -1,5 +1,6 @@
 package com.xialuo.campusshare.module.material.service.impl;
 
+import com.xialuo.campusshare.common.api.PageQuery;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.StudyMaterialEntity;
@@ -8,6 +9,7 @@ import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.enums.ResourceStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.material.dto.MaterialDownloadResponseDto;
+import com.xialuo.campusshare.module.material.dto.MaterialListResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialResponseDto;
 import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
 import com.xialuo.campusshare.module.material.mapper.StudyMaterialMapper;
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,6 +91,35 @@ public class MaterialServiceImpl implements MaterialService {
         StudyMaterialEntity materialEntity = GetMaterialById(materialId);
         ValidateMaterialReadable(materialEntity, currentUserId, currentUserRole);
         return BuildMaterialResponse(materialEntity);
+    }
+
+    @Override
+    public MaterialListResponseDto ListMyMaterials(
+        Long currentUserId,
+        Integer pageNo,
+        Integer pageSize,
+        String materialStatus
+    ) {
+        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer resolvedPageSize = ResolvePageSize(pageSize);
+        String resolvedMaterialStatus = ResolveMaterialStatusFilter(materialStatus);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
+
+        List<MaterialResponseDto> materialResponseList = studyMaterialMapper.ListMaterialsByUploaderPaged(
+            currentUserId,
+            resolvedMaterialStatus,
+            offset,
+            resolvedPageSize
+        ).stream().map(this::BuildMaterialResponse).toList();
+
+        Long totalCount = studyMaterialMapper.CountMaterialsByUploader(currentUserId, resolvedMaterialStatus);
+
+        MaterialListResponseDto responseDto = new MaterialListResponseDto();
+        responseDto.SetPageNo(resolvedPageNo);
+        responseDto.SetPageSize(resolvedPageSize);
+        responseDto.SetTotalCount(totalCount == null ? 0L : totalCount);
+        responseDto.SetMaterialList(materialResponseList);
+        return responseDto;
     }
 
     @Override
@@ -358,5 +390,42 @@ public class MaterialServiceImpl implements MaterialService {
     private String BuildFileAccessUrl(Long materialId, String fileId) {
         return String.format(MATERIAL_FILE_ACCESS_URL_PATTERN, materialId, fileId);
     }
-}
 
+    /**
+     * 解析页码
+     */
+    private Integer ResolvePageNo(Integer pageNo) {
+        if (pageNo == null || pageNo < 1) {
+            return PageQuery.DEFAULT_PAGE_NO;
+        }
+        return pageNo;
+    }
+
+    /**
+     * 解析页大小
+     */
+    private Integer ResolvePageSize(Integer pageSize) {
+        if (pageSize == null || pageSize < 1) {
+            return PageQuery.DEFAULT_PAGE_SIZE;
+        }
+        if (pageSize > PageQuery.MAX_PAGE_SIZE) {
+            return PageQuery.MAX_PAGE_SIZE;
+        }
+        return pageSize;
+    }
+
+    /**
+     * 解析资料状态筛选
+     */
+    private String ResolveMaterialStatusFilter(String materialStatus) {
+        String normalizedStatus = materialStatus == null ? "" : materialStatus.trim().toUpperCase(Locale.ROOT);
+        if (normalizedStatus.isBlank()) {
+            return null;
+        }
+        try {
+            return ResourceStatusEnum.valueOf(normalizedStatus).name();
+        } catch (IllegalArgumentException exception) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "资料状态不合法");
+        }
+    }
+}

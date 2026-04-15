@@ -1,5 +1,5 @@
-/**
- * 订单中心页面逻辑
+﻿/**
+ * 璁㈠崟涓績椤甸潰閫昏緫
  */
 (function InitOrderCenterPage() {
     const DEFAULT_PAGE_NO = 1;
@@ -7,16 +7,16 @@
     const LEDGER_PREVIEW_SIZE = 5;
 
     const STATUS_TEXT_MAP = {
-        PENDING_SELLER_CONFIRM: "待卖家确认",
-        PENDING_OFFLINE_TRADE: "待线下交易",
-        PENDING_BUYER_CONFIRM: "待买家确认",
-        COMPLETED: "已完成",
-        CANCELED: "已取消",
-        CLOSED: "已关闭"
+        PENDING_SELLER_CONFIRM: "寰呭崠瀹剁‘璁?,
+        PENDING_OFFLINE_TRADE: "寰呯嚎涓嬩氦鏄?,
+        PENDING_BUYER_CONFIRM: "寰呬拱瀹剁‘璁?,
+        COMPLETED: "宸插畬鎴?,
+        CANCELED: "宸插彇娑?,
+        CLOSED: "宸插叧闂?
     };
 
     /**
-     * 绑定页面行为
+     * 缁戝畾椤甸潰琛屼负
      */
     function BindOrderCenterPage() {
         if (!window.CampusShareApi) {
@@ -44,7 +44,7 @@
         historyCard.insertAdjacentElement("afterend", pointPanel.panel);
 
         if (!window.CampusShareApi.GetAuthToken()) {
-            ShowError(messageBar, "请先登录后再查看订单中心");
+            ShowError(messageBar, "璇峰厛鐧诲綍鍚庡啀鏌ョ湅璁㈠崟涓績");
             window.setTimeout(function RedirectToAuthPage() {
                 if (window.CampusShareApi.RedirectToAuthPage) {
                     window.CampusShareApi.RedirectToAuthPage("/pages/order_center.html");
@@ -80,19 +80,18 @@
             try {
                 if (action === "confirm") {
                     await window.CampusShareApi.ConfirmOrder(orderId);
-                    ShowSuccess(messageBar, `订单 ${orderId} 已确认`);
+                    ShowSuccess(messageBar, `璁㈠崟 ${orderId} 宸茬‘璁);
                 } else if (action === "complete") {
                     await window.CampusShareApi.CompleteOrder(orderId);
-                    ShowSuccess(messageBar, `订单 ${orderId} 已完成`);
+                    ShowSuccess(messageBar, `璁㈠崟 ${orderId} 宸插畬鎴恅);
                 } else if (action === "cancel") {
                     await window.CampusShareApi.CancelOrder(orderId);
-                    ShowSuccess(messageBar, `订单 ${orderId} 已取消`);
+                    ShowSuccess(messageBar, `璁㈠崟 ${orderId} 宸插彇娑坄);
                 } else if (action === "close") {
-                    await window.CampusShareApi.CloseOrder(orderId, "用户主动关闭");
-                    ShowSuccess(messageBar, `订单 ${orderId} 已关闭`);
+                    await window.CampusShareApi.CloseOrder(orderId, "鐢ㄦ埛涓诲姩鍏抽棴");
+                    ShowSuccess(messageBar, `璁㈠崟 ${orderId} 宸插叧闂璥);
                 } else if (action === "detail") {
-                    const detailResult = await window.CampusShareApi.GetOrderDetail(orderId);
-                    ShowSuccess(messageBar, `订单详情：状态 ${STATUS_TEXT_MAP[detailResult.orderStatus] || detailResult.orderStatus}`);
+                    window.location.href = `/pages/order_detail.html?orderId=${encodeURIComponent(String(orderId))}`;
                     return;
                 } else {
                     return;
@@ -100,7 +99,7 @@
                 await LoadOrderList(state, currentUserId, summaryNumberList, tableBody, paginationText, messageBar);
                 await LoadPointLedger(pointPanel, summaryNumberList, messageBar);
             } catch (error) {
-                ShowError(messageBar, error instanceof Error ? error.message : "订单操作失败");
+                ShowError(messageBar, error instanceof Error ? error.message : "璁㈠崟鎿嶄綔澶辫触");
             } finally {
                 actionButton.disabled = false;
             }
@@ -111,7 +110,7 @@
     }
 
     /**
-     * 加载积分流水
+     * 鍔犺浇绉垎娴佹按
      */
     async function LoadPointLedger(pointPanel, summaryNumberList, messageBar) {
         try {
@@ -119,29 +118,29 @@
             RenderPointSummary(summaryNumberList, ledgerResult);
             RenderPointLedgerList(pointPanel, ledgerResult);
         } catch (error) {
-            ShowError(messageBar, error instanceof Error ? error.message : "积分流水加载失败");
+            ShowError(messageBar, error instanceof Error ? error.message : "绉垎娴佹按鍔犺浇澶辫触");
         }
     }
 
     /**
-     * 构建积分面板
+     * 鏋勫缓绉垎闈㈡澘
      */
     function BuildPointPanel() {
         const panel = document.createElement("section");
         panel.className = "bg-surface-container-lowest rounded-xl shadow-sm p-6 mt-8";
         panel.innerHTML = [
             "<div class=\"flex items-center justify-between mb-4\">",
-            "<h3 class=\"text-lg font-bold text-on-surface\">最近积分流水</h3>",
-            "<span class=\"text-xs text-slate-500\">最近 5 条</span>",
+            "<h3 class=\"text-lg font-bold text-on-surface\">鏈€杩戠Н鍒嗘祦姘?/h3>",
+            "<span class=\"text-xs text-slate-500\">鏈€杩?5 鏉?/span>",
             "</div>",
             "<div class=\"overflow-x-auto\">",
             "<table class=\"w-full text-left border-collapse\">",
             "<thead><tr class=\"bg-surface-container-low/50\">",
-            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">时间</th>",
-            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">类型</th>",
-            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">变动</th>",
-            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">余额</th>",
-            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">备注</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">鏃堕棿</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">绫诲瀷</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">鍙樺姩</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">浣欓</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">澶囨敞</th>",
             "</tr></thead>",
             "<tbody class=\"divide-y divide-surface-container\"></tbody>",
             "</table>",
@@ -152,7 +151,7 @@
     }
 
     /**
-     * 渲染积分摘要
+     * 娓叉煋绉垎鎽樿
      */
     function RenderPointSummary(summaryNumberList, ledgerResult) {
         summaryNumberList[3].textContent = `${SafeNumber(ledgerResult.availablePoints)}`;
@@ -165,21 +164,21 @@
         const labelNode = pointCard.querySelector("p.text-xs");
         const helperNode = pointCard.querySelector("div.text-xs");
         if (labelNode) {
-            labelNode.textContent = "当前积分";
+            labelNode.textContent = "褰撳墠绉垎";
         }
         if (helperNode) {
             helperNode.className = "mt-2 text-xs text-slate-500 font-medium";
-            helperNode.textContent = `累计获得 ${SafeNumber(ledgerResult.totalEarnedPoints)} / 累计消耗 ${SafeNumber(ledgerResult.totalConsumedPoints)}`;
+            helperNode.textContent = `绱鑾峰緱 ${SafeNumber(ledgerResult.totalEarnedPoints)} / 绱娑堣€?${SafeNumber(ledgerResult.totalConsumedPoints)}`;
         }
     }
 
     /**
-     * 渲染积分流水列表
+     * 娓叉煋绉垎娴佹按鍒楄〃
      */
     function RenderPointLedgerList(pointPanel, ledgerResult) {
         const transactionList = Array.isArray(ledgerResult.transactionList) ? ledgerResult.transactionList : [];
         if (transactionList.length === 0) {
-            pointPanel.listBody.innerHTML = "<tr><td colspan=\"5\" class=\"px-4 py-6 text-sm text-slate-400 text-center\">暂无积分流水</td></tr>";
+            pointPanel.listBody.innerHTML = "<tr><td colspan=\"5\" class=\"px-4 py-6 text-sm text-slate-400 text-center\">鏆傛棤绉垎娴佹按</td></tr>";
             return;
         }
         pointPanel.listBody.innerHTML = transactionList.map(function BuildLedgerRow(item) {
@@ -196,8 +195,7 @@
     }
 
     /**
-     * 绑定筛选按钮
-     */
+     * 缁戝畾绛涢€夋寜閽?     */
     function BindFilterButtons(filterButtonList, state, onFilterChanged) {
         if (!filterButtonList || filterButtonList.length < 3) {
             return;
@@ -220,7 +218,7 @@
     }
 
     /**
-     * 加载订单列表
+     * 鍔犺浇璁㈠崟鍒楄〃
      */
     async function LoadOrderList(
         state,
@@ -239,12 +237,12 @@
             RenderOrderTable(filteredList, currentUserId, tableBody);
             RenderPaginationText(listResult.totalCount, filteredList.length, state.pageNo, state.pageSize, paginationText);
         } catch (error) {
-            ShowError(messageBar, error instanceof Error ? error.message : "订单列表加载失败");
+            ShowError(messageBar, error instanceof Error ? error.message : "璁㈠崟鍒楄〃鍔犺浇澶辫触");
         }
     }
 
     /**
-     * 渲染顶部统计
+     * 娓叉煋椤堕儴缁熻
      */
     function RenderSummary(listResult, summaryNumberList) {
         summaryNumberList[0].textContent = `${SafeNumber(listResult.totalCount)}`;
@@ -253,8 +251,7 @@
     }
 
     /**
-     * 按筛选条件过滤订单
-     */
+     * 鎸夌瓫閫夋潯浠惰繃婊よ鍗?     */
     function FilterOrderListByStatus(orderList, statusFilter) {
         if (statusFilter === "COMPLETED") {
             return orderList.filter(function FilterCompleted(orderItem) {
@@ -272,11 +269,11 @@
     }
 
     /**
-     * 渲染订单表格
+     * 娓叉煋璁㈠崟琛ㄦ牸
      */
     function RenderOrderTable(orderList, currentUserId, tableBody) {
         if (!orderList || orderList.length === 0) {
-            tableBody.innerHTML = "<tr><td colspan=\"7\" class=\"px-6 py-8 text-center text-sm text-slate-400\">暂无订单数据</td></tr>";
+            tableBody.innerHTML = "<tr><td colspan=\"7\" class=\"px-6 py-8 text-center text-sm text-slate-400\">鏆傛棤璁㈠崟鏁版嵁</td></tr>";
             return;
         }
 
@@ -289,11 +286,11 @@
             return [
                 "<tr class=\"hover:bg-surface-container-low transition-colors group\">",
                 `<td class="px-6 py-4 text-xs font-mono text-slate-500">#${EscapeHtml(orderItem.orderNo || "")}</td>`,
-                `<td class="px-6 py-4"><p class="text-sm font-bold text-on-surface">商品ID: ${EscapeHtml(String(orderItem.productId || ""))}</p>`,
-                `<p class="text-[10px] text-slate-400">交易地点: ${EscapeHtml(orderItem.tradeLocation || "-")}</p></td>`,
+                `<td class="px-6 py-4"><p class="text-sm font-bold text-on-surface">鍟嗗搧ID: ${EscapeHtml(String(orderItem.productId || ""))}</p>`,
+                `<p class="text-[10px] text-slate-400">浜ゆ槗鍦扮偣: ${EscapeHtml(orderItem.tradeLocation || "-")}</p></td>`,
                 `<td class="px-6 py-4 text-sm text-on-surface">${EscapeHtml(counterpartText)}</td>`,
                 `<td class="px-6 py-4 text-xs text-slate-500">${EscapeHtml(FormatTime(orderItem.updateTime))}</td>`,
-                `<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">￥${EscapeHtml(FormatAmount(orderItem.orderAmount))}</td>`,
+                `<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">锟?{EscapeHtml(FormatAmount(orderItem.orderAmount))}</td>`,
                 `<td class="px-6 py-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter ${statusClass}">${EscapeHtml(statusText)}</span></td>`,
                 `<td class="px-6 py-4 text-right">${actionButtons}</td>`,
                 "</tr>"
@@ -302,7 +299,7 @@
     }
 
     /**
-     * 渲染分页提示
+     * 娓叉煋鍒嗛〉鎻愮ず
      */
     function RenderPaginationText(totalCount, currentCount, pageNo, pageSize, paginationText) {
         if (!paginationText) {
@@ -311,27 +308,27 @@
         const safeTotalCount = SafeNumber(totalCount);
         const start = safeTotalCount === 0 ? 0 : ((pageNo - 1) * pageSize + 1);
         const end = safeTotalCount === 0 ? 0 : (start + currentCount - 1);
-        paginationText.textContent = `显示 ${safeTotalCount} 个订单中的 ${start}-${end} 项`;
+        paginationText.textContent = `鏄剧ず ${safeTotalCount} 涓鍗曚腑鐨?${start}-${end} 椤筦;
     }
 
     /**
-     * 构建对方信息
+     * 鏋勫缓瀵规柟淇℃伅
      */
     function BuildCounterpartText(orderItem, currentUserId) {
         if (!currentUserId) {
-            return `买家ID:${orderItem.buyerUserId} / 卖家ID:${orderItem.sellerUserId}`;
+            return `涔板ID:${orderItem.buyerUserId} / 鍗栧ID:${orderItem.sellerUserId}`;
         }
         if (Number(orderItem.buyerUserId) === Number(currentUserId)) {
-            return `我是买家 / 卖家ID:${orderItem.sellerUserId}`;
+            return `鎴戞槸涔板 / 鍗栧ID:${orderItem.sellerUserId}`;
         }
         if (Number(orderItem.sellerUserId) === Number(currentUserId)) {
-            return `我是卖家 / 买家ID:${orderItem.buyerUserId}`;
+            return `鎴戞槸鍗栧 / 涔板ID:${orderItem.buyerUserId}`;
         }
-        return `买家ID:${orderItem.buyerUserId} / 卖家ID:${orderItem.sellerUserId}`;
+        return `涔板ID:${orderItem.buyerUserId} / 鍗栧ID:${orderItem.sellerUserId}`;
     }
 
     /**
-     * 构建操作按钮
+     * 鏋勫缓鎿嶄綔鎸夐挳
      */
     function BuildActionButtons(orderItem, currentUserId) {
         const buttonClass = "text-xs font-bold px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-all";
@@ -341,25 +338,24 @@
 
         if (orderItem.orderStatus === "PENDING_SELLER_CONFIRM" && isSeller) {
             return [
-                `<button data-order-action="confirm" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">确认</button>`,
-                `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">取消</button>`
+                `<button data-order-action="confirm" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">纭</button>`,
+                `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">鍙栨秷</button>`
             ].join("");
         }
         if ((orderItem.orderStatus === "PENDING_OFFLINE_TRADE" || orderItem.orderStatus === "PENDING_BUYER_CONFIRM") && isBuyer) {
             return [
-                `<button data-order-action="complete" data-order-id="${orderItem.orderId}" class="${buttonClass} text-secondary">完成</button>`,
-                `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">取消</button>`
+                `<button data-order-action="complete" data-order-id="${orderItem.orderId}" class="${buttonClass} text-secondary">瀹屾垚</button>`,
+                `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">鍙栨秷</button>`
             ].join("");
         }
         if ((orderItem.orderStatus === "PENDING_SELLER_CONFIRM" || orderItem.orderStatus === "PENDING_OFFLINE_TRADE") && isSeller) {
-            return `<button data-order-action="close" data-order-id="${orderItem.orderId}" class="${buttonClass} text-slate-600">关闭</button>`;
+            return `<button data-order-action="close" data-order-id="${orderItem.orderId}" class="${buttonClass} text-slate-600">鍏抽棴</button>`;
         }
-        return `<button data-order-action="detail" data-order-id="${orderItem.orderId}" class="${buttonClass} text-slate-600">查看</button>`;
+        return `<button data-order-action="detail" data-order-id="${orderItem.orderId}" class="${buttonClass} text-slate-600">鏌ョ湅</button>`;
     }
 
     /**
-     * 解析状态样式
-     */
+     * 瑙ｆ瀽鐘舵€佹牱寮?     */
     function ResolveStatusClass(orderStatus) {
         if (orderStatus === "COMPLETED") {
             return "bg-green-100 text-green-700";
@@ -374,7 +370,7 @@
     }
 
     /**
-     * 解析积分变动样式
+     * 瑙ｆ瀽绉垎鍙樺姩鏍峰紡
      */
     function ResolvePointChangeClass(changeAmount) {
         if (Number(changeAmount) >= 0) {
@@ -384,8 +380,7 @@
     }
 
     /**
-     * 格式化积分变动
-     */
+     * 鏍煎紡鍖栫Н鍒嗗彉鍔?     */
     function FormatChangeAmount(changeAmount) {
         const numericAmount = Number(changeAmount || 0);
         if (numericAmount >= 0) {
@@ -395,27 +390,25 @@
     }
 
     /**
-     * 格式化流水类型
-     */
+     * 鏍煎紡鍖栨祦姘寸被鍨?     */
     function FormatTransactionType(transactionType) {
         if (transactionType === "UPLOAD_REWARD") {
-            return "上传奖励";
+            return "涓婁紶濂栧姳";
         }
         if (transactionType === "DOWNLOAD_COST") {
-            return "下载扣减";
+            return "涓嬭浇鎵ｅ噺";
         }
         if (transactionType === "MANUAL_ADJUST") {
-            return "人工调整";
+            return "浜哄伐璋冩暣";
         }
         if (transactionType === "SYSTEM_COMPENSATE") {
-            return "系统补偿";
+            return "绯荤粺琛ュ伩";
         }
         return transactionType || "-";
     }
 
     /**
-     * 金额格式化
-     */
+     * 閲戦鏍煎紡鍖?     */
     function FormatAmount(orderAmount) {
         const numericAmount = Number(orderAmount || 0);
         if (Number.isNaN(numericAmount)) {
@@ -425,8 +418,7 @@
     }
 
     /**
-     * 时间格式化
-     */
+     * 鏃堕棿鏍煎紡鍖?     */
     function FormatTime(timeText) {
         if (!timeText) {
             return "-";
@@ -439,14 +431,14 @@
     }
 
     /**
-     * 时间补零
+     * 鏃堕棿琛ラ浂
      */
     function PadTime(value) {
         return value < 10 ? `0${value}` : `${value}`;
     }
 
     /**
-     * HTML转义
+     * HTML杞箟
      */
     function EscapeHtml(text) {
         return String(text)
@@ -458,15 +450,14 @@
     }
 
     /**
-     * 兜底数值
-     */
+     * 鍏滃簳鏁板€?     */
     function SafeNumber(value) {
         const numberValue = Number(value || 0);
         return Number.isNaN(numberValue) ? 0 : numberValue;
     }
 
     /**
-     * 显示成功信息
+     * 鏄剧ず鎴愬姛淇℃伅
      */
     function ShowSuccess(messageBar, message) {
         messageBar.style.display = "block";
@@ -475,7 +466,7 @@
     }
 
     /**
-     * 显示错误信息
+     * 鏄剧ず閿欒淇℃伅
      */
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";
@@ -485,3 +476,4 @@
 
     document.addEventListener("DOMContentLoaded", BindOrderCenterPage);
 })();
+

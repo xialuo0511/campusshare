@@ -24,6 +24,16 @@ public interface ProductQueryService {
     );
 
     /**
+     * 查询当前用户发布的商品
+     */
+    ProductListResponseDto ListMyProducts(
+        Long currentUserId,
+        Integer pageNo,
+        Integer pageSize,
+        String productStatus
+    );
+
+    /**
      * 查询商品详情
      */
     ProductDetailResponseDto GetProductDetail(Long productId);

@@ -8,6 +8,7 @@ import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.material.dto.MaterialDownloadResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialFileUploadResponseDto;
+import com.xialuo.campusshare.module.material.dto.MaterialListResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialOfflineRequestDto;
 import com.xialuo.campusshare.module.material.dto.MaterialResponseDto;
 import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
@@ -25,9 +26,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,6 +73,25 @@ public class MaterialController {
     ) {
         Long currentUserId = GetCurrentUserId(httpServletRequest);
         MaterialResponseDto responseDto = materialService.UploadMaterial(requestDto, currentUserId);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 查询我的资料
+     */
+    @GetMapping("/my")
+    public ApiResponse<MaterialListResponseDto> ListMyMaterials(
+        @RequestParam(value = "pageNo", required = false) Integer pageNo,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @RequestParam(value = "materialStatus", required = false) String materialStatus,
+        HttpServletRequest httpServletRequest
+    ) {
+        MaterialListResponseDto responseDto = materialService.ListMyMaterials(
+            GetCurrentUserId(httpServletRequest),
+            pageNo,
+            pageSize,
+            materialStatus
+        );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 

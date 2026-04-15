@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
@@ -136,6 +136,29 @@
         WHERE uploader_user_id = #{uploaderUserId}
           AND deleted = 0
         ORDER BY create_time DESC
+    </select>
+
+    <select id="ListMaterialsByUploaderPaged" resultMap="MaterialResultMap">
+        SELECT
+            <include refid="MaterialColumns"/>
+        FROM study_material_info
+        WHERE uploader_user_id = #{uploaderUserId}
+          AND deleted = 0
+        <if test="materialStatus != null and materialStatus != ''">
+            AND material_status = #{materialStatus}
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="CountMaterialsByUploader" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM study_material_info
+        WHERE uploader_user_id = #{uploaderUserId}
+          AND deleted = 0
+        <if test="materialStatus != null and materialStatus != ''">
+            AND material_status = #{materialStatus}
+        </if>
     </select>
 
     <update id="IncreaseDownloadCount">

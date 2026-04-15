@@ -5,6 +5,7 @@ import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.ProductEntity;
 import com.xialuo.campusshare.entity.UserEntity;
+import com.xialuo.campusshare.enums.ProductStatusEnum;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductListResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductSummaryResponseDto;
@@ -79,6 +80,35 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             minPrice,
             maxPrice
         );
+
+        ProductListResponseDto responseDto = new ProductListResponseDto();
+        responseDto.SetPageNo(resolvedPageNo);
+        responseDto.SetPageSize(resolvedPageSize);
+        responseDto.SetTotalCount(totalCount == null ? 0L : totalCount);
+        responseDto.SetProductList(productResponseList);
+        return responseDto;
+    }
+
+    @Override
+    public ProductListResponseDto ListMyProducts(
+        Long currentUserId,
+        Integer pageNo,
+        Integer pageSize,
+        String productStatus
+    ) {
+        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer resolvedPageSize = ResolvePageSize(pageSize);
+        String resolvedProductStatus = ResolveProductStatus(productStatus);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
+
+        List<ProductSummaryResponseDto> productResponseList = productMapper.ListProductsBySeller(
+            currentUserId,
+            resolvedProductStatus,
+            offset,
+            resolvedPageSize
+        ).stream().map(this::BuildProductSummaryResponse).toList();
+
+        Long totalCount = productMapper.CountProductsBySeller(currentUserId, resolvedProductStatus);
 
         ProductListResponseDto responseDto = new ProductListResponseDto();
         responseDto.SetPageNo(resolvedPageNo);
@@ -220,6 +250,21 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             return SORT_TYPE_PRICE_DESC;
         }
         return SORT_TYPE_NEWEST;
+    }
+
+    /**
+     * 解析商品状态
+     */
+    private String ResolveProductStatus(String productStatus) {
+        String normalizedStatus = NormalizeText(productStatus).toUpperCase(Locale.ROOT);
+        if (normalizedStatus.isBlank()) {
+            return null;
+        }
+        try {
+            return ProductStatusEnum.valueOf(normalizedStatus).name();
+        } catch (IllegalArgumentException exception) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "商品状态不合法");
+        }
     }
 
     /**

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CampusShare - 消息中心</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e7e8e9",
+                        "primary-fixed-dim": "#94ccff",
+                        "secondary": "#006878",
+                        "primary-fixed": "#cde5ff",
+                        "on-secondary-fixed-variant": "#004e5b",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#94ccff",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#0077b6",
+                        "outline-variant": "#bfc7d1",
+                        "secondary-fixed": "#a7edff",
+                        "on-secondary-fixed": "#001f25",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-primary-fixed": "#001d32",
+                        "error-container": "#ffdad6",
+                        "primary": "#005d90",
+                        "on-primary-container": "#f3f7ff",
+                        "surface-container-highest": "#e1e3e4",
+                        "tertiary-container": "#4770be",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-bright": "#f8f9fa",
+                        "secondary-container": "#69e5ff",
+                        "surface": "#f8f9fa",
+                        "secondary-fixed-dim": "#58d6f1",
+                        "on-primary-fixed-variant": "#004b74",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#d9dadb",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#d8e2ff",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "tertiary-fixed-dim": "#aec6ff",
+                        "on-secondary-container": "#006575",
+                        "surface-tint": "#006399",
+                        "on-tertiary-fixed-variant": "#0f4490",
+                        "on-tertiary-container": "#f7f7ff",
+                        "on-surface-variant": "#404850",
+                        "tertiary": "#2b57a4",
+                        "surface-container": "#edeeef",
+                        "surface-variant": "#e1e3e4",
+                        "inverse-surface": "#2e3132",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#001a42",
+                        "on-background": "#191c1d",
+                        "outline": "#707881",
+                        "background": "#f8f9fa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- TopNavBar -->
+<header class="w-full top-0 sticky bg-slate-50 dark:bg-slate-900 z-50">
+<div class="flex justify-between items-center px-8 h-16 w-full max-w-full">
+<div class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100">CampusShare</div>
+<nav class="hidden md:flex items-center space-x-8 font-['Manrope'] font-semibold">
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150 scale-100 active:scale-95 transition-transform" href="#">Marketplace</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150 scale-100 active:scale-95 transition-transform" href="#">Textbooks</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150 scale-100 active:scale-95 transition-transform" href="#">Equipment</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150 scale-100 active:scale-95 transition-transform" href="#">Lab Space</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150 scale-100 active:scale-95 transition-transform" href="#">Research</a>
+</nav>
+<div class="flex items-center space-x-4">
+<button class="p-2 text-slate-600 hover:bg-slate-200/50 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-slate-600 hover:bg-slate-200/50 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 flex flex-col h-full py-6 px-4 bg-slate-50 dark:bg-slate-900 font-['Inter'] text-sm font-medium">
+<div class="flex items-center gap-3 px-2 mb-8">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a professional male academic in a modern laboratory setting with soft focus background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmNMVeOZcjRuiQkfYQn7nhvZU2kmkhSgUcEWbb2qUWRYo4H8cvjMCxdMv14S2uMzg8zElfj6zOpsAo2iqN3X1t-G1ZaKSdUEp0Q5Tcb54KGMF-pqbVFI_aZfFeQDX27UvhPwsIXHYL9a1VToO8wkCYmczMKYO2xkp_ITWjiomJz6fhNiiqeIUTQ5i7KxEuUrnFFwSgOCWIuu2URJ-im7vGfSTUNX-YTcYlWTW49atWcsOT96JkI3VPQB60FgBJslXL3D7L2LR6JSM"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Personal Center</p>
+<p class="text-[10px] text-slate-500">Verified Faculty/Student</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+                    My Listings
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span>
+                    Trade Requests
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white dark:bg-slate-800 text-sky-800 dark:text-sky-300 font-bold transition-all cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+                    Messages
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+                    Saved Items
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                    Settings
+                </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-200 dark:border-slate-800 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                    Help Center
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                    Log Out
+                </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 min-h-screen bg-surface-container-low p-8">
+<div class="max-w-5xl mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-3xl font-bold text-on-surface tracking-tight">消息中心</h1>
+<p class="text-on-surface-variant mt-1 font-medium">管理您的订单、系统及学术动态</p>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest text-primary text-sm font-semibold rounded-lg shadow-sm hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="done_all">done_all</span>
+                        全部标记为已读
+                    </button>
+</div>
+<!-- Filters -->
+<div class="flex items-center space-x-1 mb-6 bg-surface-container p-1 rounded-xl w-fit">
+<button class="px-6 py-2 text-sm font-semibold rounded-lg bg-surface-container-lowest text-primary shadow-sm">全部消息</button>
+<button class="px-6 py-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors">未读</button>
+<button class="px-6 py-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors">已读</button>
+</div>
+<!-- Notification Grid -->
+<div class="space-y-4">
+<!-- Notification Card: Order -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl border-l-4 border-primary transition-all hover:bg-white">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-semibold text-on-surface">新订单确认</h3>
+<span class="text-xs text-on-surface-variant font-medium">10分钟前</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">您的“电子示波器”租赁申请已被批准。请前往实验室 302 领取设备，并在规定时间内确认交接。</p>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-wider">订单状态</span>
+<span class="text-[10px] text-on-surface-variant">订单号: #CS-99283</span>
+</div>
+<a class="text-primary text-sm font-bold flex items-center gap-1 hover:underline" href="#">
+                                        查看详情 <span class="material-symbols-outlined text-base" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Card: Report -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl transition-all hover:bg-white opacity-80">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-tertiary-container/10 flex items-center justify-center text-tertiary shrink-0">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-semibold text-on-surface">实验报告已更新</h3>
+<span class="text-xs text-on-surface-variant font-medium">2小时前</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">关于“量子动力学分析”的共享实验报告已有新批注。请检查最新的数据分析部分。</p>
+<div class="flex justify-between items-center">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">报告动态</span>
+<a class="text-primary text-sm font-bold flex items-center gap-1 hover:underline" href="#">
+                                        查看详情 <span class="material-symbols-outlined text-base" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Card: Review Status -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl border-l-4 border-secondary transition-all hover:bg-white">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/10 flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined" data-icon="rate_review">rate_review</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-semibold text-on-surface">资源审核通过</h3>
+<span class="text-xs text-on-surface-variant font-medium">昨天 14:30</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">您发布的“高级工程力学讲义”已通过平台合规性审核，现在可以在 Marketplace 中被检索。</p>
+<div class="flex justify-between items-center">
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-wider">审核提醒</span>
+<a class="text-primary text-sm font-bold flex items-center gap-1 hover:underline" href="#">
+                                        管理发布 <span class="material-symbols-outlined text-base" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Card: Team Recruitment -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl border-l-4 border-tertiary transition-all hover:bg-white">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-tertiary-container/10 flex items-center justify-center text-tertiary shrink-0">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-semibold text-on-surface">学术团队招募申请</h3>
+<span class="text-xs text-on-surface-variant font-medium">昨天 09:15</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">来自生命科学学院的“陈博士”申请加入您的“微流控芯片研究”小组。请查看其学术简历。</p>
+<div class="flex justify-between items-center">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-[10px] font-bold uppercase tracking-wider">人才招募</span>
+<a class="text-primary text-sm font-bold flex items-center gap-1 hover:underline" href="#">
+                                        去处理 <span class="material-symbols-outlined text-base" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Card: System Alert -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl border-l-4 border-error transition-all hover:bg-white">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-error-container/20 flex items-center justify-center text-error shrink-0">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-semibold text-on-surface">系统维护通知</h3>
+<span class="text-xs text-on-surface-variant font-medium">2天前</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">平台将于本周日 02:00-04:00 进行例行维护，届时部分支付及租赁确认功能将暂停使用。</p>
+<div class="flex justify-between items-center">
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container text-[10px] font-bold uppercase tracking-wider">系统公告</span>
+<a class="text-primary text-sm font-bold flex items-center gap-1 hover:underline" href="#">
+                                        了解详情 <span class="material-symbols-outlined text-base" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Card: Points -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl transition-all hover:bg-white">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-fixed/30 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined" data-icon="stars">stars</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-semibold text-on-surface">积分奖励发放</h3>
+<span class="text-xs text-on-surface-variant font-medium">3天前</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">感谢您本月在学术社区的活跃贡献！50 积分已发放到您的账户，可用于抵扣部分共享服务费用。</p>
+<div class="flex justify-between items-center">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[10px] font-bold uppercase tracking-wider">成长积分</span>
+<a class="text-primary text-sm font-bold flex items-center gap-1 hover:underline" href="#">
+                                        查看我的积分 <span class="material-symbols-outlined text-base" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More -->
+<div class="mt-12 flex justify-center">
+<button class="px-8 py-3 text-slate-500 font-semibold border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="history">history</span>
+                        加载更多历史消息
+                    </button>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 w-full ml-64">
+<div class="font-bold text-sky-900 dark:text-sky-100 mb-4 md:mb-0">CampusShare</div>
+<div class="flex flex-col md:flex-row items-center gap-8">
+<div class="flex gap-6 font-['Inter'] text-xs uppercase tracking-wider">
+<a class="text-slate-500 dark:text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors opacity-100 hover:opacity-80" href="#">Terms of Service</a>
+<a class="text-slate-500 dark:text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors opacity-100 hover:opacity-80" href="#">Privacy Policy</a>
+<a class="text-slate-500 dark:text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors opacity-100 hover:opacity-80" href="#">Accessibility</a>
+<a class="text-slate-500 dark:text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors opacity-100 hover:opacity-80" href="#">Contact Support</a>
+</div>
+<div class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500">
+                    © 2024 CampusShare Academic Resources. Institutional Trust Guaranteed.
+                </div>
+</div>
+</div>
+</footer>
+<script src="/pages/assets/js/campusshare-api.js"></script>
+<script src="/pages/assets/js/notification-center.js"></script>
+</body></html>

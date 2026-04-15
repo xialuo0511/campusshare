@@ -1,5 +1,6 @@
 package com.xialuo.campusshare.module.resource.service;
 
+import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
 
@@ -11,5 +12,14 @@ public interface ProductPublishService {
      * 发布商品
      */
     ProductDetailResponseDto PublishProduct(PublishProductRequestDto requestDto, Long currentUserId);
-}
 
+    /**
+     * 下架商品
+     */
+    ProductDetailResponseDto OfflineProduct(
+        Long productId,
+        Long currentUserId,
+        UserRoleEnum currentUserRole,
+        String offlineRemark
+    );
+}

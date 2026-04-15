@@ -42,6 +42,24 @@ public interface StudyMaterialMapper {
     List<StudyMaterialEntity> ListMaterialsByUploader(@Param("uploaderUserId") Long uploaderUserId);
 
     /**
+     * 分页查询用户资料
+     */
+    List<StudyMaterialEntity> ListMaterialsByUploaderPaged(
+        @Param("uploaderUserId") Long uploaderUserId,
+        @Param("materialStatus") String materialStatus,
+        @Param("offset") Integer offset,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 统计用户资料
+     */
+    Long CountMaterialsByUploader(
+        @Param("uploaderUserId") Long uploaderUserId,
+        @Param("materialStatus") String materialStatus
+    );
+
+    /**
      * 增加下载次数
      */
     Integer IncreaseDownloadCount(

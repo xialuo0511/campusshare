@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.material.service;
 
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.material.dto.MaterialDownloadResponseDto;
+import com.xialuo.campusshare.module.material.dto.MaterialListResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialResponseDto;
 import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
 
@@ -18,6 +19,16 @@ public interface MaterialService {
      * 查询资料详情
      */
     MaterialResponseDto GetMaterialDetail(Long materialId, Long currentUserId, UserRoleEnum currentUserRole);
+
+    /**
+     * 查询我的资料
+     */
+    MaterialListResponseDto ListMyMaterials(
+        Long currentUserId,
+        Integer pageNo,
+        Integer pageSize,
+        String materialStatus
+    );
 
     /**
      * 下架资料

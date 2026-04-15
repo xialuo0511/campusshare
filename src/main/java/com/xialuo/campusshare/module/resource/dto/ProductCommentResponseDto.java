@@ -1,23 +1,29 @@
-package com.xialuo.campusshare.entity;
+package com.xialuo.campusshare.module.resource.dto;
+
+import java.time.LocalDateTime;
 
 /**
- * 评论实体
+ * 商品评论响应
  */
-public class CommentEntity extends BaseEntity {
+public class ProductCommentResponseDto {
     /** 评论ID */
     private Long commentId;
-    /** 资源ID */
-    private Long resourceId;
+    /** 商品ID */
+    private Long productId;
     /** 评论人ID */
     private Long fromUserId;
+    /** 评论人昵称 */
+    private String fromUserDisplayName;
     /** 被评论人ID */
     private Long toUserId;
+    /** 被评论人昵称 */
+    private String toUserDisplayName;
     /** 评分 */
     private Integer score;
     /** 评论内容 */
     private String content;
-    /** 是否隐藏 */
-    private Boolean hiddenFlag;
+    /** 评论时间 */
+    private LocalDateTime createTime;
 
     /**
      * 获取评论ID
@@ -34,17 +40,17 @@ public class CommentEntity extends BaseEntity {
     }
 
     /**
-     * 获取资源ID
+     * 获取商品ID
      */
-    public Long GetResourceId() {
-        return resourceId;
+    public Long GetProductId() {
+        return productId;
     }
 
     /**
-     * 设置资源ID
+     * 设置商品ID
      */
-    public void SetResourceId(Long resourceId) {
-        this.resourceId = resourceId;
+    public void SetProductId(Long productId) {
+        this.productId = productId;
     }
 
     /**
@@ -62,6 +68,20 @@ public class CommentEntity extends BaseEntity {
     }
 
     /**
+     * 获取评论人昵称
+     */
+    public String GetFromUserDisplayName() {
+        return fromUserDisplayName;
+    }
+
+    /**
+     * 设置评论人昵称
+     */
+    public void SetFromUserDisplayName(String fromUserDisplayName) {
+        this.fromUserDisplayName = fromUserDisplayName;
+    }
+
+    /**
      * 获取被评论人ID
      */
     public Long GetToUserId() {
@@ -73,6 +93,20 @@ public class CommentEntity extends BaseEntity {
      */
     public void SetToUserId(Long toUserId) {
         this.toUserId = toUserId;
+    }
+
+    /**
+     * 获取被评论人昵称
+     */
+    public String GetToUserDisplayName() {
+        return toUserDisplayName;
+    }
+
+    /**
+     * 设置被评论人昵称
+     */
+    public void SetToUserDisplayName(String toUserDisplayName) {
+        this.toUserDisplayName = toUserDisplayName;
     }
 
     /**
@@ -104,18 +138,17 @@ public class CommentEntity extends BaseEntity {
     }
 
     /**
-     * 获取隐藏标记
+     * 获取评论时间
      */
-    public Boolean GetHiddenFlag() {
-        return hiddenFlag;
+    public LocalDateTime GetCreateTime() {
+        return createTime;
     }
 
     /**
-     * 设置隐藏标记
+     * 设置评论时间
      */
-    public void SetHiddenFlag(Boolean hiddenFlag) {
-        this.hiddenFlag = hiddenFlag;
+    public void SetCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 }
-
 

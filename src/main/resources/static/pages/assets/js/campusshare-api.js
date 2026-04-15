@@ -1124,6 +1124,17 @@
         GetProductDetail(productId) {
             return RequestApi(`/api/v1/products/${productId}`, "GET", null, false);
         },
+        ListProductComments(productId, pageNo, pageSize) {
+            return RequestApi(
+                `/api/v1/products/${productId}/comments?pageNo=${pageNo}&pageSize=${pageSize}`,
+                "GET",
+                null,
+                false
+            );
+        },
+        CreateProductComment(productId, payload) {
+            return RequestApi(`/api/v1/products/${productId}/comments`, "POST", payload, true);
+        },
         GetProductFavoriteState(productId) {
             return RequestApi(`/api/v1/favorites/products/${productId}`, "GET", null, true);
         },

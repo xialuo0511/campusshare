@@ -3,9 +3,13 @@ package com.xialuo.campusshare.module.resource.controller;
 import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
+import com.xialuo.campusshare.module.resource.dto.CreateProductCommentRequestDto;
+import com.xialuo.campusshare.module.resource.dto.ProductCommentListResponseDto;
+import com.xialuo.campusshare.module.resource.dto.ProductCommentResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductListResponseDto;
 import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
+import com.xialuo.campusshare.module.resource.service.ProductCommentService;
 import com.xialuo.campusshare.module.resource.service.ProductPublishService;
 import com.xialuo.campusshare.module.resource.service.ProductQueryService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,10 +33,17 @@ public class ProductController {
     private final ProductQueryService productQueryService;
     /** 商品发布服务 */
     private final ProductPublishService productPublishService;
+    /** 商品评论服务 */
+    private final ProductCommentService productCommentService;
 
-    public ProductController(ProductQueryService productQueryService, ProductPublishService productPublishService) {
+    public ProductController(
+        ProductQueryService productQueryService,
+        ProductPublishService productPublishService,
+        ProductCommentService productCommentService
+    ) {
         this.productQueryService = productQueryService;
         this.productPublishService = productPublishService;
+        this.productCommentService = productCommentService;
     }
 
     /**
@@ -86,6 +97,37 @@ public class ProductController {
         HttpServletRequest httpServletRequest
     ) {
         ProductDetailResponseDto responseDto = productPublishService.PublishProduct(
+            requestDto,
+            GetCurrentUserId(httpServletRequest)
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 分页查询商品评论
+     */
+    @GetMapping("/{productId}/comments")
+    public ApiResponse<ProductCommentListResponseDto> ListProductComments(
+        @PathVariable("productId") Long productId,
+        @RequestParam(value = "pageNo", required = false) Integer pageNo,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        HttpServletRequest httpServletRequest
+    ) {
+        ProductCommentListResponseDto responseDto = productCommentService.ListProductComments(productId, pageNo, pageSize);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 提交商品评论
+     */
+    @PostMapping("/{productId}/comments")
+    public ApiResponse<ProductCommentResponseDto> CreateProductComment(
+        @PathVariable("productId") Long productId,
+        @RequestBody @Valid CreateProductCommentRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        ProductCommentResponseDto responseDto = productCommentService.CreateProductComment(
+            productId,
             requestDto,
             GetCurrentUserId(httpServletRequest)
         );

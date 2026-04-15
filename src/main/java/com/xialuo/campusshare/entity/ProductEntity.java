@@ -11,6 +11,8 @@ public class ProductEntity extends BaseEntity {
     private Long productId;
     /** 关联资源ID */
     private Long resourceId;
+    /** 商品标题 */
+    private String title;
     /** 商品分类 */
     private String category;
     /** 成色 */
@@ -19,6 +21,10 @@ public class ProductEntity extends BaseEntity {
     private BigDecimal price;
     /** 交易地点 */
     private String tradeLocation;
+    /** 商品描述 */
+    private String description;
+    /** 图片文件ID集合 */
+    private String imageFileIds;
     /** 卖家ID */
     private Long sellerUserId;
     /** 商品状态 */
@@ -56,6 +62,20 @@ public class ProductEntity extends BaseEntity {
      */
     public void SetResourceId(Long resourceId) {
         this.resourceId = resourceId;
+    }
+
+    /**
+     * 获取标题
+     */
+    public String GetTitle() {
+        return title;
+    }
+
+    /**
+     * 设置标题
+     */
+    public void SetTitle(String title) {
+        this.title = title;
     }
 
     /**
@@ -112,6 +132,34 @@ public class ProductEntity extends BaseEntity {
      */
     public void SetTradeLocation(String tradeLocation) {
         this.tradeLocation = tradeLocation;
+    }
+
+    /**
+     * 获取描述
+     */
+    public String GetDescription() {
+        return description;
+    }
+
+    /**
+     * 设置描述
+     */
+    public void SetDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * 获取图片文件ID集合
+     */
+    public String GetImageFileIds() {
+        return imageFileIds;
+    }
+
+    /**
+     * 设置图片文件ID集合
+     */
+    public void SetImageFileIds(String imageFileIds) {
+        this.imageFileIds = imageFileIds;
     }
 
     /**

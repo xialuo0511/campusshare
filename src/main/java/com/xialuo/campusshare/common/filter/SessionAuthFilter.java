@@ -101,7 +101,7 @@ public class SessionAuthFilter extends OncePerRequestFilter {
         return "/api/v1/users/register".equals(requestPath)
             || "/api/v1/users/register/code/send".equals(requestPath)
             || "/api/v1/users/login".equals(requestPath)
-            || requestPath.startsWith("/api/v1/products")
+            || (IsGetMethod(requestMethod) && requestPath.startsWith("/api/v1/products"))
             || requestPath.startsWith("/api/v1/market")
             || (IsGetMethod(requestMethod)
                 && ("/api/v1/team/recruitments".equals(requestPath)

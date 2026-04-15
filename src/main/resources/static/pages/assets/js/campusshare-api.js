@@ -1098,6 +1098,9 @@
         UploadMaterial(payload) {
             return RequestApi("/api/v1/materials", "POST", payload, true);
         },
+        PublishProduct(payload) {
+            return RequestApi("/api/v1/products", "POST", payload, true);
+        },
         UploadMaterialFile(file) {
             const formData = new FormData();
             formData.append("file", file);

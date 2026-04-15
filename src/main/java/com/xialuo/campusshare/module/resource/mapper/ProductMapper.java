@@ -13,6 +13,11 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ProductMapper {
     /**
+     * 新增商品
+     */
+    Integer InsertProduct(ProductEntity productEntity);
+
+    /**
      * 分页查询已上架商品
      */
     List<ProductEntity> ListPublishedProducts(

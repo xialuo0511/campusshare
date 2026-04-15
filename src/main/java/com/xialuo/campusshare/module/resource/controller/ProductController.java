@@ -2,13 +2,19 @@ package com.xialuo.campusshare.module.resource.controller;
 
 import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
+import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductListResponseDto;
+import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
+import com.xialuo.campusshare.module.resource.service.ProductPublishService;
 import com.xialuo.campusshare.module.resource.service.ProductQueryService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,9 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
     /** 商品查询服务 */
     private final ProductQueryService productQueryService;
+    /** 商品发布服务 */
+    private final ProductPublishService productPublishService;
 
-    public ProductController(ProductQueryService productQueryService) {
+    public ProductController(ProductQueryService productQueryService, ProductPublishService productPublishService) {
         this.productQueryService = productQueryService;
+        this.productPublishService = productPublishService;
     }
 
     /**
@@ -69,10 +78,36 @@ public class ProductController {
     }
 
     /**
+     * 发布商品
+     */
+    @PostMapping
+    public ApiResponse<ProductDetailResponseDto> PublishProduct(
+        @RequestBody @Valid PublishProductRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        ProductDetailResponseDto responseDto = productPublishService.PublishProduct(
+            requestDto,
+            GetCurrentUserId(httpServletRequest)
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 获取请求追踪ID
      */
     private String GetRequestId(HttpServletRequest httpServletRequest) {
         Object requestId = httpServletRequest.getAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE);
         return requestId == null ? "" : requestId.toString();
+    }
+
+    /**
+     * 获取当前用户ID
+     */
+    private Long GetCurrentUserId(HttpServletRequest httpServletRequest) {
+        Object currentUserId = httpServletRequest.getAttribute(SessionAuthFilter.CURRENT_USER_ID_ATTRIBUTE);
+        if (currentUserId instanceof Long currentUserIdLong) {
+            return currentUserIdLong;
+        }
+        return Long.parseLong(currentUserId.toString());
     }
 }

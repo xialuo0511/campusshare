@@ -2,8 +2,8 @@
  * 发布页面逻辑
  */
 (function InitPublishCreatePage() {
-    /** 文件选择限制 */
-    const MATERIAL_FILE_ACCEPT = ".jpg,.jpeg,.png,.pdf";
+    /** 图片选择限制 */
+    const PRODUCT_IMAGE_ACCEPT = ".jpg,.jpeg,.png";
 
     /**
      * 绑定页面行为
@@ -14,14 +14,13 @@
             return;
         }
 
-        const conditionButtons = publishForm.querySelectorAll("button[type='button']");
+        const conditionButtonList = publishForm.querySelectorAll("button[type='button']");
         const submitButton = publishForm.querySelector("button[type='submit']");
         const titleInput = publishForm.querySelector("input[type='text']");
         const categorySelect = publishForm.querySelector("select");
         const locationSelect = publishForm.querySelectorAll("select")[1];
         const priceInput = publishForm.querySelector("input[type='number']");
         const descriptionInput = publishForm.querySelector("textarea");
-        const copyrightCheckbox = publishForm.querySelector("input[type='checkbox']");
         const uploadPanel = publishForm.querySelector(".border-dashed");
         const browseFileButton = uploadPanel ? uploadPanel.querySelector("button[type='button']") : null;
         const uploadTipText = CreateUploadTip(uploadPanel);
@@ -33,7 +32,7 @@
         publishForm.insertBefore(messageBar, publishForm.firstChild);
 
         if (!window.CampusShareApi.GetAuthToken()) {
-            ShowError(messageBar, "请先登录后再发布资源");
+            ShowError(messageBar, "请先登录后再发布商品");
             window.setTimeout(function RedirectToAuthPage() {
                 if (window.CampusShareApi.RedirectToAuthPage) {
                     window.CampusShareApi.RedirectToAuthPage("/pages/publish_create.html");
@@ -47,12 +46,12 @@
         let selectedCondition = "";
         let uploadedFileMeta = null;
         let isUploadingFile = false;
-        const usableConditionButtons = Array.from(conditionButtons).slice(0, 3);
-        usableConditionButtons.forEach(function BindConditionButton(button, index) {
+        const usableConditionButtonList = Array.from(conditionButtonList).slice(0, 3);
+        usableConditionButtonList.forEach(function BindConditionButton(button, index) {
             button.setAttribute("data-condition", String(index));
             button.addEventListener("click", function HandleConditionClick() {
                 selectedCondition = button.textContent ? button.textContent.trim() : "";
-                usableConditionButtons.forEach(function ResetStyle(itemButton) {
+                usableConditionButtonList.forEach(function ResetStyle(itemButton) {
                     itemButton.classList.remove("border-primary", "bg-primary-container/10", "text-primary");
                     itemButton.classList.add("border-transparent", "bg-surface-container", "text-slate-600");
                 });
@@ -61,8 +60,8 @@
                 HideMessage(messageBar);
             });
         });
-        if (usableConditionButtons[0] && usableConditionButtons[0].textContent) {
-            selectedCondition = usableConditionButtons[0].textContent.trim();
+        if (usableConditionButtonList[0] && usableConditionButtonList[0].textContent) {
+            selectedCondition = usableConditionButtonList[0].textContent.trim();
         }
 
         if (browseFileButton && hiddenFileInput) {
@@ -85,30 +84,31 @@
             submitButton.classList.add("opacity-70");
             try {
                 if (isUploadingFile) {
-                    throw new Error("文件上传中，请稍后重试");
+                    throw new Error("图片上传中，请稍后重试");
                 }
-                const materialPayload = BuildMaterialPayload(
+                const productPayload = BuildProductPayload(
                     titleInput,
                     categorySelect,
                     selectedCondition,
                     priceInput,
                     locationSelect,
                     descriptionInput,
-                    copyrightCheckbox,
                     uploadedFileMeta
                 );
-                const result = await window.CampusShareApi.UploadMaterial(materialPayload);
-                ShowSuccess(
-                    messageBar,
-                    `发布成功，资料ID：${result.materialId}，状态：${result.materialStatus}`
-                );
+                const result = await window.CampusShareApi.PublishProduct(productPayload);
+                ShowSuccess(messageBar, `发布成功，商品ID：${result.productId}`);
                 publishForm.reset();
-                selectedCondition = usableConditionButtons[0] && usableConditionButtons[0].textContent
-                    ? usableConditionButtons[0].textContent.trim()
+                selectedCondition = usableConditionButtonList[0] && usableConditionButtonList[0].textContent
+                    ? usableConditionButtonList[0].textContent.trim()
                     : "";
                 uploadedFileMeta = null;
-                SetUploadTip(uploadTipText, "尚未上传文件");
-                ResetConditionButtons(usableConditionButtons);
+                SetUploadTip(uploadTipText, "尚未上传商品图片");
+                ResetConditionButtons(usableConditionButtonList);
+                if (result && result.productId) {
+                    window.setTimeout(function JumpToDetailPage() {
+                        window.location.href = `/pages/market_item_detail.html?productId=${encodeURIComponent(result.productId)}`;
+                    }, 900);
+                }
             } catch (error) {
                 ShowError(messageBar, error instanceof Error ? error.message : "发布失败，请稍后重试");
             } finally {
@@ -118,16 +118,22 @@
         });
 
         /**
-         * 上传选中文件
+         * 上传选中图片
          */
         async function UploadSelectedFile(selectedFile) {
             if (!selectedFile) {
                 return;
             }
             if (!window.CampusShareApi.GetAuthToken()) {
-                ShowError(messageBar, "请先登录后再上传文件");
+                ShowError(messageBar, "请先登录后再上传图片");
                 return;
             }
+            if (!IsSupportedImageFile(selectedFile)) {
+                SetUploadTip(uploadTipText, "仅支持 JPG/PNG 图片", true);
+                ShowError(messageBar, "仅支持 JPG/PNG 图片");
+                return;
+            }
+
             isUploadingFile = true;
             submitButton.disabled = true;
             submitButton.classList.add("opacity-70");
@@ -143,7 +149,7 @@
             } catch (error) {
                 uploadedFileMeta = null;
                 SetUploadTip(uploadTipText, "上传失败，请重试", true);
-                ShowError(messageBar, error instanceof Error ? error.message : "文件上传失败");
+                ShowError(messageBar, error instanceof Error ? error.message : "图片上传失败");
             } finally {
                 isUploadingFile = false;
                 submitButton.disabled = false;
@@ -156,54 +162,72 @@
     }
 
     /**
-     * 构建资料上传参数
+     * 构建商品发布参数
      */
-    function BuildMaterialPayload(
+    function BuildProductPayload(
         titleInput,
         categorySelect,
         selectedCondition,
         priceInput,
         locationSelect,
         descriptionInput,
-        copyrightCheckbox,
         uploadedFileMeta
     ) {
         if (!uploadedFileMeta || !uploadedFileMeta.fileId) {
-            throw new Error("请先上传资料文件");
+            throw new Error("请先上传商品图片");
         }
-        const courseName = titleInput && titleInput.value ? titleInput.value.trim() : "";
+        const title = titleInput && titleInput.value ? titleInput.value.trim() : "";
+        if (!title) {
+            throw new Error("商品标题不能为空");
+        }
+
         const categoryText = categorySelect && categorySelect.value ? categorySelect.value.trim() : "";
-        const locationText = locationSelect && locationSelect.value ? locationSelect.value.trim() : "";
-        const detailText = descriptionInput && descriptionInput.value ? descriptionInput.value.trim() : "";
+        if (!categoryText || categoryText === "选择分类") {
+            throw new Error("请选择商品分类");
+        }
+
+        const conditionLevel = selectedCondition ? selectedCondition.trim() : "";
+        if (!conditionLevel) {
+            throw new Error("请选择商品成色");
+        }
+
+        const tradeLocation = locationSelect && locationSelect.value ? locationSelect.value.trim() : "";
+        if (!tradeLocation) {
+            throw new Error("交易地点不能为空");
+        }
+
         const priceText = priceInput && priceInput.value ? priceInput.value.trim() : "";
-        const tags = [categoryText, selectedCondition]
-            .filter(function FilterEmptyTag(item) {
-                return !!item && item !== "选择分类";
-            });
-
-        let mergedDescription = detailText;
-        const extraLines = [];
-        if (priceText) {
-            extraLines.push(`参考价格：${priceText}`);
+        const priceNumber = Number(priceText);
+        if (!priceText || Number.isNaN(priceNumber)) {
+            throw new Error("请输入正确价格");
         }
-        if (locationText) {
-            extraLines.push(`交易地点：${locationText}`);
-        }
-        if (extraLines.length > 0) {
-            mergedDescription = mergedDescription
-                ? `${mergedDescription}\n${extraLines.join("；")}`
-                : extraLines.join("；");
+        if (priceNumber < 0) {
+            throw new Error("价格不能小于0");
         }
 
+        const description = descriptionInput && descriptionInput.value ? descriptionInput.value.trim() : "";
         return {
-            courseName,
-            tags,
-            description: mergedDescription,
-            fileId: uploadedFileMeta.fileId,
-            fileType: uploadedFileMeta.fileType,
-            fileSizeBytes: uploadedFileMeta.fileSizeBytes,
-            copyrightDeclared: !!(copyrightCheckbox && copyrightCheckbox.checked)
+            title,
+            category: categoryText,
+            conditionLevel,
+            price: Number(priceNumber.toFixed(2)),
+            tradeLocation,
+            description,
+            imageFileIds: [uploadedFileMeta.fileId]
         };
+    }
+
+    /**
+     * 是否为受支持图片
+     */
+    function IsSupportedImageFile(selectedFile) {
+        if (!selectedFile || !selectedFile.name) {
+            return false;
+        }
+        const lowerFileName = selectedFile.name.toLowerCase();
+        return lowerFileName.endsWith(".jpg")
+            || lowerFileName.endsWith(".jpeg")
+            || lowerFileName.endsWith(".png");
     }
 
     /**
@@ -215,7 +239,7 @@
         }
         const hiddenFileInput = document.createElement("input");
         hiddenFileInput.type = "file";
-        hiddenFileInput.accept = MATERIAL_FILE_ACCEPT;
+        hiddenFileInput.accept = PRODUCT_IMAGE_ACCEPT;
         hiddenFileInput.style.display = "none";
         publishForm.appendChild(hiddenFileInput);
         return hiddenFileInput;
@@ -230,7 +254,7 @@
         }
         const uploadTipText = document.createElement("p");
         uploadTipText.className = "mt-3 text-xs text-slate-500";
-        uploadTipText.textContent = "尚未上传文件";
+        uploadTipText.textContent = "尚未上传商品图片";
         uploadPanel.appendChild(uploadTipText);
         return uploadTipText;
     }
@@ -290,8 +314,8 @@
     /**
      * 重置新旧程度按钮样式
      */
-    function ResetConditionButtons(usableConditionButtons) {
-        usableConditionButtons.forEach(function ResetConditionButtonStyle(button, index) {
+    function ResetConditionButtons(usableConditionButtonList) {
+        usableConditionButtonList.forEach(function ResetConditionButtonStyle(button, index) {
             if (index === 0) {
                 button.classList.remove("border-transparent", "bg-surface-container", "text-slate-600");
                 button.classList.add("border-primary", "bg-primary-container/10", "text-primary");
@@ -330,3 +354,4 @@
 
     document.addEventListener("DOMContentLoaded", BindPublishPage);
 })();
+

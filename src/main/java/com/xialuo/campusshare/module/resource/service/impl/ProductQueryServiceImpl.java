@@ -12,6 +12,7 @@ import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
 import com.xialuo.campusshare.module.resource.service.ProductQueryService;
 import com.xialuo.campusshare.module.user.mapper.UserMapper;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
@@ -96,6 +97,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         ProductDetailResponseDto responseDto = new ProductDetailResponseDto();
         FillCommonProductFields(responseDto, productEntity);
         responseDto.SetDescription(BuildProductDescription(productEntity));
+        responseDto.SetImageFileIds(SplitImageFileIds(productEntity.GetImageFileIds()));
         responseDto.SetOnShelf(productEntity.GetOnShelf());
         responseDto.SetStockCount(productEntity.GetStockCount());
         return responseDto;
@@ -130,7 +132,14 @@ public class ProductQueryServiceImpl implements ProductQueryService {
      * 构建商品标题
      */
     private String BuildProductTitle(ProductEntity productEntity) {
-        String category = productEntity.GetCategory() == null ? "校园商品" : productEntity.GetCategory().trim();
+        String title = NormalizeText(productEntity.GetTitle());
+        if (!title.isBlank()) {
+            return title;
+        }
+        String category = NormalizeText(productEntity.GetCategory());
+        if (category.isBlank()) {
+            category = "校园商品";
+        }
         return category + " #" + productEntity.GetProductId();
     }
 
@@ -138,10 +147,28 @@ public class ProductQueryServiceImpl implements ProductQueryService {
      * 构建详情描述
      */
     private String BuildProductDescription(ProductEntity productEntity) {
+        String description = NormalizeText(productEntity.GetDescription());
+        if (!description.isBlank()) {
+            return description;
+        }
         return "分类：" + NullToDash(productEntity.GetCategory())
             + "，成色：" + NullToDash(productEntity.GetConditionLevel())
             + "，交易地点：" + NullToDash(productEntity.GetTradeLocation())
             + "。";
+    }
+
+    /**
+     * 拆分图片ID
+     */
+    private List<String> SplitImageFileIds(String imageFileIds) {
+        if (imageFileIds == null || imageFileIds.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(imageFileIds.split(","))
+            .map(this::NormalizeText)
+            .filter(imageFileId -> !imageFileId.isBlank())
+            .distinct()
+            .toList();
     }
 
     /**

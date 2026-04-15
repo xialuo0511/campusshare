@@ -7,10 +7,13 @@
     <resultMap id="ProductResultMap" type="com.xialuo.campusshare.entity.ProductEntity">
         <id column="product_id" property="productId"/>
         <result column="resource_id" property="resourceId"/>
+        <result column="title" property="title"/>
         <result column="category" property="category"/>
         <result column="condition_level" property="conditionLevel"/>
         <result column="price" property="price"/>
         <result column="trade_location" property="tradeLocation"/>
+        <result column="description" property="description"/>
+        <result column="image_file_ids" property="imageFileIds"/>
         <result column="seller_user_id" property="sellerUserId"/>
         <result column="product_status" property="productStatus"/>
         <result column="on_shelf" property="onShelf"/>
@@ -24,10 +27,13 @@
     <sql id="ProductColumns">
         product_id,
         resource_id,
+        title,
         category,
         condition_level,
         price,
         trade_location,
+        description,
+        image_file_ids,
         seller_user_id,
         product_status,
         on_shelf,
@@ -37,6 +43,44 @@
         update_time,
         deleted
     </sql>
+
+    <insert id="InsertProduct" parameterType="com.xialuo.campusshare.entity.ProductEntity" useGeneratedKeys="true" keyProperty="productId">
+        INSERT INTO product_info (
+            resource_id,
+            title,
+            category,
+            condition_level,
+            price,
+            trade_location,
+            description,
+            image_file_ids,
+            seller_user_id,
+            product_status,
+            on_shelf,
+            stock_count,
+            has_effective_order,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{resourceId},
+            #{title},
+            #{category},
+            #{conditionLevel},
+            #{price},
+            #{tradeLocation},
+            #{description},
+            #{imageFileIds},
+            #{sellerUserId},
+            #{productStatus},
+            #{onShelf},
+            #{stockCount},
+            #{hasEffectiveOrder},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
 
     <select id="ListPublishedProducts" resultMap="ProductResultMap">
         SELECT
@@ -48,9 +92,11 @@
         <if test="keyword != null and keyword != ''">
             AND (
                 CAST(product_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                OR title LIKE CONCAT('%', #{keyword}, '%')
                 OR category LIKE CONCAT('%', #{keyword}, '%')
                 OR condition_level LIKE CONCAT('%', #{keyword}, '%')
                 OR trade_location LIKE CONCAT('%', #{keyword}, '%')
+                OR description LIKE CONCAT('%', #{keyword}, '%')
             )
         </if>
         <if test="category != null and category != ''">
@@ -91,9 +137,11 @@
         <if test="keyword != null and keyword != ''">
             AND (
                 CAST(product_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                OR title LIKE CONCAT('%', #{keyword}, '%')
                 OR category LIKE CONCAT('%', #{keyword}, '%')
                 OR condition_level LIKE CONCAT('%', #{keyword}, '%')
                 OR trade_location LIKE CONCAT('%', #{keyword}, '%')
+                OR description LIKE CONCAT('%', #{keyword}, '%')
             )
         </if>
         <if test="category != null and category != ''">

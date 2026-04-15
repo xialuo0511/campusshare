@@ -1,11 +1,15 @@
 package com.xialuo.campusshare.module.resource.dto;
 
+import java.util.List;
+
 /**
  * 商品详情响应
  */
 public class ProductDetailResponseDto extends ProductSummaryResponseDto {
     /** 描述 */
     private String description;
+    /** 图片文件ID列表 */
+    private List<String> imageFileIds;
     /** 是否上架 */
     private Boolean onShelf;
     /** 库存 */
@@ -23,6 +27,20 @@ public class ProductDetailResponseDto extends ProductSummaryResponseDto {
      */
     public void SetDescription(String description) {
         this.description = description;
+    }
+
+    /**
+     * 获取图片文件ID列表
+     */
+    public List<String> GetImageFileIds() {
+        return imageFileIds;
+    }
+
+    /**
+     * 设置图片文件ID列表
+     */
+    public void SetImageFileIds(List<String> imageFileIds) {
+        this.imageFileIds = imageFileIds;
     }
 
     /**

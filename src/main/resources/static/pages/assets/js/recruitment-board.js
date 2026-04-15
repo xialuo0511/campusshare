@@ -41,7 +41,11 @@
         const currentUserRole = profile && profile.userRole ? String(profile.userRole) : "";
 
         const applicationModal = BuildApplicationModal();
+        const publishModal = BuildPublishModal();
+        const reviewRemarkModal = BuildReviewRemarkModal();
         document.body.appendChild(applicationModal.wrapper);
+        document.body.appendChild(publishModal.wrapper);
+        document.body.appendChild(reviewRemarkModal.wrapper);
 
         const state = {
             pageNo: DEFAULT_PAGE_NO,
@@ -56,7 +60,17 @@
         BindDirectionFilter(filterBar, state, function ReloadByFilter() {
             LoadRecruitments(state, recruitmentGrid, currentUserId, currentUserRole, messageBar);
         });
-        BindPublishButton(publishButton, state, recruitmentGrid, currentUserId, currentUserRole, messageBar);
+        BindPublishModalActions(publishModal, messageBar);
+        BindReviewRemarkModalActions(reviewRemarkModal);
+        BindPublishButton(
+            publishButton,
+            publishModal,
+            state,
+            recruitmentGrid,
+            currentUserId,
+            currentUserRole,
+            messageBar
+        );
         BindRecruitmentGridActions(
             recruitmentGrid,
             applicationModal,
@@ -67,6 +81,7 @@
         );
         BindApplicationModalActions(
             applicationModal,
+            reviewRemarkModal,
             state,
             recruitmentGrid,
             currentUserId,
@@ -253,6 +268,7 @@
      */
     function BindPublishButton(
         publishButton,
+        publishModal,
         state,
         recruitmentGrid,
         currentUserId,
@@ -274,7 +290,7 @@
                 }, 700);
                 return;
             }
-            const payload = BuildPublishPayloadByPrompt();
+            const payload = await OpenPublishModal(publishModal);
             if (!payload) {
                 return;
             }
@@ -292,38 +308,140 @@
     }
 
     /**
-     * Prompt生成发布参数
+     * 绑定发布弹层动作
      */
-    function BuildPublishPayloadByPrompt() {
-        const eventName = window.prompt("请输入赛事/项目名称（1-100字）", "");
+    function BindPublishModalActions(publishModal, messageBar) {
+        publishModal.closeButton.addEventListener("click", function HandleCloseClick() {
+            ResolvePublishModal(publishModal, null);
+        });
+        publishModal.cancelButton.addEventListener("click", function HandleCancelClick() {
+            ResolvePublishModal(publishModal, null);
+        });
+        publishModal.wrapper.addEventListener("click", function HandleWrapperClick(event) {
+            if (event.target === publishModal.wrapper) {
+                ResolvePublishModal(publishModal, null);
+            }
+        });
+        publishModal.submitButton.addEventListener("click", function HandleSubmitClick() {
+            try {
+                const payload = BuildPublishPayloadFromModal(publishModal);
+                ResolvePublishModal(publishModal, payload);
+            } catch (error) {
+                ShowError(messageBar, error instanceof Error ? error.message : "发布参数校验失败");
+            }
+        });
+    }
+
+    /**
+     * 打开发布弹层
+     */
+    function OpenPublishModal(publishModal) {
+        if (publishModal.eventNameInput) {
+            publishModal.eventNameInput.value = "";
+        }
+        if (publishModal.directionInput) {
+            publishModal.directionInput.value = "";
+        }
+        if (publishModal.memberLimitInput) {
+            publishModal.memberLimitInput.value = "5";
+        }
+        if (publishModal.skillRequirementInput) {
+            publishModal.skillRequirementInput.value = "";
+        }
+        if (publishModal.deadlineInput) {
+            publishModal.deadlineInput.value = ResolveDefaultDeadlineLocalText();
+        }
+        publishModal.wrapper.classList.remove("hidden");
+        if (publishModal.eventNameInput) {
+            publishModal.eventNameInput.focus();
+        }
+        return new Promise(function WaitModalResult(resolve) {
+            publishModal.resolveCallback = resolve;
+        });
+    }
+
+    /**
+     * 关闭发布弹层并返回结果
+     */
+    function ResolvePublishModal(publishModal, payload) {
+        publishModal.wrapper.classList.add("hidden");
+        const resolveCallback = publishModal.resolveCallback;
+        publishModal.resolveCallback = null;
+        if (typeof resolveCallback === "function") {
+            resolveCallback(payload);
+        }
+    }
+
+    /**
+     * 从发布弹层构建参数
+     */
+    function BuildPublishPayloadFromModal(publishModal) {
+        const eventName = publishModal.eventNameInput && publishModal.eventNameInput.value
+            ? publishModal.eventNameInput.value.trim()
+            : "";
+        const direction = publishModal.directionInput && publishModal.directionInput.value
+            ? publishModal.directionInput.value.trim()
+            : "";
+        const memberLimitText = publishModal.memberLimitInput && publishModal.memberLimitInput.value
+            ? publishModal.memberLimitInput.value.trim()
+            : "";
+        const skillRequirement = publishModal.skillRequirementInput && publishModal.skillRequirementInput.value
+            ? publishModal.skillRequirementInput.value.trim()
+            : "";
+        const deadlineLocalText = publishModal.deadlineInput && publishModal.deadlineInput.value
+            ? publishModal.deadlineInput.value.trim()
+            : "";
+
         if (!eventName) {
-            return null;
+            throw new Error("赛事或项目名称不能为空");
         }
-        const direction = window.prompt("请输入方向（1-50字）", "");
+        if (eventName.length > 100) {
+            throw new Error("赛事或项目名称长度不能超过100");
+        }
         if (!direction) {
-            return null;
+            throw new Error("方向不能为空");
         }
-        const memberLimitText = window.prompt("请输入人数上限（正整数）", "5");
-        const memberLimit = Number(memberLimitText || 0);
-        if (!memberLimit || memberLimit < 1) {
+        if (direction.length > 50) {
+            throw new Error("方向长度不能超过50");
+        }
+        const memberLimit = Number(memberLimitText);
+        if (!memberLimit || memberLimit < 1 || !Number.isInteger(memberLimit)) {
             throw new Error("人数上限需为正整数");
         }
-        const deadlineText = window.prompt("请输入截止时间（示例：2026-12-31 20:00）", "");
-        if (!deadlineText) {
-            return null;
+        if (!deadlineLocalText) {
+            throw new Error("截止时间不能为空");
         }
-        const parsedDeadline = new Date(deadlineText.replace(" ", "T"));
-        if (Number.isNaN(parsedDeadline.getTime())) {
+        const deadlineDate = new Date(deadlineLocalText);
+        if (Number.isNaN(deadlineDate.getTime())) {
             throw new Error("截止时间格式错误");
         }
-        const skillRequirement = window.prompt("请输入技能要求（可空）", "") || "";
+        if (deadlineDate.getTime() <= Date.now()) {
+            throw new Error("截止时间必须晚于当前时间");
+        }
+        if (skillRequirement.length > 500) {
+            throw new Error("技能要求长度不能超过500");
+        }
+
         return {
-            eventName: eventName.trim(),
-            direction: direction.trim(),
-            memberLimit,
-            deadline: parsedDeadline.toISOString(),
-            skillRequirement: skillRequirement.trim()
+            eventName: eventName,
+            direction: direction,
+            memberLimit: memberLimit,
+            deadline: deadlineDate.toISOString(),
+            skillRequirement: skillRequirement
         };
+    }
+
+    /**
+     * 默认截止时间
+     */
+    function ResolveDefaultDeadlineLocalText() {
+        const nextDay = new Date(Date.now() + (24 * 60 * 60 * 1000));
+        const year = nextDay.getFullYear();
+        const month = PadTime(nextDay.getMonth() + 1);
+        const day = PadTime(nextDay.getDate());
+        const hour = PadTime(nextDay.getHours());
+        const minute = PadTime(nextDay.getMinutes());
+        return `${year}-${month}-${day}T${hour}:${minute}`;
     }
 
     /**
@@ -381,6 +499,7 @@
      */
     function BindApplicationModalActions(
         applicationModal,
+        reviewRemarkModal,
         state,
         recruitmentGrid,
         currentUserId,
@@ -408,7 +527,10 @@
             if (!reviewAction || !applicationId || !applicationModal.currentRecruitmentId) {
                 return;
             }
-            const reviewRemark = window.prompt("请输入审批备注（可空）", "") || "";
+            const reviewRemark = await OpenReviewRemarkModal(reviewRemarkModal, reviewAction);
+            if (reviewRemark === null) {
+                return;
+            }
 
             actionButton.disabled = true;
             try {
@@ -435,6 +557,64 @@
                 actionButton.disabled = false;
             }
         });
+    }
+
+    /**
+     * 绑定审批备注弹层动作
+     */
+    function BindReviewRemarkModalActions(reviewRemarkModal) {
+        reviewRemarkModal.closeButton.addEventListener("click", function HandleCloseClick() {
+            ResolveReviewRemarkModal(reviewRemarkModal, null);
+        });
+        reviewRemarkModal.cancelButton.addEventListener("click", function HandleCancelClick() {
+            ResolveReviewRemarkModal(reviewRemarkModal, null);
+        });
+        reviewRemarkModal.wrapper.addEventListener("click", function HandleWrapperClick(event) {
+            if (event.target === reviewRemarkModal.wrapper) {
+                ResolveReviewRemarkModal(reviewRemarkModal, null);
+            }
+        });
+        reviewRemarkModal.submitButton.addEventListener("click", function HandleSubmitClick() {
+            const reviewRemark = reviewRemarkModal.remarkInput && reviewRemarkModal.remarkInput.value
+                ? reviewRemarkModal.remarkInput.value.trim()
+                : "";
+            if (reviewRemark.length > 200) {
+                return;
+            }
+            ResolveReviewRemarkModal(reviewRemarkModal, reviewRemark);
+        });
+    }
+
+    /**
+     * 打开审批备注弹层
+     */
+    function OpenReviewRemarkModal(reviewRemarkModal, reviewAction) {
+        const actionText = reviewAction === "approve" ? "通过" : "驳回";
+        if (reviewRemarkModal.title) {
+            reviewRemarkModal.title.textContent = `审批备注（${actionText}）`;
+        }
+        if (reviewRemarkModal.remarkInput) {
+            reviewRemarkModal.remarkInput.value = "";
+        }
+        reviewRemarkModal.wrapper.classList.remove("hidden");
+        if (reviewRemarkModal.remarkInput) {
+            reviewRemarkModal.remarkInput.focus();
+        }
+        return new Promise(function WaitModalResult(resolve) {
+            reviewRemarkModal.resolveCallback = resolve;
+        });
+    }
+
+    /**
+     * 关闭审批备注弹层并返回结果
+     */
+    function ResolveReviewRemarkModal(reviewRemarkModal, reviewRemark) {
+        reviewRemarkModal.wrapper.classList.add("hidden");
+        const resolveCallback = reviewRemarkModal.resolveCallback;
+        reviewRemarkModal.resolveCallback = null;
+        if (typeof resolveCallback === "function") {
+            resolveCallback(reviewRemark);
+        }
     }
 
     /**
@@ -465,6 +645,94 @@
                 "</tr>"
             ].join("");
         }).join("");
+    }
+
+    /**
+     * 构建发布弹层
+     */
+    function BuildPublishModal() {
+        const wrapper = document.createElement("div");
+        wrapper.className = "hidden fixed inset-0 z-[1300] bg-black/40 backdrop-blur-[1px] flex items-center justify-center px-4";
+        wrapper.innerHTML = [
+            "<div class=\"w-full max-w-xl bg-surface-container-lowest rounded-xl shadow-xl p-6\">",
+            "<div class=\"flex items-center justify-between mb-4\">",
+            "<h3 class=\"text-lg font-bold text-on-surface\">发布招募</h3>",
+            "<button type=\"button\" data-publish-close class=\"material-symbols-outlined text-slate-500 hover:text-slate-700\">close</button>",
+            "</div>",
+            "<div class=\"grid grid-cols-1 gap-4\">",
+            "<label class=\"block\">",
+            "<span class=\"text-xs font-semibold text-slate-500\">赛事或项目名称</span>",
+            "<input data-publish-event-name type=\"text\" maxlength=\"100\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm\" placeholder=\"例如：数学建模竞赛组队\"/>",
+            "</label>",
+            "<label class=\"block\">",
+            "<span class=\"text-xs font-semibold text-slate-500\">方向</span>",
+            "<input data-publish-direction type=\"text\" maxlength=\"50\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm\" placeholder=\"例如：算法 / 前端 / 后端\"/>",
+            "</label>",
+            "<div class=\"grid grid-cols-2 gap-3\">",
+            "<label class=\"block\">",
+            "<span class=\"text-xs font-semibold text-slate-500\">人数上限</span>",
+            "<input data-publish-member-limit type=\"number\" min=\"1\" step=\"1\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm\"/>",
+            "</label>",
+            "<label class=\"block\">",
+            "<span class=\"text-xs font-semibold text-slate-500\">截止时间</span>",
+            "<input data-publish-deadline type=\"datetime-local\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm\"/>",
+            "</label>",
+            "</div>",
+            "<label class=\"block\">",
+            "<span class=\"text-xs font-semibold text-slate-500\">技能要求（可空）</span>",
+            "<textarea data-publish-skill rows=\"4\" maxlength=\"500\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg p-3 text-sm resize-none\" placeholder=\"例如：熟悉 React，能参与每周线下讨论\"></textarea>",
+            "</label>",
+            "</div>",
+            "<div class=\"flex justify-end items-center gap-3 mt-5\">",
+            "<button type=\"button\" data-publish-cancel class=\"px-4 py-2 rounded-lg text-sm text-on-surface-variant hover:bg-surface-container\">取消</button>",
+            "<button type=\"button\" data-publish-submit class=\"px-4 py-2 rounded-lg text-sm bg-primary text-on-primary font-semibold\">发布招募</button>",
+            "</div>",
+            "</div>"
+        ].join("");
+
+        return {
+            wrapper: wrapper,
+            closeButton: wrapper.querySelector("[data-publish-close]"),
+            cancelButton: wrapper.querySelector("[data-publish-cancel]"),
+            submitButton: wrapper.querySelector("[data-publish-submit]"),
+            eventNameInput: wrapper.querySelector("[data-publish-event-name]"),
+            directionInput: wrapper.querySelector("[data-publish-direction]"),
+            memberLimitInput: wrapper.querySelector("[data-publish-member-limit]"),
+            deadlineInput: wrapper.querySelector("[data-publish-deadline]"),
+            skillRequirementInput: wrapper.querySelector("[data-publish-skill]"),
+            resolveCallback: null
+        };
+    }
+
+    /**
+     * 构建审批备注弹层
+     */
+    function BuildReviewRemarkModal() {
+        const wrapper = document.createElement("div");
+        wrapper.className = "hidden fixed inset-0 z-[1310] bg-black/45 backdrop-blur-[1px] flex items-center justify-center px-4";
+        wrapper.innerHTML = [
+            "<div class=\"w-full max-w-md bg-surface-container-lowest rounded-xl shadow-xl p-6\">",
+            "<div class=\"flex items-center justify-between mb-4\">",
+            "<h3 class=\"text-lg font-bold text-on-surface\" data-review-title>审批备注</h3>",
+            "<button type=\"button\" data-review-close class=\"material-symbols-outlined text-slate-500 hover:text-slate-700\">close</button>",
+            "</div>",
+            "<textarea data-review-remark rows=\"4\" maxlength=\"200\" class=\"w-full bg-surface-container-low border border-outline-variant/30 rounded-lg p-3 text-sm resize-none\" placeholder=\"可填写审批备注（最多200字）\"></textarea>",
+            "<div class=\"flex justify-end items-center gap-3 mt-5\">",
+            "<button type=\"button\" data-review-cancel class=\"px-4 py-2 rounded-lg text-sm text-on-surface-variant hover:bg-surface-container\">取消</button>",
+            "<button type=\"button\" data-review-submit class=\"px-4 py-2 rounded-lg text-sm bg-primary text-on-primary font-semibold\">确认</button>",
+            "</div>",
+            "</div>"
+        ].join("");
+
+        return {
+            wrapper: wrapper,
+            title: wrapper.querySelector("[data-review-title]"),
+            closeButton: wrapper.querySelector("[data-review-close]"),
+            cancelButton: wrapper.querySelector("[data-review-cancel]"),
+            submitButton: wrapper.querySelector("[data-review-submit]"),
+            remarkInput: wrapper.querySelector("[data-review-remark]"),
+            resolveCallback: null
+        };
     }
 
     /**

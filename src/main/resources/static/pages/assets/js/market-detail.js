@@ -32,6 +32,9 @@
         const favoriteIcon = favoriteButton ? favoriteButton.querySelector(".material-symbols-outlined") : null;
         const reportButton = document.querySelector("button[data-action='report-product']");
         const messageBar = BuildMessageBar();
+        const reportModal = BuildReportModal();
+        document.body.appendChild(reportModal.wrapper);
+        BindReportModalActions(reportModal, productId, messageBar);
 
         const reviewSection = FindSectionByHeading("社区反馈");
         const reviewListContainer = reviewSection ? reviewSection.querySelector("div.flex.flex-col.gap-6") : null;
@@ -126,41 +129,13 @@
             });
         }
         if (reportButton) {
-            reportButton.addEventListener("click", async function HandleReportProduct() {
+            reportButton.addEventListener("click", function HandleReportProduct() {
                 if (!window.CampusShareApi.GetAuthToken()) {
                     ShowError(messageBar, "请先登录后再举报");
                     RedirectToAuthWithCurrentPage();
                     return;
                 }
-                const reasonCategory = window.prompt("请输入举报原因分类", "涉嫌虚假信息");
-                if (!reasonCategory || !reasonCategory.trim()) {
-                    return;
-                }
-                const detail = window.prompt("请输入补充说明（可空）", "") || "";
-                const trimmedReason = reasonCategory.trim();
-                if (trimmedReason.length > 50) {
-                    ShowError(messageBar, "举报原因长度不能超过50");
-                    return;
-                }
-                if (detail.trim().length > 500) {
-                    ShowError(messageBar, "补充说明长度不能超过500");
-                    return;
-                }
-                reportButton.disabled = true;
-                try {
-                    await window.CampusShareApi.SubmitReport({
-                        targetType: "RESOURCE",
-                        targetId: productId,
-                        reasonCategory: trimmedReason,
-                        detail: detail.trim(),
-                        evidenceFileIds: [`PRODUCT_${productId}`]
-                    });
-                    ShowSuccess(messageBar, "举报已提交，平台将尽快处理");
-                } catch (error) {
-                    ShowError(messageBar, error instanceof Error ? error.message : "举报提交失败");
-                } finally {
-                    reportButton.disabled = false;
-                }
+                OpenReportModal(reportModal);
             });
         }
 
@@ -461,6 +436,129 @@
     }
 
     /**
+     * 构建举报弹层
+     */
+    function BuildReportModal() {
+        const wrapper = document.createElement("div");
+        wrapper.className = "hidden fixed inset-0 z-[1300] bg-black/40 backdrop-blur-[1px] flex items-center justify-center px-4";
+        wrapper.innerHTML = [
+            "<div class=\"w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-xl p-6\">",
+            "<div class=\"flex items-center justify-between mb-4\">",
+            "<h3 class=\"text-lg font-bold text-on-surface\">举报商品</h3>",
+            "<button type=\"button\" data-role=\"close\" class=\"material-symbols-outlined text-slate-500 hover:text-slate-700\">close</button>",
+            "</div>",
+            "<div class=\"space-y-4\">",
+            "<label class=\"block\">",
+            "<span class=\"text-xs text-slate-500 font-semibold\">举报原因</span>",
+            "<select data-role=\"reason\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm\">",
+            "<option value=\"涉嫌虚假信息\">涉嫌虚假信息</option>",
+            "<option value=\"疑似欺诈交易\">疑似欺诈交易</option>",
+            "<option value=\"违规商品发布\">违规商品发布</option>",
+            "<option value=\"人身攻击或骚扰\">人身攻击或骚扰</option>",
+            "<option value=\"其他违规行为\">其他违规行为</option>",
+            "</select>",
+            "</label>",
+            "<label class=\"block\">",
+            "<span class=\"text-xs text-slate-500 font-semibold\">补充说明</span>",
+            "<textarea data-role=\"detail\" maxlength=\"500\" rows=\"4\" ",
+            "class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg p-3 text-sm resize-none\" ",
+            "placeholder=\"可填写更详细的情况说明（最多500字）\"></textarea>",
+            "</label>",
+            "</div>",
+            "<div class=\"flex justify-end items-center gap-3 mt-5\">",
+            "<button type=\"button\" data-role=\"cancel\" class=\"px-4 py-2 rounded-lg text-sm text-on-surface-variant hover:bg-surface-container\">取消</button>",
+            "<button type=\"button\" data-role=\"submit\" class=\"px-4 py-2 rounded-lg text-sm bg-red-600 text-white font-semibold\">提交举报</button>",
+            "</div>",
+            "</div>"
+        ].join("");
+        return {
+            wrapper: wrapper,
+            closeButton: wrapper.querySelector("[data-role='close']"),
+            cancelButton: wrapper.querySelector("[data-role='cancel']"),
+            submitButton: wrapper.querySelector("[data-role='submit']"),
+            reasonSelect: wrapper.querySelector("[data-role='reason']"),
+            detailTextArea: wrapper.querySelector("[data-role='detail']")
+        };
+    }
+
+    /**
+     * 绑定举报弹层事件
+     */
+    function BindReportModalActions(reportModal, productId, messageBar) {
+        reportModal.closeButton.addEventListener("click", function HandleCloseClick() {
+            CloseReportModal(reportModal);
+        });
+        reportModal.cancelButton.addEventListener("click", function HandleCancelClick() {
+            CloseReportModal(reportModal);
+        });
+        reportModal.wrapper.addEventListener("click", function HandleWrapperClick(event) {
+            if (event.target === reportModal.wrapper) {
+                CloseReportModal(reportModal);
+            }
+        });
+        reportModal.submitButton.addEventListener("click", async function HandleSubmitClick() {
+            const reasonCategory = reportModal.reasonSelect && reportModal.reasonSelect.value
+                ? reportModal.reasonSelect.value.trim()
+                : "";
+            const detail = reportModal.detailTextArea && reportModal.detailTextArea.value
+                ? reportModal.detailTextArea.value.trim()
+                : "";
+            if (!reasonCategory) {
+                ShowError(messageBar, "举报原因不能为空");
+                return;
+            }
+            if (reasonCategory.length > 50) {
+                ShowError(messageBar, "举报原因长度不能超过50");
+                return;
+            }
+            if (detail.length > 500) {
+                ShowError(messageBar, "补充说明长度不能超过500");
+                return;
+            }
+
+            reportModal.submitButton.disabled = true;
+            try {
+                await window.CampusShareApi.SubmitReport({
+                    targetType: "RESOURCE",
+                    targetId: productId,
+                    reasonCategory: reasonCategory,
+                    detail: detail,
+                    evidenceFileIds: [`PRODUCT_${productId}`]
+                });
+                CloseReportModal(reportModal);
+                ShowSuccess(messageBar, "举报已提交，平台将尽快处理");
+            } catch (error) {
+                ShowError(messageBar, error instanceof Error ? error.message : "举报提交失败");
+            } finally {
+                reportModal.submitButton.disabled = false;
+            }
+        });
+    }
+
+    /**
+     * 打开举报弹层
+     */
+    function OpenReportModal(reportModal) {
+        if (reportModal.reasonSelect) {
+            reportModal.reasonSelect.selectedIndex = 0;
+        }
+        if (reportModal.detailTextArea) {
+            reportModal.detailTextArea.value = "";
+        }
+        reportModal.wrapper.classList.remove("hidden");
+        if (reportModal.reasonSelect) {
+            reportModal.reasonSelect.focus();
+        }
+    }
+
+    /**
+     * 关闭举报弹层
+     */
+    function CloseReportModal(reportModal) {
+        reportModal.wrapper.classList.add("hidden");
+    }
+
+    /**
      * 查找指定标题所在区块
      */
     function FindSectionByHeading(titleText) {
@@ -622,4 +720,3 @@
 
     document.addEventListener("DOMContentLoaded", BindMarketDetailPage);
 })();
-

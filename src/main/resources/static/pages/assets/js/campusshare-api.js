@@ -7,6 +7,9 @@
     const REQUEST_ID_HEADER = "X-Request-Id";
     const AUTH_TOKEN_HEADER = "X-Auth-Token";
     const ADMINISTRATOR_ROLE = "ADMINISTRATOR";
+    const NOTIFICATION_PANEL_ID = "campusshare-notification-panel";
+    const NOTIFICATION_PANEL_STYLE_ID = "campusshare-notification-panel-style";
+    const NOTIFICATION_MAX_RENDER_COUNT = 20;
 
     const PAGE_PATH_MAP = {
         AUTH: "/pages/auth_access.html",
@@ -19,6 +22,15 @@
         ADMIN: "/pages/admin_dashboard.html",
         NAV_INDEX: "/pages/index.html"
     };
+
+    let notificationPanelElement = null;
+    let notificationSummaryElement = null;
+    let notificationListElement = null;
+    let notificationMarkAllReadButton = null;
+    let notificationPanelTriggerElement = null;
+    let notificationPanelVisible = false;
+    let notificationRequestSequence = 0;
+    let notificationDataList = [];
 
     /**
      * 生成请求ID
@@ -228,6 +240,533 @@
     }
 
     /**
+     * 查找图标节点
+     */
+    function FindMaterialIconElement(iconName) {
+        if (!iconName) {
+            return null;
+        }
+        const iconByData = document.querySelector(`[data-icon='${iconName}']`);
+        if (iconByData) {
+            return iconByData;
+        }
+        const iconNodeList = Array.from(document.querySelectorAll(".material-symbols-outlined"));
+        return iconNodeList.find(function FindMatchedIcon(iconElement) {
+            return (iconElement.textContent || "").trim() === iconName;
+        }) || null;
+    }
+
+    /**
+     * 解析图标触发节点
+     */
+    function ResolveIconTriggerElement(iconElement) {
+        if (!iconElement) {
+            return null;
+        }
+        return iconElement.closest("button")
+            || iconElement.closest("a")
+            || iconElement.closest("[role='button']")
+            || iconElement;
+    }
+
+    /**
+     * 确保节点可点击
+     */
+    function EnsureInteractiveElement(triggerElement) {
+        if (!triggerElement) {
+            return;
+        }
+        const tagName = (triggerElement.tagName || "").toLowerCase();
+        if (tagName === "button" || tagName === "a") {
+            return;
+        }
+        if (!triggerElement.hasAttribute("role")) {
+            triggerElement.setAttribute("role", "button");
+        }
+        if (!triggerElement.hasAttribute("tabindex")) {
+            triggerElement.setAttribute("tabindex", "0");
+        }
+        triggerElement.style.cursor = "pointer";
+        if (triggerElement.dataset.keyboardClickableBound === "true") {
+            return;
+        }
+        triggerElement.dataset.keyboardClickableBound = "true";
+        triggerElement.addEventListener("keydown", function HandleTriggerKeydown(event) {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                triggerElement.click();
+            }
+        });
+    }
+
+    /**
+     * 注入通知面板样式
+     */
+    function EnsureNotificationPanelStyle() {
+        if (document.getElementById(NOTIFICATION_PANEL_STYLE_ID)) {
+            return;
+        }
+        const styleElement = document.createElement("style");
+        styleElement.id = NOTIFICATION_PANEL_STYLE_ID;
+        styleElement.textContent = `
+            .campusshare-notification-panel {
+                position: fixed;
+                width: min(92vw, 360px);
+                max-height: min(70vh, 520px);
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+                z-index: 1200;
+                opacity: 0;
+                transform: translateY(-6px) scale(0.98);
+                transition: opacity 0.2s ease, transform 0.2s ease;
+                pointer-events: none;
+                overflow: hidden;
+            }
+            .campusshare-notification-panel.is-visible {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                pointer-events: auto;
+            }
+            .campusshare-notification-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 12px 14px 10px;
+                border-bottom: 1px solid #f1f5f9;
+                background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            }
+            .campusshare-notification-title {
+                font-size: 14px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+            .campusshare-notification-mark-all {
+                border: none;
+                background: transparent;
+                color: #2563eb;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                padding: 2px 0;
+            }
+            .campusshare-notification-mark-all:disabled {
+                color: #94a3b8;
+                cursor: not-allowed;
+            }
+            .campusshare-notification-summary {
+                font-size: 12px;
+                color: #64748b;
+                padding: 8px 14px;
+                border-bottom: 1px solid #f8fafc;
+            }
+            .campusshare-notification-list {
+                max-height: min(54vh, 420px);
+                overflow-y: auto;
+                padding: 6px 0;
+            }
+            .campusshare-notification-item {
+                padding: 10px 14px;
+                border-left: 3px solid transparent;
+                transition: background-color 0.15s ease;
+            }
+            .campusshare-notification-item:hover {
+                background: #f8fafc;
+            }
+            .campusshare-notification-item.is-unread {
+                background: #f8fbff;
+                border-left-color: #2563eb;
+            }
+            .campusshare-notification-item-title {
+                display: block;
+                font-size: 13px;
+                font-weight: 600;
+                color: #0f172a;
+                line-height: 1.4;
+                margin-bottom: 4px;
+            }
+            .campusshare-notification-item-content {
+                font-size: 12px;
+                color: #475569;
+                line-height: 1.5;
+                margin-bottom: 6px;
+                word-break: break-word;
+            }
+            .campusshare-notification-item-footer {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+            }
+            .campusshare-notification-item-time {
+                font-size: 11px;
+                color: #94a3b8;
+            }
+            .campusshare-notification-item-action {
+                border: none;
+                background: #e2e8f0;
+                color: #0f172a;
+                font-size: 11px;
+                padding: 2px 8px;
+                border-radius: 999px;
+                cursor: pointer;
+            }
+            .campusshare-notification-item-action:disabled {
+                color: #94a3b8;
+                cursor: not-allowed;
+            }
+            .campusshare-notification-empty {
+                text-align: center;
+                color: #94a3b8;
+                font-size: 12px;
+                padding: 28px 12px;
+            }
+            .campusshare-notification-badge {
+                position: absolute;
+                top: -4px;
+                right: -6px;
+                min-width: 16px;
+                height: 16px;
+                border-radius: 999px;
+                background: #ef4444;
+                color: #ffffff;
+                font-size: 10px;
+                line-height: 16px;
+                text-align: center;
+                font-weight: 600;
+                padding: 0 4px;
+                box-shadow: 0 1px 4px rgba(15, 23, 42, 0.3);
+            }
+        `;
+        document.head.appendChild(styleElement);
+    }
+
+    /**
+     * 构建通知面板节点
+     */
+    function EnsureNotificationPanelElement() {
+        if (notificationPanelElement) {
+            return notificationPanelElement;
+        }
+        EnsureNotificationPanelStyle();
+        notificationPanelElement = document.createElement("div");
+        notificationPanelElement.id = NOTIFICATION_PANEL_ID;
+        notificationPanelElement.className = "campusshare-notification-panel";
+        notificationPanelElement.setAttribute("aria-hidden", "true");
+        notificationPanelElement.innerHTML = `
+            <div class="campusshare-notification-header">
+                <span class="campusshare-notification-title">消息通知</span>
+                <button type="button" class="campusshare-notification-mark-all" data-action="mark-all-read">全部已读</button>
+            </div>
+            <div class="campusshare-notification-summary" data-role="notification-summary">正在加载...</div>
+            <div class="campusshare-notification-list" data-role="notification-list">
+                <div class="campusshare-notification-empty">暂无通知</div>
+            </div>
+        `;
+        document.body.appendChild(notificationPanelElement);
+        notificationSummaryElement = notificationPanelElement.querySelector("[data-role='notification-summary']");
+        notificationListElement = notificationPanelElement.querySelector("[data-role='notification-list']");
+        notificationMarkAllReadButton = notificationPanelElement.querySelector("[data-action='mark-all-read']");
+        notificationMarkAllReadButton.addEventListener("click", function HandleMarkAllRead(event) {
+            event.preventDefault();
+            MarkAllNotificationRead();
+        });
+        return notificationPanelElement;
+    }
+
+    /**
+     * 更新面板摘要
+     */
+    function SetNotificationSummary(totalCount, unreadCount) {
+        if (!notificationSummaryElement) {
+            return;
+        }
+        notificationSummaryElement.textContent = `共 ${totalCount} 条，未读 ${unreadCount} 条`;
+    }
+
+    /**
+     * 更新铃铛角标
+     */
+    function UpdateNotificationBadge(unreadCount) {
+        const notificationIcon = FindMaterialIconElement("notifications");
+        const notificationTrigger = ResolveIconTriggerElement(notificationIcon);
+        if (!notificationTrigger) {
+            return;
+        }
+        const badgeElement = notificationTrigger.querySelector(".campusshare-notification-badge");
+        if (!unreadCount || unreadCount <= 0) {
+            if (badgeElement) {
+                badgeElement.remove();
+            }
+            return;
+        }
+        if (window.getComputedStyle(notificationTrigger).position === "static") {
+            notificationTrigger.style.position = "relative";
+        }
+        const nextBadgeElement = badgeElement || document.createElement("span");
+        nextBadgeElement.className = "campusshare-notification-badge";
+        nextBadgeElement.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+        if (!badgeElement) {
+            notificationTrigger.appendChild(nextBadgeElement);
+        }
+    }
+
+    /**
+     * 关闭通知面板
+     */
+    function CloseNotificationPanel() {
+        if (!notificationPanelElement) {
+            return;
+        }
+        notificationPanelVisible = false;
+        notificationPanelElement.classList.remove("is-visible");
+        notificationPanelElement.setAttribute("aria-hidden", "true");
+    }
+
+    /**
+     * 格式化时间
+     */
+    function FormatNotificationTime(timeText) {
+        if (!timeText) {
+            return "";
+        }
+        const parsedDate = new Date(timeText);
+        if (Number.isNaN(parsedDate.getTime())) {
+            return timeText;
+        }
+        return parsedDate.toLocaleString("zh-CN", {
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    }
+
+    /**
+     * 渲染通知列表
+     */
+    function RenderNotificationList() {
+        const limitedNotificationList = (notificationDataList || []).slice(0, NOTIFICATION_MAX_RENDER_COUNT);
+        const unreadCount = limitedNotificationList.filter(function CountUnread(notificationItem) {
+            return !notificationItem.readFlag;
+        }).length;
+        UpdateNotificationBadge(unreadCount);
+        if (!notificationListElement) {
+            return;
+        }
+        notificationListElement.innerHTML = "";
+        SetNotificationSummary(limitedNotificationList.length, unreadCount);
+        if (notificationMarkAllReadButton) {
+            notificationMarkAllReadButton.disabled = unreadCount <= 0;
+        }
+        if (!limitedNotificationList.length) {
+            const emptyElement = document.createElement("div");
+            emptyElement.className = "campusshare-notification-empty";
+            emptyElement.textContent = "暂无通知";
+            notificationListElement.appendChild(emptyElement);
+            return;
+        }
+        limitedNotificationList.forEach(function RenderNotificationItem(notificationItem) {
+            const itemElement = document.createElement("div");
+            itemElement.className = `campusshare-notification-item${notificationItem.readFlag ? "" : " is-unread"}`;
+            const titleElement = document.createElement("span");
+            titleElement.className = "campusshare-notification-item-title";
+            titleElement.textContent = notificationItem.title || "系统通知";
+
+            const contentElement = document.createElement("div");
+            contentElement.className = "campusshare-notification-item-content";
+            contentElement.textContent = notificationItem.content || "";
+
+            const footerElement = document.createElement("div");
+            footerElement.className = "campusshare-notification-item-footer";
+            const timeElement = document.createElement("span");
+            timeElement.className = "campusshare-notification-item-time";
+            timeElement.textContent = FormatNotificationTime(notificationItem.sendTime);
+            footerElement.appendChild(timeElement);
+
+            const readButton = document.createElement("button");
+            readButton.type = "button";
+            readButton.className = "campusshare-notification-item-action";
+            readButton.textContent = notificationItem.readFlag ? "已读" : "标记已读";
+            readButton.disabled = !!notificationItem.readFlag;
+            readButton.addEventListener("click", function HandleReadNotification() {
+                MarkSingleNotificationRead(notificationItem.notificationId);
+            });
+            footerElement.appendChild(readButton);
+
+            itemElement.appendChild(titleElement);
+            itemElement.appendChild(contentElement);
+            itemElement.appendChild(footerElement);
+            notificationListElement.appendChild(itemElement);
+        });
+    }
+
+    /**
+     * 拉取通知列表
+     */
+    async function RefreshNotificationData() {
+        const currentSequence = ++notificationRequestSequence;
+        if (notificationSummaryElement) {
+            notificationSummaryElement.textContent = "正在加载...";
+        }
+        try {
+            const notificationList = await RequestApi("/api/v1/notifications", "GET", null, true);
+            if (currentSequence !== notificationRequestSequence) {
+                return;
+            }
+            notificationDataList = Array.isArray(notificationList) ? notificationList : [];
+            RenderNotificationList();
+        } catch (error) {
+            if (currentSequence !== notificationRequestSequence) {
+                return;
+            }
+            notificationDataList = [];
+            if (notificationListElement) {
+                notificationListElement.innerHTML = "";
+                const failElement = document.createElement("div");
+                failElement.className = "campusshare-notification-empty";
+                failElement.textContent = error.message || "通知加载失败";
+                notificationListElement.appendChild(failElement);
+            }
+            UpdateNotificationBadge(0);
+            if (notificationSummaryElement) {
+                notificationSummaryElement.textContent = "通知加载失败";
+            }
+        }
+    }
+
+    /**
+     * 标记单条通知已读
+     */
+    async function MarkSingleNotificationRead(notificationId) {
+        if (!notificationId) {
+            return;
+        }
+        try {
+            await RequestApi(`/api/v1/notifications/${notificationId}/read`, "POST", {}, true);
+            notificationDataList = (notificationDataList || []).map(function PatchReadFlag(notificationItem) {
+                if (notificationItem.notificationId === notificationId) {
+                    return Object.assign({}, notificationItem, { readFlag: true });
+                }
+                return notificationItem;
+            });
+            RenderNotificationList();
+        } catch (error) {
+            window.alert(error.message || "标记已读失败");
+        }
+    }
+
+    /**
+     * 全部标记已读
+     */
+    async function MarkAllNotificationRead() {
+        const unreadNotificationList = (notificationDataList || []).filter(function FilterUnread(notificationItem) {
+            return !notificationItem.readFlag;
+        });
+        if (!unreadNotificationList.length) {
+            return;
+        }
+        if (notificationMarkAllReadButton) {
+            notificationMarkAllReadButton.disabled = true;
+            notificationMarkAllReadButton.textContent = "处理中...";
+        }
+        try {
+            for (const notificationItem of unreadNotificationList) {
+                await RequestApi(`/api/v1/notifications/${notificationItem.notificationId}/read`, "POST", {}, true);
+            }
+            notificationDataList = (notificationDataList || []).map(function MapAllRead(notificationItem) {
+                return Object.assign({}, notificationItem, { readFlag: true });
+            });
+            RenderNotificationList();
+        } catch (error) {
+            window.alert(error.message || "批量已读失败");
+            RenderNotificationList();
+        } finally {
+            if (notificationMarkAllReadButton) {
+                notificationMarkAllReadButton.textContent = "全部已读";
+            }
+        }
+    }
+
+    /**
+     * 定位通知面板
+     */
+    function PositionNotificationPanel(triggerElement) {
+        if (!triggerElement || !notificationPanelElement) {
+            return;
+        }
+        const triggerRect = triggerElement.getBoundingClientRect();
+        const panelRect = notificationPanelElement.getBoundingClientRect();
+        const panelWidth = panelRect.width || 360;
+        const panelHeight = panelRect.height || 420;
+        const horizontalPadding = 12;
+        const verticalPadding = 12;
+        let nextLeft = triggerRect.right - panelWidth;
+        nextLeft = Math.max(horizontalPadding, Math.min(nextLeft, window.innerWidth - panelWidth - horizontalPadding));
+        let nextTop = triggerRect.bottom + 10;
+        if (nextTop + panelHeight + verticalPadding > window.innerHeight) {
+            nextTop = triggerRect.top - panelHeight - 10;
+        }
+        if (nextTop < verticalPadding) {
+            nextTop = verticalPadding;
+        }
+        notificationPanelElement.style.left = `${Math.round(nextLeft)}px`;
+        notificationPanelElement.style.top = `${Math.round(nextTop)}px`;
+    }
+
+    /**
+     * 打开通知面板
+     */
+    async function OpenNotificationPanel(triggerElement) {
+        notificationPanelTriggerElement = triggerElement;
+        EnsureNotificationPanelElement();
+        notificationPanelVisible = true;
+        notificationPanelElement.classList.add("is-visible");
+        notificationPanelElement.setAttribute("aria-hidden", "false");
+        PositionNotificationPanel(triggerElement);
+        await RefreshNotificationData();
+        PositionNotificationPanel(triggerElement);
+    }
+
+    /**
+     * 切换通知面板
+     */
+    async function ToggleNotificationPanel(triggerElement) {
+        if (notificationPanelVisible) {
+            CloseNotificationPanel();
+            return;
+        }
+        await OpenNotificationPanel(triggerElement);
+    }
+
+    /**
+     * 文档点击时处理通知面板关闭
+     */
+    function HandleDocumentClickForNotification(event) {
+        if (!notificationPanelVisible || !notificationPanelElement) {
+            return;
+        }
+        const eventTarget = event.target;
+        if (notificationPanelElement.contains(eventTarget)) {
+            return;
+        }
+        if (notificationPanelTriggerElement && notificationPanelTriggerElement.contains(eventTarget)) {
+            return;
+        }
+        CloseNotificationPanel();
+    }
+
+    /**
+     * 键盘关闭通知面板
+     */
+    function HandleEscapeForNotification(event) {
+        if (event.key === "Escape") {
+            CloseNotificationPanel();
+        }
+    }
+
+    /**
      * 绑定链接导航
      */
     function BindAnchorNavigation() {
@@ -294,12 +833,15 @@
      * 绑定图标导航
      */
     function BindIconNavigation() {
-        const accountIcon = document.querySelector("[data-icon='account_circle']");
-        if (accountIcon && accountIcon.closest("button")) {
-            accountIcon.closest("button").addEventListener("click", function HandleAccountClick() {
+        const accountIcon = FindMaterialIconElement("account_circle");
+        const accountTrigger = ResolveIconTriggerElement(accountIcon);
+        if (accountTrigger && accountTrigger.dataset.accountNavigationBound !== "true") {
+            EnsureInteractiveElement(accountTrigger);
+            accountTrigger.dataset.accountNavigationBound = "true";
+            accountTrigger.addEventListener("click", function HandleAccountClick() {
                 const token = GetAuthToken();
                 if (!token) {
-                    window.location.href = PAGE_PATH_MAP.AUTH;
+                    RedirectToAuthPage();
                     return;
                 }
                 const profile = GetCurrentUserProfile();
@@ -307,15 +849,24 @@
             });
         }
 
-        const notificationIcon = document.querySelector("[data-icon='notifications']");
-        if (notificationIcon && notificationIcon.closest("button")) {
-            notificationIcon.closest("button").addEventListener("click", function HandleNotificationClick() {
+        const notificationIcon = FindMaterialIconElement("notifications");
+        const notificationTrigger = ResolveIconTriggerElement(notificationIcon);
+        if (notificationTrigger && notificationTrigger.dataset.notificationNavigationBound !== "true") {
+            EnsureInteractiveElement(notificationTrigger);
+            notificationTrigger.dataset.notificationNavigationBound = "true";
+            notificationTrigger.addEventListener("click", function HandleNotificationClick(event) {
+                event.preventDefault();
                 if (!GetAuthToken()) {
-                    RedirectToAuthPage(PAGE_PATH_MAP.ORDER);
+                    RedirectToAuthPage();
                     return;
                 }
-                NavigateToPage(PAGE_PATH_MAP.ORDER);
+                ToggleNotificationPanel(notificationTrigger);
             });
+        }
+        if (GetAuthToken()) {
+            RefreshNotificationData();
+        } else {
+            UpdateNotificationBadge(0);
         }
     }
 
@@ -326,6 +877,18 @@
         BindAnchorNavigation();
         BindButtonNavigation();
         BindIconNavigation();
+        document.addEventListener("click", HandleDocumentClickForNotification, true);
+        document.addEventListener("keydown", HandleEscapeForNotification);
+        window.addEventListener("resize", function HandleNotificationPanelResize() {
+            if (notificationPanelVisible && notificationPanelTriggerElement) {
+                PositionNotificationPanel(notificationPanelTriggerElement);
+            }
+        });
+        window.addEventListener("scroll", function HandleNotificationPanelScroll() {
+            if (notificationPanelVisible && notificationPanelTriggerElement) {
+                PositionNotificationPanel(notificationPanelTriggerElement);
+            }
+        }, true);
     }
 
     /**
@@ -529,6 +1092,12 @@
         },
         CloseTeamRecruitment(recruitmentId) {
             return RequestApi(`/api/v1/team/recruitments/${recruitmentId}/close`, "POST", {}, true);
+        },
+        ListMyNotifications() {
+            return RequestApi("/api/v1/notifications", "GET", null, true);
+        },
+        MarkNotificationRead(notificationId) {
+            return RequestApi(`/api/v1/notifications/${notificationId}/read`, "POST", {}, true);
         },
         ListPendingUsers() {
             return RequestApi("/api/v1/admin/users/pending", "GET", null, true);

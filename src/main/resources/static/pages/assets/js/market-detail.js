@@ -25,6 +25,7 @@
         const buyButton = FindButtonByText("下单");
         const favoriteButton = FindFavoriteButton();
         const favoriteIcon = favoriteButton ? favoriteButton.querySelector(".material-symbols-outlined") : null;
+        const reportButton = document.querySelector("button[data-action='report-product']");
         const messageBar = BuildMessageBar();
 
         LoadProductDetail(
@@ -100,6 +101,51 @@
                     ShowError(messageBar, error instanceof Error ? error.message : "收藏操作失败");
                 } finally {
                     favoriteButton.disabled = false;
+                }
+            });
+        }
+        if (reportButton) {
+            reportButton.addEventListener("click", async function HandleReportProduct() {
+                if (!window.CampusShareApi.GetAuthToken()) {
+                    ShowError(messageBar, "请先登录后再举报");
+                    window.setTimeout(function RedirectToAuthPage() {
+                        const currentPath = window.location.pathname + window.location.search;
+                        if (window.CampusShareApi.RedirectToAuthPage) {
+                            window.CampusShareApi.RedirectToAuthPage(currentPath);
+                            return;
+                        }
+                        window.location.href = "/pages/auth_access.html";
+                    }, 700);
+                    return;
+                }
+                const reasonCategory = window.prompt("请输入举报原因分类", "涉嫌虚假信息");
+                if (!reasonCategory || !reasonCategory.trim()) {
+                    return;
+                }
+                const detail = window.prompt("请输入补充说明（可空）", "") || "";
+                const trimmedReason = reasonCategory.trim();
+                if (trimmedReason.length > 50) {
+                    ShowError(messageBar, "举报原因长度不能超过50");
+                    return;
+                }
+                if (detail.trim().length > 500) {
+                    ShowError(messageBar, "补充说明长度不能超过500");
+                    return;
+                }
+                reportButton.disabled = true;
+                try {
+                    await window.CampusShareApi.SubmitReport({
+                        targetType: "RESOURCE",
+                        targetId: productId,
+                        reasonCategory: trimmedReason,
+                        detail: detail.trim(),
+                        evidenceFileIds: [`PRODUCT_${productId}`]
+                    });
+                    ShowSuccess(messageBar, "举报已提交，平台将尽快处理");
+                } catch (error) {
+                    ShowError(messageBar, error instanceof Error ? error.message : "举报提交失败");
+                } finally {
+                    reportButton.disabled = false;
                 }
             });
         }

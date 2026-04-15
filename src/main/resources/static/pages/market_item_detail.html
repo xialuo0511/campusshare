@@ -91,9 +91,9 @@
 <div class="flex items-center gap-8">
 <span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500 font-headline">CampusShare</span>
 <div class="hidden md:flex gap-6 items-center">
-<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1 font-['Manrope'] text-sm tracking-wide" href="#">交易市场</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" href="#">资源</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" href="#">论坛</a>
+<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1 font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/market_listing.html" href="#">资源</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/recruitment_board.html" href="#">论坛</a>
 </div>
 </div>
 <div class="flex items-center gap-4">
@@ -101,7 +101,7 @@
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
 <input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-primary" placeholder="搜索校园资源..." type="text"/>
 </div>
-<button class="bg-primary text-on-primary px-5 py-2 rounded-lg font-bold text-sm scale-95 active:scale-100 duration-150">发布</button>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-lg font-bold text-sm scale-95 active:scale-100 duration-150" data-nav-target="/pages/publish_create.html">发布</button>
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined p-2 text-slate-600 cursor-pointer">notifications</span>
 <span class="material-symbols-outlined p-2 text-slate-600 cursor-pointer">account_circle</span>
@@ -112,9 +112,9 @@
 <main class="max-w-[1440px] mx-auto px-6 py-8">
 <!-- Breadcrumb -->
 <nav class="flex items-center gap-2 text-label-md text-outline mb-6">
-<a class="hover:text-primary" href="#">交易市场</a>
+<a class="hover:text-primary" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
 <span class="material-symbols-outlined text-sm">chevron_right</span>
-<a class="hover:text-primary" href="#">电子产品</a>
+<a class="hover:text-primary" data-nav-target="/pages/market_listing.html" href="#">电子产品</a>
 <span class="material-symbols-outlined text-sm">chevron_right</span>
 <span class="text-on-surface font-medium">Research Station Z-100</span>
 </nav>
@@ -190,6 +190,10 @@
                                 分享发布
                             </button>
 </div>
+<button class="w-full flex items-center justify-center gap-2 py-3 border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors" data-action="report-product">
+<span class="material-symbols-outlined">report</span>
+                            举报商品
+                        </button>
 </div>
 </section>
 <!-- Seller Info Section -->

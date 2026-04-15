@@ -615,9 +615,6 @@
      * 解析登录后跳转路径
      */
     function ResolveRedirectPath(loginResult) {
-        if (window.CampusShareApi.ResolveLoginSuccessRedirect) {
-            return window.CampusShareApi.ResolveLoginSuccessRedirect(loginResult);
-        }
         const userRole = loginResult && loginResult.userRole ? loginResult.userRole : "";
         if (userRole === "ADMINISTRATOR") {
             return "/pages/admin_dashboard.html";

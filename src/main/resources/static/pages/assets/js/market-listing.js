@@ -77,7 +77,7 @@
                 LoadProductList(state, productGrid, summaryText, pageText, messageBar);
             }
         );
-        BindPagination(state, paginationArea, function ReloadFromPage() {
+        BindPagination(paginationArea, state, function ReloadFromPage() {
             LoadProductList(state, productGrid, summaryText, pageText, messageBar);
         });
         BindProductClick(productGrid);
@@ -103,9 +103,15 @@
             });
             state.totalCount = Number(listResult.totalCount || 0);
             state.totalPages = Math.max(1, Math.ceil(state.totalCount / state.pageSize));
+            if (state.pageNo > state.totalPages) {
+                state.pageNo = state.totalPages;
+                await LoadProductList(state, productGrid, summaryText, pageText, messageBar);
+                return;
+            }
             RenderProductGrid(Array.isArray(listResult.productList) ? listResult.productList : [], productGrid);
             RenderSummary(state, summaryText);
             RenderPageText(state, pageText);
+            RenderPagination(state);
             HideMessage(messageBar);
         } catch (error) {
             RenderProductGrid([], productGrid);
@@ -347,34 +353,98 @@
     /**
      * 绑定分页
      */
-    function BindPagination(state, paginationArea, onChange) {
+    function BindPagination(paginationArea, state, onChange) {
         if (!paginationArea) {
             return;
         }
-        const previousButton = paginationArea.querySelector("button .material-symbols-outlined");
-        const nextButton = paginationArea.querySelector("button:last-child");
-        const buttonList = paginationArea.querySelectorAll("button");
-        const previousPageButton = buttonList[0];
-        const nextPageButton = buttonList[buttonList.length - 1];
+        paginationArea.dataset.paginationArea = "true";
+        if (paginationArea.dataset.paginationBound === "true") {
+            return;
+        }
+        paginationArea.dataset.paginationBound = "true";
+        paginationArea.addEventListener("click", function HandlePaginationClick(event) {
+            const actionButton = event.target.closest("button[data-page-action]");
+            if (!actionButton || actionButton.disabled) {
+                return;
+            }
+            const pageAction = actionButton.getAttribute("data-page-action");
+            let nextPageNo = state.pageNo;
+            if (pageAction === "prev") {
+                nextPageNo = Math.max(1, state.pageNo - 1);
+            } else if (pageAction === "next") {
+                nextPageNo = Math.min(state.totalPages, state.pageNo + 1);
+            } else if (pageAction === "jump") {
+                const pageNo = Number(actionButton.getAttribute("data-page-no") || state.pageNo);
+                if (!Number.isNaN(pageNo)) {
+                    nextPageNo = Math.max(1, Math.min(state.totalPages, pageNo));
+                }
+            }
+            if (nextPageNo === state.pageNo) {
+                return;
+            }
+            state.pageNo = nextPageNo;
+            onChange();
+        });
+    }
 
-        if (previousButton && previousPageButton) {
-            previousPageButton.addEventListener("click", function HandlePreviousPage() {
-                if (state.pageNo <= 1) {
-                    return;
-                }
-                state.pageNo -= 1;
-                onChange();
-            });
+    /**
+     * 渲染分页按钮
+     */
+    function RenderPagination(state) {
+        const paginationArea = document.querySelector("main div[data-pagination-area='true']");
+        if (!paginationArea) {
+            return;
         }
-        if (nextButton && nextPageButton) {
-            nextPageButton.addEventListener("click", function HandleNextPage() {
-                if (state.pageNo >= state.totalPages) {
-                    return;
-                }
-                state.pageNo += 1;
-                onChange();
-            });
+        const pageButtonList = BuildPageButtonList(state.pageNo, state.totalPages);
+        const pageButtonHtml = pageButtonList.map(function BuildPageButton(item) {
+            if (item === "...") {
+                return "<span class=\"px-2 text-outline\">...</span>";
+            }
+            const isCurrent = item === state.pageNo;
+            return [
+                `<button data-page-action="jump" data-page-no="${item}" class="w-10 h-10 flex items-center justify-center rounded-md ${isCurrent ? "bg-primary text-on-primary font-bold text-sm" : "hover:bg-surface-container transition-colors font-semibold text-sm"}">`,
+                item,
+                "</button>"
+            ].join("");
+        }).join("");
+        paginationArea.innerHTML = [
+            "<div class=\"flex items-center gap-1 bg-surface-container-lowest p-1 rounded-lg ring-1 ring-outline-variant/20\">",
+            `<button data-page-action="prev" ${state.pageNo <= 1 ? "disabled" : ""} class="w-10 h-10 flex items-center justify-center rounded-md ${state.pageNo <= 1 ? "text-slate-300 cursor-not-allowed" : "hover:bg-surface-container transition-colors text-outline"}">`,
+            "<span class=\"material-symbols-outlined\">chevron_left</span>",
+            "</button>",
+            pageButtonHtml,
+            `<button data-page-action="next" ${state.pageNo >= state.totalPages ? "disabled" : ""} class="w-10 h-10 flex items-center justify-center rounded-md ${state.pageNo >= state.totalPages ? "text-slate-300 cursor-not-allowed" : "hover:bg-surface-container transition-colors text-outline"}">`,
+            "<span class=\"material-symbols-outlined\">chevron_right</span>",
+            "</button>",
+            "</div>"
+        ].join("");
+    }
+
+    /**
+     * 生成页码集合
+     */
+    function BuildPageButtonList(pageNo, totalPages) {
+        if (totalPages <= 6) {
+            return BuildRange(1, totalPages);
         }
+        if (pageNo <= 3) {
+            return [1, 2, 3, 4, "...", totalPages];
+        }
+        if (pageNo >= totalPages - 2) {
+            return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+        }
+        return [1, "...", pageNo - 1, pageNo, pageNo + 1, "...", totalPages];
+    }
+
+    /**
+     * 生成连续页码
+     */
+    function BuildRange(start, end) {
+        const list = [];
+        for (let value = start; value <= end; value += 1) {
+            list.push(value);
+        }
+        return list;
     }
 
     /**

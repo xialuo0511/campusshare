@@ -1023,6 +1023,12 @@
         GetProductDetail(productId) {
             return RequestApi(`/api/v1/products/${productId}`, "GET", null, false);
         },
+        GetProductFavoriteState(productId) {
+            return RequestApi(`/api/v1/favorites/products/${productId}`, "GET", null, true);
+        },
+        ToggleProductFavorite(productId) {
+            return RequestApi(`/api/v1/favorites/products/${productId}/toggle`, "POST", {}, true);
+        },
         GetMarketOverview() {
             return RequestApi("/api/v1/market/overview", "GET", null, false);
         },

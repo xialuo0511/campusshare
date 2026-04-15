@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.resource.mapper.FavoriteMapper">
+
+    <resultMap id="FavoriteResultMap" type="com.xialuo.campusshare.entity.FavoriteEntity">
+        <id column="favorite_id" property="favoriteId"/>
+        <result column="user_id" property="userId"/>
+        <result column="resource_id" property="resourceId"/>
+        <result column="canceled" property="canceled"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <insert id="InsertFavorite" parameterType="com.xialuo.campusshare.entity.FavoriteEntity" useGeneratedKeys="true" keyProperty="favoriteId" keyColumn="favorite_id">
+        INSERT INTO favorite_info (
+            user_id,
+            resource_id,
+            canceled,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{userId},
+            #{resourceId},
+            #{canceled},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateFavorite" parameterType="com.xialuo.campusshare.entity.FavoriteEntity">
+        UPDATE favorite_info
+        SET
+            canceled = #{canceled},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE favorite_id = #{favoriteId}
+    </update>
+
+    <select id="FindByUserIdAndResourceId" resultMap="FavoriteResultMap">
+        SELECT
+            favorite_id,
+            user_id,
+            resource_id,
+            canceled,
+            create_time,
+            update_time,
+            deleted
+        FROM favorite_info
+        WHERE user_id = #{userId}
+          AND resource_id = #{resourceId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="CountActiveByResourceId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM favorite_info
+        WHERE resource_id = #{resourceId}
+          AND canceled = 0
+          AND deleted = 0
+    </select>
+</mapper>

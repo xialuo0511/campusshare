@@ -23,6 +23,8 @@
         const descriptionNode = document.querySelector("article p.text-on-surface-variant.leading-relaxed.text-body-lg");
         const breadCrumbNode = document.querySelector("nav span.text-on-surface.font-medium");
         const buyButton = FindButtonByText("下单");
+        const favoriteButton = FindFavoriteButton();
+        const favoriteIcon = favoriteButton ? favoriteButton.querySelector(".material-symbols-outlined") : null;
         const messageBar = BuildMessageBar();
 
         LoadProductDetail(
@@ -37,6 +39,7 @@
             breadCrumbNode,
             messageBar
         );
+        LoadFavoriteState(productId, favoriteButton, favoriteIcon);
 
         if (buyButton) {
             buyButton.addEventListener("click", async function HandleCreateOrder() {
@@ -67,6 +70,36 @@
                     ShowError(messageBar, error instanceof Error ? error.message : "下单失败");
                 } finally {
                     buyButton.disabled = false;
+                }
+            });
+        }
+        if (favoriteButton) {
+            favoriteButton.addEventListener("click", async function HandleToggleFavorite() {
+                if (!window.CampusShareApi.GetAuthToken()) {
+                    ShowError(messageBar, "请先登录后再收藏");
+                    window.setTimeout(function RedirectToAuthPage() {
+                        const currentPath = window.location.pathname + window.location.search;
+                        if (window.CampusShareApi.RedirectToAuthPage) {
+                            window.CampusShareApi.RedirectToAuthPage(currentPath);
+                            return;
+                        }
+                        window.location.href = "/pages/auth_access.html";
+                    }, 700);
+                    return;
+                }
+                favoriteButton.disabled = true;
+                try {
+                    const favoriteResult = await window.CampusShareApi.ToggleProductFavorite(productId);
+                    ApplyFavoriteUi(favoriteResult, favoriteButton, favoriteIcon);
+                    if (favoriteResult.favorited) {
+                        ShowSuccess(messageBar, "已加入收藏");
+                    } else {
+                        ShowSuccess(messageBar, "已取消收藏");
+                    }
+                } catch (error) {
+                    ShowError(messageBar, error instanceof Error ? error.message : "收藏操作失败");
+                } finally {
+                    favoriteButton.disabled = false;
                 }
             });
         }
@@ -121,6 +154,41 @@
     }
 
     /**
+     * 加载收藏状态
+     */
+    async function LoadFavoriteState(productId, favoriteButton, favoriteIcon) {
+        if (!favoriteButton || !window.CampusShareApi.GetAuthToken()) {
+            ApplyFavoriteUi(null, favoriteButton, favoriteIcon);
+            return;
+        }
+        try {
+            const favoriteState = await window.CampusShareApi.GetProductFavoriteState(productId);
+            ApplyFavoriteUi(favoriteState, favoriteButton, favoriteIcon);
+        } catch (error) {
+            ApplyFavoriteUi(null, favoriteButton, favoriteIcon);
+        }
+    }
+
+    /**
+     * 应用收藏样式
+     */
+    function ApplyFavoriteUi(favoriteState, favoriteButton, favoriteIcon) {
+        if (!favoriteButton || !favoriteIcon) {
+            return;
+        }
+        const favorited = favoriteState ? !!favoriteState.favorited : false;
+        if (favorited) {
+            favoriteButton.classList.add("text-primary");
+            favoriteIcon.style.fontVariationSettings = "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24";
+            favoriteButton.setAttribute("title", "已收藏");
+            return;
+        }
+        favoriteButton.classList.remove("text-primary");
+        favoriteIcon.style.fontVariationSettings = "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+        favoriteButton.setAttribute("title", "收藏");
+    }
+
+    /**
      * 从URL读取商品ID
      */
     function ResolveProductIdFromUrl() {
@@ -155,6 +223,17 @@
         return buttonList.find(function MatchButton(buttonElement) {
             return buttonElement.textContent && buttonElement.textContent.includes(buttonText);
         }) || null;
+    }
+
+    /**
+     * 查询收藏按钮
+     */
+    function FindFavoriteButton() {
+        const iconList = Array.from(document.querySelectorAll("button .material-symbols-outlined"));
+        const favoriteIcon = iconList.find(function MatchFavoriteIcon(iconElement) {
+            return (iconElement.textContent || "").trim() === "favorite";
+        });
+        return favoriteIcon ? favoriteIcon.closest("button") : null;
     }
 
     /**

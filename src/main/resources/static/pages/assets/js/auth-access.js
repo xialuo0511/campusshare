@@ -4,9 +4,8 @@
 (function InitAuthAccessPage() {
     const AUTH_MODE_LOGIN = "login";
     const AUTH_MODE_REGISTER = "register";
-    const FIELD_HIDE_ANIMATION_MS = 170;
-    const FIELD_SHOW_ANIMATION_MS = 220;
-    const MODE_SWITCH_ANIMATION_MS = 320;
+    const FIELD_TOGGLE_ANIMATION_MS = 240;
+    const REGISTER_FIELDS_MARGIN_TOP_PX = 16;
 
     /**
      * 绑定页面行为
@@ -17,7 +16,6 @@
         if (!authForm || tabButtons.length < 2 || !window.CampusShareApi) {
             return;
         }
-        const formContainer = authForm.closest(".p-8.space-y-6") || authForm.parentElement;
 
         const existingToken = window.CampusShareApi.GetAuthToken();
         const existingProfile = window.CampusShareApi.GetCurrentUserProfile();
@@ -70,16 +68,13 @@
 
         let currentMode = AUTH_MODE_REGISTER;
         tabButtons[0].addEventListener("click", function HandleLoginModeClick() {
-            PlayModeSwitchAnimation(formContainer);
+            if (currentMode === AUTH_MODE_LOGIN) {
+                return;
+            }
             currentMode = AUTH_MODE_LOGIN;
             SetModeUi(
                 currentMode,
                 tabButtons,
-                userNameInput,
-                collegeSelect,
-                gradeSelect,
-                emailInput,
-                verifyCodeRow,
                 registerFieldsContainer,
                 submitButton,
                 true
@@ -87,16 +82,13 @@
             HideMessage(messageBar);
         });
         tabButtons[1].addEventListener("click", function HandleRegisterModeClick() {
-            PlayModeSwitchAnimation(formContainer);
+            if (currentMode === AUTH_MODE_REGISTER) {
+                return;
+            }
             currentMode = AUTH_MODE_REGISTER;
             SetModeUi(
                 currentMode,
                 tabButtons,
-                userNameInput,
-                collegeSelect,
-                gradeSelect,
-                emailInput,
-                verifyCodeRow,
                 registerFieldsContainer,
                 submitButton,
                 true
@@ -192,11 +184,6 @@
         SetModeUi(
             currentMode,
             tabButtons,
-            userNameInput,
-            collegeSelect,
-            gradeSelect,
-            emailInput,
-            verifyCodeRow,
             registerFieldsContainer,
             submitButton,
             false
@@ -294,9 +281,11 @@
         }
 
         const registerFieldsContainer = document.createElement("div");
-        registerFieldsContainer.className = "md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4";
+        registerFieldsContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-4";
         registerFieldsContainer.setAttribute("data-register-fields", "true");
-        userNameGroup.insertAdjacentElement("beforebegin", registerFieldsContainer);
+        registerFieldsContainer.style.overflow = "hidden";
+        registerFieldsContainer.style.willChange = "height, opacity, margin-top";
+        gridContainer.insertAdjacentElement("afterend", registerFieldsContainer);
         [
             userNameGroup,
             collegeGroup,
@@ -330,40 +319,9 @@
         });
     }
 
-    /**
-     * 切换动画
-     */
-    function PlayModeSwitchAnimation(formContainer) {
-        if (!formContainer) {
-            return;
-        }
-        formContainer.getAnimations().forEach(function CancelAnimation(animation) {
-            animation.cancel();
-        });
-        formContainer.animate(
-            [
-                { opacity: 0.78, transform: "translateY(14px) scale(0.985)" },
-                { opacity: 1, transform: "translateY(-2px) scale(1.004)", offset: 0.68 },
-                { opacity: 1, transform: "translateY(0) scale(1)" }
-            ],
-            {
-                duration: MODE_SWITCH_ANIMATION_MS,
-                easing: "cubic-bezier(0.22, 0.61, 0.36, 1)"
-            }
-        );
-    }
-
-    /**
-     * 切换模式UI
-     */
     function SetModeUi(
         currentMode,
         tabButtons,
-        userNameInput,
-        collegeSelect,
-        gradeSelect,
-        emailInput,
-        verifyCodeRow,
         registerFieldsContainer,
         submitButton,
         withAnimation
@@ -392,75 +350,94 @@
         if (!registerFieldsContainer) {
             return;
         }
-        const timerIdText = registerFieldsContainer.dataset.visibilityTimerId;
-        if (timerIdText) {
-            window.clearTimeout(Number(timerIdText));
-            delete registerFieldsContainer.dataset.visibilityTimerId;
-        }
-        registerFieldsContainer.getAnimations().forEach(function CancelAnimation(animation) {
-            animation.cancel();
-        });
+        StopRegisterContainerAnimation(registerFieldsContainer);
 
         if (!withAnimation) {
-            SetRegisterFieldImmediate(registerFieldsContainer, visible);
+            ApplyRegisterContainerState(registerFieldsContainer, visible);
             return;
         }
 
-        if (visible) {
-            registerFieldsContainer.style.display = "";
-            registerFieldsContainer.style.opacity = "0";
-            registerFieldsContainer.style.transform = "translateY(-10px)";
-            registerFieldsContainer.style.pointerEvents = "none";
-            registerFieldsContainer.animate(
-                [
-                    { opacity: 0, transform: "translateY(-10px)" },
-                    { opacity: 1, transform: "translateY(0)" }
-                ],
-                {
-                    duration: FIELD_SHOW_ANIMATION_MS,
-                    easing: "cubic-bezier(0.22, 0.61, 0.36, 1)",
-                    fill: "forwards"
-                }
-            );
-            const showTimerId = window.setTimeout(function FinalizeShow() {
-                registerFieldsContainer.style.opacity = "1";
-                registerFieldsContainer.style.transform = "translateY(0)";
-                registerFieldsContainer.style.pointerEvents = "auto";
-            }, FIELD_SHOW_ANIMATION_MS);
-            registerFieldsContainer.dataset.visibilityTimerId = String(showTimerId);
+        const computedStyle = window.getComputedStyle(registerFieldsContainer);
+        const startHeight = registerFieldsContainer.getBoundingClientRect().height;
+        const startOpacity = Number.parseFloat(computedStyle.opacity) || 0;
+        const startMarginTop = Number.parseFloat(computedStyle.marginTop) || 0;
+        const targetHeight = visible ? registerFieldsContainer.scrollHeight : 0;
+        const targetOpacity = visible ? 1 : 0;
+        const targetMarginTop = visible ? REGISTER_FIELDS_MARGIN_TOP_PX : 0;
+
+        if (
+            Math.abs(startHeight - targetHeight) < 1 &&
+            Math.abs(startOpacity - targetOpacity) < 0.01 &&
+            Math.abs(startMarginTop - targetMarginTop) < 1
+        ) {
+            ApplyRegisterContainerState(registerFieldsContainer, visible);
             return;
         }
 
-        registerFieldsContainer.style.opacity = "1";
-        registerFieldsContainer.style.transform = "translateY(0)";
+        registerFieldsContainer.style.visibility = "visible";
         registerFieldsContainer.style.pointerEvents = "none";
-        registerFieldsContainer.animate(
+        registerFieldsContainer.style.height = `${startHeight}px`;
+        registerFieldsContainer.style.opacity = String(startOpacity);
+        registerFieldsContainer.style.marginTop = `${startMarginTop}px`;
+
+        const visibilityAnimation = registerFieldsContainer.animate(
             [
-                { opacity: 1, transform: "translateY(0)" },
-                { opacity: 0, transform: "translateY(-10px)" }
+                {
+                    height: `${startHeight}px`,
+                    opacity: startOpacity,
+                    marginTop: `${startMarginTop}px`
+                },
+                {
+                    height: `${targetHeight}px`,
+                    opacity: targetOpacity,
+                    marginTop: `${targetMarginTop}px`
+                }
             ],
             {
-                duration: FIELD_HIDE_ANIMATION_MS,
-                easing: "ease-out",
+                duration: FIELD_TOGGLE_ANIMATION_MS,
+                easing: "cubic-bezier(0.22, 0.61, 0.36, 1)",
                 fill: "forwards"
             }
         );
-        const hideTimerId = window.setTimeout(function FinalizeHide() {
-            registerFieldsContainer.style.display = "none";
-            registerFieldsContainer.style.opacity = "1";
-            registerFieldsContainer.style.transform = "translateY(0)";
-        }, FIELD_HIDE_ANIMATION_MS);
-        registerFieldsContainer.dataset.visibilityTimerId = String(hideTimerId);
+        registerFieldsContainer.__visibilityAnimation = visibilityAnimation;
+        visibilityAnimation.finished.then(function FinalizeVisibilityAnimation() {
+            if (registerFieldsContainer.__visibilityAnimation !== visibilityAnimation) {
+                return;
+            }
+            registerFieldsContainer.__visibilityAnimation = null;
+            ApplyRegisterContainerState(registerFieldsContainer, visible);
+        }).catch(function IgnoreCancelledAnimation() {
+            if (registerFieldsContainer.__visibilityAnimation === visibilityAnimation) {
+                registerFieldsContainer.__visibilityAnimation = null;
+            }
+        });
     }
 
     /**
      * 注册字段即时显隐
      */
-    function SetRegisterFieldImmediate(fieldGroup, visible) {
-        fieldGroup.style.display = visible ? "" : "none";
-        fieldGroup.style.opacity = "1";
-        fieldGroup.style.transform = "translateY(0)";
+    function ApplyRegisterContainerState(fieldGroup, visible) {
+        fieldGroup.style.height = visible ? "auto" : "0px";
+        fieldGroup.style.opacity = visible ? "1" : "0";
+        fieldGroup.style.marginTop = visible ? `${REGISTER_FIELDS_MARGIN_TOP_PX}px` : "0px";
+        fieldGroup.style.visibility = visible ? "visible" : "hidden";
         fieldGroup.style.pointerEvents = visible ? "auto" : "none";
+    }
+
+    /**
+     * 停止注册区块显隐动画
+     */
+    function StopRegisterContainerAnimation(registerFieldsContainer) {
+        if (!registerFieldsContainer.__visibilityAnimation) {
+            return;
+        }
+        const computedStyle = window.getComputedStyle(registerFieldsContainer);
+        registerFieldsContainer.style.height = computedStyle.height;
+        registerFieldsContainer.style.opacity = computedStyle.opacity;
+        registerFieldsContainer.style.marginTop = computedStyle.marginTop;
+        registerFieldsContainer.style.visibility = computedStyle.visibility;
+        registerFieldsContainer.__visibilityAnimation.cancel();
+        registerFieldsContainer.__visibilityAnimation = null;
     }
 
     /**

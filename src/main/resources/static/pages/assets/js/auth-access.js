@@ -14,6 +14,7 @@
     function BindAuthPage() {
         const authForm = document.querySelector("main form");
         const tabButtons = document.querySelectorAll("main .border-b button");
+        const campusShareApi = window.CampusShareApi || null;
         if (!authForm || tabButtons.length < 2) {
             return;
         }
@@ -45,8 +46,8 @@
         const emailGroup = emailInput.closest(".space-y-1");
 
         const messageBar = BuildMessageBar(authForm);
-        const authNoticeText = window.CampusShareApi.ConsumeAuthNotice
-            ? window.CampusShareApi.ConsumeAuthNotice()
+        const authNoticeText = campusShareApi && campusShareApi.ConsumeAuthNotice
+            ? campusShareApi.ConsumeAuthNotice()
             : "";
         if (authNoticeText) {
             ShowError(messageBar, authNoticeText);
@@ -107,7 +108,7 @@
         sendCodeButton.addEventListener("click", async function HandleSendCode() {
             HideMessage(messageBar);
             ClearFieldErrorStyles(authForm);
-            if (!window.CampusShareApi) {
+            if (!campusShareApi) {
                 ShowError(messageBar, "页面初始化失败，请刷新后重试");
                 return;
             }
@@ -133,7 +134,7 @@
             }
             sendCodeButton.disabled = true;
             try {
-                const sendResult = await window.CampusShareApi.SendRegisterCode({
+                const sendResult = await campusShareApi.SendRegisterCode({
                     email: emailInput.value.trim(),
                     account: accountInput.value.trim()
                 });
@@ -149,7 +150,7 @@
             event.preventDefault();
             HideMessage(messageBar);
             ClearFieldErrorStyles(authForm);
-            if (!window.CampusShareApi) {
+            if (!campusShareApi) {
                 ShowError(messageBar, "页面初始化失败，请刷新后重试");
                 return;
             }
@@ -176,11 +177,11 @@
             submitButton.classList.add("opacity-70");
             try {
                 if (currentMode === AUTH_MODE_LOGIN) {
-                    const loginResult = await window.CampusShareApi.LoginUser({
+                    const loginResult = await campusShareApi.LoginUser({
                         account: (accountInput.value || "").trim(),
                         password: passwordInput.value || ""
                     });
-                    window.CampusShareApi.SetSessionFromLogin(loginResult);
+                    campusShareApi.SetSessionFromLogin(loginResult);
                     ShowSuccess(messageBar, `登录成功，欢迎你 ${loginResult.displayName}`);
                     window.setTimeout(function RedirectToOrderCenter() {
                         window.location.href = ResolveRedirectPath(loginResult);
@@ -188,7 +189,7 @@
                     return;
                 }
 
-                const registerResult = await window.CampusShareApi.RegisterUser({
+                const registerResult = await campusShareApi.RegisterUser({
                     account: (accountInput.value || "").trim(),
                     password: passwordInput.value || "",
                     displayName: (userNameInput.value || "").trim(),

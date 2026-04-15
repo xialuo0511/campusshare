@@ -6,6 +6,7 @@
     const AUTH_MODE_REGISTER = "register";
     const FIELD_TOGGLE_ANIMATION_MS = 240;
     const REGISTER_FIELDS_MARGIN_TOP_PX = 16;
+    const STUDENT_ACCOUNT_PATTERN = /^\d{11}$/;
 
     /**
      * 绑定页面行为
@@ -107,6 +108,16 @@
             if (!accountInput.value.trim()) {
                 ShowError(messageBar, "请先输入学号");
                 MarkFieldError(accountGroup, accountInput);
+                return;
+            }
+            if (!IsValidStudentAccount(accountInput.value.trim())) {
+                ShowError(messageBar, "学号必须为11位数字");
+                MarkFieldError(accountGroup, accountInput);
+                return;
+            }
+            if (!IsValidEmail(emailInput.value.trim())) {
+                ShowError(messageBar, "邮箱格式不正确");
+                MarkFieldError(emailGroup, emailInput);
                 return;
             }
             sendCodeButton.disabled = true;
@@ -223,7 +234,9 @@
             labelList[5].textContent = "邮箱";
         }
 
-        accountInput.placeholder = "请输入学号";
+        accountInput.placeholder = "请输入11位学号";
+        accountInput.maxLength = 11;
+        accountInput.inputMode = "numeric";
         passwordInput.placeholder = "请输入密码";
         userNameInput.placeholder = "请输入用户名";
         emailInput.placeholder = "请输入邮箱";
@@ -455,8 +468,18 @@
             MarkFieldError(fieldContext.accountGroup, fieldContext.accountInput);
             return false;
         }
+        if (!IsValidStudentAccount(accountValue)) {
+            ShowError(messageBar, "学号必须为11位数字");
+            MarkFieldError(fieldContext.accountGroup, fieldContext.accountInput);
+            return false;
+        }
         if (!passwordValue) {
             ShowError(messageBar, "密码不能为空");
+            MarkFieldError(fieldContext.passwordGroup, fieldContext.passwordInput);
+            return false;
+        }
+        if (passwordValue.length < 8) {
+            ShowError(messageBar, "密码长度至少8位");
             MarkFieldError(fieldContext.passwordGroup, fieldContext.passwordInput);
             return false;
         }
@@ -478,11 +501,6 @@
         if (!verificationCodeValue) {
             ShowError(messageBar, "验证码不能为空");
             MarkFieldError(fieldContext.verificationCodeGroup, fieldContext.verificationCodeInput);
-            return false;
-        }
-        if (passwordValue.length < 8) {
-            ShowError(messageBar, "密码长度至少8位");
-            MarkFieldError(fieldContext.passwordGroup, fieldContext.passwordInput);
             return false;
         }
         if (!IsValidEmail(emailValue)) {
@@ -510,6 +528,13 @@
      */
     function IsValidEmail(emailText) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailText);
+    }
+
+    /**
+     * 学号格式
+     */
+    function IsValidStudentAccount(accountText) {
+        return STUDENT_ACCOUNT_PATTERN.test((accountText || "").trim());
     }
 
     /**

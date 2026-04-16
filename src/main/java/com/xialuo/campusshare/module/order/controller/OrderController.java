@@ -66,6 +66,7 @@ public class OrderController {
     public ApiResponse<OrderListResponseDto> ListMyOrders(
         @RequestParam(value = "pageNo", required = false) Integer pageNo,
         @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @RequestParam(value = "statusFilter", required = false) String statusFilter,
         HttpServletRequest httpServletRequest
     ) {
         Long currentUserId = GetCurrentUserId(httpServletRequest);
@@ -74,7 +75,8 @@ public class OrderController {
             currentUserId,
             currentUserRole,
             pageNo,
-            pageSize
+            pageSize,
+            statusFilter
         );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
@@ -165,4 +167,3 @@ public class OrderController {
         return requestId == null ? "" : requestId.toString();
     }
 }
-

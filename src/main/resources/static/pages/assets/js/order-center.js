@@ -196,19 +196,20 @@
         messageBar
     ) {
         try {
-            const listResult = await window.CampusShareApi.ListMyOrders(state.pageNo, state.pageSize);
-            const totalCount = SafeNumber(listResult.totalCount);
-            state.totalCount = totalCount;
-            state.totalPages = Math.max(1, Math.ceil(totalCount / state.pageSize));
+            const listResult = await window.CampusShareApi.ListMyOrders(state.pageNo, state.pageSize, state.statusFilter);
+            const filteredCount = listResult.filteredCount === undefined || listResult.filteredCount === null
+                ? SafeNumber(listResult.totalCount)
+                : SafeNumber(listResult.filteredCount);
+            state.totalCount = filteredCount;
+            state.totalPages = Math.max(1, Math.ceil(filteredCount / state.pageSize));
             if (state.pageNo > state.totalPages) {
                 state.pageNo = state.totalPages;
             }
 
             RenderSummaryCards(summaryNumberList, listResult);
-            const sourceList = Array.isArray(listResult.orderList) ? listResult.orderList : [];
-            const filteredList = FilterOrderListByStatus(sourceList, state.statusFilter);
-            RenderOrderTable(filteredList, currentUserId, tableBody);
-            RenderPaginationArea(state, filteredList.length, paginationText, paginationButtonContainer);
+            const orderList = Array.isArray(listResult.orderList) ? listResult.orderList : [];
+            RenderOrderTable(orderList, currentUserId, tableBody);
+            RenderPaginationArea(state, orderList.length, paginationText, paginationButtonContainer);
             HideMessage(messageBar);
         } catch (error) {
             ShowError(messageBar, ResolveErrorText(error, "订单列表加载失败"));
@@ -294,25 +295,6 @@
                 "</tr>"
             ].join("");
         }).join("");
-    }
-
-    /**
-     * 筛选订单
-     */
-    function FilterOrderListByStatus(orderList, statusFilter) {
-        if (statusFilter === "COMPLETED") {
-            return orderList.filter(function FilterCompleted(orderItem) {
-                return orderItem.orderStatus === "COMPLETED";
-            });
-        }
-        if (statusFilter === "ONGOING") {
-            return orderList.filter(function FilterOngoing(orderItem) {
-                return orderItem.orderStatus === "PENDING_SELLER_CONFIRM"
-                    || orderItem.orderStatus === "PENDING_OFFLINE_TRADE"
-                    || orderItem.orderStatus === "PENDING_BUYER_CONFIRM";
-            });
-        }
-        return orderList;
     }
 
     /**

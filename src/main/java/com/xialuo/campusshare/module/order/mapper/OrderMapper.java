@@ -33,7 +33,8 @@ public interface OrderMapper {
         @Param("currentUserId") Long currentUserId,
         @Param("isAdministrator") Boolean isAdministrator,
         @Param("offset") Integer offset,
-        @Param("pageSize") Integer pageSize
+        @Param("pageSize") Integer pageSize,
+        @Param("orderStatusList") List<OrderStatusEnum> orderStatusList
     );
 
     /**
@@ -41,7 +42,8 @@ public interface OrderMapper {
      */
     Long CountOrdersByUser(
         @Param("currentUserId") Long currentUserId,
-        @Param("isAdministrator") Boolean isAdministrator
+        @Param("isAdministrator") Boolean isAdministrator,
+        @Param("orderStatusList") List<OrderStatusEnum> orderStatusList
     );
 
     /**
@@ -53,4 +55,3 @@ public interface OrderMapper {
         @Param("orderStatus") OrderStatusEnum orderStatus
     );
 }
-

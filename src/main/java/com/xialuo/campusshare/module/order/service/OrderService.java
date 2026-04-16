@@ -46,7 +46,7 @@ public interface OrderService {
         Long currentUserId,
         UserRoleEnum currentUserRole,
         Integer pageNo,
-        Integer pageSize
+        Integer pageSize,
+        String statusFilter
     );
 }
-

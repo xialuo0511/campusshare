@@ -16,6 +16,7 @@ import com.xialuo.campusshare.module.order.service.OrderService;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -142,21 +143,27 @@ public class OrderServiceImpl implements OrderService {
         Long currentUserId,
         UserRoleEnum currentUserRole,
         Integer pageNo,
-        Integer pageSize
+        Integer pageSize,
+        String statusFilter
     ) {
-        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer requestedPageNo = ResolvePageNo(pageNo);
         Integer resolvedPageSize = ResolvePageSize(pageSize);
-        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
         Boolean isAdministrator = currentUserRole == UserRoleEnum.ADMINISTRATOR;
+        List<OrderStatusEnum> orderStatusList = ResolveOrderStatusFilter(statusFilter);
+        Long filteredCount = SafeCount(orderMapper.CountOrdersByUser(currentUserId, isAdministrator, orderStatusList));
+        Integer maxPageNo = Math.max(1, (int) Math.ceil(filteredCount * 1.0D / resolvedPageSize));
+        Integer resolvedPageNo = Math.min(requestedPageNo, maxPageNo);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
 
         List<OrderResponseDto> orderResponseList = orderMapper.ListOrdersByUser(
             currentUserId,
             isAdministrator,
             offset,
-            resolvedPageSize
+            resolvedPageSize,
+            orderStatusList
         ).stream().map(this::BuildOrderResponse).toList();
 
-        Long totalCount = SafeCount(orderMapper.CountOrdersByUser(currentUserId, isAdministrator));
+        Long totalCount = SafeCount(orderMapper.CountOrdersByUser(currentUserId, isAdministrator, null));
         Long ongoingCount =
             SafeCount(orderMapper.CountOrdersByUserAndStatus(currentUserId, isAdministrator, OrderStatusEnum.PENDING_SELLER_CONFIRM))
             + SafeCount(orderMapper.CountOrdersByUserAndStatus(currentUserId, isAdministrator, OrderStatusEnum.PENDING_OFFLINE_TRADE))
@@ -175,6 +182,7 @@ public class OrderServiceImpl implements OrderService {
         responseDto.SetPageNo(resolvedPageNo);
         responseDto.SetPageSize(resolvedPageSize);
         responseDto.SetTotalCount(totalCount);
+        responseDto.SetFilteredCount(filteredCount);
         responseDto.SetOngoingCount(ongoingCount);
         responseDto.SetCompletedCount(completedCount);
         responseDto.SetCanceledCount(canceledCount);
@@ -315,5 +323,40 @@ public class OrderServiceImpl implements OrderService {
     private Long SafeCount(Long count) {
         return count == null ? 0L : count;
     }
-}
 
+    /**
+     * 解析订单筛选状态
+     */
+    private List<OrderStatusEnum> ResolveOrderStatusFilter(String statusFilter) {
+        String safeStatusFilter = statusFilter == null ? "" : statusFilter.trim().toUpperCase();
+        if (safeStatusFilter.isBlank() || "ALL".equals(safeStatusFilter)) {
+            return null;
+        }
+
+        List<OrderStatusEnum> orderStatusList = new ArrayList<>();
+        if ("ONGOING".equals(safeStatusFilter)) {
+            orderStatusList.add(OrderStatusEnum.PENDING_SELLER_CONFIRM);
+            orderStatusList.add(OrderStatusEnum.PENDING_OFFLINE_TRADE);
+            orderStatusList.add(OrderStatusEnum.PENDING_BUYER_CONFIRM);
+            return orderStatusList;
+        }
+        if ("COMPLETED".equals(safeStatusFilter)) {
+            orderStatusList.add(OrderStatusEnum.COMPLETED);
+            return orderStatusList;
+        }
+        if ("CANCELED".equals(safeStatusFilter)) {
+            orderStatusList.add(OrderStatusEnum.CANCELED);
+            return orderStatusList;
+        }
+        if ("CLOSED".equals(safeStatusFilter)) {
+            orderStatusList.add(OrderStatusEnum.CLOSED);
+            return orderStatusList;
+        }
+        try {
+            orderStatusList.add(OrderStatusEnum.valueOf(safeStatusFilter));
+            return orderStatusList;
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
+    }
+}

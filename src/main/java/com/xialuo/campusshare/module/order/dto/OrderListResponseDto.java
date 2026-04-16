@@ -12,6 +12,8 @@ public class OrderListResponseDto {
     private Integer pageSize;
     /** 总数 */
     private Long totalCount;
+    /** 当前筛选总数 */
+    private Long filteredCount;
     /** 进行中数量 */
     private Long ongoingCount;
     /** 已完成数量 */
@@ -63,6 +65,20 @@ public class OrderListResponseDto {
      */
     public void SetTotalCount(Long totalCount) {
         this.totalCount = totalCount;
+    }
+
+    /**
+     * 获取当前筛选总数
+     */
+    public Long GetFilteredCount() {
+        return filteredCount;
+    }
+
+    /**
+     * 设置当前筛选总数
+     */
+    public void SetFilteredCount(Long filteredCount) {
+        this.filteredCount = filteredCount;
     }
 
     /**
@@ -135,4 +151,3 @@ public class OrderListResponseDto {
         this.orderList = orderList;
     }
 }
-

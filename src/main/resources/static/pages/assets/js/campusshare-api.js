@@ -1381,8 +1381,14 @@
         CreateOrder(payload) {
             return RequestApi("/api/v1/orders", "POST", payload, true);
         },
-        ListMyOrders(pageNo, pageSize) {
-            return RequestApi(`/api/v1/orders/my?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
+        ListMyOrders(pageNo, pageSize, statusFilter) {
+            const searchParams = new URLSearchParams();
+            searchParams.set("pageNo", pageNo);
+            searchParams.set("pageSize", pageSize);
+            if (statusFilter) {
+                searchParams.set("statusFilter", statusFilter);
+            }
+            return RequestApi(`/api/v1/orders/my?${searchParams.toString()}`, "GET", null, true);
         },
         GetOrderDetail(orderId) {
             return RequestApi(`/api/v1/orders/${orderId}`, "GET", null, true);

@@ -110,6 +110,12 @@
         <if test="!isAdministrator">
             AND (buyer_user_id = #{currentUserId} OR seller_user_id = #{currentUserId})
         </if>
+        <if test="orderStatusList != null and orderStatusList.size() > 0">
+            AND order_status IN
+            <foreach collection="orderStatusList" item="status" open="(" separator="," close=")">
+                #{status}
+            </foreach>
+        </if>
         ORDER BY update_time DESC
         LIMIT #{offset}, #{pageSize}
     </select>
@@ -120,6 +126,12 @@
         WHERE deleted = 0
         <if test="!isAdministrator">
             AND (buyer_user_id = #{currentUserId} OR seller_user_id = #{currentUserId})
+        </if>
+        <if test="orderStatusList != null and orderStatusList.size() > 0">
+            AND order_status IN
+            <foreach collection="orderStatusList" item="status" open="(" separator="," close=")">
+                #{status}
+            </foreach>
         </if>
     </select>
 
@@ -133,4 +145,3 @@
         </if>
     </select>
 </mapper>
-

@@ -95,4 +95,14 @@
           AND deleted = 0
         ORDER BY send_time DESC, notification_id DESC
     </select>
+
+    <update id="UpdateAllUnreadToReadByReceiverUserId">
+        UPDATE notification_info
+        SET
+            read_flag = 1,
+            update_time = #{updateTime}
+        WHERE receiver_user_id = #{receiverUserId}
+          AND read_flag = 0
+          AND deleted = 0
+    </update>
 </mapper>

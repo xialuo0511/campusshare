@@ -50,6 +50,16 @@ public class NotificationController {
     }
 
     /**
+     * 全部标记已读
+     */
+    @PostMapping("/read/all")
+    public ApiResponse<Long> MarkAllNotificationRead(HttpServletRequest httpServletRequest) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        Long affectedCount = notificationService.MarkAllNotificationRead(currentUserId);
+        return ApiResponse.Success(affectedCount, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 获取请求追踪ID
      */
     private String GetRequestId(HttpServletRequest httpServletRequest) {

@@ -99,6 +99,16 @@ public class NotificationServiceImpl implements NotificationService {
         return BuildNotificationResponse(notificationEntity);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long MarkAllNotificationRead(Long receiverUserId) {
+        if (receiverUserId == null) {
+            return 0L;
+        }
+        Long affectedCount = notificationMapper.UpdateAllUnreadToReadByReceiverUserId(receiverUserId, LocalDateTime.now());
+        return affectedCount == null ? 0L : affectedCount;
+    }
+
     /**
      * 构建通知响应
      */

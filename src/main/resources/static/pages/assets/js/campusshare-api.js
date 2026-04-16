@@ -789,9 +789,7 @@
             notificationMarkAllReadButton.textContent = "处理中...";
         }
         try {
-            for (const notificationItem of unreadNotificationList) {
-                await RequestApi(`/api/v1/notifications/${notificationItem.notificationId}/read`, "POST", {}, true);
-            }
+            await RequestApi("/api/v1/notifications/read/all", "POST", {}, true);
             notificationDataList = (notificationDataList || []).map(function MapAllRead(notificationItem) {
                 return Object.assign({}, notificationItem, { readFlag: true });
             });
@@ -801,6 +799,7 @@
             RenderNotificationList();
         } finally {
             if (notificationMarkAllReadButton) {
+                notificationMarkAllReadButton.disabled = false;
                 notificationMarkAllReadButton.textContent = "全部已读";
             }
         }
@@ -1456,6 +1455,9 @@
         },
         MarkNotificationRead(notificationId) {
             return RequestApi(`/api/v1/notifications/${notificationId}/read`, "POST", {}, true);
+        },
+        MarkAllNotificationRead() {
+            return RequestApi("/api/v1/notifications/read/all", "POST", {}, true);
         },
         UpdateMyProfile(payload) {
             const currentProfile = GetCurrentUserProfile();

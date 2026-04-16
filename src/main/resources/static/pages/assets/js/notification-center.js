@@ -116,9 +116,7 @@
             return;
         }
         try {
-            for (const notificationItem of unreadList) {
-                await window.CampusShareApi.MarkNotificationRead(notificationItem.notificationId);
-            }
+            await window.CampusShareApi.MarkAllNotificationRead();
             state.notificationList = state.notificationList.map(function PatchAllRead(notificationItem) {
                 return Object.assign({}, notificationItem, { readFlag: true });
             });

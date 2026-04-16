@@ -41,4 +41,9 @@ public interface NotificationService {
      * 标记通知已读
      */
     NotificationResponseDto MarkNotificationRead(Long notificationId, Long receiverUserId);
+
+    /**
+     * 全部标记已读
+     */
+    Long MarkAllNotificationRead(Long receiverUserId);
 }

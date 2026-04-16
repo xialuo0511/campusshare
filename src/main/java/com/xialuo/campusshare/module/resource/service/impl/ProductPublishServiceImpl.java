@@ -50,6 +50,44 @@ public class ProductPublishServiceImpl implements ProductPublishService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public ProductDetailResponseDto UpdateProduct(
+        Long productId,
+        PublishProductRequestDto requestDto,
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    ) {
+        ProductEntity productEntity = productMapper.FindProductById(productId);
+        if (productEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        ValidateManagePermission(productEntity, currentUserId, currentUserRole);
+        if (Boolean.TRUE.equals(productEntity.GetHasEffectiveOrder())) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品存在进行中订单，不可编辑");
+        }
+
+        productEntity.SetTitle(NormalizeText(requestDto.GetTitle()));
+        productEntity.SetCategory(NormalizeText(requestDto.GetCategory()));
+        productEntity.SetConditionLevel(NormalizeText(requestDto.GetConditionLevel()));
+        productEntity.SetPrice(requestDto.GetPrice());
+        productEntity.SetTradeLocation(NormalizeText(requestDto.GetTradeLocation()));
+        productEntity.SetDescription(NormalizeText(requestDto.GetDescription()));
+        productEntity.SetImageFileIds(JoinImageFileIds(requestDto.GetImageFileIds()));
+        productEntity.SetUpdateTime(LocalDateTime.now());
+
+        Integer updatedRows = productMapper.UpdateProduct(productEntity);
+        if (updatedRows == null || updatedRows <= 0) {
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "商品编辑失败");
+        }
+
+        ProductEntity latestProductEntity = productMapper.FindProductById(productId);
+        if (latestProductEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        return BuildProductDetailResponse(latestProductEntity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ProductDetailResponseDto OfflineProduct(
         Long productId,
         Long currentUserId,
@@ -60,7 +98,7 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         if (productEntity == null) {
             throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
         }
-        ValidateOfflinePermission(productEntity, currentUserId, currentUserRole);
+        ValidateManagePermission(productEntity, currentUserId, currentUserRole);
         if (Boolean.TRUE.equals(productEntity.GetHasEffectiveOrder())) {
             throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品存在进行中订单，不可下架");
         }
@@ -86,9 +124,9 @@ public class ProductPublishServiceImpl implements ProductPublishService {
     }
 
     /**
-     * 校验下架权限
+     * 校验管理权限
      */
-    private void ValidateOfflinePermission(
+    private void ValidateManagePermission(
         ProductEntity productEntity,
         Long currentUserId,
         UserRoleEnum currentUserRole

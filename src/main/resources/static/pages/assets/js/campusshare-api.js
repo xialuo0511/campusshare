@@ -1291,6 +1291,9 @@
         PublishProduct(payload) {
             return RequestApi("/api/v1/products", "POST", payload, true);
         },
+        UpdateProduct(productId, payload) {
+            return RequestApi(`/api/v1/products/${productId}`, "PUT", payload, true);
+        },
         UploadMaterialFile(file) {
             const formData = new FormData();
             formData.append("file", file);

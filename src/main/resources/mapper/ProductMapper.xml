@@ -82,6 +82,21 @@
         )
     </insert>
 
+    <update id="UpdateProduct" parameterType="com.xialuo.campusshare.entity.ProductEntity">
+        UPDATE product_info
+        SET
+            title = #{title},
+            category = #{category},
+            condition_level = #{conditionLevel},
+            price = #{price},
+            trade_location = #{tradeLocation},
+            description = #{description},
+            image_file_ids = #{imageFileIds},
+            update_time = #{updateTime}
+        WHERE product_id = #{productId}
+          AND deleted = 0
+    </update>
+
     <select id="ListPublishedProducts" resultMap="ProductResultMap">
         SELECT
             <include refid="ProductColumns"/>

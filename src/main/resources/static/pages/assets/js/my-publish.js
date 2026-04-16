@@ -95,6 +95,10 @@
                     window.location.href = `/pages/market_item_detail.html?productId=${encodeURIComponent(String(itemId))}`;
                     return;
                 }
+                if (action === "edit-product") {
+                    window.location.href = `/pages/publish_create.html?productId=${encodeURIComponent(String(itemId))}`;
+                    return;
+                }
                 if (action === "offline-product") {
                     await window.CampusShareApi.OfflineProduct(itemId, "用户手动下架");
                     ShowSuccess(messageBar, "商品已下架");
@@ -278,7 +282,7 @@
                 "</div>",
                 "<div class=\"flex md:flex-col gap-2 w-full md:w-auto\">",
                 `<button data-action=\"view-product\" data-id=\"${EscapeHtml(String(productItem.productId || ""))}\" class=\"flex-1 md:w-32 py-2 px-4 bg-primary text-on-primary text-xs font-semibold rounded-md hover:bg-primary-container transition-all\">查看</button>`,
-                `<button data-action=\"go-publish\" class=\"flex-1 md:w-32 py-2 px-4 bg-surface-container-high text-on-surface text-xs font-semibold rounded-md hover:bg-surface-container-highest transition-all\">编辑</button>`,
+                `<button data-action=\"edit-product\" data-id=\"${EscapeHtml(String(productItem.productId || ""))}\" class=\"flex-1 md:w-32 py-2 px-4 bg-surface-container-high text-on-surface text-xs font-semibold rounded-md hover:bg-surface-container-highest transition-all\">编辑</button>`,
                 `<button data-action=\"offline-product\" data-id=\"${EscapeHtml(String(productItem.productId || ""))}\" ${canOffline ? "" : "disabled"} class=\"flex-1 md:w-32 py-2 px-4 ${canOffline ? "bg-error/10 text-error hover:bg-error hover:text-on-error" : "bg-surface-container text-outline cursor-not-allowed"} text-xs font-semibold rounded-md transition-all\">下架</button>`,
                 "</div>",
                 "</div>"

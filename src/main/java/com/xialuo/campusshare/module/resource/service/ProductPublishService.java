@@ -14,6 +14,16 @@ public interface ProductPublishService {
     ProductDetailResponseDto PublishProduct(PublishProductRequestDto requestDto, Long currentUserId);
 
     /**
+     * 更新商品
+     */
+    ProductDetailResponseDto UpdateProduct(
+        Long productId,
+        PublishProductRequestDto requestDto,
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    );
+
+    /**
      * 下架商品
      */
     ProductDetailResponseDto OfflineProduct(

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -120,6 +121,24 @@ public class ProductController {
         ProductDetailResponseDto responseDto = productPublishService.PublishProduct(
             requestDto,
             GetCurrentUserId(httpServletRequest)
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 编辑商品
+     */
+    @PutMapping("/{productId}")
+    public ApiResponse<ProductDetailResponseDto> UpdateProduct(
+        @PathVariable("productId") Long productId,
+        @RequestBody @Valid PublishProductRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        ProductDetailResponseDto responseDto = productPublishService.UpdateProduct(
+            productId,
+            requestDto,
+            GetCurrentUserId(httpServletRequest),
+            GetCurrentUserRole(httpServletRequest)
         );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }

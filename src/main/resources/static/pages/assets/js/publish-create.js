@@ -4,6 +4,8 @@
 (function InitPublishCreatePage() {
     /** 图片选择限制 */
     const PRODUCT_IMAGE_ACCEPT = ".jpg,.jpeg,.png";
+    /** 发布页路径 */
+    const PUBLISH_PAGE_PATH = "/pages/publish_create.html";
 
     /**
      * 绑定页面行为
@@ -25,17 +27,26 @@
         const browseFileButton = uploadPanel ? uploadPanel.querySelector("button[type='button']") : null;
         const uploadTipText = CreateUploadTip(uploadPanel);
         const hiddenFileInput = BuildHiddenFileInput(publishForm);
+        const pageTitle = document.querySelector("main h1");
+        const editingProductId = ResolveEditingProductId();
+        const isEditMode = editingProductId > 0;
+
+        if (!submitButton || !titleInput || !categorySelect || !locationSelect || !priceInput || !descriptionInput) {
+            return;
+        }
 
         const messageBar = document.createElement("div");
         messageBar.className = "rounded-lg px-3 py-2 text-sm bg-surface-container-low text-on-surface-variant";
         messageBar.style.display = "none";
         publishForm.insertBefore(messageBar, publishForm.firstChild);
 
+        ApplyPageMode(isEditMode, pageTitle, submitButton);
+
         if (!window.CampusShareApi.GetAuthToken()) {
             ShowError(messageBar, "请先登录后再发布商品");
             window.setTimeout(function RedirectToAuthPage() {
                 if (window.CampusShareApi.RedirectToAuthPage) {
-                    window.CampusShareApi.RedirectToAuthPage("/pages/publish_create.html");
+                    window.CampusShareApi.RedirectToAuthPage(ResolveCurrentPagePathWithQuery());
                     return;
                 }
                 window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Fpublish_create.html";
@@ -45,24 +56,17 @@
 
         let selectedCondition = "";
         let uploadedFileMeta = null;
+        let existingImageFileIdList = [];
         let isUploadingFile = false;
         const usableConditionButtonList = Array.from(conditionButtonList).slice(0, 3);
-        usableConditionButtonList.forEach(function BindConditionButton(button, index) {
-            button.setAttribute("data-condition", String(index));
+        selectedCondition = ApplyConditionSelection(usableConditionButtonList, "");
+
+        usableConditionButtonList.forEach(function BindConditionButton(button) {
             button.addEventListener("click", function HandleConditionClick() {
-                selectedCondition = button.textContent ? button.textContent.trim() : "";
-                usableConditionButtonList.forEach(function ResetStyle(itemButton) {
-                    itemButton.classList.remove("border-primary", "bg-primary-container/10", "text-primary");
-                    itemButton.classList.add("border-transparent", "bg-surface-container", "text-slate-600");
-                });
-                button.classList.remove("border-transparent", "bg-surface-container", "text-slate-600");
-                button.classList.add("border-primary", "bg-primary-container/10", "text-primary");
+                selectedCondition = ApplyConditionSelection(usableConditionButtonList, button.textContent || "");
                 HideMessage(messageBar);
             });
         });
-        if (usableConditionButtonList[0] && usableConditionButtonList[0].textContent) {
-            selectedCondition = usableConditionButtonList[0].textContent.trim();
-        }
 
         if (browseFileButton && hiddenFileInput) {
             browseFileButton.addEventListener("click", function HandleBrowseFile() {
@@ -77,6 +81,10 @@
         }
         BindDropUpload(uploadPanel, hiddenFileInput, UploadSelectedFile);
 
+        if (isEditMode) {
+            LoadEditDraft();
+        }
+
         publishForm.addEventListener("submit", async function HandleSubmit(event) {
             event.preventDefault();
             HideMessage(messageBar);
@@ -86,6 +94,7 @@
                 if (isUploadingFile) {
                     throw new Error("图片上传中，请稍后重试");
                 }
+                const imageFileIdList = ResolveSubmitImageFileIdList(uploadedFileMeta, existingImageFileIdList);
                 const productPayload = BuildProductPayload(
                     titleInput,
                     categorySelect,
@@ -93,29 +102,70 @@
                     priceInput,
                     locationSelect,
                     descriptionInput,
-                    uploadedFileMeta
+                    imageFileIdList
                 );
-                const result = await window.CampusShareApi.PublishProduct(productPayload);
-                ShowSuccess(messageBar, `发布成功，商品ID：${result.productId}`);
-                publishForm.reset();
-                selectedCondition = usableConditionButtonList[0] && usableConditionButtonList[0].textContent
-                    ? usableConditionButtonList[0].textContent.trim()
-                    : "";
-                uploadedFileMeta = null;
-                SetUploadTip(uploadTipText, "尚未上传商品图片");
-                ResetConditionButtons(usableConditionButtonList);
+                const result = isEditMode
+                    ? await window.CampusShareApi.UpdateProduct(editingProductId, productPayload)
+                    : await window.CampusShareApi.PublishProduct(productPayload);
+
+                ShowSuccess(messageBar, isEditMode
+                    ? `编辑成功，商品ID：${result.productId}`
+                    : `发布成功，商品ID：${result.productId}`);
+
+                if (!isEditMode) {
+                    publishForm.reset();
+                    selectedCondition = ApplyConditionSelection(usableConditionButtonList, "");
+                    uploadedFileMeta = null;
+                    existingImageFileIdList = [];
+                    SetUploadTip(uploadTipText, "尚未上传商品图片");
+                }
+
                 if (result && result.productId) {
                     window.setTimeout(function JumpToDetailPage() {
                         window.location.href = `/pages/market_item_detail.html?productId=${encodeURIComponent(result.productId)}`;
                     }, 900);
                 }
             } catch (error) {
-                ShowError(messageBar, error instanceof Error ? error.message : "发布失败，请稍后重试");
+                ShowError(messageBar, error instanceof Error ? error.message : "提交失败，请稍后重试");
             } finally {
                 submitButton.disabled = false;
                 submitButton.classList.remove("opacity-70");
             }
         });
+
+        /**
+         * 加载编辑草稿
+         */
+        async function LoadEditDraft() {
+            submitButton.disabled = true;
+            submitButton.classList.add("opacity-70");
+            try {
+                await window.CampusShareApi.SyncSessionProfile();
+                const detailResult = await window.CampusShareApi.GetProductDetail(editingProductId);
+                ValidateEditPermission(detailResult);
+                titleInput.value = detailResult.title || "";
+                SetSelectValue(categorySelect, detailResult.category || "");
+                selectedCondition = ApplyConditionSelection(usableConditionButtonList, detailResult.conditionLevel || "");
+                SetSelectValue(locationSelect, detailResult.tradeLocation || "");
+                priceInput.value = detailResult.price == null ? "" : String(detailResult.price);
+                descriptionInput.value = detailResult.description || "";
+
+                existingImageFileIdList = ResolveImageFileIdList(detailResult);
+                if (existingImageFileIdList.length > 0) {
+                    SetUploadTip(uploadTipText, "已加载现有图片，可重新上传替换");
+                } else {
+                    SetUploadTip(uploadTipText, "当前商品暂无图片，请上传新图片", true);
+                }
+                HideMessage(messageBar);
+            } catch (error) {
+                ShowError(messageBar, error instanceof Error ? error.message : "商品详情加载失败");
+                submitButton.disabled = true;
+                submitButton.classList.add("opacity-70");
+                return;
+            }
+            submitButton.disabled = false;
+            submitButton.classList.remove("opacity-70");
+        }
 
         /**
          * 上传选中图片
@@ -162,6 +212,137 @@
     }
 
     /**
+     * 应用页面模式
+     */
+    function ApplyPageMode(isEditMode, pageTitle, submitButton) {
+        if (!isEditMode) {
+            return;
+        }
+        if (pageTitle) {
+            pageTitle.textContent = "编辑商品";
+        }
+        submitButton.textContent = "保存修改";
+    }
+
+    /**
+     * 获取编辑商品ID
+     */
+    function ResolveEditingProductId() {
+        const searchParams = new URLSearchParams(window.location.search || "");
+        const productId = Number(searchParams.get("productId") || "0");
+        if (!productId || Number.isNaN(productId)) {
+            return 0;
+        }
+        return productId;
+    }
+
+    /**
+     * 当前路径+查询
+     */
+    function ResolveCurrentPagePathWithQuery() {
+        return `${PUBLISH_PAGE_PATH}${window.location.search || ""}`;
+    }
+
+    /**
+     * 校验编辑权限
+     */
+    function ValidateEditPermission(detailResult) {
+        const profile = window.CampusShareApi.GetCurrentUserProfile() || {};
+        const currentUserId = Number(profile.userId || 0);
+        const userRole = profile.userRole || "";
+        const sellerUserId = Number(detailResult && detailResult.sellerUserId ? detailResult.sellerUserId : 0);
+        if (userRole === "ADMINISTRATOR") {
+            return;
+        }
+        if (currentUserId > 0 && sellerUserId > 0 && currentUserId === sellerUserId) {
+            return;
+        }
+        throw new Error("无权编辑该商品");
+    }
+
+    /**
+     * 设置下拉值
+     */
+    function SetSelectValue(selectElement, targetText) {
+        if (!selectElement) {
+            return;
+        }
+        const normalizedTargetText = String(targetText || "").trim();
+        if (!normalizedTargetText) {
+            return;
+        }
+        const optionList = Array.from(selectElement.options || []);
+        const matchedOption = optionList.find(function MatchOption(optionElement) {
+            const optionText = String(optionElement.textContent || "").trim();
+            const optionValue = String(optionElement.value || "").trim();
+            return optionText === normalizedTargetText || optionValue === normalizedTargetText;
+        });
+        if (matchedOption) {
+            selectElement.value = matchedOption.value;
+        }
+    }
+
+    /**
+     * 应用成色选择
+     */
+    function ApplyConditionSelection(conditionButtonList, conditionText) {
+        if (!conditionButtonList || conditionButtonList.length === 0) {
+            return "";
+        }
+        const normalizedConditionText = String(conditionText || "").trim();
+        let selectedButton = conditionButtonList.find(function MatchCondition(buttonElement) {
+            return String(buttonElement.textContent || "").trim() === normalizedConditionText;
+        });
+        if (!selectedButton) {
+            selectedButton = conditionButtonList[0];
+        }
+        conditionButtonList.forEach(function ResetStyle(buttonElement) {
+            buttonElement.classList.remove("border-primary", "bg-primary-container/10", "text-primary");
+            buttonElement.classList.add("border-transparent", "bg-surface-container", "text-slate-600");
+        });
+        selectedButton.classList.remove("border-transparent", "bg-surface-container", "text-slate-600");
+        selectedButton.classList.add("border-primary", "bg-primary-container/10", "text-primary");
+        return String(selectedButton.textContent || "").trim();
+    }
+
+    /**
+     * 解析图片ID
+     */
+    function ResolveImageFileIdList(detailResult) {
+        const imageFileIdList = detailResult && Array.isArray(detailResult.imageFileIds)
+            ? detailResult.imageFileIds
+            : [];
+        return imageFileIdList
+            .map(function NormalizeFileId(fileId) {
+                return String(fileId || "").trim();
+            })
+            .filter(function FilterFileId(fileId) {
+                return !!fileId;
+            });
+    }
+
+    /**
+     * 解析提交图片ID
+     */
+    function ResolveSubmitImageFileIdList(uploadedFileMeta, existingImageFileIdList) {
+        if (uploadedFileMeta && uploadedFileMeta.fileId) {
+            return [String(uploadedFileMeta.fileId)];
+        }
+        const imageFileIdList = Array.isArray(existingImageFileIdList) ? existingImageFileIdList : [];
+        const normalizedImageFileIdList = imageFileIdList
+            .map(function NormalizeFileId(fileId) {
+                return String(fileId || "").trim();
+            })
+            .filter(function FilterFileId(fileId) {
+                return !!fileId;
+            });
+        if (normalizedImageFileIdList.length === 0) {
+            throw new Error("请先上传商品图片");
+        }
+        return normalizedImageFileIdList;
+    }
+
+    /**
      * 构建商品发布参数
      */
     function BuildProductPayload(
@@ -171,11 +352,8 @@
         priceInput,
         locationSelect,
         descriptionInput,
-        uploadedFileMeta
+        imageFileIdList
     ) {
-        if (!uploadedFileMeta || !uploadedFileMeta.fileId) {
-            throw new Error("请先上传商品图片");
-        }
         const title = titleInput && titleInput.value ? titleInput.value.trim() : "";
         if (!title) {
             throw new Error("商品标题不能为空");
@@ -213,7 +391,7 @@
             price: Number(priceNumber.toFixed(2)),
             tradeLocation,
             description,
-            imageFileIds: [uploadedFileMeta.fileId]
+            imageFileIds: imageFileIdList
         };
     }
 
@@ -312,21 +490,6 @@
     }
 
     /**
-     * 重置新旧程度按钮样式
-     */
-    function ResetConditionButtons(usableConditionButtonList) {
-        usableConditionButtonList.forEach(function ResetConditionButtonStyle(button, index) {
-            if (index === 0) {
-                button.classList.remove("border-transparent", "bg-surface-container", "text-slate-600");
-                button.classList.add("border-primary", "bg-primary-container/10", "text-primary");
-                return;
-            }
-            button.classList.remove("border-primary", "bg-primary-container/10", "text-primary");
-            button.classList.add("border-transparent", "bg-surface-container", "text-slate-600");
-        });
-    }
-
-    /**
      * 显示成功信息
      */
     function ShowSuccess(messageBar, message) {
@@ -354,4 +517,3 @@
 
     document.addEventListener("DOMContentLoaded", BindPublishPage);
 })();
-

@@ -18,6 +18,11 @@ public interface ProductMapper {
     Integer InsertProduct(ProductEntity productEntity);
 
     /**
+     * 更新商品
+     */
+    Integer UpdateProduct(ProductEntity productEntity);
+
+    /**
      * 分页查询已上架商品
      */
     List<ProductEntity> ListPublishedProducts(

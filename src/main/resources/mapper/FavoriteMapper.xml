@@ -8,6 +8,7 @@
         <id column="favorite_id" property="favoriteId"/>
         <result column="user_id" property="userId"/>
         <result column="resource_id" property="resourceId"/>
+        <result column="resource_type" property="resourceType"/>
         <result column="canceled" property="canceled"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
@@ -18,6 +19,7 @@
         INSERT INTO favorite_info (
             user_id,
             resource_id,
+            resource_type,
             canceled,
             create_time,
             update_time,
@@ -25,6 +27,7 @@
         ) VALUES (
             #{userId},
             #{resourceId},
+            #{resourceType},
             #{canceled},
             #{createTime},
             #{updateTime},
@@ -41,11 +44,12 @@
         WHERE favorite_id = #{favoriteId}
     </update>
 
-    <select id="FindByUserIdAndResourceId" resultMap="FavoriteResultMap">
+    <select id="FindByUserIdAndResourceIdAndType" resultMap="FavoriteResultMap">
         SELECT
             favorite_id,
             user_id,
             resource_id,
+            resource_type,
             canceled,
             create_time,
             update_time,
@@ -53,14 +57,16 @@
         FROM favorite_info
         WHERE user_id = #{userId}
           AND resource_id = #{resourceId}
+          AND resource_type = #{resourceType}
           AND deleted = 0
         LIMIT 1
     </select>
 
-    <select id="CountActiveByResourceId" resultType="java.lang.Long">
+    <select id="CountActiveByResourceIdAndType" resultType="java.lang.Long">
         SELECT COUNT(1)
         FROM favorite_info
         WHERE resource_id = #{resourceId}
+          AND resource_type = #{resourceType}
           AND canceled = 0
           AND deleted = 0
     </select>

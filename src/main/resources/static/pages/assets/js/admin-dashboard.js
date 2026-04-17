@@ -4,6 +4,7 @@
 (function InitAdminDashboardPage() {
     const DEFAULT_ORDER_PAGE_SIZE = 10;
     const DEFAULT_TASK_PAGE_SIZE = 8;
+    const DEFAULT_PENDING_MATERIAL_FETCH_SIZE = 50;
 
     /**
      * 绑定页面行为
@@ -74,6 +75,7 @@
                 pendingReportList,
                 pendingUserList,
                 pendingTeamApplicationList,
+                pendingMaterialListResult,
                 orderListResult
             ] = await Promise.all([
                 window.CampusShareApi.GetMarketOverview(),
@@ -81,6 +83,7 @@
                 window.CampusShareApi.ListPendingReports(),
                 window.CampusShareApi.ListPendingUsers(),
                 window.CampusShareApi.ListPendingTeamRecruitmentApplications(),
+                window.CampusShareApi.ListPendingMaterials(1, DEFAULT_PENDING_MATERIAL_FETCH_SIZE),
                 window.CampusShareApi.ListMyOrders(1, DEFAULT_ORDER_PAGE_SIZE)
             ]);
 
@@ -95,7 +98,8 @@
             reviewState.reviewTaskList = BuildReviewTaskList(
                 pendingReportList,
                 pendingUserList,
-                pendingTeamApplicationList
+                pendingTeamApplicationList,
+                pendingMaterialListResult
             );
             reviewState.pageNo = 1;
             RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
@@ -176,11 +180,17 @@
     /**
      * 构建审核任务
      */
-    function BuildReviewTaskList(pendingReportList, pendingUserList, pendingTeamApplicationList) {
+    function BuildReviewTaskList(
+        pendingReportList,
+        pendingUserList,
+        pendingTeamApplicationList,
+        pendingMaterialListResult
+    ) {
         const reportTaskList = BuildReportReviewTaskList(pendingReportList);
         const userTaskList = BuildUserReviewTaskList(pendingUserList);
         const teamTaskList = BuildTeamApplicationReviewTaskList(pendingTeamApplicationList);
-        return reportTaskList.concat(userTaskList).concat(teamTaskList)
+        const materialTaskList = BuildMaterialReviewTaskList(pendingMaterialListResult);
+        return reportTaskList.concat(userTaskList).concat(teamTaskList).concat(materialTaskList)
             .sort(function SortReviewTask(a, b) {
                 return ResolveTimeValue(b.createTime) - ResolveTimeValue(a.createTime);
             });
@@ -209,28 +219,34 @@
                 ? `举报 #${taskItem.taskId} (${taskItem.reason})`
                 : (taskItem.taskType === "USER"
                     ? `用户审核 #${taskItem.taskId} (${taskItem.account})`
-                    : `组队申请 #${taskItem.taskId} (招募 #${taskItem.recruitmentId})`);
+                    : (taskItem.taskType === "TEAM"
+                        ? `组队申请 #${taskItem.taskId} (招募 #${taskItem.recruitmentId})`
+                        : `资料审核 #${taskItem.taskId} (${taskItem.courseName || "-"})`));
             const resourceMeta = taskItem.taskType === "REPORT"
                 ? `${taskItem.targetType} #${taskItem.targetId}`
                 : (taskItem.taskType === "USER"
                     ? `${taskItem.college || "-"} · ${taskItem.grade || "-"}`
-                    : (taskItem.applyRemark || "未填写申请备注"));
+                    : (taskItem.taskType === "TEAM"
+                        ? (taskItem.applyRemark || "未填写申请备注")
+                        : `文件: ${taskItem.fileType || "-"} · ${SafeNumber(taskItem.fileSizeBytes)} bytes`));
             const contributor = taskItem.taskType === "REPORT"
                 ? `举报人ID: ${taskItem.reporterUserId}`
                 : (taskItem.taskType === "USER"
                     ? (taskItem.displayName || taskItem.account || `用户#${taskItem.taskId}`)
-                    : (taskItem.applicantDisplayName || `申请人#${taskItem.applicantUserId}`));
+                    : (taskItem.taskType === "TEAM"
+                        ? (taskItem.applicantDisplayName || `申请人#${taskItem.applicantUserId}`)
+                        : `上传者ID: ${taskItem.uploaderUserId || "-"}`));
             const statusText = taskItem.taskType === "REPORT"
                 ? "举报待审"
-                : (taskItem.taskType === "USER" ? "用户待审" : "申请待审");
+                : (taskItem.taskType === "USER" ? "用户待审" : (taskItem.taskType === "TEAM" ? "申请待审" : "资料待审"));
             const statusClass = taskItem.taskType === "REPORT"
                 ? "bg-secondary-container text-on-secondary-container"
                 : (taskItem.taskType === "USER"
                     ? "bg-surface-container text-slate-600"
-                    : "bg-primary/10 text-primary");
+                    : (taskItem.taskType === "TEAM" ? "bg-primary/10 text-primary" : "bg-amber-100 text-amber-700"));
             const iconName = taskItem.taskType === "REPORT"
                 ? "gavel"
-                : (taskItem.taskType === "USER" ? "badge" : "groups");
+                : (taskItem.taskType === "USER" ? "badge" : (taskItem.taskType === "TEAM" ? "groups" : "description"));
             const recruitmentIdValue = taskItem.recruitmentId || "";
 
             return [
@@ -289,7 +305,10 @@
                 taskItem.applicantDisplayName || "",
                 taskItem.applyRemark || "",
                 taskItem.college || "",
-                taskItem.grade || ""
+                taskItem.grade || "",
+                taskItem.courseName || "",
+                taskItem.fileType || "",
+                String(taskItem.uploaderUserId || "")
             ].join(" ").toLowerCase();
             return searchText.includes(keyword);
         });
@@ -349,6 +368,12 @@
                             "后台快速驳回"
                         );
                     }
+                } else if (taskType === "MATERIAL") {
+                    await window.CampusShareApi.ReviewMaterial(
+                        taskId,
+                        approved,
+                        approved ? "后台快速通过" : "后台快速驳回"
+                    );
                 } else {
                     return;
                 }
@@ -377,6 +402,7 @@
             "<option value=\"REPORT\">举报</option>",
             "<option value=\"USER\">用户审核</option>",
             "<option value=\"TEAM\">组队申请</option>",
+            "<option value=\"MATERIAL\">资料审核</option>",
             "</select>",
             "</div>",
             "<div class=\"flex items-center gap-2\">",
@@ -533,6 +559,26 @@
                 applicantDisplayName: applicationItem.applicantDisplayName || "-",
                 applyRemark: applicationItem.applyRemark || "",
                 createTime: applicationItem.createTime || null
+            };
+        });
+    }
+
+    /**
+     * 构建资料审核任务列表
+     */
+    function BuildMaterialReviewTaskList(pendingMaterialListResult) {
+        const materialList = pendingMaterialListResult && Array.isArray(pendingMaterialListResult.materialList)
+            ? pendingMaterialListResult.materialList
+            : [];
+        return materialList.map(function MapMaterial(materialItem) {
+            return {
+                taskType: "MATERIAL",
+                taskId: SafeNumber(materialItem.materialId),
+                uploaderUserId: SafeNumber(materialItem.uploaderUserId),
+                courseName: materialItem.courseName || "",
+                fileType: materialItem.fileType || "",
+                fileSizeBytes: SafeNumber(materialItem.fileSizeBytes),
+                createTime: materialItem.createTime || null
             };
         });
     }

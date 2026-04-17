@@ -67,6 +67,12 @@
                 } else if (action === "reject-application" && itemType === "TEAM_APPLICATION") {
                     await window.CampusShareApi.RejectTeamRecruitmentApplication(recruitmentId, itemId, "批量审核驳回");
                     ShowSuccess(messageBar, "招募申请已驳回");
+                } else if (action === "approve-material" && itemType === "MATERIAL") {
+                    await window.CampusShareApi.ReviewMaterial(itemId, true, "批量审核通过");
+                    ShowSuccess(messageBar, "资料已通过审核");
+                } else if (action === "reject-material" && itemType === "MATERIAL") {
+                    await window.CampusShareApi.ReviewMaterial(itemId, false, "批量审核驳回");
+                    ShowSuccess(messageBar, "资料已驳回");
                 } else if (action === "detail") {
                     if (itemType === "USER") {
                         window.location.href = "/pages/admin_dashboard.html";
@@ -74,6 +80,8 @@
                         window.location.href = "/pages/admin_dashboard.html";
                     } else if (itemType === "TEAM_APPLICATION") {
                         window.location.href = "/pages/recruitment_board.html";
+                    } else if (itemType === "MATERIAL") {
+                        window.location.href = "/pages/admin_dashboard.html";
                     }
                     return;
                 }
@@ -103,14 +111,18 @@
             const resultList = await Promise.all([
                 window.CampusShareApi.ListPendingUsers(),
                 window.CampusShareApi.ListPendingReports(),
-                window.CampusShareApi.ListPendingTeamRecruitmentApplications()
+                window.CampusShareApi.ListPendingTeamRecruitmentApplications(),
+                window.CampusShareApi.ListPendingMaterials(1, 100)
             ]);
             const pendingUserList = Array.isArray(resultList[0]) ? resultList[0] : [];
             const pendingReportList = Array.isArray(resultList[1]) ? resultList[1] : [];
             const pendingApplicationList = Array.isArray(resultList[2]) ? resultList[2] : [];
+            const pendingMaterialList = resultList[3] && Array.isArray(resultList[3].materialList)
+                ? resultList[3].materialList
+                : [];
 
-            PatchStats(statValueNodeList, pendingUserList, pendingReportList, pendingApplicationList);
-            RenderTable(tableBody, pendingUserList, pendingReportList, pendingApplicationList);
+            PatchStats(statValueNodeList, pendingUserList, pendingReportList, pendingApplicationList, pendingMaterialList);
+            RenderTable(tableBody, pendingUserList, pendingReportList, pendingApplicationList, pendingMaterialList);
             HideMessage(messageBar);
         } catch (error) {
             ShowError(messageBar, error instanceof Error ? error.message : "审核数据加载失败");
@@ -121,18 +133,33 @@
     /**
      * 更新统计
      */
-    function PatchStats(statValueNodeList, pendingUserList, pendingReportList, pendingApplicationList) {
-        const totalCount = pendingUserList.length + pendingReportList.length + pendingApplicationList.length;
+    function PatchStats(
+        statValueNodeList,
+        pendingUserList,
+        pendingReportList,
+        pendingApplicationList,
+        pendingMaterialList
+    ) {
+        const totalCount = pendingUserList.length
+            + pendingReportList.length
+            + pendingApplicationList.length
+            + pendingMaterialList.length;
         statValueNodeList[0].textContent = String(totalCount);
         statValueNodeList[1].textContent = "1.8h";
         statValueNodeList[2].textContent = String(Math.max(0, 20 - totalCount));
-        statValueNodeList[3].textContent = String(pendingReportList.length);
+        statValueNodeList[3].textContent = String(pendingReportList.length + pendingMaterialList.length);
     }
 
     /**
      * 渲染表格
      */
-    function RenderTable(tableBody, pendingUserList, pendingReportList, pendingApplicationList) {
+    function RenderTable(
+        tableBody,
+        pendingUserList,
+        pendingReportList,
+        pendingApplicationList,
+        pendingMaterialList
+    ) {
         const rowList = [];
 
         pendingUserList.forEach(function BuildUserRow(userItem) {
@@ -174,6 +201,20 @@
                 statusText: "Under Review",
                 id: applicationItem.applicationId,
                 recruitmentId: applicationItem.recruitmentId || 0
+            });
+        });
+
+        pendingMaterialList.forEach(function BuildMaterialRow(materialItem) {
+            rowList.push({
+                type: "MATERIAL",
+                icon: "description",
+                title: materialItem.courseName || `资料 #${materialItem.materialId || "-"}`,
+                subtitle: `上传者 #${materialItem.uploaderUserId || "-"} · ${materialItem.fileType || "-"}`,
+                category: "Material",
+                timeText: FormatTime(materialItem.createTime),
+                statusText: "Pending",
+                id: materialItem.materialId,
+                recruitmentId: 0
             });
         });
 
@@ -220,6 +261,9 @@
         if (itemType === "REPORT") {
             return "approve-report";
         }
+        if (itemType === "MATERIAL") {
+            return "approve-material";
+        }
         return "approve-application";
     }
 
@@ -232,6 +276,9 @@
         }
         if (itemType === "REPORT") {
             return "reject-report";
+        }
+        if (itemType === "MATERIAL") {
+            return "reject-material";
         }
         return "reject-application";
     }

@@ -1400,6 +1400,12 @@
         ToggleProductFavorite(productId) {
             return RequestApi(`/api/v1/favorites/products/${productId}/toggle`, "POST", {}, true);
         },
+        GetMaterialFavoriteState(materialId) {
+            return RequestApi(`/api/v1/favorites/materials/${materialId}`, "GET", null, true);
+        },
+        ToggleMaterialFavorite(materialId) {
+            return RequestApi(`/api/v1/favorites/materials/${materialId}/toggle`, "POST", {}, true);
+        },
         GetMarketOverview() {
             return RequestApi("/api/v1/market/overview", "GET", null, false);
         },

@@ -3,6 +3,7 @@ package com.xialuo.campusshare.module.resource.controller;
 import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
+import com.xialuo.campusshare.module.material.dto.MaterialFavoriteResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductFavoriteResponseDto;
 import com.xialuo.campusshare.module.resource.service.FavoriteService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 收藏接口
  */
 @RestController
-@RequestMapping("/api/v1/favorites/products")
+@RequestMapping("/api/v1/favorites")
 public class FavoriteController {
     /** 收藏服务 */
     private final FavoriteService favoriteService;
@@ -28,7 +29,7 @@ public class FavoriteController {
     /**
      * 查询收藏状态
      */
-    @GetMapping("/{productId}")
+    @GetMapping("/products/{productId}")
     public ApiResponse<ProductFavoriteResponseDto> GetProductFavoriteState(
         @PathVariable("productId") Long productId,
         HttpServletRequest httpServletRequest
@@ -41,13 +42,39 @@ public class FavoriteController {
     /**
      * 切换收藏状态
      */
-    @PostMapping("/{productId}/toggle")
+    @PostMapping("/products/{productId}/toggle")
     public ApiResponse<ProductFavoriteResponseDto> ToggleProductFavorite(
         @PathVariable("productId") Long productId,
         HttpServletRequest httpServletRequest
     ) {
         Long currentUserId = GetCurrentUserId(httpServletRequest);
         ProductFavoriteResponseDto responseDto = favoriteService.ToggleProductFavorite(productId, currentUserId);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 查询资料收藏状态
+     */
+    @GetMapping("/materials/{materialId}")
+    public ApiResponse<MaterialFavoriteResponseDto> GetMaterialFavoriteState(
+        @PathVariable("materialId") Long materialId,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        MaterialFavoriteResponseDto responseDto = favoriteService.GetMaterialFavoriteState(materialId, currentUserId);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 切换资料收藏状态
+     */
+    @PostMapping("/materials/{materialId}/toggle")
+    public ApiResponse<MaterialFavoriteResponseDto> ToggleMaterialFavorite(
+        @PathVariable("materialId") Long materialId,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        MaterialFavoriteResponseDto responseDto = favoriteService.ToggleMaterialFavorite(materialId, currentUserId);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 

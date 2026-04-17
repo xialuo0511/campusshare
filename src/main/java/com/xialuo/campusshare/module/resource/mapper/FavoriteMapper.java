@@ -1,6 +1,7 @@
 package com.xialuo.campusshare.module.resource.mapper;
 
 import com.xialuo.campusshare.entity.FavoriteEntity;
+import com.xialuo.campusshare.enums.ResourceTypeEnum;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -12,9 +13,10 @@ public interface FavoriteMapper {
     /**
      * 按用户和资源查询收藏
      */
-    FavoriteEntity FindByUserIdAndResourceId(
+    FavoriteEntity FindByUserIdAndResourceIdAndType(
         @Param("userId") Long userId,
-        @Param("resourceId") Long resourceId
+        @Param("resourceId") Long resourceId,
+        @Param("resourceType") ResourceTypeEnum resourceType
     );
 
     /**
@@ -30,5 +32,8 @@ public interface FavoriteMapper {
     /**
      * 统计有效收藏数量
      */
-    Long CountActiveByResourceId(@Param("resourceId") Long resourceId);
+    Long CountActiveByResourceIdAndType(
+        @Param("resourceId") Long resourceId,
+        @Param("resourceType") ResourceTypeEnum resourceType
+    );
 }

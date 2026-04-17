@@ -1,5 +1,7 @@
 package com.xialuo.campusshare.entity;
 
+import com.xialuo.campusshare.enums.ResourceTypeEnum;
+
 /**
  * 收藏实体
  */
@@ -8,8 +10,10 @@ public class FavoriteEntity extends BaseEntity {
     private Long favoriteId;
     /** 用户ID */
     private Long userId;
-    /** 资源ID(商品ID) */
+    /** 资源ID */
     private Long resourceId;
+    /** 资源类型 */
+    private ResourceTypeEnum resourceType;
     /** 是否取消 */
     private Boolean canceled;
 
@@ -53,6 +57,20 @@ public class FavoriteEntity extends BaseEntity {
      */
     public void SetResourceId(Long resourceId) {
         this.resourceId = resourceId;
+    }
+
+    /**
+     * 获取资源类型
+     */
+    public ResourceTypeEnum GetResourceType() {
+        return resourceType;
+    }
+
+    /**
+     * 设置资源类型
+     */
+    public void SetResourceType(ResourceTypeEnum resourceType) {
+        this.resourceType = resourceType;
     }
 
     /**

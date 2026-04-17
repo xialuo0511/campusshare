@@ -24,6 +24,7 @@
         const modalOverlay = document.querySelector("div.fixed.inset-0.z-50.flex.items-center.justify-center.p-4");
         const toastStack = document.querySelector("div.fixed.bottom-8.right-8.z-\[60\]");
         const editButton = mainElement.querySelector(".col-span-12.lg\\:col-span-8 button");
+        const sellerActionButton = mainElement.querySelector(".col-span-12.lg\\:col-span-4 button");
         const messageBar = BuildMessageBar(mainElement);
 
         if (modalOverlay) {
@@ -34,6 +35,7 @@
         }
 
         BindModalActions(modalOverlay, editButton, messageBar);
+        BindSellerVerificationAction(sellerActionButton, messageBar);
         LoadProfileData(mainElement, messageBar);
         LoadPointLedger(mainElement, messageBar);
         LoadProfileStats(mainElement, messageBar);
@@ -183,6 +185,90 @@
                 }
             });
         }
+    }
+
+    /**
+     * 绑定卖家认证按钮
+     */
+    function BindSellerVerificationAction(sellerActionButton, messageBar) {
+        if (!sellerActionButton || !window.CampusShareApi || !window.CampusShareApi.ApplySellerVerification) {
+            return;
+        }
+        RefreshSellerActionButton(sellerActionButton, messageBar);
+        sellerActionButton.addEventListener("click", async function HandleSellerVerificationApply() {
+            sellerActionButton.disabled = true;
+            try {
+                const profile = await ResolveCurrentProfile();
+                const payload = {
+                    realName: String((profile && profile.displayName) || "").trim() || "未命名用户",
+                    contactPhone: String((profile && profile.phone) || "").trim(),
+                    qualificationDesc: "申请开通认证卖家权限",
+                    credentialFileIds: []
+                };
+                await window.CampusShareApi.ApplySellerVerification(payload);
+                ShowSuccess(messageBar, "认证申请已提交，请等待管理员审核");
+            } catch (error) {
+                ShowError(messageBar, error instanceof Error ? error.message : "认证申请提交失败");
+            } finally {
+                await RefreshSellerActionButton(sellerActionButton, messageBar);
+            }
+        });
+    }
+
+    /**
+     * 刷新卖家认证按钮状态
+     */
+    async function RefreshSellerActionButton(sellerActionButton, messageBar) {
+        if (!sellerActionButton || !window.CampusShareApi) {
+            return;
+        }
+        const profile = await ResolveCurrentProfile();
+        const userRole = profile && profile.userRole ? profile.userRole : "";
+        if (userRole === "VERIFIED_SELLER" || userRole === "ADMINISTRATOR") {
+            sellerActionButton.disabled = true;
+            sellerActionButton.textContent = "已认证卖家";
+            sellerActionButton.classList.add("opacity-70", "cursor-not-allowed");
+            return;
+        }
+        try {
+            const latestApplication = await window.CampusShareApi.GetMyLatestSellerVerification();
+            const applicationStatus = latestApplication && latestApplication.applicationStatus
+                ? latestApplication.applicationStatus
+                : "";
+            if (applicationStatus === "PENDING_REVIEW") {
+                sellerActionButton.disabled = true;
+                sellerActionButton.textContent = "卖家认证审核中";
+                sellerActionButton.classList.add("opacity-70", "cursor-not-allowed");
+                return;
+            }
+        } catch (error) {
+            if (messageBar && error instanceof Error && error.message) {
+                ShowError(messageBar, error.message);
+            }
+        }
+
+        sellerActionButton.disabled = false;
+        sellerActionButton.textContent = "申请认证卖家";
+        sellerActionButton.classList.remove("opacity-70", "cursor-not-allowed");
+    }
+
+    /**
+     * 读取当前用户资料
+     */
+    async function ResolveCurrentProfile() {
+        if (!window.CampusShareApi) {
+            return null;
+        }
+        try {
+            if (window.CampusShareApi.SyncSessionProfile) {
+                await window.CampusShareApi.SyncSessionProfile();
+            }
+        } catch (error) {
+            // 会话同步失败时使用本地资料兜底
+        }
+        return window.CampusShareApi.GetCurrentUserProfile
+            ? window.CampusShareApi.GetCurrentUserProfile()
+            : null;
     }
 
     /**

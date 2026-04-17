@@ -10,7 +10,7 @@
     /**
      * 绑定页面行为
      */
-    function BindPublishPage() {
+    async function BindPublishPage() {
         const publishForm = document.querySelector("section form");
         if (!publishForm || !window.CampusShareApi) {
             return;
@@ -51,6 +51,14 @@
                 }
                 window.location.href = "/pages/auth_access.html?redirect=%2Fpages%2Fpublish_create.html";
             }, 700);
+            return;
+        }
+
+        const currentProfile = await ResolveCurrentProfile();
+        if (!isEditMode && !HasPublishPermission(currentProfile)) {
+            ShowError(messageBar, "当前账号未通过认证卖家审核，暂不能发布商品");
+            submitButton.disabled = true;
+            submitButton.classList.add("opacity-70");
             return;
         }
 
@@ -241,6 +249,33 @@
      */
     function ResolveCurrentPagePathWithQuery() {
         return `${PUBLISH_PAGE_PATH}${window.location.search || ""}`;
+    }
+
+    /**
+     * 获取当前用户资料
+     */
+    async function ResolveCurrentProfile() {
+        if (!window.CampusShareApi) {
+            return null;
+        }
+        try {
+            if (window.CampusShareApi.SyncSessionProfile) {
+                await window.CampusShareApi.SyncSessionProfile();
+            }
+        } catch (error) {
+            // 会话同步失败时继续使用本地资料兜底
+        }
+        return window.CampusShareApi.GetCurrentUserProfile
+            ? window.CampusShareApi.GetCurrentUserProfile()
+            : null;
+    }
+
+    /**
+     * 是否具备发布权限
+     */
+    function HasPublishPermission(profile) {
+        const userRole = profile && profile.userRole ? profile.userRole : "";
+        return userRole === "VERIFIED_SELLER" || userRole === "ADMINISTRATOR";
     }
 
     /**

@@ -1469,12 +1469,29 @@
             }
             return RequestApi(`/api/v1/users/${currentProfile.userId}/profile`, "PUT", payload || {}, true);
         },
+        ApplySellerVerification(payload) {
+            return RequestApi("/api/v1/users/seller-verifications", "POST", payload || {}, true);
+        },
+        GetMyLatestSellerVerification() {
+            return RequestApi("/api/v1/users/seller-verifications/me/latest", "GET", null, true);
+        },
         ListPendingUsers() {
             return RequestApi("/api/v1/admin/users/pending", "GET", null, true);
         },
         ReviewUser(userId, approved, reviewRemark) {
             return RequestApi(
                 `/api/v1/admin/users/${userId}/review`,
+                "POST",
+                { approved: !!approved, reviewRemark: reviewRemark || "" },
+                true
+            );
+        },
+        ListPendingSellerVerifications() {
+            return RequestApi("/api/v1/admin/users/seller-verifications/pending", "GET", null, true);
+        },
+        ReviewSellerVerification(applicationId, approved, reviewRemark) {
+            return RequestApi(
+                `/api/v1/admin/users/seller-verifications/${applicationId}/review`,
                 "POST",
                 { approved: !!approved, reviewRemark: reviewRemark || "" },
                 true

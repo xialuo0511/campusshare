@@ -39,6 +39,12 @@ public class SessionAuthFilter extends OncePerRequestFilter {
     /** 招募详情公开路径 */
     private static final Pattern TEAM_RECRUITMENT_DETAIL_PATH_PATTERN =
         Pattern.compile("^/api/v1/team/recruitments/\\d+$");
+    /** 商品详情公开路径 */
+    private static final Pattern PRODUCT_DETAIL_PATH_PATTERN =
+        Pattern.compile("^/api/v1/products/\\d+$");
+    /** 商品评论公开路径 */
+    private static final Pattern PRODUCT_COMMENT_PATH_PATTERN =
+        Pattern.compile("^/api/v1/products/\\d+/comments$");
 
     /** Redis模板 */
     private final StringRedisTemplate stringRedisTemplate;
@@ -106,11 +112,20 @@ public class SessionAuthFilter extends OncePerRequestFilter {
             || "/api/v1/users/login".equals(requestPath)
             || "/api/v1/system/health".equals(requestPath)
             || (IsGetMethod(requestMethod) && requestPath.startsWith("/api/v1/files/"))
-            || (IsGetMethod(requestMethod) && requestPath.startsWith("/api/v1/products"))
+            || (IsGetMethod(requestMethod) && IsPublicProductGetPath(requestPath))
             || requestPath.startsWith("/api/v1/market")
             || (IsGetMethod(requestMethod)
                 && ("/api/v1/team/recruitments".equals(requestPath)
                 || TEAM_RECRUITMENT_DETAIL_PATH_PATTERN.matcher(requestPath).matches()));
+    }
+
+    /**
+     * 商品公开GET路径
+     */
+    private boolean IsPublicProductGetPath(String requestPath) {
+        return "/api/v1/products".equals(requestPath)
+            || PRODUCT_DETAIL_PATH_PATTERN.matcher(requestPath).matches()
+            || PRODUCT_COMMENT_PATH_PATTERN.matcher(requestPath).matches();
     }
 
     /**

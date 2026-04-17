@@ -6,6 +6,7 @@ import com.xialuo.campusshare.entity.ProductEntity;
 import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
+import com.xialuo.campusshare.enums.UserStatusEnum;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
@@ -35,6 +36,7 @@ public class ProductPublishServiceImpl implements ProductPublishService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ProductDetailResponseDto PublishProduct(PublishProductRequestDto requestDto, Long currentUserId) {
+        ValidatePublishPermission(currentUserId);
         ProductEntity productEntity = BuildProductEntity(requestDto, currentUserId);
         Integer countRows = productMapper.InsertProduct(productEntity);
         if (countRows == null || countRows <= 0 || productEntity.GetProductId() == null) {
@@ -137,7 +139,24 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         if (currentUserId != null && currentUserId.equals(productEntity.GetSellerUserId())) {
             return;
         }
-        throw new BusinessException(BizCodeEnum.FORBIDDEN, "无权下架该商品");
+        throw new BusinessException(BizCodeEnum.FORBIDDEN, "无权管理该商品");
+    }
+
+    /**
+     * 校验发布权限
+     */
+    private void ValidatePublishPermission(Long currentUserId) {
+        UserEntity userEntity = userMapper.FindUserById(currentUserId);
+        if (userEntity == null) {
+            throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
+        }
+        if (userEntity.GetUserStatus() != UserStatusEnum.ACTIVE) {
+            throw new BusinessException(BizCodeEnum.ACCOUNT_NOT_ACTIVE, "账号未审核通过");
+        }
+        if (userEntity.GetUserRole() != UserRoleEnum.VERIFIED_SELLER
+            && userEntity.GetUserRole() != UserRoleEnum.ADMINISTRATOR) {
+            throw new BusinessException(BizCodeEnum.SELLER_VERIFICATION_REQUIRED, "请先完成认证卖家审核后再发布商品");
+        }
     }
 
     /**

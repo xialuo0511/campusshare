@@ -10,10 +10,13 @@ import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileUpdateRequestDto;
+import com.xialuo.campusshare.module.user.dto.SellerVerificationApplicationResponseDto;
+import com.xialuo.campusshare.module.user.dto.SellerVerificationApplyRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterCodeRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterCodeResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterResponseDto;
+import com.xialuo.campusshare.module.user.service.SellerVerificationService;
 import com.xialuo.campusshare.module.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -33,9 +36,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     /** 用户服务 */
     private final UserService userService;
+    /** 卖家认证服务 */
+    private final SellerVerificationService sellerVerificationService;
 
-    public UserController(UserService userService) {
+    public UserController(
+        UserService userService,
+        SellerVerificationService sellerVerificationService
+    ) {
         this.userService = userService;
+        this.sellerVerificationService = sellerVerificationService;
     }
 
     /**
@@ -118,6 +127,32 @@ public class UserController {
     ) {
         ValidateUserAccess(userId, httpServletRequest);
         UserProfileResponseDto responseDto = userService.UpdateUserProfile(userId, requestDto);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 提交卖家认证申请
+     */
+    @PostMapping("/seller-verifications")
+    public ApiResponse<SellerVerificationApplicationResponseDto> SubmitSellerVerification(
+        @RequestBody @Valid SellerVerificationApplyRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        SellerVerificationApplicationResponseDto responseDto = sellerVerificationService.SubmitApplication(
+            currentUserId,
+            requestDto
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 查询我的最新卖家认证申请
+     */
+    @GetMapping("/seller-verifications/me/latest")
+    public ApiResponse<SellerVerificationApplicationResponseDto> GetMyLatestSellerVerification(HttpServletRequest httpServletRequest) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        SellerVerificationApplicationResponseDto responseDto = sellerVerificationService.GetMyLatestApplication(currentUserId);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 

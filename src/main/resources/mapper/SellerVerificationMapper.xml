@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.user.mapper.SellerVerificationMapper">
+
+    <resultMap id="SellerVerificationResultMap" type="com.xialuo.campusshare.entity.SellerVerificationApplicationEntity">
+        <id column="application_id" property="applicationId"/>
+        <result column="user_id" property="userId"/>
+        <result column="real_name" property="realName"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="qualification_desc" property="qualificationDesc"/>
+        <result column="credential_file_ids" property="credentialFileIds"/>
+        <result column="application_status" property="applicationStatus"/>
+        <result column="review_remark" property="reviewRemark"/>
+        <result column="reviewer_user_id" property="reviewerUserId"/>
+        <result column="review_time" property="reviewTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="SellerVerificationColumns">
+        application_id,
+        user_id,
+        real_name,
+        contact_phone,
+        qualification_desc,
+        credential_file_ids,
+        application_status,
+        review_remark,
+        reviewer_user_id,
+        review_time,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <insert id="InsertApplication" parameterType="com.xialuo.campusshare.entity.SellerVerificationApplicationEntity" useGeneratedKeys="true" keyProperty="applicationId" keyColumn="application_id">
+        INSERT INTO seller_verification_application_info (
+            user_id,
+            real_name,
+            contact_phone,
+            qualification_desc,
+            credential_file_ids,
+            application_status,
+            review_remark,
+            reviewer_user_id,
+            review_time,
+            create_time,
+            update_time,
+            deleted
+        ) VALUES (
+            #{userId},
+            #{realName},
+            #{contactPhone},
+            #{qualificationDesc},
+            #{credentialFileIds},
+            #{applicationStatus},
+            #{reviewRemark},
+            #{reviewerUserId},
+            #{reviewTime},
+            #{createTime},
+            #{updateTime},
+            #{deleted}
+        )
+    </insert>
+
+    <update id="UpdateApplication" parameterType="com.xialuo.campusshare.entity.SellerVerificationApplicationEntity">
+        UPDATE seller_verification_application_info
+        SET
+            user_id = #{userId},
+            real_name = #{realName},
+            contact_phone = #{contactPhone},
+            qualification_desc = #{qualificationDesc},
+            credential_file_ids = #{credentialFileIds},
+            application_status = #{applicationStatus},
+            review_remark = #{reviewRemark},
+            reviewer_user_id = #{reviewerUserId},
+            review_time = #{reviewTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE application_id = #{applicationId}
+    </update>
+
+    <select id="FindApplicationById" resultMap="SellerVerificationResultMap">
+        SELECT
+            <include refid="SellerVerificationColumns"/>
+        FROM seller_verification_application_info
+        WHERE application_id = #{applicationId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="FindLatestApplicationByUserId" resultMap="SellerVerificationResultMap">
+        SELECT
+            <include refid="SellerVerificationColumns"/>
+        FROM seller_verification_application_info
+        WHERE user_id = #{userId}
+          AND deleted = 0
+        ORDER BY create_time DESC, application_id DESC
+        LIMIT 1
+    </select>
+
+    <select id="FindPendingApplicationByUserId" resultMap="SellerVerificationResultMap">
+        SELECT
+            <include refid="SellerVerificationColumns"/>
+        FROM seller_verification_application_info
+        WHERE user_id = #{userId}
+          AND application_status = 'PENDING_REVIEW'
+          AND deleted = 0
+        ORDER BY create_time DESC, application_id DESC
+        LIMIT 1
+    </select>
+
+    <select id="ListPendingApplications" resultMap="SellerVerificationResultMap">
+        SELECT
+            <include refid="SellerVerificationColumns"/>
+        FROM seller_verification_application_info
+        WHERE application_status = 'PENDING_REVIEW'
+          AND deleted = 0
+        ORDER BY create_time ASC, application_id ASC
+    </select>
+</mapper>
+

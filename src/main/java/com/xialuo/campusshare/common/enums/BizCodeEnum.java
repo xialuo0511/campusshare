@@ -70,6 +70,16 @@ public enum BizCodeEnum {
     TEAM_RECRUITMENT_APPLICATION_STATUS_INVALID(1031, "招募申请状态非法"),
     /** 请求过于频繁 */
     RATE_LIMIT_EXCEEDED(1032, "请求过于频繁"),
+    /** 已具备卖家权限 */
+    SELLER_VERIFICATION_ALREADY_VERIFIED(1033, "已具备卖家权限"),
+    /** 卖家认证待审核申请已存在 */
+    SELLER_VERIFICATION_PENDING_EXISTS(1034, "卖家认证待审核申请已存在"),
+    /** 卖家认证申请不存在 */
+    SELLER_VERIFICATION_NOT_FOUND(1035, "卖家认证申请不存在"),
+    /** 卖家认证申请状态非法 */
+    SELLER_VERIFICATION_STATUS_INVALID(1036, "卖家认证申请状态非法"),
+    /** 未通过卖家认证 */
+    SELLER_VERIFICATION_REQUIRED(1037, "未通过卖家认证"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

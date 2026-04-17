@@ -30,6 +30,11 @@ public interface OrderService {
     OrderResponseDto CompleteOrder(Long orderId, Long currentUserId);
 
     /**
+     * 卖家确认线下交付
+     */
+    OrderResponseDto HandoverOrder(Long orderId, Long currentUserId);
+
+    /**
      * 关闭订单
      */
     OrderResponseDto CloseOrder(Long orderId, Long currentUserId, UserRoleEnum currentUserRole, String closeReason);

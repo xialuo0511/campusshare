@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.order.mapper;
 
 import com.xialuo.campusshare.entity.OrderEntity;
 import com.xialuo.campusshare.enums.OrderStatusEnum;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -53,5 +54,23 @@ public interface OrderMapper {
         @Param("currentUserId") Long currentUserId,
         @Param("isAdministrator") Boolean isAdministrator,
         @Param("orderStatus") OrderStatusEnum orderStatus
+    );
+
+    /**
+     * 统计买家已完成订单数
+     */
+    Long CountCompletedOrdersByProductAndBuyer(
+        @Param("productId") Long productId,
+        @Param("buyerUserId") Long buyerUserId
+    );
+
+    /**
+     * 关闭商品关联进行中订单
+     */
+    Integer CloseOngoingOrdersByProductId(
+        @Param("productId") Long productId,
+        @Param("closeReason") String closeReason,
+        @Param("closeTime") LocalDateTime closeTime,
+        @Param("updateTime") LocalDateTime updateTime
     );
 }

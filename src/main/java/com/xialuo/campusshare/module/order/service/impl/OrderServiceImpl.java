@@ -117,6 +117,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public OrderResponseDto HandoverOrder(Long orderId, Long currentUserId) {
+        OrderEntity orderEntity = GetOrderById(orderId);
+        if (!currentUserId.equals(orderEntity.GetSellerUserId())) {
+            throw new BusinessException(BizCodeEnum.ORDER_PERMISSION_DENIED, "仅卖家可确认线下交付");
+        }
+        ValidateTransition(orderEntity.GetOrderStatus(), "handover");
+
+        orderEntity.SetOrderStatus(OrderStatusEnum.PENDING_BUYER_CONFIRM);
+        orderEntity.SetUpdateTime(LocalDateTime.now());
+        orderMapper.UpdateOrder(orderEntity);
+        return BuildOrderResponse(orderEntity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public OrderResponseDto CloseOrder(Long orderId, Long currentUserId, UserRoleEnum currentUserRole, String closeReason) {
         OrderEntity orderEntity = GetOrderById(orderId);
         ValidateOrderParticipant(orderEntity, currentUserId, currentUserRole);
@@ -243,9 +258,13 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
             case "complete" -> {
-                if (currentStatus != OrderStatusEnum.PENDING_OFFLINE_TRADE
-                    && currentStatus != OrderStatusEnum.PENDING_BUYER_CONFIRM) {
+                if (currentStatus != OrderStatusEnum.PENDING_BUYER_CONFIRM) {
                     throw new BusinessException(BizCodeEnum.ORDER_STATUS_INVALID, "当前状态不允许完成");
+                }
+            }
+            case "handover" -> {
+                if (currentStatus != OrderStatusEnum.PENDING_OFFLINE_TRADE) {
+                    throw new BusinessException(BizCodeEnum.ORDER_STATUS_INVALID, "当前状态不允许确认交付");
                 }
             }
             case "close" -> {

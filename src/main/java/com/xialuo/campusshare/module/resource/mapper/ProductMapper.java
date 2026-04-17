@@ -81,6 +81,14 @@ public interface ProductMapper {
     );
 
     /**
+     * 强制下架商品
+     */
+    Integer ForceOfflineProduct(
+        @Param("productId") Long productId,
+        @Param("updateTime") LocalDateTime updateTime
+    );
+
+    /**
      * 锁定商品
      */
     Integer LockProductForOrder(@Param("productId") Long productId, @Param("updateTime") LocalDateTime updateTime);

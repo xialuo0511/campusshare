@@ -121,6 +121,9 @@
                 if (action === "confirm") {
                     await window.CampusShareApi.ConfirmOrder(orderId);
                     ShowSuccess(messageBar, `订单 #${orderId} 已确认`);
+                } else if (action === "handover") {
+                    await window.CampusShareApi.HandoverOrder(orderId);
+                    ShowSuccess(messageBar, `订单 #${orderId} 已转入待买家确认`);
                 } else if (action === "complete") {
                     await window.CampusShareApi.CompleteOrder(orderId);
                     ShowSuccess(messageBar, `订单 #${orderId} 已完成`);
@@ -328,7 +331,13 @@
                 `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">取消</button>`
             ].join("");
         }
-        if ((orderItem.orderStatus === "PENDING_OFFLINE_TRADE" || orderItem.orderStatus === "PENDING_BUYER_CONFIRM") && isBuyer) {
+        if (orderItem.orderStatus === "PENDING_OFFLINE_TRADE" && isSeller) {
+            return [
+                `<button data-order-action="handover" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">线下已交付</button>`,
+                `<button data-order-action="close" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">关闭</button>`
+            ].join("");
+        }
+        if (orderItem.orderStatus === "PENDING_BUYER_CONFIRM" && isBuyer) {
             return [
                 `<button data-order-action="complete" data-order-id="${orderItem.orderId}" class="${buttonClass} text-secondary">完成</button>`,
                 `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">取消</button>`

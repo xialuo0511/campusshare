@@ -323,7 +323,7 @@
                     await window.CampusShareApi.ReviewReport(
                         taskId,
                         approved,
-                        approved ? "保留" : "驳回",
+                        "",
                         approved ? "后台快速通过" : "后台快速驳回"
                     );
                 } else if (taskType === "USER") {

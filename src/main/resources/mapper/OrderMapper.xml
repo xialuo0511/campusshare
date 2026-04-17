@@ -144,4 +144,29 @@
             AND (buyer_user_id = #{currentUserId} OR seller_user_id = #{currentUserId})
         </if>
     </select>
+
+    <select id="CountCompletedOrdersByProductAndBuyer" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM order_info
+        WHERE deleted = 0
+          AND product_id = #{productId}
+          AND buyer_user_id = #{buyerUserId}
+          AND order_status = 'COMPLETED'
+    </select>
+
+    <update id="CloseOngoingOrdersByProductId">
+        UPDATE order_info
+        SET
+            order_status = 'CLOSED',
+            close_reason = #{closeReason},
+            close_time = #{closeTime},
+            update_time = #{updateTime}
+        WHERE deleted = 0
+          AND product_id = #{productId}
+          AND order_status IN (
+            'PENDING_SELLER_CONFIRM',
+            'PENDING_OFFLINE_TRADE',
+            'PENDING_BUYER_CONFIRM'
+          )
+    </update>
 </mapper>

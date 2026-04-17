@@ -2,12 +2,19 @@ package com.xialuo.campusshare.module.governance.service.impl;
 
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
+import com.xialuo.campusshare.entity.CommentEntity;
+import com.xialuo.campusshare.entity.ProductEntity;
 import com.xialuo.campusshare.entity.ReportEntity;
+import com.xialuo.campusshare.entity.StudyMaterialEntity;
+import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.NotificationTypeEnum;
+import com.xialuo.campusshare.enums.ResourceStatusEnum;
 import com.xialuo.campusshare.enums.ReportStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
+import com.xialuo.campusshare.enums.UserStatusEnum;
 import com.xialuo.campusshare.module.governance.dto.ReportResponseDto;
 import com.xialuo.campusshare.module.governance.dto.ReportReviewRequestDto;
+import com.xialuo.campusshare.module.governance.enums.ReportDispositionActionEnum;
 import com.xialuo.campusshare.module.governance.dto.SubmitReportRequestDto;
 import com.xialuo.campusshare.module.governance.enums.ReportTargetTypeEnum;
 import com.xialuo.campusshare.module.governance.mapper.CommentMapper;
@@ -15,6 +22,7 @@ import com.xialuo.campusshare.module.governance.mapper.ReportMapper;
 import com.xialuo.campusshare.module.governance.service.ReportService;
 import com.xialuo.campusshare.module.material.mapper.StudyMaterialMapper;
 import com.xialuo.campusshare.module.notification.service.NotificationService;
+import com.xialuo.campusshare.module.order.mapper.OrderMapper;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
 import com.xialuo.campusshare.module.user.mapper.UserMapper;
 import java.time.LocalDateTime;
@@ -50,6 +58,8 @@ public class ReportServiceImpl implements ReportService {
     private final ProductMapper productMapper;
     /** 资料Mapper */
     private final StudyMaterialMapper studyMaterialMapper;
+    /** 订单Mapper */
+    private final OrderMapper orderMapper;
 
     public ReportServiceImpl(
         ReportMapper reportMapper,
@@ -57,7 +67,8 @@ public class ReportServiceImpl implements ReportService {
         NotificationService notificationService,
         UserMapper userMapper,
         ProductMapper productMapper,
-        StudyMaterialMapper studyMaterialMapper
+        StudyMaterialMapper studyMaterialMapper,
+        OrderMapper orderMapper
     ) {
         this.reportMapper = reportMapper;
         this.commentMapper = commentMapper;
@@ -65,6 +76,7 @@ public class ReportServiceImpl implements ReportService {
         this.userMapper = userMapper;
         this.productMapper = productMapper;
         this.studyMaterialMapper = studyMaterialMapper;
+        this.orderMapper = orderMapper;
     }
 
     @Override
@@ -140,10 +152,14 @@ public class ReportServiceImpl implements ReportService {
         ReportStatusEnum reviewResultStatus = Boolean.TRUE.equals(requestDto.GetApproved())
             ? ReportStatusEnum.APPROVED
             : ReportStatusEnum.REJECTED;
+        ReportDispositionActionEnum dispositionActionEnum = ResolveDispositionAction(reportEntity, requestDto);
+        if (reviewResultStatus == ReportStatusEnum.APPROVED) {
+            ExecuteDispositionAction(reportEntity, dispositionActionEnum);
+        }
 
         reportEntity.SetReportStatus(ReportStatusEnum.CLOSED);
         reportEntity.SetReviewResultStatus(reviewResultStatus);
-        reportEntity.SetDispositionAction(requestDto.GetDispositionAction());
+        reportEntity.SetDispositionAction(dispositionActionEnum.name());
         reportEntity.SetReviewerAdminId(adminUserId);
         reportEntity.SetReviewRemark(requestDto.GetReviewRemark());
         reportEntity.SetReviewTime(LocalDateTime.now());
@@ -326,6 +342,140 @@ public class ReportServiceImpl implements ReportService {
             return "举报已核实并完成处置";
         }
         return "举报已处理，当前结论为驳回";
+    }
+
+    /**
+     * 解析处置动作
+     */
+    private ReportDispositionActionEnum ResolveDispositionAction(
+        ReportEntity reportEntity,
+        ReportReviewRequestDto requestDto
+    ) {
+        if (!Boolean.TRUE.equals(requestDto.GetApproved())) {
+            return ReportDispositionActionEnum.NONE;
+        }
+        ReportDispositionActionEnum dispositionActionEnum = ReportDispositionActionEnum.ResolveFromText(
+            requestDto.GetDispositionAction()
+        );
+        if (dispositionActionEnum == null) {
+            dispositionActionEnum = ResolveDefaultDispositionAction(reportEntity.GetTargetType());
+        }
+        ValidateDispositionAction(reportEntity.GetTargetType(), dispositionActionEnum);
+        return dispositionActionEnum;
+    }
+
+    /**
+     * 执行处置动作
+     */
+    private void ExecuteDispositionAction(ReportEntity reportEntity, ReportDispositionActionEnum dispositionActionEnum) {
+        switch (dispositionActionEnum) {
+            case NONE, KEEP -> {
+                return;
+            }
+            case HIDE_COMMENT -> HideComment(reportEntity.GetTargetId());
+            case OFFLINE_RESOURCE -> OfflineResource(reportEntity.GetTargetId());
+            case FREEZE_USER -> FreezeUser(reportEntity.GetTargetId());
+            default -> throw new BusinessException(BizCodeEnum.REPORT_DISPOSITION_ACTION_INVALID, "不支持的处置动作");
+        }
+    }
+
+    /**
+     * 默认处置动作
+     */
+    private ReportDispositionActionEnum ResolveDefaultDispositionAction(ReportTargetTypeEnum targetType) {
+        return switch (targetType) {
+            case COMMENT -> ReportDispositionActionEnum.HIDE_COMMENT;
+            case USER -> ReportDispositionActionEnum.FREEZE_USER;
+            case RESOURCE -> ReportDispositionActionEnum.OFFLINE_RESOURCE;
+        };
+    }
+
+    /**
+     * 校验动作与对象匹配
+     */
+    private void ValidateDispositionAction(ReportTargetTypeEnum targetType, ReportDispositionActionEnum dispositionActionEnum) {
+        if (dispositionActionEnum == ReportDispositionActionEnum.NONE || dispositionActionEnum == ReportDispositionActionEnum.KEEP) {
+            return;
+        }
+        boolean matched = switch (targetType) {
+            case COMMENT -> dispositionActionEnum == ReportDispositionActionEnum.HIDE_COMMENT;
+            case USER -> dispositionActionEnum == ReportDispositionActionEnum.FREEZE_USER;
+            case RESOURCE -> dispositionActionEnum == ReportDispositionActionEnum.OFFLINE_RESOURCE;
+        };
+        if (!matched) {
+            throw new BusinessException(BizCodeEnum.REPORT_DISPOSITION_ACTION_INVALID, "处置动作与举报对象不匹配");
+        }
+    }
+
+    /**
+     * 隐藏评论
+     */
+    private void HideComment(Long commentId) {
+        Integer updatedRows = commentMapper.HideComment(commentId, LocalDateTime.now());
+        if (updatedRows != null && updatedRows > 0) {
+            return;
+        }
+        CommentEntity commentEntity = commentMapper.FindCommentById(commentId);
+        if (commentEntity == null) {
+            throw new BusinessException(BizCodeEnum.RESOURCE_NOT_FOUND, "评论不存在");
+        }
+        if (!Boolean.TRUE.equals(commentEntity.GetHiddenFlag())) {
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "隐藏评论失败");
+        }
+    }
+
+    /**
+     * 下架资源
+     */
+    private void OfflineResource(Long targetId) {
+        if (TryOfflineProduct(targetId)) {
+            return;
+        }
+        StudyMaterialEntity materialEntity = studyMaterialMapper.FindMaterialById(targetId);
+        if (materialEntity == null) {
+            throw new BusinessException(BizCodeEnum.RESOURCE_NOT_FOUND, "资源不存在");
+        }
+        if (materialEntity.GetMaterialStatus() != ResourceStatusEnum.OFFLINE
+            && materialEntity.GetMaterialStatus() != ResourceStatusEnum.CLOSED) {
+            materialEntity.SetMaterialStatus(ResourceStatusEnum.OFFLINE);
+            materialEntity.SetReviewRemark("因举报处置下架");
+            materialEntity.SetLastReviewTime(LocalDateTime.now());
+            materialEntity.SetUpdateTime(LocalDateTime.now());
+            studyMaterialMapper.UpdateMaterial(materialEntity);
+        }
+    }
+
+    /**
+     * 尝试下架商品
+     */
+    private boolean TryOfflineProduct(Long productId) {
+        ProductEntity productEntity = productMapper.FindProductById(productId);
+        if (productEntity == null) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        orderMapper.CloseOngoingOrdersByProductId(productId, "因举报处置关闭", now, now);
+        productMapper.ForceOfflineProduct(productId, now);
+        return true;
+    }
+
+    /**
+     * 冻结用户
+     */
+    private void FreezeUser(Long targetUserId) {
+        UserEntity userEntity = userMapper.FindUserById(targetUserId);
+        if (userEntity == null) {
+            throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
+        }
+        if (userEntity.GetUserRole() == UserRoleEnum.ADMINISTRATOR) {
+            throw new BusinessException(BizCodeEnum.REPORT_DISPOSITION_ACTION_INVALID, "管理员账号不支持举报冻结");
+        }
+        if (userEntity.GetUserStatus() == UserStatusEnum.FROZEN) {
+            return;
+        }
+        userEntity.SetUserStatus(UserStatusEnum.FROZEN);
+        userEntity.SetUpdateTime(LocalDateTime.now());
+        userMapper.UpdateUser(userEntity);
     }
 
     /**

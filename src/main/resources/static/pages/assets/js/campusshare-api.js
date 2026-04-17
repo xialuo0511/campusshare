@@ -1424,6 +1424,9 @@
         ConfirmOrder(orderId) {
             return RequestApi(`/api/v1/orders/${orderId}/confirm`, "POST", {}, true);
         },
+        HandoverOrder(orderId) {
+            return RequestApi(`/api/v1/orders/${orderId}/handover`, "POST", {}, true);
+        },
         CompleteOrder(orderId) {
             return RequestApi(`/api/v1/orders/${orderId}/complete`, "POST", {}, true);
         },

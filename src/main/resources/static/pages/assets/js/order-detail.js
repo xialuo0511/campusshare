@@ -200,7 +200,21 @@
             return;
         }
 
-        if ((detailResult.orderStatus === "PENDING_OFFLINE_TRADE" || detailResult.orderStatus === "PENDING_BUYER_CONFIRM") && isBuyer) {
+        if (detailResult.orderStatus === "PENDING_OFFLINE_TRADE" && isSeller) {
+            BindActionButton(primaryButton, "线下已交付", async function HandleHandoverOrder() {
+                await window.CampusShareApi.HandoverOrder(detailResult.orderId);
+                ShowSuccess(messageBar, "订单已转入待买家确认");
+                ReloadCurrentPage(detailResult.orderId);
+            });
+            BindActionButton(dangerButton, "关闭订单", async function HandleCloseOrder() {
+                await window.CampusShareApi.CloseOrder(detailResult.orderId, "卖家手动关闭");
+                ShowSuccess(messageBar, "订单已关闭");
+                ReloadCurrentPage(detailResult.orderId);
+            }, true);
+            return;
+        }
+
+        if (detailResult.orderStatus === "PENDING_BUYER_CONFIRM" && isBuyer) {
             BindActionButton(primaryButton, "确认完成", async function HandleCompleteOrder() {
                 await window.CampusShareApi.CompleteOrder(detailResult.orderId);
                 ShowSuccess(messageBar, "订单已完成");

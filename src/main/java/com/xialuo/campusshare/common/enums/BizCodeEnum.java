@@ -80,6 +80,10 @@ public enum BizCodeEnum {
     SELLER_VERIFICATION_STATUS_INVALID(1036, "卖家认证申请状态非法"),
     /** 未通过卖家认证 */
     SELLER_VERIFICATION_REQUIRED(1037, "未通过卖家认证"),
+    /** 评论权限不足 */
+    COMMENT_PERMISSION_DENIED(1038, "评论权限不足"),
+    /** 举报处置动作非法 */
+    REPORT_DISPOSITION_ACTION_INVALID(1039, "举报处置动作非法"),
     /** 系统异常 */
     SYSTEM_ERROR(1999, "系统异常");
 

@@ -122,6 +122,19 @@ public class OrderController {
     }
 
     /**
+     * 卖家确认线下交付
+     */
+    @PostMapping("/{orderId}/handover")
+    public ApiResponse<OrderResponseDto> HandoverOrder(
+        @PathVariable("orderId") Long orderId,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        OrderResponseDto responseDto = orderService.HandoverOrder(orderId, currentUserId);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 关闭订单
      */
     @PostMapping("/{orderId}/close")

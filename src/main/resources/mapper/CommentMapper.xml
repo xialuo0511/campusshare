@@ -4,10 +4,51 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xialuo.campusshare.module.governance.mapper.CommentMapper">
 
+    <resultMap id="CommentResultMap" type="com.xialuo.campusshare.entity.CommentEntity">
+        <id column="comment_id" property="commentId"/>
+        <result column="resource_id" property="resourceId"/>
+        <result column="from_user_id" property="fromUserId"/>
+        <result column="to_user_id" property="toUserId"/>
+        <result column="score" property="score"/>
+        <result column="content" property="content"/>
+        <result column="hidden_flag" property="hiddenFlag"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <select id="FindCommentById" resultMap="CommentResultMap">
+        SELECT
+            comment_id,
+            resource_id,
+            from_user_id,
+            to_user_id,
+            score,
+            content,
+            hidden_flag,
+            create_time,
+            update_time,
+            deleted
+        FROM comment_info
+        WHERE comment_id = #{commentId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
     <select id="CountCommentById" resultType="java.lang.Long">
         SELECT COUNT(1)
         FROM comment_info
         WHERE comment_id = #{commentId}
           AND deleted = 0
     </select>
+
+    <update id="HideComment">
+        UPDATE comment_info
+        SET
+            hidden_flag = 1,
+            update_time = #{updateTime}
+        WHERE comment_id = #{commentId}
+          AND deleted = 0
+          AND hidden_flag = 0
+    </update>
 </mapper>

@@ -6,6 +6,7 @@ import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.CommentEntity;
 import com.xialuo.campusshare.entity.ProductEntity;
 import com.xialuo.campusshare.entity.UserEntity;
+import com.xialuo.campusshare.module.order.mapper.OrderMapper;
 import com.xialuo.campusshare.module.resource.dto.CreateProductCommentRequestDto;
 import com.xialuo.campusshare.module.resource.dto.ProductCommentListResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductCommentResponseDto;
@@ -28,16 +29,20 @@ public class ProductCommentServiceImpl implements ProductCommentService {
     private final ProductCommentMapper productCommentMapper;
     /** 商品Mapper */
     private final ProductMapper productMapper;
+    /** 订单Mapper */
+    private final OrderMapper orderMapper;
     /** 用户Mapper */
     private final UserMapper userMapper;
 
     public ProductCommentServiceImpl(
         ProductCommentMapper productCommentMapper,
         ProductMapper productMapper,
+        OrderMapper orderMapper,
         UserMapper userMapper
     ) {
         this.productCommentMapper = productCommentMapper;
         this.productMapper = productMapper;
+        this.orderMapper = orderMapper;
         this.userMapper = userMapper;
     }
 
@@ -75,6 +80,13 @@ public class ProductCommentServiceImpl implements ProductCommentService {
         ProductEntity productEntity = GetReadableProduct(productId);
         if (currentUserId.equals(productEntity.GetSellerUserId())) {
             throw new BusinessException(BizCodeEnum.BUSINESS_CONFLICT, "卖家不能评论自己的商品");
+        }
+        Long completedOrderCount = orderMapper.CountCompletedOrdersByProductAndBuyer(
+            productEntity.GetProductId(),
+            currentUserId
+        );
+        if (completedOrderCount == null || completedOrderCount <= 0) {
+            throw new BusinessException(BizCodeEnum.COMMENT_PERMISSION_DENIED, "仅已完成交易的买家可评论");
         }
 
         CommentEntity commentEntity = new CommentEntity();

@@ -56,10 +56,10 @@
                     await window.CampusShareApi.ReviewUser(itemId, false, "批量审核驳回");
                     ShowSuccess(messageBar, "用户已驳回");
                 } else if (action === "approve-report" && itemType === "REPORT") {
-                    await window.CampusShareApi.ReviewReport(itemId, true, "WARN", "批量审核通过");
+                    await window.CampusShareApi.ReviewReport(itemId, true, "", "批量审核通过");
                     ShowSuccess(messageBar, "举报已处理");
                 } else if (action === "reject-report" && itemType === "REPORT") {
-                    await window.CampusShareApi.ReviewReport(itemId, false, "IGNORE", "批量审核驳回");
+                    await window.CampusShareApi.ReviewReport(itemId, false, "", "批量审核驳回");
                     ShowSuccess(messageBar, "举报已驳回");
                 } else if (action === "approve-application" && itemType === "TEAM_APPLICATION") {
                     await window.CampusShareApi.ApproveTeamRecruitmentApplication(recruitmentId, itemId, "批量审核通过");

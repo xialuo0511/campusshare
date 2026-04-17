@@ -127,6 +127,49 @@
         ORDER BY create_time DESC
     </select>
 
+    <select id="ListUsersByFilterPaged" resultMap="UserResultMap">
+        SELECT
+            <include refid="UserColumns"/>
+        FROM user_info
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (
+                account LIKE CONCAT('%', #{keyword}, '%')
+                OR display_name LIKE CONCAT('%', #{keyword}, '%')
+                OR email LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="userStatus != null and userStatus != ''">
+            AND user_status = #{userStatus}
+        </if>
+        <if test="userRole != null and userRole != ''">
+            AND user_role = #{userRole}
+        </if>
+        ORDER BY create_time DESC, user_id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="CountUsersByFilter" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM user_info
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (
+                account LIKE CONCAT('%', #{keyword}, '%')
+                OR display_name LIKE CONCAT('%', #{keyword}, '%')
+                OR email LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="userStatus != null and userStatus != ''">
+            AND user_status = #{userStatus}
+        </if>
+        <if test="userRole != null and userRole != ''">
+            AND user_role = #{userRole}
+        </if>
+    </select>
+
     <update id="IncreaseUserPointBalance">
         UPDATE user_info
         SET

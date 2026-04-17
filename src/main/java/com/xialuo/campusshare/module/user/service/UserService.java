@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.user.service;
 
 import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
+import com.xialuo.campusshare.module.user.dto.UserProfilePageResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileUpdateRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterCodeRequestDto;
@@ -55,4 +56,25 @@ public interface UserService {
      * 查询待审核用户
      */
     List<UserProfileResponseDto> ListPendingReviewUsers();
+
+    /**
+     * 分页查询用户
+     */
+    UserProfilePageResponseDto ListUsers(
+        Integer pageNo,
+        Integer pageSize,
+        String keyword,
+        String userStatus,
+        String userRole
+    );
+
+    /**
+     * 冻结用户
+     */
+    UserProfileResponseDto FreezeUser(Long userId, Long adminUserId);
+
+    /**
+     * 解冻用户
+     */
+    UserProfileResponseDto UnfreezeUser(Long userId);
 }

@@ -46,6 +46,7 @@
         await InitializeSessionView(view);
         BindRecommendedProductClick(view.productGridNode);
         BindMaterialDownload(view, view.materialListNode);
+        BindMaterialFavorite(view, view.materialListNode);
         RenderLoadingState(view);
 
         LoadOverviewData(view);
@@ -180,6 +181,42 @@
     }
 
     /**
+     * 资料收藏动作
+     */
+    function BindMaterialFavorite(view, materialListNode) {
+        if (!materialListNode) {
+            return;
+        }
+        materialListNode.addEventListener("click", async function HandleMaterialFavorite(event) {
+            const buttonNode = event.target.closest("button[data-material-favorite-id]");
+            if (!buttonNode) {
+                return;
+            }
+            const materialId = buttonNode.getAttribute("data-material-favorite-id");
+            if (!materialId) {
+                return;
+            }
+            if (!window.CampusShareApi.GetAuthToken()) {
+                ShowError(view.messageBarNode, "请先登录后再收藏资料");
+                window.setTimeout(function RedirectLoginForFavorite() {
+                    window.CampusShareApi.RedirectToAuthPage("/pages/market_overview.html");
+                }, 600);
+                return;
+            }
+            buttonNode.disabled = true;
+            try {
+                const favoriteResult = await window.CampusShareApi.ToggleMaterialFavorite(materialId);
+                ApplyMaterialFavoriteButton(buttonNode, !!(favoriteResult && favoriteResult.favorited));
+                ShowSuccess(view.messageBarNode, favoriteResult && favoriteResult.favorited ? "已收藏资料" : "已取消收藏");
+            } catch (error) {
+                ShowError(view.messageBarNode, GetErrorMessage(error, "资料收藏操作失败"));
+            } finally {
+                buttonNode.disabled = false;
+            }
+        });
+    }
+
+    /**
      * 渲染初始加载态
      */
     function RenderLoadingState(view) {
@@ -225,6 +262,7 @@
             RenderRecommendedProducts(view.productGridNode, recommendedProductList);
             RenderFeaturedMaterials(view.materialListNode, featuredMaterialList);
             RenderRecruitmentHighlights(view.recruitmentListNode, recruitmentList);
+            await RefreshMaterialFavoriteState(view, view.materialListNode);
 
             if (view.recommendedSummaryNode) {
                 view.recommendedSummaryNode.textContent = `当前在架商品 ${SafeNumber(overviewResult.publishedProductCount)} 件，资料 ${SafeNumber(overviewResult.publishedMaterialCount)} 份`;
@@ -341,10 +379,66 @@
                 `<p class="text-[10px] text-outline truncate">由 ${EscapeHtml(item.uploaderDisplayName || "匿名用户")} 分享 · ${EscapeHtml(FormatFileSize(item.fileSizeBytes))} · ${EscapeHtml(String(SafeNumber(item.downloadCount)))} 次下载</p>`,
                 "</div>",
                 "</div>",
-                `<button type="button" data-material-id="${EscapeHtml(String(item.materialId || ""))}" class="material-symbols-outlined text-outline hover:text-primary transition-colors">download</button>`,
+                "<div class=\"flex items-center gap-2\">",
+                `<button type="button" data-material-id="${EscapeHtml(String(item.materialId || ""))}" class="material-symbols-outlined text-outline hover:text-primary transition-colors" title="下载">download</button>`,
+                `<button type="button" data-material-favorite-id="${EscapeHtml(String(item.materialId || ""))}" class="material-symbols-outlined text-outline hover:text-primary transition-colors" title="收藏">favorite</button>`,
+                "</div>",
                 "</div>"
             ].join("");
         }).join("");
+    }
+
+    /**
+     * 同步资料收藏状态
+     */
+    async function RefreshMaterialFavoriteState(view, materialListNode) {
+        if (!materialListNode) {
+            return;
+        }
+        const favoriteButtonList = Array.from(materialListNode.querySelectorAll("button[data-material-favorite-id]"));
+        if (!favoriteButtonList.length) {
+            return;
+        }
+        if (!window.CampusShareApi.GetAuthToken()) {
+            favoriteButtonList.forEach(function ResetFavoriteState(buttonNode) {
+                ApplyMaterialFavoriteButton(buttonNode, false);
+            });
+            return;
+        }
+        await Promise.all(favoriteButtonList.map(async function SyncFavoriteState(buttonNode) {
+            const materialId = buttonNode.getAttribute("data-material-favorite-id");
+            if (!materialId) {
+                ApplyMaterialFavoriteButton(buttonNode, false);
+                return;
+            }
+            try {
+                const favoriteState = await window.CampusShareApi.GetMaterialFavoriteState(materialId);
+                ApplyMaterialFavoriteButton(buttonNode, !!(favoriteState && favoriteState.favorited));
+            } catch (error) {
+                ApplyMaterialFavoriteButton(buttonNode, false);
+                if (view && view.messageBarNode) {
+                    ShowError(view.messageBarNode, GetErrorMessage(error, "收藏状态同步失败"));
+                }
+            }
+        }));
+    }
+
+    /**
+     * 应用资料收藏按钮样式
+     */
+    function ApplyMaterialFavoriteButton(buttonNode, favorited) {
+        if (!buttonNode) {
+            return;
+        }
+        if (favorited) {
+            buttonNode.classList.add("text-primary");
+            buttonNode.style.fontVariationSettings = "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24";
+            buttonNode.setAttribute("title", "已收藏");
+            return;
+        }
+        buttonNode.classList.remove("text-primary");
+        buttonNode.style.fontVariationSettings = "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+        buttonNode.setAttribute("title", "收藏");
     }
 
     /**

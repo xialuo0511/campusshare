@@ -42,6 +42,26 @@ public interface UserMapper {
     List<UserEntity> ListPendingReviewUsers();
 
     /**
+     * 分页查询用户
+     */
+    List<UserEntity> ListUsersByFilterPaged(
+        @Param("keyword") String keyword,
+        @Param("userStatus") String userStatus,
+        @Param("userRole") String userRole,
+        @Param("offset") Integer offset,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 统计用户数量
+     */
+    Long CountUsersByFilter(
+        @Param("keyword") String keyword,
+        @Param("userStatus") String userStatus,
+        @Param("userRole") String userRole
+    );
+
+    /**
      * 增加用户积分
      */
     Integer IncreaseUserPointBalance(

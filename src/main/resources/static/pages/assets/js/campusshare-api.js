@@ -1400,11 +1400,17 @@
         ToggleProductFavorite(productId) {
             return RequestApi(`/api/v1/favorites/products/${productId}/toggle`, "POST", {}, true);
         },
+        ListMyFavoriteProducts(pageNo, pageSize) {
+            return RequestApi(`/api/v1/favorites/products/my?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
+        },
         GetMaterialFavoriteState(materialId) {
             return RequestApi(`/api/v1/favorites/materials/${materialId}`, "GET", null, true);
         },
         ToggleMaterialFavorite(materialId) {
             return RequestApi(`/api/v1/favorites/materials/${materialId}/toggle`, "POST", {}, true);
+        },
+        ListMyFavoriteMaterials(pageNo, pageSize) {
+            return RequestApi(`/api/v1/favorites/materials/my?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
         },
         GetMarketOverview() {
             return RequestApi("/api/v1/market/overview", "GET", null, false);
@@ -1507,6 +1513,26 @@
         GetMyLatestSellerVerification() {
             return RequestApi("/api/v1/users/seller-verifications/me/latest", "GET", null, true);
         },
+        ListUsersByAdmin(pageNo, pageSize, keyword, userStatus, userRole) {
+            const queryList = [];
+            if (pageNo) {
+                queryList.push(`pageNo=${encodeURIComponent(String(pageNo))}`);
+            }
+            if (pageSize) {
+                queryList.push(`pageSize=${encodeURIComponent(String(pageSize))}`);
+            }
+            if (keyword) {
+                queryList.push(`keyword=${encodeURIComponent(String(keyword))}`);
+            }
+            if (userStatus) {
+                queryList.push(`userStatus=${encodeURIComponent(String(userStatus))}`);
+            }
+            if (userRole) {
+                queryList.push(`userRole=${encodeURIComponent(String(userRole))}`);
+            }
+            const queryText = queryList.length ? `?${queryList.join("&")}` : "";
+            return RequestApi(`/api/v1/admin/users${queryText}`, "GET", null, true);
+        },
         ListPendingUsers() {
             return RequestApi("/api/v1/admin/users/pending", "GET", null, true);
         },
@@ -1517,6 +1543,12 @@
                 { approved: !!approved, reviewRemark: reviewRemark || "" },
                 true
             );
+        },
+        FreezeUserByAdmin(userId) {
+            return RequestApi(`/api/v1/admin/users/${userId}/freeze`, "POST", {}, true);
+        },
+        UnfreezeUserByAdmin(userId) {
+            return RequestApi(`/api/v1/admin/users/${userId}/unfreeze`, "POST", {}, true);
         },
         ListPendingSellerVerifications() {
             return RequestApi("/api/v1/admin/users/seller-verifications/pending", "GET", null, true);

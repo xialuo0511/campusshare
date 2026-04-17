@@ -5,6 +5,7 @@ import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.module.user.dto.SellerVerificationApplicationResponseDto;
 import com.xialuo.campusshare.module.user.dto.SellerVerificationReviewRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserProfilePageResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserReviewRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserReviewResponseDto;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -49,6 +51,28 @@ public class AdminUserController {
     }
 
     /**
+     * 分页查询用户
+     */
+    @GetMapping
+    public ApiResponse<UserProfilePageResponseDto> ListUsers(
+        @RequestParam(value = "pageNo", required = false) Integer pageNo,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @RequestParam(value = "keyword", required = false) String keyword,
+        @RequestParam(value = "userStatus", required = false) String userStatus,
+        @RequestParam(value = "userRole", required = false) String userRole,
+        HttpServletRequest httpServletRequest
+    ) {
+        UserProfilePageResponseDto responseDto = userService.ListUsers(
+            pageNo,
+            pageSize,
+            keyword,
+            userStatus,
+            userRole
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 审核用户
      */
     @PostMapping("/{userId}/review")
@@ -60,6 +84,33 @@ public class AdminUserController {
         Long adminUserId = GetCurrentUserId(httpServletRequest);
         requestDto.SetUserId(userId);
         UserReviewResponseDto responseDto = userService.ReviewUser(requestDto, adminUserId);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 冻结用户
+     */
+    @PostMapping("/{userId}/freeze")
+    public ApiResponse<UserProfileResponseDto> FreezeUser(
+        @PathVariable("userId") Long userId,
+        HttpServletRequest httpServletRequest
+    ) {
+        UserProfileResponseDto responseDto = userService.FreezeUser(
+            userId,
+            GetCurrentUserId(httpServletRequest)
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 解冻用户
+     */
+    @PostMapping("/{userId}/unfreeze")
+    public ApiResponse<UserProfileResponseDto> UnfreezeUser(
+        @PathVariable("userId") Long userId,
+        HttpServletRequest httpServletRequest
+    ) {
+        UserProfileResponseDto responseDto = userService.UnfreezeUser(userId);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 

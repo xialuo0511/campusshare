@@ -4,6 +4,8 @@ import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.module.material.dto.MaterialFavoriteResponseDto;
+import com.xialuo.campusshare.module.material.dto.MaterialListResponseDto;
+import com.xialuo.campusshare.module.resource.dto.ProductListResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductFavoriteResponseDto;
 import com.xialuo.campusshare.module.resource.service.FavoriteService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -75,6 +78,34 @@ public class FavoriteController {
     ) {
         Long currentUserId = GetCurrentUserId(httpServletRequest);
         MaterialFavoriteResponseDto responseDto = favoriteService.ToggleMaterialFavorite(materialId, currentUserId);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 查询我的商品收藏
+     */
+    @GetMapping("/products/my")
+    public ApiResponse<ProductListResponseDto> ListMyProductFavorites(
+        @RequestParam(value = "pageNo", required = false) Integer pageNo,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        ProductListResponseDto responseDto = favoriteService.ListMyProductFavorites(currentUserId, pageNo, pageSize);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 查询我的资料收藏
+     */
+    @GetMapping("/materials/my")
+    public ApiResponse<MaterialListResponseDto> ListMyMaterialFavorites(
+        @RequestParam(value = "pageNo", required = false) Integer pageNo,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        MaterialListResponseDto responseDto = favoriteService.ListMyMaterialFavorites(currentUserId, pageNo, pageSize);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 

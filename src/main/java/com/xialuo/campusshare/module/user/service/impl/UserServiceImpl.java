@@ -1,5 +1,6 @@
 package com.xialuo.campusshare.module.user.service.impl;
 
+import com.xialuo.campusshare.common.api.PageQuery;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.UserEntity;
@@ -7,6 +8,7 @@ import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.enums.UserStatusEnum;
 import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
+import com.xialuo.campusshare.module.user.dto.UserProfilePageResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileUpdateRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserRegisterCodeRequestDto;
@@ -248,6 +250,80 @@ public class UserServiceImpl implements UserService {
             .toList();
     }
 
+    @Override
+    public UserProfilePageResponseDto ListUsers(
+        Integer pageNo,
+        Integer pageSize,
+        String keyword,
+        String userStatus,
+        String userRole
+    ) {
+        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer resolvedPageSize = ResolvePageSize(pageSize);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
+        String resolvedKeyword = NormalizeKeyword(keyword);
+        String resolvedUserStatus = ResolveUserStatus(userStatus);
+        String resolvedUserRole = ResolveUserRole(userRole);
+
+        List<UserProfileResponseDto> userList = userMapper.ListUsersByFilterPaged(
+            resolvedKeyword,
+            resolvedUserStatus,
+            resolvedUserRole,
+            offset,
+            resolvedPageSize
+        ).stream().map(this::BuildUserProfileResponse).toList();
+        Long totalCount = userMapper.CountUsersByFilter(
+            resolvedKeyword,
+            resolvedUserStatus,
+            resolvedUserRole
+        );
+
+        UserProfilePageResponseDto responseDto = new UserProfilePageResponseDto();
+        responseDto.SetPageNo(resolvedPageNo);
+        responseDto.SetPageSize(resolvedPageSize);
+        responseDto.SetTotalCount(totalCount == null ? 0L : totalCount);
+        responseDto.SetUserList(userList);
+        return responseDto;
+    }
+
+    @Override
+    public UserProfileResponseDto FreezeUser(Long userId, Long adminUserId) {
+        UserEntity userEntity = userMapper.FindUserById(userId);
+        if (userEntity == null) {
+            throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
+        }
+        if (adminUserId != null && adminUserId.equals(userId)) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "不支持冻结当前登录管理员");
+        }
+        if (userEntity.GetUserRole() == UserRoleEnum.ADMINISTRATOR) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "管理员账号不支持冻结");
+        }
+        if (userEntity.GetUserStatus() != UserStatusEnum.FROZEN) {
+            userEntity.SetUserStatus(UserStatusEnum.FROZEN);
+            userEntity.SetUpdateTime(LocalDateTime.now());
+            userMapper.UpdateUser(userEntity);
+        }
+        return BuildUserProfileResponse(userEntity);
+    }
+
+    @Override
+    public UserProfileResponseDto UnfreezeUser(Long userId) {
+        UserEntity userEntity = userMapper.FindUserById(userId);
+        if (userEntity == null) {
+            throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
+        }
+        if (userEntity.GetUserRole() == UserRoleEnum.ADMINISTRATOR) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "管理员账号无需解冻");
+        }
+        if (userEntity.GetUserStatus() != UserStatusEnum.FROZEN) {
+            throw new BusinessException(BizCodeEnum.BUSINESS_CONFLICT, "当前账号非冻结状态");
+        }
+        userEntity.SetUserStatus(UserStatusEnum.ACTIVE);
+        userEntity.SetUpdateTime(LocalDateTime.now());
+        userMapper.UpdateUser(userEntity);
+        return BuildUserProfileResponse(userEntity);
+    }
+
     /**
      * 校验发送频率
      */
@@ -360,6 +436,67 @@ public class UserServiceImpl implements UserService {
      */
     private String NormalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * 解析页码
+     */
+    private Integer ResolvePageNo(Integer pageNo) {
+        if (pageNo == null || pageNo < 1) {
+            return PageQuery.DEFAULT_PAGE_NO;
+        }
+        return pageNo;
+    }
+
+    /**
+     * 解析页大小
+     */
+    private Integer ResolvePageSize(Integer pageSize) {
+        if (pageSize == null || pageSize < 1) {
+            return PageQuery.DEFAULT_PAGE_SIZE;
+        }
+        if (pageSize > PageQuery.MAX_PAGE_SIZE) {
+            return PageQuery.MAX_PAGE_SIZE;
+        }
+        return pageSize;
+    }
+
+    /**
+     * 规范化关键字
+     */
+    private String NormalizeKeyword(String keyword) {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim();
+        return normalizedKeyword.isBlank() ? null : normalizedKeyword;
+    }
+
+    /**
+     * 解析用户状态筛选
+     */
+    private String ResolveUserStatus(String userStatus) {
+        String normalizedStatus = userStatus == null ? "" : userStatus.trim().toUpperCase(Locale.ROOT);
+        if (normalizedStatus.isBlank()) {
+            return null;
+        }
+        try {
+            return UserStatusEnum.valueOf(normalizedStatus).name();
+        } catch (IllegalArgumentException exception) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "用户状态不合法");
+        }
+    }
+
+    /**
+     * 解析用户角色筛选
+     */
+    private String ResolveUserRole(String userRole) {
+        String normalizedRole = userRole == null ? "" : userRole.trim().toUpperCase(Locale.ROOT);
+        if (normalizedRole.isBlank()) {
+            return null;
+        }
+        try {
+            return UserRoleEnum.valueOf(normalizedRole).name();
+        } catch (IllegalArgumentException exception) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "用户角色不合法");
+        }
     }
 
     /**

@@ -70,4 +70,24 @@
           AND canceled = 0
           AND deleted = 0
     </select>
+
+    <select id="ListActiveResourceIdsByUserAndType" resultType="java.lang.Long">
+        SELECT resource_id
+        FROM favorite_info
+        WHERE user_id = #{userId}
+          AND resource_type = #{resourceType}
+          AND canceled = 0
+          AND deleted = 0
+        ORDER BY update_time DESC, favorite_id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="CountActiveByUserAndType" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM favorite_info
+        WHERE user_id = #{userId}
+          AND resource_type = #{resourceType}
+          AND canceled = 0
+          AND deleted = 0
+    </select>
 </mapper>

@@ -22,6 +22,24 @@ public interface StudyMaterialMapper {
     List<StudyMaterialEntity> ListRecentPublishedMaterials(@Param("limit") Integer limit);
 
     /**
+     * 分页查询已发布资料
+     */
+    List<StudyMaterialEntity> ListPublishedMaterialsPaged(
+        @Param("keyword") String keyword,
+        @Param("tagKeyword") String tagKeyword,
+        @Param("offset") Integer offset,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 统计已发布资料数量
+     */
+    Long CountPublishedMaterialsByFilter(
+        @Param("keyword") String keyword,
+        @Param("tagKeyword") String tagKeyword
+    );
+
+    /**
      * 新增资料
      */
     Integer InsertMaterial(StudyMaterialEntity materialEntity);
@@ -58,6 +76,19 @@ public interface StudyMaterialMapper {
         @Param("uploaderUserId") Long uploaderUserId,
         @Param("materialStatus") String materialStatus
     );
+
+    /**
+     * 分页查询待审核资料
+     */
+    List<StudyMaterialEntity> ListPendingReviewMaterialsPaged(
+        @Param("offset") Integer offset,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 统计待审核资料数量
+     */
+    Long CountPendingReviewMaterials();
 
     /**
      * 增加下载次数

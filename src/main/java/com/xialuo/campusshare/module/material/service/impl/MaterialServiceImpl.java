@@ -10,6 +10,7 @@ import com.xialuo.campusshare.enums.ResourceStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.material.dto.MaterialDownloadResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialListResponseDto;
+import com.xialuo.campusshare.module.material.dto.MaterialReviewRequestDto;
 import com.xialuo.campusshare.module.material.dto.MaterialResponseDto;
 import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
 import com.xialuo.campusshare.module.material.mapper.StudyMaterialMapper;
@@ -114,12 +115,96 @@ public class MaterialServiceImpl implements MaterialService {
 
         Long totalCount = studyMaterialMapper.CountMaterialsByUploader(currentUserId, resolvedMaterialStatus);
 
-        MaterialListResponseDto responseDto = new MaterialListResponseDto();
-        responseDto.SetPageNo(resolvedPageNo);
-        responseDto.SetPageSize(resolvedPageSize);
-        responseDto.SetTotalCount(totalCount == null ? 0L : totalCount);
-        responseDto.SetMaterialList(materialResponseList);
-        return responseDto;
+        return BuildMaterialListResponse(resolvedPageNo, resolvedPageSize, totalCount, materialResponseList);
+    }
+
+    @Override
+    public MaterialListResponseDto ListPublishedMaterials(
+        Integer pageNo,
+        Integer pageSize,
+        String keyword,
+        String tagKeyword
+    ) {
+        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer resolvedPageSize = ResolvePageSize(pageSize);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
+        String resolvedKeyword = NormalizeText(keyword);
+        String resolvedTagKeyword = NormalizeText(tagKeyword);
+
+        List<MaterialResponseDto> materialResponseList = studyMaterialMapper.ListPublishedMaterialsPaged(
+            resolvedKeyword,
+            resolvedTagKeyword,
+            offset,
+            resolvedPageSize
+        ).stream().map(this::BuildMaterialResponse).toList();
+        Long totalCount = studyMaterialMapper.CountPublishedMaterialsByFilter(
+            resolvedKeyword,
+            resolvedTagKeyword
+        );
+        return BuildMaterialListResponse(resolvedPageNo, resolvedPageSize, totalCount, materialResponseList);
+    }
+
+    @Override
+    public MaterialListResponseDto ListPendingReviewMaterials(Integer pageNo, Integer pageSize) {
+        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer resolvedPageSize = ResolvePageSize(pageSize);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
+
+        List<MaterialResponseDto> materialResponseList = studyMaterialMapper.ListPendingReviewMaterialsPaged(
+            offset,
+            resolvedPageSize
+        ).stream().map(this::BuildMaterialResponse).toList();
+        Long totalCount = studyMaterialMapper.CountPendingReviewMaterials();
+        return BuildMaterialListResponse(resolvedPageNo, resolvedPageSize, totalCount, materialResponseList);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public MaterialResponseDto ReviewMaterial(
+        Long materialId,
+        MaterialReviewRequestDto requestDto,
+        Long adminUserId
+    ) {
+        StudyMaterialEntity materialEntity = GetMaterialById(materialId);
+        if (materialEntity.GetMaterialStatus() != ResourceStatusEnum.PENDING_REVIEW) {
+            throw new BusinessException(BizCodeEnum.MATERIAL_STATUS_INVALID, "当前资料状态不允许审核");
+        }
+
+        Boolean approved = Boolean.TRUE.equals(requestDto.GetApproved());
+        String reviewRemark = NormalizeText(requestDto.GetReviewRemark());
+        materialEntity.SetMaterialStatus(approved ? ResourceStatusEnum.PUBLISHED : ResourceStatusEnum.REJECTED);
+        materialEntity.SetReviewRemark(reviewRemark);
+        materialEntity.SetLastReviewTime(LocalDateTime.now());
+        materialEntity.SetUpdateTime(LocalDateTime.now());
+        studyMaterialMapper.UpdateMaterial(materialEntity);
+
+        if (approved) {
+            pointLedgerService.RecordUploadReward(
+                materialEntity.GetUploaderUserId(),
+                MATERIAL_UPLOAD_REWARD_POINTS,
+                MATERIAL_BIZ_TYPE,
+                materialEntity.GetMaterialId(),
+                "资料审核通过奖励"
+            );
+            notificationService.CreateNotification(
+                materialEntity.GetUploaderUserId(),
+                NotificationTypeEnum.POINT,
+                "资料审核通过并奖励积分",
+                "资料已发布，已发放上传奖励积分",
+                MATERIAL_BIZ_TYPE,
+                materialEntity.GetMaterialId()
+            );
+        } else {
+            notificationService.CreateNotification(
+                materialEntity.GetUploaderUserId(),
+                NotificationTypeEnum.REVIEW,
+                "资料审核未通过",
+                reviewRemark.isBlank() ? "资料未通过审核，请修改后重新提交" : ("资料未通过审核：" + reviewRemark),
+                MATERIAL_BIZ_TYPE,
+                materialEntity.GetMaterialId()
+            );
+        }
+        return BuildMaterialResponse(materialEntity);
     }
 
     @Override
@@ -427,5 +512,29 @@ public class MaterialServiceImpl implements MaterialService {
         } catch (IllegalArgumentException exception) {
             throw new BusinessException(BizCodeEnum.PARAM_INVALID, "资料状态不合法");
         }
+    }
+
+    /**
+     * 构建资料列表响应
+     */
+    private MaterialListResponseDto BuildMaterialListResponse(
+        Integer pageNo,
+        Integer pageSize,
+        Long totalCount,
+        List<MaterialResponseDto> materialList
+    ) {
+        MaterialListResponseDto responseDto = new MaterialListResponseDto();
+        responseDto.SetPageNo(pageNo);
+        responseDto.SetPageSize(pageSize);
+        responseDto.SetTotalCount(totalCount == null ? 0L : totalCount);
+        responseDto.SetMaterialList(materialList);
+        return responseDto;
+    }
+
+    /**
+     * 规范化文本
+     */
+    private String NormalizeText(String text) {
+        return text == null ? "" : text.trim();
     }
 }

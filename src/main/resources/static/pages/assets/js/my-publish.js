@@ -18,6 +18,7 @@
         DRAFT: "草稿",
         PENDING_REVIEW: "待审核",
         PUBLISHED: "已发布",
+        REJECTED: "已驳回",
         OFFLINE: "已下架",
         CLOSED: "已关闭"
     };
@@ -504,6 +505,9 @@
         }
         if (statusCode === "PENDING_REVIEW") {
             return "bg-yellow-100 text-yellow-700";
+        }
+        if (statusCode === "REJECTED") {
+            return "bg-red-100 text-red-700";
         }
         if (statusCode === "LOCKED") {
             return "bg-orange-100 text-orange-700";

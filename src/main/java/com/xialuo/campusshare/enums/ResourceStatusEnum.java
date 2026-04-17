@@ -10,6 +10,8 @@ public enum ResourceStatusEnum {
     PENDING_REVIEW,
     /** 已发布 */
     PUBLISHED,
+    /** 已驳回 */
+    REJECTED,
     /** 已下架 */
     OFFLINE,
     /** 已关闭 */

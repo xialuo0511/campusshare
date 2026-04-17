@@ -1317,11 +1317,34 @@
             });
             return RequestApi(`/api/v1/materials/my?${searchParams.toString()}`, "GET", null, true);
         },
+        ListPublishedMaterials(query) {
+            const searchQuery = query || {};
+            const searchParams = new URLSearchParams();
+            Object.keys(searchQuery).forEach(function AppendQuery(key) {
+                const value = searchQuery[key];
+                if (value === null || value === undefined || value === "") {
+                    return;
+                }
+                searchParams.append(key, value);
+            });
+            return RequestApi(`/api/v1/materials/public?${searchParams.toString()}`, "GET", null, false);
+        },
         OfflineMaterial(materialId, offlineRemark) {
             return RequestApi(
                 `/api/v1/materials/${materialId}/offline`,
                 "POST",
                 { offlineRemark: offlineRemark || "" },
+                true
+            );
+        },
+        ListPendingMaterials(pageNo, pageSize) {
+            return RequestApi(`/api/v1/admin/materials/pending?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
+        },
+        ReviewMaterial(materialId, approved, reviewRemark) {
+            return RequestApi(
+                `/api/v1/admin/materials/${materialId}/review`,
+                "POST",
+                { approved: !!approved, reviewRemark: reviewRemark || "" },
                 true
             );
         },

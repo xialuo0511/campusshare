@@ -96,6 +96,26 @@ public class MaterialController {
     }
 
     /**
+     * 查询公开资料
+     */
+    @GetMapping("/public")
+    public ApiResponse<MaterialListResponseDto> ListPublishedMaterials(
+        @RequestParam(value = "pageNo", required = false) Integer pageNo,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @RequestParam(value = "keyword", required = false) String keyword,
+        @RequestParam(value = "tagKeyword", required = false) String tagKeyword,
+        HttpServletRequest httpServletRequest
+    ) {
+        MaterialListResponseDto responseDto = materialService.ListPublishedMaterials(
+            pageNo,
+            pageSize,
+            keyword,
+            tagKeyword
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 查询资料详情
      */
     @GetMapping("/{materialId}")

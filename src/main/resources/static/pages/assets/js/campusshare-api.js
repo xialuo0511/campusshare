@@ -1030,6 +1030,50 @@
     }
 
     /**
+     * 绑定品牌标题导航
+     */
+    function BindBrandNavigation() {
+        const brandElementList = Array.from(document.querySelectorAll("a, span, div, h1, h2"));
+        brandElementList.forEach(function BindBrandElement(brandElement) {
+            if (!brandElement || brandElement.dataset.brandNavigationBound === "true") {
+                return;
+            }
+            const brandText = (brandElement.textContent || "").replace(/\s+/g, "").trim().toLowerCase();
+            if (brandText !== "campusshare") {
+                return;
+            }
+
+            const shellContainer = brandElement.closest("header, nav, aside");
+            if (!shellContainer) {
+                return;
+            }
+            const elementRect = brandElement.getBoundingClientRect();
+            if (elementRect.top > 260) {
+                return;
+            }
+
+            brandElement.dataset.brandNavigationBound = "true";
+            brandElement.style.cursor = "pointer";
+            brandElement.style.userSelect = "none";
+            if (brandElement.style.webkitUserSelect !== undefined) {
+                brandElement.style.webkitUserSelect = "none";
+            }
+
+            const tagName = (brandElement.tagName || "").toLowerCase();
+            if (tagName === "a") {
+                BindPageNavigation(brandElement, PAGE_PATH_MAP.OVERVIEW);
+                return;
+            }
+
+            EnsureInteractiveElement(brandElement);
+            brandElement.addEventListener("click", function HandleBrandClick(event) {
+                event.preventDefault();
+                NavigateToPage(PAGE_PATH_MAP.OVERVIEW);
+            });
+        });
+    }
+
+    /**
      * 页面访问控制
      */
     function EnsurePageAccessControl() {
@@ -1090,6 +1134,7 @@
      * 绑定全局壳层导航
      */
     function BindGlobalShellNavigation() {
+        BindBrandNavigation();
         BindAnchorNavigation();
         BindButtonNavigation();
         BindIconNavigation();

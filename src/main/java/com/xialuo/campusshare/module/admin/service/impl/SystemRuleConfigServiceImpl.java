@@ -3,12 +3,14 @@ package com.xialuo.campusshare.module.admin.service.impl;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.SystemRuleConfigEntity;
+import com.xialuo.campusshare.module.admin.bootstrap.SystemRuleConfigBootstrapInitializer;
 import com.xialuo.campusshare.module.admin.dto.SystemRuleConfigResponseDto;
 import com.xialuo.campusshare.module.admin.dto.SystemRuleUpdateRequestDto;
 import com.xialuo.campusshare.module.admin.mapper.SystemRuleConfigMapper;
 import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,14 +25,20 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemRuleConfigServiceImpl.class);
     /** 规则Mapper */
     private final SystemRuleConfigMapper systemRuleConfigMapper;
+    /** 规则表自愈初始化器 */
+    private final SystemRuleConfigBootstrapInitializer bootstrapInitializer;
 
-    public SystemRuleConfigServiceImpl(SystemRuleConfigMapper systemRuleConfigMapper) {
+    public SystemRuleConfigServiceImpl(
+        SystemRuleConfigMapper systemRuleConfigMapper,
+        SystemRuleConfigBootstrapInitializer bootstrapInitializer
+    ) {
         this.systemRuleConfigMapper = systemRuleConfigMapper;
+        this.bootstrapInitializer = bootstrapInitializer;
     }
 
     @Override
     public List<SystemRuleConfigResponseDto> ListRules() {
-        return systemRuleConfigMapper.ListAllRules().stream()
+        return ExecuteWithRuleTableReady(systemRuleConfigMapper::ListAllRules).stream()
             .map(this::BuildRuleResponse)
             .toList();
     }
@@ -63,7 +71,9 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
     @Override
     public String GetRuleValueOrDefault(String ruleKey, String defaultValue) {
         try {
-            SystemRuleConfigEntity ruleEntity = systemRuleConfigMapper.FindRuleByKey(ruleKey);
+            SystemRuleConfigEntity ruleEntity = ExecuteWithRuleTableReady(
+                () -> systemRuleConfigMapper.FindRuleByKey(ruleKey)
+            );
             if (ruleEntity == null) {
                 return defaultValue;
             }
@@ -105,11 +115,28 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
      */
     private SystemRuleConfigEntity GetRuleEntity(String ruleKey) {
         String normalizedRuleKey = NormalizeRuleKey(ruleKey);
-        SystemRuleConfigEntity ruleEntity = systemRuleConfigMapper.FindRuleByKey(normalizedRuleKey);
+        SystemRuleConfigEntity ruleEntity = ExecuteWithRuleTableReady(
+            () -> systemRuleConfigMapper.FindRuleByKey(normalizedRuleKey)
+        );
         if (ruleEntity == null) {
             throw new BusinessException(BizCodeEnum.RESOURCE_NOT_FOUND, "规则不存在");
         }
         return ruleEntity;
+    }
+
+    /**
+     * 确保规则表可用后再执行数据库操作
+     */
+    private <T> T ExecuteWithRuleTableReady(Supplier<T> supplier) {
+        try {
+            return supplier.get();
+        } catch (RuntimeException exception) {
+            boolean bootstrapSuccess = bootstrapInitializer.EnsureSystemRuleTable();
+            if (!bootstrapSuccess) {
+                throw exception;
+            }
+            return supplier.get();
+        }
     }
 
     /**

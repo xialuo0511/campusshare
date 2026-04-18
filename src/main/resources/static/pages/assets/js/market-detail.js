@@ -57,9 +57,15 @@
             messageBar
         ).then(function HandleLoadedDetail(detailResult) {
             currentProductDetail = detailResult;
-            LoadProductComments(productId, reviewListContainer, reviewTabButton, sellerNameNode, messageBar);
+            const canLoadCommentData = CanLoadCommentData(detailResult);
+            if (canLoadCommentData) {
+                LoadProductComments(productId, reviewListContainer, reviewTabButton, sellerNameNode, messageBar);
+            } else {
+                RenderCommentList(reviewListContainer, []);
+                UpdateReviewTabText(reviewTabButton, 0);
+            }
             LoadFavoriteState(productId, favoriteButton, favoriteIcon);
-            if (reviewSection && writeReviewButton) {
+            if (reviewSection && writeReviewButton && canLoadCommentData) {
                 refreshCommentList = BindCommentComposer(
                     reviewSection,
                     writeReviewButton,
@@ -80,6 +86,10 @@
                         );
                     }
                 );
+            } else if (writeReviewButton && !canLoadCommentData) {
+                writeReviewButton.disabled = true;
+                writeReviewButton.classList.add("opacity-50", "cursor-not-allowed");
+                writeReviewButton.textContent = "暂不可评价";
             }
         }).catch(function HandleDetailError(error) {
             currentProductDetail = null;
@@ -251,6 +261,17 @@
             return;
         }
         HideMessage(messageBar);
+    }
+
+    /**
+     * 是否允许加载评论数据
+     */
+    function CanLoadCommentData(detailResult) {
+        const productStatus = String(detailResult && detailResult.productStatus ? detailResult.productStatus : "").toUpperCase();
+        if (productStatus === "PENDING_REVIEW" || productStatus === "REJECTED") {
+            return false;
+        }
+        return !!(detailResult && detailResult.onShelf);
     }
 
     /**

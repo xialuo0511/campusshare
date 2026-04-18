@@ -7,6 +7,7 @@ import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.enums.UserStatusEnum;
+import com.xialuo.campusshare.module.order.mapper.OrderMapper;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
@@ -25,11 +26,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductPublishServiceImpl implements ProductPublishService {
     /** 商品Mapper */
     private final ProductMapper productMapper;
+    /** 订单Mapper */
+    private final OrderMapper orderMapper;
     /** 用户Mapper */
     private final UserMapper userMapper;
 
-    public ProductPublishServiceImpl(ProductMapper productMapper, UserMapper userMapper) {
+    public ProductPublishServiceImpl(
+        ProductMapper productMapper,
+        OrderMapper orderMapper,
+        UserMapper userMapper
+    ) {
         this.productMapper = productMapper;
+        this.orderMapper = orderMapper;
         this.userMapper = userMapper;
     }
 
@@ -117,6 +125,33 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         if (updatedRows == null || updatedRows <= 0) {
             throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品当前不可下架");
         }
+
+        ProductEntity latestProductEntity = productMapper.FindProductById(productId);
+        if (latestProductEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        return BuildProductDetailResponse(latestProductEntity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProductDetailResponseDto ForceOfflineProductByAdmin(
+        Long productId,
+        Long adminUserId,
+        String offlineRemark
+    ) {
+        ProductEntity productEntity = productMapper.FindProductById(productId);
+        if (productEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        orderMapper.CloseOngoingOrdersByProductId(
+            productId,
+            NormalizeText(offlineRemark).isBlank() ? "管理员强制下架关闭订单" : NormalizeText(offlineRemark),
+            now,
+            now
+        );
+        productMapper.ForceOfflineProduct(productId, now);
 
         ProductEntity latestProductEntity = productMapper.FindProductById(productId);
         if (latestProductEntity == null) {

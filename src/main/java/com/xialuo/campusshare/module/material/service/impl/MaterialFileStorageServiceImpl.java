@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.material.service.impl;
 
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
+import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import com.xialuo.campusshare.module.material.dto.MaterialFileUploadResponseDto;
 import com.xialuo.campusshare.module.material.service.MaterialFileStorageService;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
@@ -23,20 +25,28 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 public class MaterialFileStorageServiceImpl implements MaterialFileStorageService {
-    /** 最大文件大小 */
-    private static final long MAX_FILE_SIZE_BYTES = 25L * 1024L * 1024L;
-    /** 支持的扩展名 */
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "pdf");
+    /** 文件大小规则键 */
+    private static final String MATERIAL_FILE_MAX_SIZE_MB_RULE_KEY = "MATERIAL_FILE_MAX_SIZE_MB";
+    /** 文件扩展名规则键 */
+    private static final String MATERIAL_FILE_ALLOWED_EXTENSIONS_RULE_KEY = "MATERIAL_FILE_ALLOWED_EXTENSIONS";
+    /** 默认最大文件大小 */
+    private static final Integer DEFAULT_MATERIAL_FILE_MAX_SIZE_MB = 25;
+    /** 默认支持扩展名 */
+    private static final Set<String> DEFAULT_ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "pdf");
     /** 文件ID格式 */
-    private static final Pattern FILE_ID_PATTERN = Pattern.compile("^[a-z0-9]{32}\\.(jpg|jpeg|png|pdf)$");
+    private static final Pattern FILE_ID_PATTERN = Pattern.compile("^[a-z0-9]{32}\\.[a-z0-9]+$");
 
     /** 文件根目录 */
     private final Path storageRootPath;
+    /** 规则服务 */
+    private final SystemRuleConfigService systemRuleConfigService;
 
     public MaterialFileStorageServiceImpl(
-        @Value("${campusshare.material.storage-root:tmp/material-files}") String storageRoot
+        @Value("${campusshare.material.storage-root:tmp/material-files}") String storageRoot,
+        SystemRuleConfigService systemRuleConfigService
     ) {
         this.storageRootPath = Paths.get(storageRoot).toAbsolutePath().normalize();
+        this.systemRuleConfigService = systemRuleConfigService;
     }
 
     @Override
@@ -82,8 +92,12 @@ public class MaterialFileStorageServiceImpl implements MaterialFileStorageServic
         if (multipartFile == null || multipartFile.isEmpty()) {
             throw new BusinessException(BizCodeEnum.PARAM_INVALID, "请选择需要上传的文件");
         }
-        if (multipartFile.getSize() > MAX_FILE_SIZE_BYTES) {
-            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "文件大小不能超过25MB");
+        Long maxFileSizeBytes = ResolveMaxFileSizeBytes();
+        if (multipartFile.getSize() > maxFileSizeBytes) {
+            throw new BusinessException(
+                BizCodeEnum.PARAM_INVALID,
+                "文件大小不能超过" + ResolveMaxFileSizeMegaBytes() + "MB"
+            );
         }
     }
 
@@ -128,8 +142,12 @@ public class MaterialFileStorageServiceImpl implements MaterialFileStorageServic
             throw new BusinessException(BizCodeEnum.PARAM_INVALID, "文件格式不支持");
         }
         String extension = fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "仅支持 JPG、PNG、PDF 文件");
+        Set<String> allowedExtensions = ResolveAllowedExtensions();
+        if (!allowedExtensions.contains(extension)) {
+            throw new BusinessException(
+                BizCodeEnum.PARAM_INVALID,
+                "仅支持 " + BuildAllowedExtensionTip(allowedExtensions) + " 文件"
+            );
         }
         return extension;
     }
@@ -153,5 +171,57 @@ public class MaterialFileStorageServiceImpl implements MaterialFileStorageServic
             return "application/pdf";
         }
         return "image/" + ("jpg".equals(extension) ? "jpeg" : extension);
+    }
+
+    /**
+     * 解析最大上传MB
+     */
+    private Integer ResolveMaxFileSizeMegaBytes() {
+        Integer maxFileSizeMegaBytes = systemRuleConfigService.GetRuleIntegerValueOrDefault(
+            MATERIAL_FILE_MAX_SIZE_MB_RULE_KEY,
+            DEFAULT_MATERIAL_FILE_MAX_SIZE_MB
+        );
+        if (maxFileSizeMegaBytes == null || maxFileSizeMegaBytes <= 0) {
+            return DEFAULT_MATERIAL_FILE_MAX_SIZE_MB;
+        }
+        return maxFileSizeMegaBytes;
+    }
+
+    /**
+     * 解析最大上传字节数
+     */
+    private Long ResolveMaxFileSizeBytes() {
+        return ResolveMaxFileSizeMegaBytes() * 1024L * 1024L;
+    }
+
+    /**
+     * 解析支持扩展名
+     */
+    private Set<String> ResolveAllowedExtensions() {
+        String extensionText = systemRuleConfigService.GetRuleValueOrDefault(
+            MATERIAL_FILE_ALLOWED_EXTENSIONS_RULE_KEY,
+            String.join(",", DEFAULT_ALLOWED_EXTENSIONS)
+        );
+        if (extensionText == null || extensionText.isBlank()) {
+            return DEFAULT_ALLOWED_EXTENSIONS;
+        }
+        Set<String> extensionSet = Arrays.stream(extensionText.split(","))
+            .map(item -> item == null ? "" : item.trim().toLowerCase(Locale.ROOT))
+            .filter(item -> !item.isBlank())
+            .collect(java.util.stream.Collectors.toSet());
+        if (extensionSet.isEmpty()) {
+            return DEFAULT_ALLOWED_EXTENSIONS;
+        }
+        return extensionSet;
+    }
+
+    /**
+     * 扩展名提示文案
+     */
+    private String BuildAllowedExtensionTip(Set<String> allowedExtensions) {
+        return allowedExtensions.stream()
+            .map(String::toUpperCase)
+            .sorted()
+            .collect(java.util.stream.Collectors.joining("、"));
     }
 }

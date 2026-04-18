@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xialuo.campusshare.module.admin.mapper.SystemRuleConfigMapper">
+
+    <resultMap id="SystemRuleConfigResultMap" type="com.xialuo.campusshare.entity.SystemRuleConfigEntity">
+        <id column="rule_id" property="ruleId"/>
+        <result column="rule_key" property="ruleKey"/>
+        <result column="rule_value" property="ruleValue"/>
+        <result column="rule_type" property="ruleType"/>
+        <result column="rule_desc" property="ruleDesc"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <sql id="SystemRuleColumns">
+        rule_id,
+        rule_key,
+        rule_value,
+        rule_type,
+        rule_desc,
+        create_time,
+        update_time,
+        deleted
+    </sql>
+
+    <select id="ListAllRules" resultMap="SystemRuleConfigResultMap">
+        SELECT
+            <include refid="SystemRuleColumns"/>
+        FROM system_rule_config
+        WHERE deleted = 0
+        ORDER BY rule_key ASC
+    </select>
+
+    <select id="FindRuleByKey" resultMap="SystemRuleConfigResultMap">
+        SELECT
+            <include refid="SystemRuleColumns"/>
+        FROM system_rule_config
+        WHERE rule_key = #{ruleKey}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <update id="UpdateRuleValueByKey">
+        UPDATE system_rule_config
+        SET
+            rule_value = #{ruleValue},
+            update_time = #{updateTime}
+        WHERE rule_key = #{ruleKey}
+          AND deleted = 0
+    </update>
+</mapper>

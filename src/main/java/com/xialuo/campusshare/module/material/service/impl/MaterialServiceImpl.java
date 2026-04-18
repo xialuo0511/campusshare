@@ -14,6 +14,7 @@ import com.xialuo.campusshare.module.material.dto.MaterialReviewRequestDto;
 import com.xialuo.campusshare.module.material.dto.MaterialResponseDto;
 import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
 import com.xialuo.campusshare.module.material.mapper.StudyMaterialMapper;
+import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import com.xialuo.campusshare.module.material.service.MaterialService;
 import com.xialuo.campusshare.module.notification.service.NotificationService;
 import com.xialuo.campusshare.module.point.service.PointLedgerService;
@@ -33,12 +34,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class MaterialServiceImpl implements MaterialService {
     /** 资料业务类型 */
     private static final String MATERIAL_BIZ_TYPE = "MATERIAL";
-    /** 资料审核开关 */
-    private static final Boolean MATERIAL_REVIEW_REQUIRED = Boolean.TRUE;
-    /** 上传奖励积分 */
-    private static final Integer MATERIAL_UPLOAD_REWARD_POINTS = 2;
-    /** 下载扣减积分 */
-    private static final Integer MATERIAL_DOWNLOAD_COST_POINTS = 1;
+    /** 资料审核开关规则键 */
+    private static final String MATERIAL_REVIEW_REQUIRED_RULE_KEY = "MATERIAL_REVIEW_REQUIRED";
+    /** 上传奖励积分规则键 */
+    private static final String MATERIAL_UPLOAD_REWARD_POINTS_RULE_KEY = "MATERIAL_UPLOAD_REWARD_POINTS";
+    /** 下载扣减积分规则键 */
+    private static final String MATERIAL_DOWNLOAD_COST_POINTS_RULE_KEY = "MATERIAL_DOWNLOAD_COST_POINTS";
+    /** 默认资料审核开关 */
+    private static final Boolean DEFAULT_MATERIAL_REVIEW_REQUIRED = Boolean.TRUE;
+    /** 默认上传奖励积分 */
+    private static final Integer DEFAULT_MATERIAL_UPLOAD_REWARD_POINTS = 2;
+    /** 默认下载扣减积分 */
+    private static final Integer DEFAULT_MATERIAL_DOWNLOAD_COST_POINTS = 1;
     /** 文件访问地址模板 */
     private static final String MATERIAL_FILE_ACCESS_URL_PATTERN = "/api/v1/materials/%d/files/%s";
 
@@ -50,17 +57,21 @@ public class MaterialServiceImpl implements MaterialService {
     private final NotificationService notificationService;
     /** 积分流水服务 */
     private final PointLedgerService pointLedgerService;
+    /** 规则配置服务 */
+    private final SystemRuleConfigService systemRuleConfigService;
 
     public MaterialServiceImpl(
         StudyMaterialMapper studyMaterialMapper,
         UserMapper userMapper,
         NotificationService notificationService,
-        PointLedgerService pointLedgerService
+        PointLedgerService pointLedgerService,
+        SystemRuleConfigService systemRuleConfigService
     ) {
         this.studyMaterialMapper = studyMaterialMapper;
         this.userMapper = userMapper;
         this.notificationService = notificationService;
         this.pointLedgerService = pointLedgerService;
+        this.systemRuleConfigService = systemRuleConfigService;
     }
 
     @Override
@@ -75,7 +86,7 @@ public class MaterialServiceImpl implements MaterialService {
         materialEntity.SetFileType(requestDto.GetFileType());
         materialEntity.SetFileSizeBytes(requestDto.GetFileSizeBytes());
         materialEntity.SetMaterialStatus(BuildInitialMaterialStatus());
-        materialEntity.SetDownloadCostPoints(MATERIAL_DOWNLOAD_COST_POINTS);
+        materialEntity.SetDownloadCostPoints(ResolveMaterialDownloadCostPoints());
         materialEntity.SetCopyrightDeclared(requestDto.GetCopyrightDeclared());
         materialEntity.SetDownloadCount(0);
         materialEntity.SetCreateTime(LocalDateTime.now());
@@ -179,18 +190,23 @@ public class MaterialServiceImpl implements MaterialService {
         studyMaterialMapper.UpdateMaterial(materialEntity);
 
         if (approved) {
-            pointLedgerService.RecordUploadReward(
-                materialEntity.GetUploaderUserId(),
-                MATERIAL_UPLOAD_REWARD_POINTS,
-                MATERIAL_BIZ_TYPE,
-                materialEntity.GetMaterialId(),
-                "资料审核通过奖励"
-            );
+            Integer uploadRewardPoints = ResolveMaterialUploadRewardPoints();
+            if (uploadRewardPoints > 0) {
+                pointLedgerService.RecordUploadReward(
+                    materialEntity.GetUploaderUserId(),
+                    uploadRewardPoints,
+                    MATERIAL_BIZ_TYPE,
+                    materialEntity.GetMaterialId(),
+                    "资料审核通过奖励"
+                );
+            }
             notificationService.CreateNotification(
                 materialEntity.GetUploaderUserId(),
                 NotificationTypeEnum.POINT,
                 "资料审核通过并奖励积分",
-                "资料已发布，已发放上传奖励积分",
+                uploadRewardPoints > 0
+                    ? ("资料已发布，已发放上传奖励积分：" + uploadRewardPoints)
+                    : "资料已发布，当前规则未发放上传奖励积分",
                 MATERIAL_BIZ_TYPE,
                 materialEntity.GetMaterialId()
             );
@@ -292,9 +308,47 @@ public class MaterialServiceImpl implements MaterialService {
      * 构建初始资料状态
      */
     private ResourceStatusEnum BuildInitialMaterialStatus() {
-        return Boolean.TRUE.equals(MATERIAL_REVIEW_REQUIRED)
+        return Boolean.TRUE.equals(ResolveMaterialReviewRequired())
             ? ResourceStatusEnum.PENDING_REVIEW
             : ResourceStatusEnum.PUBLISHED;
+    }
+
+    /**
+     * 读取资料审核开关
+     */
+    private Boolean ResolveMaterialReviewRequired() {
+        return systemRuleConfigService.GetRuleBooleanValueOrDefault(
+            MATERIAL_REVIEW_REQUIRED_RULE_KEY,
+            DEFAULT_MATERIAL_REVIEW_REQUIRED
+        );
+    }
+
+    /**
+     * 读取上传奖励积分
+     */
+    private Integer ResolveMaterialUploadRewardPoints() {
+        Integer rewardPoints = systemRuleConfigService.GetRuleIntegerValueOrDefault(
+            MATERIAL_UPLOAD_REWARD_POINTS_RULE_KEY,
+            DEFAULT_MATERIAL_UPLOAD_REWARD_POINTS
+        );
+        if (rewardPoints == null || rewardPoints < 0) {
+            return DEFAULT_MATERIAL_UPLOAD_REWARD_POINTS;
+        }
+        return rewardPoints;
+    }
+
+    /**
+     * 读取下载扣减积分
+     */
+    private Integer ResolveMaterialDownloadCostPoints() {
+        Integer costPoints = systemRuleConfigService.GetRuleIntegerValueOrDefault(
+            MATERIAL_DOWNLOAD_COST_POINTS_RULE_KEY,
+            DEFAULT_MATERIAL_DOWNLOAD_COST_POINTS
+        );
+        if (costPoints == null || costPoints < 0) {
+            return DEFAULT_MATERIAL_DOWNLOAD_COST_POINTS;
+        }
+        return costPoints;
     }
 
     /**
@@ -312,18 +366,23 @@ public class MaterialServiceImpl implements MaterialService {
      */
     private void SendUploadNotifications(StudyMaterialEntity materialEntity, Long currentUserId) {
         if (materialEntity.GetMaterialStatus() == ResourceStatusEnum.PUBLISHED) {
-            pointLedgerService.RecordUploadReward(
-                currentUserId,
-                MATERIAL_UPLOAD_REWARD_POINTS,
-                MATERIAL_BIZ_TYPE,
-                materialEntity.GetMaterialId(),
-                "资料上传奖励"
-            );
+            Integer uploadRewardPoints = ResolveMaterialUploadRewardPoints();
+            if (uploadRewardPoints > 0) {
+                pointLedgerService.RecordUploadReward(
+                    currentUserId,
+                    uploadRewardPoints,
+                    MATERIAL_BIZ_TYPE,
+                    materialEntity.GetMaterialId(),
+                    "资料上传奖励"
+                );
+            }
             notificationService.CreateNotification(
                 currentUserId,
                 NotificationTypeEnum.POINT,
                 "资料上传奖励到账",
-                "资料已发布，已发放上传积分奖励",
+                uploadRewardPoints > 0
+                    ? ("资料已发布，已发放上传积分奖励：" + uploadRewardPoints)
+                    : "资料已发布，当前规则未发放上传积分奖励",
                 MATERIAL_BIZ_TYPE,
                 materialEntity.GetMaterialId()
             );

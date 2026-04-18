@@ -32,4 +32,13 @@ public interface ProductPublishService {
         UserRoleEnum currentUserRole,
         String offlineRemark
     );
+
+    /**
+     * 管理员强制下架商品
+     */
+    ProductDetailResponseDto ForceOfflineProductByAdmin(
+        Long productId,
+        Long adminUserId,
+        String offlineRemark
+    );
 }

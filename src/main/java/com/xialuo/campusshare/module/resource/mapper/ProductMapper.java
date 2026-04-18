@@ -50,6 +50,28 @@ public interface ProductMapper {
     );
 
     /**
+     * 管理后台分页查询商品
+     */
+    List<ProductEntity> ListProductsForAdmin(
+        @Param("keyword") String keyword,
+        @Param("category") String category,
+        @Param("productStatus") String productStatus,
+        @Param("sellerUserId") Long sellerUserId,
+        @Param("offset") Integer offset,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 管理后台统计商品数量
+     */
+    Long CountProductsForAdmin(
+        @Param("keyword") String keyword,
+        @Param("category") String category,
+        @Param("productStatus") String productStatus,
+        @Param("sellerUserId") Long sellerUserId
+    );
+
+    /**
      * 分页查询卖家商品
      */
     List<ProductEntity> ListProductsBySeller(

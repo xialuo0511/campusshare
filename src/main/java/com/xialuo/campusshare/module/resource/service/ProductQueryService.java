@@ -34,6 +34,18 @@ public interface ProductQueryService {
     );
 
     /**
+     * 管理后台查询商品
+     */
+    ProductListResponseDto ListProductsForAdmin(
+        Integer pageNo,
+        Integer pageSize,
+        String keyword,
+        String category,
+        String productStatus,
+        Long sellerUserId
+    );
+
+    /**
      * 查询商品详情
      */
     ProductDetailResponseDto GetProductDetail(Long productId);

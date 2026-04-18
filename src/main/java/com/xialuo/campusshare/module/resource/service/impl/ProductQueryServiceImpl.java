@@ -119,6 +119,45 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     }
 
     @Override
+    public ProductListResponseDto ListProductsForAdmin(
+        Integer pageNo,
+        Integer pageSize,
+        String keyword,
+        String category,
+        String productStatus,
+        Long sellerUserId
+    ) {
+        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer resolvedPageSize = ResolvePageSize(pageSize);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
+        String resolvedKeyword = NormalizeText(keyword);
+        String resolvedCategory = NormalizeText(category);
+        String resolvedProductStatus = ResolveProductStatus(productStatus);
+
+        List<ProductSummaryResponseDto> productResponseList = productMapper.ListProductsForAdmin(
+            resolvedKeyword,
+            resolvedCategory,
+            resolvedProductStatus,
+            sellerUserId,
+            offset,
+            resolvedPageSize
+        ).stream().map(this::BuildProductSummaryResponse).toList();
+        Long totalCount = productMapper.CountProductsForAdmin(
+            resolvedKeyword,
+            resolvedCategory,
+            resolvedProductStatus,
+            sellerUserId
+        );
+
+        ProductListResponseDto responseDto = new ProductListResponseDto();
+        responseDto.SetPageNo(resolvedPageNo);
+        responseDto.SetPageSize(resolvedPageSize);
+        responseDto.SetTotalCount(totalCount == null ? 0L : totalCount);
+        responseDto.SetProductList(productResponseList);
+        return responseDto;
+    }
+
+    @Override
     public ProductDetailResponseDto GetProductDetail(Long productId) {
         ProductEntity productEntity = productMapper.FindProductById(productId);
         if (productEntity == null || !Boolean.TRUE.equals(productEntity.GetOnShelf())) {

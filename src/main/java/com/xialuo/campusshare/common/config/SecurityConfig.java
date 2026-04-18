@@ -28,7 +28,7 @@ public class SecurityConfig {
                     "/error"
                 ).permitAll()
                 .requestMatchers("/api/v1/**").permitAll()
-                .anyRequest().permitAll()
+                .anyRequest().denyAll()
             )
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable);

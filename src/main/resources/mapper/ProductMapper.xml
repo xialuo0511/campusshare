@@ -176,6 +176,59 @@
         </if>
     </select>
 
+    <select id="ListProductsForAdmin" resultMap="ProductResultMap">
+        SELECT
+            <include refid="ProductColumns"/>
+        FROM product_info
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (
+                CAST(product_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                OR title LIKE CONCAT('%', #{keyword}, '%')
+                OR category LIKE CONCAT('%', #{keyword}, '%')
+                OR condition_level LIKE CONCAT('%', #{keyword}, '%')
+                OR trade_location LIKE CONCAT('%', #{keyword}, '%')
+                OR description LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="productStatus != null and productStatus != ''">
+            AND product_status = #{productStatus}
+        </if>
+        <if test="sellerUserId != null">
+            AND seller_user_id = #{sellerUserId}
+        </if>
+        ORDER BY create_time DESC, product_id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="CountProductsForAdmin" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM product_info
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (
+                CAST(product_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                OR title LIKE CONCAT('%', #{keyword}, '%')
+                OR category LIKE CONCAT('%', #{keyword}, '%')
+                OR condition_level LIKE CONCAT('%', #{keyword}, '%')
+                OR trade_location LIKE CONCAT('%', #{keyword}, '%')
+                OR description LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="productStatus != null and productStatus != ''">
+            AND product_status = #{productStatus}
+        </if>
+        <if test="sellerUserId != null">
+            AND seller_user_id = #{sellerUserId}
+        </if>
+    </select>
+
     <select id="ListProductsBySeller" resultMap="ProductResultMap">
         SELECT
             <include refid="ProductColumns"/>

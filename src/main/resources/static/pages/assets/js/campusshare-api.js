@@ -1561,6 +1561,101 @@
                 true
             );
         },
+        ListSystemRulesByAdmin() {
+            return RequestApi("/api/v1/admin/rules", "GET", null, true);
+        },
+        GetSystemRuleByAdmin(ruleKey) {
+            return RequestApi(`/api/v1/admin/rules/${encodeURIComponent(String(ruleKey))}`, "GET", null, true);
+        },
+        UpdateSystemRuleByAdmin(ruleKey, ruleValue) {
+            return RequestApi(
+                `/api/v1/admin/rules/${encodeURIComponent(String(ruleKey))}`,
+                "POST",
+                { ruleValue: ruleValue == null ? "" : String(ruleValue) },
+                true
+            );
+        },
+        ListProductsByAdmin(query) {
+            const safeQuery = query || {};
+            const queryList = [];
+            if (safeQuery.pageNo) {
+                queryList.push(`pageNo=${encodeURIComponent(String(safeQuery.pageNo))}`);
+            }
+            if (safeQuery.pageSize) {
+                queryList.push(`pageSize=${encodeURIComponent(String(safeQuery.pageSize))}`);
+            }
+            if (safeQuery.keyword) {
+                queryList.push(`keyword=${encodeURIComponent(String(safeQuery.keyword))}`);
+            }
+            if (safeQuery.category) {
+                queryList.push(`category=${encodeURIComponent(String(safeQuery.category))}`);
+            }
+            if (safeQuery.productStatus) {
+                queryList.push(`productStatus=${encodeURIComponent(String(safeQuery.productStatus))}`);
+            }
+            if (safeQuery.sellerUserId) {
+                queryList.push(`sellerUserId=${encodeURIComponent(String(safeQuery.sellerUserId))}`);
+            }
+            const queryText = queryList.length ? `?${queryList.join("&")}` : "";
+            return RequestApi(`/api/v1/admin/products${queryText}`, "GET", null, true);
+        },
+        OfflineProductByAdmin(productId, offlineRemark) {
+            return RequestApi(
+                `/api/v1/admin/products/${productId}/offline`,
+                "POST",
+                { offlineRemark: offlineRemark || "" },
+                true
+            );
+        },
+        ListOrdersByAdmin(pageNo, pageSize, statusFilter) {
+            const queryList = [];
+            if (pageNo) {
+                queryList.push(`pageNo=${encodeURIComponent(String(pageNo))}`);
+            }
+            if (pageSize) {
+                queryList.push(`pageSize=${encodeURIComponent(String(pageSize))}`);
+            }
+            if (statusFilter) {
+                queryList.push(`statusFilter=${encodeURIComponent(String(statusFilter))}`);
+            }
+            const queryText = queryList.length ? `?${queryList.join("&")}` : "";
+            return RequestApi(`/api/v1/admin/orders${queryText}`, "GET", null, true);
+        },
+        GetOrderDetailByAdmin(orderId) {
+            return RequestApi(`/api/v1/admin/orders/${orderId}`, "GET", null, true);
+        },
+        CloseOrderByAdmin(orderId, closeReason) {
+            return RequestApi(
+                `/api/v1/admin/orders/${orderId}/close`,
+                "POST",
+                { closeReason: closeReason || "" },
+                true
+            );
+        },
+        ListAuditLogsByAdmin(query) {
+            const safeQuery = query || {};
+            const queryList = [];
+            if (safeQuery.pageNo) {
+                queryList.push(`pageNo=${encodeURIComponent(String(safeQuery.pageNo))}`);
+            }
+            if (safeQuery.pageSize) {
+                queryList.push(`pageSize=${encodeURIComponent(String(safeQuery.pageSize))}`);
+            }
+            if (safeQuery.operatorUserId) {
+                queryList.push(`operatorUserId=${encodeURIComponent(String(safeQuery.operatorUserId))}`);
+            }
+            if (safeQuery.actionType) {
+                queryList.push(`actionType=${encodeURIComponent(String(safeQuery.actionType))}`);
+            }
+            if (safeQuery.targetType) {
+                queryList.push(`targetType=${encodeURIComponent(String(safeQuery.targetType))}`);
+            }
+            if (safeQuery.actionResult) {
+                queryList.push(`actionResult=${encodeURIComponent(String(safeQuery.actionResult))}`);
+            }
+            const queryText = queryList.length ? `?${queryList.join("&")}` : "";
+            return RequestApi(`/api/v1/admin/audit/logs${queryText}`, "GET", null, true);
+        },
         ListPendingReports() {
             return RequestApi("/api/v1/admin/reports/pending", "GET", null, true);
         },

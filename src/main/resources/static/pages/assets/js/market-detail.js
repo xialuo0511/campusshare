@@ -31,10 +31,12 @@
         const favoriteButton = FindFavoriteButton();
         const favoriteIcon = favoriteButton ? favoriteButton.querySelector(".material-symbols-outlined") : null;
         const reportButton = document.querySelector("button[data-action='report-product']");
+        const shareButton = document.querySelector("button[data-action='share-product']");
         const messageBar = BuildMessageBar();
         const reportModal = BuildReportModal();
         document.body.appendChild(reportModal.wrapper);
         BindReportModalActions(reportModal, productId, messageBar);
+        InitializeDetailTabs();
 
         const reviewSection = FindSectionByHeading("社区反馈");
         const reviewListContainer = reviewSection ? reviewSection.querySelector("div.flex.flex-col.gap-6") : null;
@@ -91,9 +93,36 @@
                 writeReviewButton.classList.add("opacity-50", "cursor-not-allowed");
                 writeReviewButton.textContent = "暂不可评价";
             }
-        }).catch(function HandleDetailError(error) {
+        }).catch(async function HandleDetailError(error) {
+            const fallbackDetail = await TryLoadPendingProductFallback(productId);
+            if (fallbackDetail) {
+                currentProductDetail = fallbackDetail;
+                ApplyProductDetailView(
+                    fallbackDetail,
+                    productId,
+                    productTitleNode,
+                    categoryNode,
+                    conditionNode,
+                    locationNode,
+                    priceNode,
+                    sellerNameNode,
+                    descriptionNode,
+                    breadCrumbNode,
+                    messageBar
+                );
+                DisableActionButton(buyButton);
+                if (writeReviewButton) {
+                    writeReviewButton.disabled = true;
+                    writeReviewButton.classList.add("opacity-50", "cursor-not-allowed");
+                    writeReviewButton.textContent = "暂不可评价";
+                }
+                RenderCommentList(reviewListContainer, []);
+                UpdateReviewTabText(reviewTabButton, 0);
+                LoadFavoriteState(productId, favoriteButton, favoriteIcon);
+                return;
+            }
             currentProductDetail = null;
-            const errorMessage = error instanceof Error ? error.message : "商品详情加载失败";
+            const errorMessage = ResolveDetailErrorMessage(error);
             DisableActionButton(buyButton);
             DisableActionButton(favoriteButton);
             DisableActionButton(reportButton);
@@ -159,6 +188,20 @@
                 OpenReportModal(reportModal);
             });
         }
+        if (shareButton) {
+            shareButton.addEventListener("click", function HandleShareProduct() {
+                const shareUrl = `${window.location.origin}/pages/market_item_detail.html?productId=${encodeURIComponent(String(productId))}`;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(shareUrl).then(function HandleCopied() {
+                        ShowSuccess(messageBar, "商品链接已复制");
+                    }).catch(function HandleCopyError() {
+                        ShowInfo(messageBar, "复制失败，请手动复制地址栏链接");
+                    });
+                    return;
+                }
+                ShowInfo(messageBar, "请手动复制地址栏链接进行分享");
+            });
+        }
 
         if (typeof refreshCommentList === "function") {
             refreshCommentList();
@@ -181,6 +224,38 @@
         messageBar
     ) {
         const detailResult = await window.CampusShareApi.GetProductDetail(productId);
+        ApplyProductDetailView(
+            detailResult,
+            productId,
+            productTitleNode,
+            categoryNode,
+            conditionNode,
+            locationNode,
+            priceNode,
+            sellerNameNode,
+            descriptionNode,
+            breadCrumbNode,
+            messageBar
+        );
+        return detailResult;
+    }
+
+    /**
+     * 应用商品详情到页面
+     */
+    function ApplyProductDetailView(
+        detailResult,
+        productId,
+        productTitleNode,
+        categoryNode,
+        conditionNode,
+        locationNode,
+        priceNode,
+        sellerNameNode,
+        descriptionNode,
+        breadCrumbNode,
+        messageBar
+    ) {
         if (productTitleNode) {
             productTitleNode.textContent = detailResult.title || `商品 #${productId}`;
         }
@@ -208,7 +283,6 @@
         document.title = `CampusShare | ${detailResult.title || `商品 #${productId}`}`;
         RenderProductGallery(detailResult.imageFileIds);
         RenderProductReviewHint(detailResult, messageBar);
-        return detailResult;
     }
 
     /**
@@ -278,20 +352,72 @@
      * 渲染商品图片
      */
     function RenderProductGallery(imageFileIds) {
-        const galleryImageList = Array.from(document.querySelectorAll("main div.lg\\:col-span-7 img"));
-        if (!galleryImageList.length) {
+        const mainImageNode = document.querySelector("[data-role='gallery-main-image']");
+        const thumbContainer = document.querySelector("[data-role='gallery-thumbs']");
+        if (!mainImageNode || !thumbContainer) {
             return;
         }
         const previewUrlList = BuildProductPreviewUrlList(imageFileIds);
         if (!previewUrlList.length) {
+            thumbContainer.classList.add("hidden");
             return;
         }
-        galleryImageList.forEach(function UpdateGalleryImage(imageElement, index) {
-            const previewUrl = previewUrlList[index % previewUrlList.length];
-            if (!previewUrl) {
-                return;
-            }
-            imageElement.src = previewUrl;
+        mainImageNode.src = previewUrlList[0];
+        mainImageNode.setAttribute("data-gallery-index", "0");
+
+        if (previewUrlList.length <= 1) {
+            thumbContainer.classList.add("hidden");
+            thumbContainer.innerHTML = "";
+            return;
+        }
+
+        const MAX_VISIBLE_THUMB_COUNT = 4;
+        const visibleThumbUrlList = previewUrlList.slice(0, MAX_VISIBLE_THUMB_COUNT);
+        thumbContainer.classList.remove("hidden");
+        thumbContainer.innerHTML = visibleThumbUrlList.map(function BuildThumbHtml(previewUrl, index) {
+            const activeClass = index === 0
+                ? "border-2 border-primary"
+                : "ring-1 ring-outline-variant/40 hover:ring-primary/60";
+            return [
+                `<button type="button" data-role="gallery-thumb" data-thumb-index="${index}" `,
+                `class="aspect-square rounded-lg overflow-hidden ${activeClass} transition-all">`,
+                `<img class="w-full h-full object-cover" src="${EscapeHtml(previewUrl)}" alt="商品图片缩略图"/>`,
+                "</button>"
+            ].join("");
+        }).join("");
+
+        if (previewUrlList.length > MAX_VISIBLE_THUMB_COUNT) {
+            const moreCount = previewUrlList.length - MAX_VISIBLE_THUMB_COUNT;
+            thumbContainer.insertAdjacentHTML(
+                "beforeend",
+                [
+                    "<div class=\"aspect-square rounded-lg bg-surface-container-low flex items-center justify-center text-sm font-bold text-on-surface-variant\">",
+                    `+${EscapeHtml(String(moreCount))}`,
+                    "</div>"
+                ].join("")
+            );
+        }
+
+        const thumbButtonList = Array.from(thumbContainer.querySelectorAll("button[data-role='gallery-thumb']"));
+        thumbButtonList.forEach(function BindThumbClick(thumbButton) {
+            thumbButton.addEventListener("click", function HandleThumbClick() {
+                const thumbIndex = Number(thumbButton.getAttribute("data-thumb-index") || 0);
+                const nextImageUrl = previewUrlList[thumbIndex];
+                if (!nextImageUrl) {
+                    return;
+                }
+                mainImageNode.src = nextImageUrl;
+                mainImageNode.setAttribute("data-gallery-index", String(thumbIndex));
+                thumbButtonList.forEach(function ToggleThumbActive(item, itemIndex) {
+                    item.classList.remove("border-2", "border-primary");
+                    item.classList.remove("ring-1", "ring-outline-variant/40", "hover:ring-primary/60");
+                    if (itemIndex === thumbIndex) {
+                        item.classList.add("border-2", "border-primary");
+                    } else {
+                        item.classList.add("ring-1", "ring-outline-variant/40", "hover:ring-primary/60");
+                    }
+                });
+            });
         });
     }
 
@@ -310,6 +436,122 @@
             .filter(function FilterValidUrl(fileUrl) {
                 return !!fileUrl;
             });
+    }
+
+    /**
+     * 初始化详情页签
+     */
+    function InitializeDetailTabs() {
+        const tabContainer = document.querySelector("[data-role='detail-tab-list']");
+        if (!tabContainer || tabContainer.dataset.tabBound === "true") {
+            return;
+        }
+        const tabButtonList = Array.from(tabContainer.querySelectorAll("button[data-tab-target]"));
+        const tabPanelList = Array.from(document.querySelectorAll("[data-tab-panel]"));
+        if (!tabButtonList.length || !tabPanelList.length) {
+            return;
+        }
+        tabContainer.dataset.tabBound = "true";
+        const defaultTabTarget = tabButtonList[0].getAttribute("data-tab-target") || "description";
+        SetActiveTab(defaultTabTarget, tabButtonList, tabPanelList);
+        tabContainer.addEventListener("click", function HandleTabClick(event) {
+            const tabButton = event.target.closest("button[data-tab-target]");
+            if (!tabButton) {
+                return;
+            }
+            const tabTarget = tabButton.getAttribute("data-tab-target") || "";
+            SetActiveTab(tabTarget, tabButtonList, tabPanelList);
+        });
+    }
+
+    /**
+     * 设置当前页签
+     */
+    function SetActiveTab(tabTarget, tabButtonList, tabPanelList) {
+        if (!tabTarget) {
+            return;
+        }
+        tabButtonList.forEach(function ToggleTabButtonStyle(tabButton) {
+            const isActive = tabButton.getAttribute("data-tab-target") === tabTarget;
+            tabButton.classList.remove("border-b-2", "border-primary", "text-primary", "font-bold");
+            tabButton.classList.add("text-outline", "font-medium");
+            if (isActive) {
+                tabButton.classList.remove("text-outline", "font-medium");
+                tabButton.classList.add("border-b-2", "border-primary", "text-primary", "font-bold");
+            }
+        });
+        tabPanelList.forEach(function ToggleTabPanel(panelElement) {
+            const panelTarget = panelElement.getAttribute("data-tab-panel");
+            panelElement.classList.toggle("hidden", panelTarget !== tabTarget);
+        });
+    }
+
+    /**
+     * 解析详情错误文案
+     */
+    function ResolveDetailErrorMessage(error) {
+        const rawMessage = error instanceof Error ? error.message : "商品详情加载失败";
+        if (!rawMessage) {
+            return "商品详情加载失败";
+        }
+        if (rawMessage.includes("商品不存在") || rawMessage.includes("暂不可见")) {
+            return "该商品可能处于审核中或已下架，当前账号暂不可查看公开详情";
+        }
+        return rawMessage;
+    }
+
+    /**
+     * 回退读取本人待审核商品
+     */
+    async function TryLoadPendingProductFallback(productId) {
+        if (!window.CampusShareApi || !window.CampusShareApi.GetAuthToken()) {
+            return null;
+        }
+        const safeProductId = Number(productId || 0);
+        if (!safeProductId) {
+            return null;
+        }
+        try {
+            const pendingResult = await window.CampusShareApi.ListMyProducts({
+                pageNo: 1,
+                pageSize: 100,
+                productStatus: "PENDING_REVIEW"
+            });
+            const rejectedResult = await window.CampusShareApi.ListMyProducts({
+                pageNo: 1,
+                pageSize: 100,
+                productStatus: "REJECTED"
+            });
+            const pendingProductList = pendingResult && Array.isArray(pendingResult.productList)
+                ? pendingResult.productList
+                : [];
+            const rejectedProductList = rejectedResult && Array.isArray(rejectedResult.productList)
+                ? rejectedResult.productList
+                : [];
+            const mergedProductList = pendingProductList.concat(rejectedProductList);
+            const matchedProduct = mergedProductList.find(function MatchProduct(productItem) {
+                return Number(productItem.productId) === safeProductId;
+            });
+            if (!matchedProduct) {
+                return null;
+            }
+            return {
+                productId: matchedProduct.productId,
+                title: matchedProduct.title,
+                category: matchedProduct.category,
+                conditionLevel: matchedProduct.conditionLevel,
+                tradeLocation: matchedProduct.tradeLocation,
+                price: matchedProduct.price,
+                sellerUserId: matchedProduct.sellerUserId,
+                sellerDisplayName: matchedProduct.sellerDisplayName,
+                description: matchedProduct.description || "商品处于审核流程中，部分公开信息暂不可见",
+                imageFileIds: Array.isArray(matchedProduct.imageFileIds) ? matchedProduct.imageFileIds : [],
+                productStatus: matchedProduct.productStatus || "PENDING_REVIEW",
+                onShelf: matchedProduct.onShelf
+            };
+        } catch (error) {
+            return null;
+        }
     }
 
     /**
@@ -373,6 +615,9 @@
             "</div>"
         ].join("");
         reviewSection.insertBefore(composePanel, reviewSection.querySelector("div.flex.flex-col.gap-6"));
+        if (window.CampusShareApi && typeof window.CampusShareApi.EnhanceSelectElements === "function") {
+            window.CampusShareApi.EnhanceSelectElements(composePanel);
+        }
 
         const scoreSelect = composePanel.querySelector("[data-role='score']");
         const contentTextArea = composePanel.querySelector("[data-role='content']");
@@ -448,6 +693,9 @@
      * 渲染评论列表
      */
     function RenderCommentList(reviewListContainer, commentList) {
+        if (!reviewListContainer) {
+            return;
+        }
         if (!Array.isArray(commentList) || commentList.length === 0) {
             reviewListContainer.innerHTML = [
                 "<div class=\"p-6 bg-surface-container-lowest rounded-xl border border-surface-container text-sm text-on-surface-variant\">",
@@ -491,7 +739,7 @@
      * 渲染卖家信用汇总
      */
     function RenderSellerCreditSummary(listResult, sellerNameNode) {
-        const sellerSection = FindSectionByHeading("机构公信力");
+        const sellerSection = document.querySelector("[data-section='seller-credit']");
         if (!sellerSection || !listResult) {
             return;
         }
@@ -632,6 +880,9 @@
             "</div>",
             "</div>"
         ].join("");
+        if (window.CampusShareApi && typeof window.CampusShareApi.EnhanceSelectElements === "function") {
+            window.CampusShareApi.EnhanceSelectElements(wrapper);
+        }
         return {
             wrapper: wrapper,
             closeButton: wrapper.querySelector("[data-role='close']"),
@@ -734,11 +985,7 @@
      * 查询评价页签按钮
      */
     function FindReviewTabButton() {
-        const buttonList = Array.from(document.querySelectorAll("main button"));
-        return buttonList.find(function MatchReviewTab(buttonElement) {
-            const text = buttonElement.textContent || "";
-            return text.includes("评价");
-        }) || null;
+        return document.querySelector("[data-tab-target='review']") || null;
     }
 
     /**

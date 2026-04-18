@@ -18,6 +18,7 @@
         AUTH: "/pages/auth_access.html",
         OVERVIEW: "/pages/market_overview.html",
         LISTING: "/pages/market_listing.html",
+        MATERIAL_LISTING: "/pages/material_listing.html",
         DETAIL: "/pages/market_item_detail.html",
         ORDER: "/pages/order_center.html",
         ORDER_DETAIL: "/pages/order_detail.html",
@@ -45,6 +46,7 @@
     let notificationRequestSequence = 0;
     let notificationDataList = [];
     let authRedirecting = false;
+    let selectEnhanceObserver = null;
 
     /**
      * 生成请求ID
@@ -335,17 +337,38 @@
         ) {
             return PAGE_PATH_MAP.OVERVIEW;
         }
+        if (
+            text.includes("学术资源")
+            || text.includes("学习资料")
+            || text.includes("资源中心")
+            || lowerText.includes("resource")
+            || lowerText.includes("material")
+        ) {
+            return PAGE_PATH_MAP.MATERIAL_LISTING;
+        }
         if (text.includes("订单") || text.includes("交易请求") || lowerText.includes("trade requests")) {
             return PAGE_PATH_MAP.ORDER;
         }
-        if (text.includes("发布") || lowerText.includes("publish") || lowerText.includes("upload")) {
-            return PAGE_PATH_MAP.PUBLISH;
-        }
-        if (text.includes("招募") || lowerText.includes("recruitment")) {
-            return PAGE_PATH_MAP.RECRUITMENT;
-        }
         if (text.includes("我的发布") || lowerText.includes("my listings")) {
             return PAGE_PATH_MAP.MY_PUBLISH;
+        }
+        if (
+            text === "发布"
+            || text === "开始发布"
+            || text === "去发布"
+            || lowerText === "publish"
+            || lowerText.includes("upload")
+        ) {
+            return PAGE_PATH_MAP.PUBLISH;
+        }
+        if (
+            text.includes("校园论坛")
+            || text.includes("论坛")
+            || text.includes("招募")
+            || lowerText.includes("forum")
+            || lowerText.includes("recruitment")
+        ) {
+            return PAGE_PATH_MAP.RECRUITMENT;
         }
         if (text.includes("消息") || lowerText.includes("message")) {
             return PAGE_PATH_MAP.NOTIFICATION;
@@ -414,6 +437,135 @@
                 triggerElement.click();
             }
         });
+    }
+
+    /**
+     * 注入全站下拉框样式
+     */
+    function EnsureCustomSelectStyle() {
+        if (document.getElementById("campusshare-select-style")) {
+            return;
+        }
+        const styleElement = document.createElement("style");
+        styleElement.id = "campusshare-select-style";
+        styleElement.textContent = `
+            .campusshare-select {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                min-height: 2.375rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 0.5rem;
+                padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+                background-color: #ffffff;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5.5 7.5L10 12l4.5-4.5' stroke='%2364758b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 0.65rem center;
+                background-size: 1rem;
+                color: #0f172a;
+                transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+            }
+            .campusshare-select:hover {
+                border-color: #94a3b8;
+                background-color: #f8fafc;
+            }
+            .campusshare-select:focus {
+                outline: none;
+                border-color: #0ea5e9;
+                box-shadow: 0 0 0 3px rgba(14, 165, 233, .14);
+            }
+            .campusshare-select.campusshare-select-has-icon {
+                background-image: none;
+                padding-right: 2rem;
+            }
+            .campusshare-select[disabled] {
+                background-color: #f1f5f9;
+                color: #94a3b8;
+                cursor: not-allowed;
+            }
+        `;
+        document.head.appendChild(styleElement);
+    }
+
+    /**
+     * 统一增强下拉框样式
+     */
+    function EnhanceSelectElements(rootElement) {
+        EnsureCustomSelectStyle();
+        const queryRoot = rootElement && rootElement.querySelectorAll ? rootElement : document;
+        const selectNodeList = Array.from(queryRoot.querySelectorAll("select"));
+        selectNodeList.forEach(function PatchSelectStyle(selectElement) {
+            if (!selectElement || selectElement.dataset.selectStyled === "true") {
+                return;
+            }
+            const parentElement = selectElement.parentElement;
+            const hasIconSibling = !!(parentElement && Array.from(parentElement.children || []).some(function FindIcon(child) {
+                return child !== selectElement
+                    && child.classList
+                    && child.classList.contains("material-symbols-outlined");
+            }));
+            selectElement.classList.add("campusshare-select");
+            if (hasIconSibling) {
+                selectElement.classList.add("campusshare-select-has-icon");
+            }
+            selectElement.dataset.selectStyled = "true";
+        });
+    }
+
+    /**
+     * 监听动态节点并增强下拉框
+     */
+    function ObserveDynamicSelectElements() {
+        if (selectEnhanceObserver || !document.body || typeof MutationObserver === "undefined") {
+            return;
+        }
+        selectEnhanceObserver = new MutationObserver(function HandleNodeMutation(mutationList) {
+            mutationList.forEach(function HandleMutation(mutationItem) {
+                const addedNodeList = Array.from(mutationItem.addedNodes || []);
+                addedNodeList.forEach(function EnhanceAddedNode(addedNode) {
+                    if (!addedNode || addedNode.nodeType !== 1) {
+                        return;
+                    }
+                    if (addedNode.tagName && addedNode.tagName.toLowerCase() === "select") {
+                        EnhanceSelectElements(addedNode.parentElement || document);
+                        return;
+                    }
+                    if (addedNode.querySelectorAll) {
+                        EnhanceSelectElements(addedNode);
+                    }
+                });
+            });
+        });
+        selectEnhanceObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    /**
+     * 修正通知触发节点基础样式
+     */
+    function EnsureNotificationTriggerStyle(triggerElement) {
+        if (!triggerElement) {
+            return;
+        }
+        const computedStyle = window.getComputedStyle(triggerElement);
+        if (computedStyle.position === "static") {
+            triggerElement.style.position = "relative";
+        }
+        if (triggerElement.dataset.notificationTriggerPatched !== "true") {
+            triggerElement.dataset.notificationTriggerPatched = "true";
+            const tagName = (triggerElement.tagName || "").toLowerCase();
+            if (tagName !== "button") {
+                triggerElement.style.display = "inline-flex";
+                triggerElement.style.alignItems = "center";
+                triggerElement.style.justifyContent = "center";
+                triggerElement.style.width = "32px";
+                triggerElement.style.height = "32px";
+                triggerElement.style.borderRadius = "9999px";
+            }
+        }
+        triggerElement.style.cursor = "pointer";
     }
 
     /**
@@ -611,15 +763,13 @@
         if (!notificationTrigger) {
             return;
         }
+        EnsureNotificationTriggerStyle(notificationTrigger);
         const badgeElement = notificationTrigger.querySelector(".campusshare-notification-badge");
         if (!unreadCount || unreadCount <= 0) {
             if (badgeElement) {
                 badgeElement.remove();
             }
             return;
-        }
-        if (window.getComputedStyle(notificationTrigger).position === "static") {
-            notificationTrigger.style.position = "relative";
         }
         const nextBadgeElement = badgeElement || document.createElement("span");
         nextBadgeElement.className = "campusshare-notification-badge";
@@ -1007,7 +1157,17 @@
             if (!buttonText) {
                 return;
             }
-            if ((buttonText.includes("发布") || buttonText.includes("去发布"))
+            if (buttonText.includes("我的发布")
+                && !dataTargetPath
+                && !buttonElement.closest("form")
+                && !buttonElement.hasAttribute("data-action")
+                && !buttonElement.hasAttribute("data-task-action")
+                && !buttonElement.hasAttribute("data-order-action")) {
+                buttonElement.addEventListener("click", function HandleMyPublishJump() {
+                    NavigateToPage(PAGE_PATH_MAP.MY_PUBLISH);
+                });
+            }
+            if ((buttonText === "发布" || buttonText === "开始发布" || buttonText === "去发布")
                 && !dataTargetPath
                 && !buttonElement.closest("form")
                 && !buttonElement.hasAttribute("data-action")
@@ -1111,6 +1271,8 @@
 
         const notificationIcon = FindMaterialIconElement("notifications");
         const notificationTrigger = ResolveIconTriggerElement(notificationIcon);
+        EnsureNotificationPanelStyle();
+        EnsureNotificationTriggerStyle(notificationTrigger);
         if (notificationTrigger && notificationTrigger.dataset.notificationNavigationBound !== "true") {
             EnsureInteractiveElement(notificationTrigger);
             notificationTrigger.dataset.notificationNavigationBound = "true";
@@ -1134,6 +1296,8 @@
      * 绑定全局壳层导航
      */
     function BindGlobalShellNavigation() {
+        EnhanceSelectElements(document);
+        ObserveDynamicSelectElements();
         BindBrandNavigation();
         BindAnchorNavigation();
         BindButtonNavigation();
@@ -1337,6 +1501,7 @@
         },
         RedirectToAuthPage,
         NavigateToPage,
+        EnhanceSelectElements,
         SyncSessionProfile,
         EnsureAdminSession,
         RegisterUser(payload) {

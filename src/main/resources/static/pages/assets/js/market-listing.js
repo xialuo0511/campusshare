@@ -12,6 +12,9 @@
         if (!window.CampusShareApi) {
             return;
         }
+        if (typeof window.CampusShareApi.EnhanceSelectElements === "function") {
+            window.CampusShareApi.EnhanceSelectElements(document);
+        }
         const productGrid = document.querySelector("main div.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-4.gap-6");
         if (!productGrid) {
             return;
@@ -229,8 +232,20 @@
         if (!categoryCheckboxList || categoryCheckboxList.length === 0) {
             return;
         }
+        if (!categoryCheckboxList.some(function HasChecked(checkboxElement) { return checkboxElement.checked; })) {
+            categoryCheckboxList[0].checked = true;
+        }
         categoryCheckboxList.forEach(function BindCategoryCheckbox(categoryCheckbox) {
             categoryCheckbox.addEventListener("change", function HandleCategoryChange() {
+                if (categoryCheckbox.checked) {
+                    categoryCheckboxList.forEach(function ResetOther(itemCheckbox) {
+                        if (itemCheckbox !== categoryCheckbox) {
+                            itemCheckbox.checked = false;
+                        }
+                    });
+                } else if (!categoryCheckboxList.some(function HasChecked(checkboxElement) { return checkboxElement.checked; })) {
+                    categoryCheckboxList[0].checked = true;
+                }
                 state.category = ResolveSelectedCategory(categoryCheckboxList);
                 state.pageNo = DEFAULT_PAGE_NO;
                 onChange();
@@ -286,7 +301,7 @@
             return;
         }
         locationSelect.addEventListener("change", function HandleLocationChange() {
-            state.tradeLocation = locationSelect.value ? locationSelect.value.trim() : "";
+            state.tradeLocation = ResolveLocationText(locationSelect.value ? locationSelect.value.trim() : "");
             state.pageNo = DEFAULT_PAGE_NO;
             onChange();
         });
@@ -537,9 +552,13 @@
      * 解析成色文本
      */
     function ResolveConditionText(conditionButton) {
-        return conditionButton && conditionButton.textContent
+        const conditionText = conditionButton && conditionButton.textContent
             ? conditionButton.textContent.trim()
             : "";
+        if (!conditionText || conditionText.includes("全部")) {
+            return "";
+        }
+        return conditionText;
     }
 
     /**
@@ -557,7 +576,20 @@
             return "";
         }
         const labelText = labelElement.textContent ? labelElement.textContent.trim() : "";
-        return labelText === "电子产品" ? labelText : labelText;
+        if (!labelText || labelText.includes("全部")) {
+            return "";
+        }
+        return labelText;
+    }
+
+    /**
+     * 解析地点值
+     */
+    function ResolveLocationText(locationText) {
+        if (!locationText || locationText.includes("全部")) {
+            return "";
+        }
+        return locationText;
     }
 
     /**

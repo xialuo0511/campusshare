@@ -356,6 +356,10 @@
                     : (taskItem.taskType === "TEAM" ? "groups" : (taskItem.taskType === "MATERIAL" ? "description" : "storefront")));
             const recruitmentIdValue = taskItem.recruitmentId || "";
             const productIdValue = taskItem.taskType === "PRODUCT" ? taskItem.taskId : "";
+            const productDetailPath = `/pages/market_item_detail.html?productId=${encodeURIComponent(String(taskItem.taskId || ""))}`;
+            const resourceTitleHtml = taskItem.taskType === "PRODUCT"
+                ? `<a href="${productDetailPath}" target="_blank" class="text-sm font-semibold text-primary hover:underline">${EscapeHtml(resourceTitle)}</a>`
+                : `<p class="text-sm font-semibold text-on-surface">${EscapeHtml(resourceTitle)}</p>`;
             const viewProductButton = taskItem.taskType === "PRODUCT"
                 ? `<button data-task-action=\"view-product\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${productIdValue}\" class=\"p-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100\" title=\"查看商品详情\"><span class=\"material-symbols-outlined text-sm\">visibility</span></button>`
                 : "";
@@ -368,7 +372,7 @@
                 `<span class=\"material-symbols-outlined text-outline\">${iconName}</span>`,
                 "</div>",
                 "<div>",
-                `<p class=\"text-sm font-semibold text-on-surface\">${EscapeHtml(resourceTitle)}</p>`,
+                resourceTitleHtml,
                 `<p class=\"text-xs text-slate-400\">${EscapeHtml(resourceMeta)}</p>`,
                 "</div></div></td>",
                 `<td class=\"px-6 py-4 text-sm text-on-surface-variant\">${EscapeHtml(contributor)}</td>`,
@@ -554,6 +558,9 @@
             "</div>"
         ].join("");
         panelHeader.insertAdjacentElement("afterend", toolbar);
+        if (window.CampusShareApi && typeof window.CampusShareApi.EnhanceSelectElements === "function") {
+            window.CampusShareApi.EnhanceSelectElements(toolbar);
+        }
         return {
             wrapper: toolbar,
             typeFilterSelect: toolbar.querySelector("[data-task-type-filter]"),
@@ -787,7 +794,7 @@
             "<h3 class=\"text-base font-semibold text-on-surface\">规则配置</h3>",
             "<span class=\"text-xs text-slate-500\">可在线修改</span>",
             "</div>",
-            "<div class=\"max-h-80 overflow-auto\">",
+            "<div class=\"overflow-x-auto\">",
             "<table class=\"w-full text-left border-collapse\">",
             "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">规则键</th><th class=\"px-4 py-3\">规则说明</th><th class=\"px-4 py-3\">规则值</th><th class=\"px-4 py-3 text-right\">操作</th></tr></thead>",
             "<tbody data-role=\"rule-table\" class=\"divide-y divide-surface-container\"></tbody>",
@@ -800,7 +807,7 @@
             "<h3 class=\"text-base font-semibold text-on-surface\">商品治理</h3>",
             "<span class=\"text-xs text-slate-500\">可强制下架</span>",
             "</div>",
-            "<div class=\"max-h-80 overflow-auto\">",
+            "<div class=\"overflow-x-auto\">",
             "<table class=\"w-full text-left border-collapse\">",
             "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">商品</th><th class=\"px-4 py-3\">状态</th><th class=\"px-4 py-3 text-right\">操作</th></tr></thead>",
             "<tbody data-role=\"product-table\" class=\"divide-y divide-surface-container\"></tbody>",
@@ -813,7 +820,7 @@
             "<h3 class=\"text-base font-semibold text-on-surface\">订单治理</h3>",
             "<span class=\"text-xs text-slate-500\">可强制关闭</span>",
             "</div>",
-            "<div class=\"max-h-80 overflow-auto\">",
+            "<div class=\"overflow-x-auto\">",
             "<table class=\"w-full text-left border-collapse\">",
             "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">订单号</th><th class=\"px-4 py-3\">状态</th><th class=\"px-4 py-3 text-right\">操作</th></tr></thead>",
             "<tbody data-role=\"order-table\" class=\"divide-y divide-surface-container\"></tbody>",
@@ -826,7 +833,7 @@
             "<h3 class=\"text-base font-semibold text-on-surface\">审计日志</h3>",
             "<span class=\"text-xs text-slate-500\">最近操作</span>",
             "</div>",
-            "<div class=\"max-h-80 overflow-auto\">",
+            "<div class=\"overflow-x-auto\">",
             "<table class=\"w-full text-left border-collapse\">",
             "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">动作</th><th class=\"px-4 py-3\">对象</th><th class=\"px-4 py-3\">时间</th></tr></thead>",
             "<tbody data-role=\"audit-table\" class=\"divide-y divide-surface-container\"></tbody>",
@@ -835,6 +842,9 @@
             "</div>"
         ].join("");
         mainElement.appendChild(workspaceElement);
+        if (window.CampusShareApi && typeof window.CampusShareApi.EnhanceSelectElements === "function") {
+            window.CampusShareApi.EnhanceSelectElements(workspaceElement);
+        }
         return {
             wrapper: workspaceElement,
             refreshButton: workspaceElement.querySelector("[data-governance-action='refresh']"),
@@ -1017,13 +1027,16 @@
         productTableBody.innerHTML = productList.map(function BuildProductRow(productItem) {
             const productStatus = String(productItem.productStatus || "UNKNOWN");
             const canOffline = productStatus !== "OFFLINE";
+            const productId = SafeNumber(productItem.productId);
+            const productDetailPath = `/pages/market_item_detail.html?productId=${encodeURIComponent(String(productId))}`;
             return [
                 "<tr class=\"hover:bg-surface-container-low transition-colors\">",
-                `<td class=\"px-4 py-3 text-xs text-on-surface\">#${SafeNumber(productItem.productId)} ${EscapeHtml(productItem.title || "-")}</td>`,
+                `<td class=\"px-4 py-3 text-xs text-on-surface\">#${productId} ${EscapeHtml(productItem.title || "-")}</td>`,
                 `<td class=\"px-4 py-3 text-xs text-on-surface-variant\">${EscapeHtml(productStatus)}</td>`,
                 "<td class=\"px-4 py-3 text-right\">",
+                `<a href="${productDetailPath}" target="_blank" class="inline-flex items-center px-2 py-1 text-xs rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 mr-2">查看详情</a>`,
                 canOffline
-                    ? `<button data-governance-action=\"product-offline\" data-product-id=\"${SafeNumber(productItem.productId)}\" class=\"px-2 py-1 text-xs rounded-md bg-red-50 text-red-700 hover:bg-red-100\">强制下架</button>`
+                    ? `<button data-governance-action=\"product-offline\" data-product-id=\"${productId}\" class=\"px-2 py-1 text-xs rounded-md bg-red-50 text-red-700 hover:bg-red-100\">强制下架</button>`
                     : "<span class=\"text-xs text-slate-400\">已下架</span>",
                 "</td>",
                 "</tr>"

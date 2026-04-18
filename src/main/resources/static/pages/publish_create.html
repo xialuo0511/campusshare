@@ -98,13 +98,13 @@
 <div class="flex items-center gap-8">
 <span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500 font-headline">CampusShare</span>
 <nav class="hidden md:flex gap-6 font-['Manrope'] text-sm tracking-wide">
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" href="#">市场</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" href="#">资源</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" href="#">论坛</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" data-nav-target="/pages/material_listing.html" href="#">学术资源</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" data-nav-target="/pages/recruitment_board.html" href="#">校园论坛</a>
 </nav>
 </div>
 <div class="flex items-center gap-4">
-<button class="bg-primary text-on-primary px-5 py-1.5 rounded-lg text-sm font-semibold hover:bg-primary-container transition-all scale-95 active:scale-100">发布</button>
+<button class="bg-primary text-on-primary px-5 py-1.5 rounded-lg text-sm font-semibold hover:bg-primary-container transition-all scale-95 active:scale-100" data-nav-target="/pages/publish_create.html">发布</button>
 <span class="material-symbols-outlined text-slate-600 cursor-pointer">notifications</span>
 <span class="material-symbols-outlined text-slate-600 cursor-pointer">account_circle</span>
 </div>
@@ -170,7 +170,7 @@
 <select class="w-full px-4 py-3 bg-surface-container-low border-0 rounded-lg focus:ring-2 focus:ring-primary/20 text-on-surface">
 <option>选择分类</option>
 <option>教材</option>
-<option>学习资料（电子版）</option>
+<option>学术资源（电子版）</option>
 <option>实验设备</option>
 <option>电子产品</option>
 </select>

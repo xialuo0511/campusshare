@@ -11,10 +11,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * 全局异常处理
@@ -69,6 +71,46 @@ public class GlobalExceptionHandler {
             exception
         );
         return ApiResponse.Failure(BizCodeEnum.SYSTEM_ERROR, "数据库访问异常，请确认数据库与建表脚本已初始化", GetRequestId(request));
+    }
+
+    /**
+     * 处理Redis连接异常
+     */
+    @ExceptionHandler(RedisConnectionFailureException.class)
+    public ApiResponse<Object> HandleRedisConnectionFailureException(
+        RedisConnectionFailureException exception,
+        HttpServletRequest request
+    ) {
+        String requestId = GetRequestId(request);
+        String requestPath = BuildRequestPath(request);
+        Throwable rootCause = ResolveRootCause(exception);
+        LOGGER.error(
+            "Redis connection failure. requestId={}, method={}, path={}, rootCause={}",
+            requestId,
+            request.getMethod(),
+            requestPath,
+            BuildExceptionMessage(rootCause),
+            exception
+        );
+        return ApiResponse.Failure(BizCodeEnum.SYSTEM_ERROR, "缓存服务不可用，请启动Redis后重试", requestId);
+    }
+
+    /**
+     * 处理静态资源不存在
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ApiResponse<Object> HandleNoResourceFoundException(
+        NoResourceFoundException exception,
+        HttpServletRequest request
+    ) {
+        String requestId = GetRequestId(request);
+        LOGGER.info(
+            "Static resource not found. requestId={}, method={}, path={}",
+            requestId,
+            request.getMethod(),
+            BuildRequestPath(request)
+        );
+        return ApiResponse.Failure(BizCodeEnum.RESOURCE_NOT_FOUND, "资源不存在", requestId);
     }
 
     /**

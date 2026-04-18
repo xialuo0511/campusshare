@@ -1,4 +1,4 @@
-﻿CREATE TABLE IF NOT EXISTS system_rule_config (
+CREATE TABLE IF NOT EXISTS system_rule_config (
     rule_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'rule id',
     rule_key VARCHAR(100) NOT NULL COMMENT 'rule key',
     rule_value VARCHAR(500) NOT NULL COMMENT 'rule value',

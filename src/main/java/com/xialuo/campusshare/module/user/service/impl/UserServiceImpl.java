@@ -551,7 +551,8 @@ public class UserServiceImpl implements UserService {
             String sessionKey = USER_SESSION_PREFIX + token;
             stringRedisTemplate.opsForValue().set(sessionKey, userId.toString(), USER_SESSION_TTL);
         } catch (Exception exception) {
-            // Redis不可用时不中断主链路
+            LOGGER.error("写入用户会话失败: userId={}", userId, exception);
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "会话服务不可用，请启动Redis后重试");
         }
     }
 

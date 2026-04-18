@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.resource.service;
 
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductListResponseDto;
+import com.xialuo.campusshare.enums.UserRoleEnum;
 import java.math.BigDecimal;
 
 /**
@@ -48,5 +49,5 @@ public interface ProductQueryService {
     /**
      * 查询商品详情
      */
-    ProductDetailResponseDto GetProductDetail(Long productId);
+    ProductDetailResponseDto GetProductDetail(Long productId, Long currentUserId, UserRoleEnum currentUserRole);
 }

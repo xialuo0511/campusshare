@@ -129,8 +129,9 @@
                 }
 
                 if (result && result.productId) {
-                    window.setTimeout(function JumpToDetailPage() {
-                        window.location.href = `/pages/market_item_detail.html?productId=${encodeURIComponent(result.productId)}`;
+                    const targetPath = ResolvePublishSuccessRedirect(result, isEditMode);
+                    window.setTimeout(function JumpAfterSubmit() {
+                        window.location.href = targetPath;
                     }, 900);
                 }
             } catch (error) {
@@ -217,6 +218,24 @@
                 }
             }
         }
+    }
+
+    /**
+     * 发布成功跳转地址
+     */
+    function ResolvePublishSuccessRedirect(result, isEditMode) {
+        const productId = Number(result && result.productId ? result.productId : 0);
+        if (productId <= 0 || Number.isNaN(productId)) {
+            return "/pages/my_publish.html";
+        }
+        if (isEditMode) {
+            return `/pages/market_item_detail.html?productId=${encodeURIComponent(productId)}`;
+        }
+        const productStatus = String(result && result.productStatus ? result.productStatus : "").toUpperCase();
+        if (productStatus === "PENDING_REVIEW") {
+            return "/pages/my_publish.html";
+        }
+        return `/pages/market_item_detail.html?productId=${encodeURIComponent(productId)}`;
     }
 
     /**

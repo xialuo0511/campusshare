@@ -106,7 +106,11 @@ public class ProductController {
         @PathVariable("productId") Long productId,
         HttpServletRequest httpServletRequest
     ) {
-        ProductDetailResponseDto responseDto = productQueryService.GetProductDetail(productId);
+        ProductDetailResponseDto responseDto = productQueryService.GetProductDetail(
+            productId,
+            TryGetCurrentUserId(httpServletRequest),
+            TryGetCurrentUserRole(httpServletRequest)
+        );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -221,5 +225,41 @@ public class ProductController {
             return userRoleEnum;
         }
         return UserRoleEnum.valueOf(currentUserRole.toString());
+    }
+
+    /**
+     * 尝试获取当前用户ID
+     */
+    private Long TryGetCurrentUserId(HttpServletRequest httpServletRequest) {
+        Object currentUserId = httpServletRequest.getAttribute(SessionAuthFilter.CURRENT_USER_ID_ATTRIBUTE);
+        if (currentUserId == null) {
+            return null;
+        }
+        if (currentUserId instanceof Long currentUserIdLong) {
+            return currentUserIdLong;
+        }
+        try {
+            return Long.parseLong(currentUserId.toString());
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
+
+    /**
+     * 尝试获取当前用户角色
+     */
+    private UserRoleEnum TryGetCurrentUserRole(HttpServletRequest httpServletRequest) {
+        Object currentUserRole = httpServletRequest.getAttribute(SessionAuthFilter.CURRENT_USER_ROLE_ATTRIBUTE);
+        if (currentUserRole == null) {
+            return null;
+        }
+        if (currentUserRole instanceof UserRoleEnum userRoleEnum) {
+            return userRoleEnum;
+        }
+        try {
+            return UserRoleEnum.valueOf(currentUserRole.toString());
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.ProductEntity;
 import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
+import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductListResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductSummaryResponseDto;
@@ -158,9 +159,12 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     }
 
     @Override
-    public ProductDetailResponseDto GetProductDetail(Long productId) {
+    public ProductDetailResponseDto GetProductDetail(Long productId, Long currentUserId, UserRoleEnum currentUserRole) {
         ProductEntity productEntity = productMapper.FindProductById(productId);
-        if (productEntity == null || !Boolean.TRUE.equals(productEntity.GetOnShelf())) {
+        if (productEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        if (!CanViewProductDetail(productEntity, currentUserId, currentUserRole)) {
             throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
         }
         ProductDetailResponseDto responseDto = new ProductDetailResponseDto();
@@ -169,6 +173,19 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         responseDto.SetOnShelf(productEntity.GetOnShelf());
         responseDto.SetStockCount(productEntity.GetStockCount());
         return responseDto;
+    }
+
+    /**
+     * 是否可查看商品详情
+     */
+    private boolean CanViewProductDetail(ProductEntity productEntity, Long currentUserId, UserRoleEnum currentUserRole) {
+        if (currentUserRole == UserRoleEnum.ADMINISTRATOR) {
+            return true;
+        }
+        if (currentUserId != null && currentUserId.equals(productEntity.GetSellerUserId())) {
+            return true;
+        }
+        return Boolean.TRUE.equals(productEntity.GetOnShelf());
     }
 
     /**

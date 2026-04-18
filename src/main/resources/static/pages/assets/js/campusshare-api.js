@@ -1223,12 +1223,14 @@
             "Content-Type": "application/json",
             [REQUEST_ID_HEADER]: BuildRequestId()
         };
+        const token = GetAuthToken();
         if (needAuth) {
-            const token = GetAuthToken();
             if (!token) {
                 HandleUnauthorizedState("请先登录后再操作", true);
                 throw new Error("请先登录后再操作");
             }
+        }
+        if (token) {
             headers[AUTH_TOKEN_HEADER] = token;
         }
 
@@ -1272,12 +1274,14 @@
         const headers = {
             [REQUEST_ID_HEADER]: BuildRequestId()
         };
+        const token = GetAuthToken();
         if (needAuth) {
-            const token = GetAuthToken();
             if (!token) {
                 HandleUnauthorizedState("请先登录后再操作", true);
                 throw new Error("请先登录后再操作");
             }
+        }
+        if (token) {
             headers[AUTH_TOKEN_HEADER] = token;
         }
 

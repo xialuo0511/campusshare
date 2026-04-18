@@ -57,6 +57,8 @@
             messageBar
         ).then(function HandleLoadedDetail(detailResult) {
             currentProductDetail = detailResult;
+            LoadProductComments(productId, reviewListContainer, reviewTabButton, sellerNameNode, messageBar);
+            LoadFavoriteState(productId, favoriteButton, favoriteIcon);
             if (reviewSection && writeReviewButton) {
                 refreshCommentList = BindCommentComposer(
                     reviewSection,
@@ -79,12 +81,15 @@
                     }
                 );
             }
-        }).catch(function IgnoreDetailError() {
+        }).catch(function HandleDetailError(error) {
             currentProductDetail = null;
+            const errorMessage = error instanceof Error ? error.message : "商品详情加载失败";
+            DisableActionButton(buyButton);
+            DisableActionButton(favoriteButton);
+            DisableActionButton(reportButton);
+            RenderUnavailableState(errorMessage);
+            ShowError(messageBar, errorMessage);
         });
-
-        LoadProductComments(productId, reviewListContainer, reviewTabButton, sellerNameNode, messageBar);
-        LoadFavoriteState(productId, favoriteButton, favoriteIcon);
 
         if (buyButton) {
             buyButton.addEventListener("click", async function HandleCreateOrder() {
@@ -194,6 +199,42 @@
         RenderProductGallery(detailResult.imageFileIds);
         HideMessage(messageBar);
         return detailResult;
+    }
+
+    /**
+     * 渲染不可用状态
+     */
+    function RenderUnavailableState(messageText) {
+        const mainElement = document.querySelector("main");
+        if (!mainElement) {
+            return;
+        }
+        const safeMessageText = EscapeHtml(messageText || "商品不存在或暂不可见");
+        mainElement.innerHTML = [
+            "<section class=\"max-w-3xl mx-auto py-16\">",
+            "<div class=\"rounded-2xl border border-surface-container bg-surface-container-lowest p-8 text-center\">",
+            "<div class=\"material-symbols-outlined text-5xl text-outline mb-4\">inventory_2</div>",
+            "<h1 class=\"text-2xl font-bold text-on-surface mb-3\">商品暂不可查看</h1>",
+            `<p class=\"text-on-surface-variant mb-6\">${safeMessageText}</p>`,
+            "<p class=\"text-sm text-on-surface-variant mb-6\">若该商品为你本人发布，可能处于审核中，请前往我的发布查看状态</p>",
+            "<div class=\"flex flex-wrap items-center justify-center gap-3\">",
+            "<a href=\"/pages/my_publish.html\" class=\"px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold\">我的发布</a>",
+            "<a href=\"/pages/market_listing.html\" class=\"px-4 py-2 rounded-lg bg-surface-container text-on-surface text-sm font-semibold\">返回市场</a>",
+            "</div>",
+            "</div>",
+            "</section>"
+        ].join("");
+    }
+
+    /**
+     * 禁用按钮
+     */
+    function DisableActionButton(buttonElement) {
+        if (!buttonElement) {
+            return;
+        }
+        buttonElement.disabled = true;
+        buttonElement.classList.add("opacity-60", "cursor-not-allowed");
     }
 
     /**

@@ -77,5 +77,30 @@
           AND resource_id = #{productId}
           AND score IS NOT NULL
     </select>
-</mapper>
 
+    <select id="CountCommentsBySellerUserId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM comment_info
+        WHERE deleted = 0
+          AND hidden_flag = 0
+          AND to_user_id = #{sellerUserId}
+    </select>
+
+    <select id="AverageScoreBySellerUserId" resultType="java.math.BigDecimal">
+        SELECT AVG(score)
+        FROM comment_info
+        WHERE deleted = 0
+          AND hidden_flag = 0
+          AND to_user_id = #{sellerUserId}
+          AND score IS NOT NULL
+    </select>
+
+    <select id="CountPositiveCommentsBySellerUserId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM comment_info
+        WHERE deleted = 0
+          AND hidden_flag = 0
+          AND to_user_id = #{sellerUserId}
+          AND score &gt;= #{positiveScoreThreshold}
+    </select>
+</mapper>

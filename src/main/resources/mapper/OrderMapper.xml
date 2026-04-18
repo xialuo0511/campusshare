@@ -145,6 +145,13 @@
         </if>
     </select>
 
+    <select id="CountOrdersCreatedAfter" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM order_info
+        WHERE deleted = 0
+          AND create_time &gt;= #{startTime}
+    </select>
+
     <select id="CountCompletedOrdersByProductAndBuyer" resultType="java.lang.Long">
         SELECT COUNT(1)
         FROM order_info
@@ -168,5 +175,55 @@
             'PENDING_OFFLINE_TRADE',
             'PENDING_BUYER_CONFIRM'
           )
+    </update>
+
+    <select id="ListTimeoutPendingSellerConfirmOrders" resultMap="OrderResultMap">
+        SELECT
+            <include refid="OrderColumns"/>
+        FROM order_info
+        WHERE deleted = 0
+          AND order_status = 'PENDING_SELLER_CONFIRM'
+          AND create_time &lt;= #{deadlineTime}
+        ORDER BY create_time ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="ListTimeoutPendingBuyerConfirmOrders" resultMap="OrderResultMap">
+        SELECT
+            <include refid="OrderColumns"/>
+        FROM order_info
+        WHERE deleted = 0
+          AND order_status = 'PENDING_BUYER_CONFIRM'
+          AND update_time &lt;= #{deadlineTime}
+        ORDER BY update_time ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="CountTimeoutPendingSellerConfirmOrders" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM order_info
+        WHERE deleted = 0
+          AND order_status = 'PENDING_SELLER_CONFIRM'
+          AND create_time &lt;= #{deadlineTime}
+    </select>
+
+    <select id="CountTimeoutPendingBuyerConfirmOrders" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM order_info
+        WHERE deleted = 0
+          AND order_status = 'PENDING_BUYER_CONFIRM'
+          AND update_time &lt;= #{deadlineTime}
+    </select>
+
+    <update id="UpdateOrderStatusIfMatch">
+        UPDATE order_info
+        SET
+            order_status = #{toStatus},
+            close_reason = #{closeReason},
+            close_time = #{closeTime},
+            update_time = #{updateTime}
+        WHERE order_id = #{orderId}
+          AND order_status = #{fromStatus}
+          AND deleted = 0
     </update>
 </mapper>

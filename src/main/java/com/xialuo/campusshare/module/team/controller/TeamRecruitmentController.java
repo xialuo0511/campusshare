@@ -4,6 +4,7 @@ import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.enums.UserRoleEnum;
+import com.xialuo.campusshare.module.admin.service.AuditLogService;
 import com.xialuo.campusshare.module.team.dto.ApplyTeamRecruitmentRequestDto;
 import com.xialuo.campusshare.module.team.dto.PublishTeamRecruitmentRequestDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentApplicationResponseDto;
@@ -30,9 +31,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class TeamRecruitmentController {
     /** 招募服务 */
     private final TeamRecruitmentService teamRecruitmentService;
+    /** 审计日志服务 */
+    private final AuditLogService auditLogService;
 
-    public TeamRecruitmentController(TeamRecruitmentService teamRecruitmentService) {
+    public TeamRecruitmentController(
+        TeamRecruitmentService teamRecruitmentService,
+        AuditLogService auditLogService
+    ) {
         this.teamRecruitmentService = teamRecruitmentService;
+        this.auditLogService = auditLogService;
     }
 
     /**
@@ -131,12 +138,22 @@ public class TeamRecruitmentController {
         @RequestBody(required = false) @Valid TeamRecruitmentReviewRequestDto requestDto,
         HttpServletRequest httpServletRequest
     ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        UserRoleEnum currentUserRole = GetCurrentUserRole(httpServletRequest);
         TeamRecruitmentApplicationResponseDto responseDto = teamRecruitmentService.ApproveApplication(
             recruitmentId,
             applicationId,
             requestDto,
-            GetCurrentUserId(httpServletRequest),
-            GetCurrentUserRole(httpServletRequest)
+            currentUserId,
+            currentUserRole
+        );
+        RecordTeamApplicationAuditIfAdmin(
+            currentUserRole,
+            currentUserId,
+            "TEAM_APPLICATION_APPROVE",
+            applicationId,
+            recruitmentId,
+            requestDto
         );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
@@ -151,12 +168,22 @@ public class TeamRecruitmentController {
         @RequestBody(required = false) @Valid TeamRecruitmentReviewRequestDto requestDto,
         HttpServletRequest httpServletRequest
     ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        UserRoleEnum currentUserRole = GetCurrentUserRole(httpServletRequest);
         TeamRecruitmentApplicationResponseDto responseDto = teamRecruitmentService.RejectApplication(
             recruitmentId,
             applicationId,
             requestDto,
-            GetCurrentUserId(httpServletRequest),
-            GetCurrentUserRole(httpServletRequest)
+            currentUserId,
+            currentUserRole
+        );
+        RecordTeamApplicationAuditIfAdmin(
+            currentUserRole,
+            currentUserId,
+            "TEAM_APPLICATION_REJECT",
+            applicationId,
+            recruitmentId,
+            requestDto
         );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
@@ -169,11 +196,23 @@ public class TeamRecruitmentController {
         @PathVariable("recruitmentId") Long recruitmentId,
         HttpServletRequest httpServletRequest
     ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        UserRoleEnum currentUserRole = GetCurrentUserRole(httpServletRequest);
         TeamRecruitmentResponseDto responseDto = teamRecruitmentService.CloseRecruitment(
             recruitmentId,
-            GetCurrentUserId(httpServletRequest),
-            GetCurrentUserRole(httpServletRequest)
+            currentUserId,
+            currentUserRole
         );
+        if (currentUserRole == UserRoleEnum.ADMINISTRATOR) {
+            auditLogService.RecordAuditLog(
+                currentUserId,
+                "TEAM_RECRUITMENT_CLOSE",
+                "TEAM_RECRUITMENT",
+                recruitmentId,
+                "SUCCESS",
+                ""
+            );
+        }
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -220,5 +259,43 @@ public class TeamRecruitmentController {
         }
         return UserRoleEnum.valueOf(currentUserRole.toString());
     }
-}
 
+    /**
+     * 记录管理员审批审计
+     */
+    private void RecordTeamApplicationAuditIfAdmin(
+        UserRoleEnum currentUserRole,
+        Long currentUserId,
+        String actionType,
+        Long applicationId,
+        Long recruitmentId,
+        TeamRecruitmentReviewRequestDto requestDto
+    ) {
+        if (currentUserRole != UserRoleEnum.ADMINISTRATOR) {
+            return;
+        }
+        auditLogService.RecordAuditLog(
+            currentUserId,
+            actionType,
+            "TEAM_APPLICATION",
+            applicationId,
+            "SUCCESS",
+            BuildTeamApplicationAuditDetail(recruitmentId, requestDto)
+        );
+    }
+
+    /**
+     * 构建审批审计明细
+     */
+    private String BuildTeamApplicationAuditDetail(
+        Long recruitmentId,
+        TeamRecruitmentReviewRequestDto requestDto
+    ) {
+        StringBuilder detailBuilder = new StringBuilder();
+        detailBuilder.append("recruitmentId=").append(recruitmentId == null ? "" : recruitmentId);
+        if (requestDto != null && requestDto.GetReviewRemark() != null) {
+            detailBuilder.append(",reviewRemark=").append(requestDto.GetReviewRemark().trim());
+        }
+        return detailBuilder.toString();
+    }
+}

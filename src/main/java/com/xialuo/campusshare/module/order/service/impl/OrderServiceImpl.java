@@ -112,6 +112,7 @@ public class OrderServiceImpl implements OrderService {
         orderEntity.SetBuyerCompleteTime(LocalDateTime.now());
         orderEntity.SetUpdateTime(LocalDateTime.now());
         orderMapper.UpdateOrder(orderEntity);
+        productMapper.FinalizeProductOrderSuccess(orderEntity.GetProductId(), LocalDateTime.now());
         return BuildOrderResponse(orderEntity);
     }
 

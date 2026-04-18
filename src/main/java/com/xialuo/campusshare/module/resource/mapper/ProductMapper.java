@@ -119,4 +119,12 @@ public interface ProductMapper {
      * 释放商品锁定
      */
     Integer ReleaseProductOrderLock(@Param("productId") Long productId, @Param("updateTime") LocalDateTime updateTime);
+
+    /**
+     * 完成订单后关闭商品
+     */
+    Integer FinalizeProductOrderSuccess(
+        @Param("productId") Long productId,
+        @Param("updateTime") LocalDateTime updateTime
+    );
 }

@@ -69,7 +69,13 @@
                             : null;
                     },
                     function ReloadCommentList() {
-                        LoadProductComments(productId, reviewListContainer, reviewTabButton, messageBar);
+                        LoadProductComments(
+                            productId,
+                            reviewListContainer,
+                            reviewTabButton,
+                            sellerNameNode,
+                            messageBar
+                        );
                     }
                 );
             }
@@ -77,7 +83,7 @@
             currentProductDetail = null;
         });
 
-        LoadProductComments(productId, reviewListContainer, reviewTabButton, messageBar);
+        LoadProductComments(productId, reviewListContainer, reviewTabButton, sellerNameNode, messageBar);
         LoadFavoriteState(productId, favoriteButton, favoriteIcon);
 
         if (buyButton) {
@@ -231,7 +237,13 @@
     /**
      * 加载商品评论
      */
-    async function LoadProductComments(productId, reviewListContainer, reviewTabButton, messageBar) {
+    async function LoadProductComments(
+        productId,
+        reviewListContainer,
+        reviewTabButton,
+        sellerNameNode,
+        messageBar
+    ) {
         if (!reviewListContainer) {
             return;
         }
@@ -243,6 +255,7 @@
             );
             RenderCommentList(reviewListContainer, listResult.commentList || []);
             UpdateReviewTabText(reviewTabButton, Number(listResult.totalCount || 0));
+            RenderSellerCreditSummary(listResult, sellerNameNode);
             HideMessage(messageBar);
         } catch (error) {
             RenderCommentList(reviewListContainer, []);
@@ -395,6 +408,38 @@
             return;
         }
         reviewTabButton.textContent = `评价 (${totalCount})`;
+    }
+
+    /**
+     * 渲染卖家信用汇总
+     */
+    function RenderSellerCreditSummary(listResult, sellerNameNode) {
+        const sellerSection = FindSectionByHeading("机构公信力");
+        if (!sellerSection || !listResult) {
+            return;
+        }
+
+        const scoreValueNodeList = sellerSection.querySelectorAll(
+            "div.grid.grid-cols-3 span.text-xl.font-bold.text-primary"
+        );
+        if (scoreValueNodeList.length >= 3) {
+            scoreValueNodeList[0].textContent = FormatScore(listResult.sellerAverageScore);
+            scoreValueNodeList[1].textContent = String(Number(listResult.sellerScoreCount || 0));
+            scoreValueNodeList[2].textContent = `${FormatRate(listResult.sellerPositiveRate)}%`;
+        }
+
+        const sellerNameNodeInSection = sellerSection.querySelector("div.flex.flex-col span.font-bold.text-on-surface");
+        if (sellerNameNodeInSection) {
+            sellerNameNodeInSection.textContent = listResult.sellerDisplayName
+                || (sellerNameNode ? sellerNameNode.textContent : "认证卖家");
+        }
+        const sellerMetaNodeInSection = sellerSection.querySelector("div.flex.flex-col span.text-xs.text-outline");
+        if (sellerMetaNodeInSection) {
+            const scoreCount = Number(listResult.sellerScoreCount || 0);
+            sellerMetaNodeInSection.textContent = scoreCount > 0
+                ? `累计 ${scoreCount} 条交易评价`
+                : "暂无交易评价";
+        }
     }
 
     /**
@@ -601,7 +646,7 @@
      * 查找指定标题所在区块
      */
     function FindSectionByHeading(titleText) {
-        const headingList = Array.from(document.querySelectorAll("h2"));
+        const headingList = Array.from(document.querySelectorAll("h2, h3"));
         const headingNode = headingList.find(function MatchHeading(item) {
             return (item.textContent || "").includes(titleText);
         });
@@ -690,6 +735,28 @@
             return "0.00";
         }
         return numberValue.toFixed(2);
+    }
+
+    /**
+     * 格式化评分
+     */
+    function FormatScore(scoreValue) {
+        const scoreNumber = Number(scoreValue || 0);
+        if (Number.isNaN(scoreNumber) || scoreNumber <= 0) {
+            return "0.0";
+        }
+        return scoreNumber.toFixed(1);
+    }
+
+    /**
+     * 格式化比率
+     */
+    function FormatRate(rateValue) {
+        const rateNumber = Number(rateValue || 0);
+        if (Number.isNaN(rateNumber) || rateNumber <= 0) {
+            return "0.00";
+        }
+        return rateNumber.toFixed(2);
     }
 
     /**

@@ -3,18 +3,20 @@ package com.xialuo.campusshare.module.material.service.impl;
 import com.xialuo.campusshare.common.api.PageQuery;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
+import com.xialuo.campusshare.common.service.ContentModerationService;
 import com.xialuo.campusshare.entity.StudyMaterialEntity;
 import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.enums.ResourceStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
+import com.xialuo.campusshare.module.admin.constant.SystemRuleKeyConstants;
+import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import com.xialuo.campusshare.module.material.dto.MaterialDownloadResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialListResponseDto;
 import com.xialuo.campusshare.module.material.dto.MaterialReviewRequestDto;
 import com.xialuo.campusshare.module.material.dto.MaterialResponseDto;
 import com.xialuo.campusshare.module.material.dto.UploadMaterialRequestDto;
 import com.xialuo.campusshare.module.material.mapper.StudyMaterialMapper;
-import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import com.xialuo.campusshare.module.material.service.MaterialService;
 import com.xialuo.campusshare.module.notification.service.NotificationService;
 import com.xialuo.campusshare.module.point.service.PointLedgerService;
@@ -34,20 +36,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class MaterialServiceImpl implements MaterialService {
     /** 资料业务类型 */
     private static final String MATERIAL_BIZ_TYPE = "MATERIAL";
-    /** 资料审核开关规则键 */
-    private static final String MATERIAL_REVIEW_REQUIRED_RULE_KEY = "MATERIAL_REVIEW_REQUIRED";
-    /** 上传奖励积分规则键 */
-    private static final String MATERIAL_UPLOAD_REWARD_POINTS_RULE_KEY = "MATERIAL_UPLOAD_REWARD_POINTS";
-    /** 下载扣减积分规则键 */
-    private static final String MATERIAL_DOWNLOAD_COST_POINTS_RULE_KEY = "MATERIAL_DOWNLOAD_COST_POINTS";
+    /** 文件访问地址模板 */
+    private static final String MATERIAL_FILE_ACCESS_URL_PATTERN = "/api/v1/materials/%d/files/%s";
+
     /** 默认资料审核开关 */
     private static final Boolean DEFAULT_MATERIAL_REVIEW_REQUIRED = Boolean.TRUE;
     /** 默认上传奖励积分 */
     private static final Integer DEFAULT_MATERIAL_UPLOAD_REWARD_POINTS = 2;
     /** 默认下载扣减积分 */
     private static final Integer DEFAULT_MATERIAL_DOWNLOAD_COST_POINTS = 1;
-    /** 文件访问地址模板 */
-    private static final String MATERIAL_FILE_ACCESS_URL_PATTERN = "/api/v1/materials/%d/files/%s";
 
     /** 资料Mapper */
     private final StudyMaterialMapper studyMaterialMapper;
@@ -59,24 +56,30 @@ public class MaterialServiceImpl implements MaterialService {
     private final PointLedgerService pointLedgerService;
     /** 规则配置服务 */
     private final SystemRuleConfigService systemRuleConfigService;
+    /** 内容治理服务 */
+    private final ContentModerationService contentModerationService;
 
     public MaterialServiceImpl(
         StudyMaterialMapper studyMaterialMapper,
         UserMapper userMapper,
         NotificationService notificationService,
         PointLedgerService pointLedgerService,
-        SystemRuleConfigService systemRuleConfigService
+        SystemRuleConfigService systemRuleConfigService,
+        ContentModerationService contentModerationService
     ) {
         this.studyMaterialMapper = studyMaterialMapper;
         this.userMapper = userMapper;
         this.notificationService = notificationService;
         this.pointLedgerService = pointLedgerService;
         this.systemRuleConfigService = systemRuleConfigService;
+        this.contentModerationService = contentModerationService;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MaterialResponseDto UploadMaterial(UploadMaterialRequestDto requestDto, Long currentUserId) {
+        ValidateSensitiveContent(requestDto);
+
         StudyMaterialEntity materialEntity = new StudyMaterialEntity();
         materialEntity.SetUploaderUserId(currentUserId);
         materialEntity.SetCourseName(requestDto.GetCourseName());
@@ -125,7 +128,6 @@ public class MaterialServiceImpl implements MaterialService {
         ).stream().map(this::BuildMaterialResponse).toList();
 
         Long totalCount = studyMaterialMapper.CountMaterialsByUploader(currentUserId, resolvedMaterialStatus);
-
         return BuildMaterialListResponse(resolvedPageNo, resolvedPageSize, totalCount, materialResponseList);
     }
 
@@ -294,6 +296,23 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
     /**
+     * 校验敏感词
+     */
+    private void ValidateSensitiveContent(UploadMaterialRequestDto requestDto) {
+        if (requestDto == null) {
+            return;
+        }
+        contentModerationService.ValidateNoSensitiveWords(
+            List.of(
+                requestDto.GetCourseName(),
+                requestDto.GetDescription(),
+                requestDto.GetFileType()
+            ),
+            "资料内容"
+        );
+    }
+
+    /**
      * 按ID查询资料
      */
     private StudyMaterialEntity GetMaterialById(Long materialId) {
@@ -318,7 +337,7 @@ public class MaterialServiceImpl implements MaterialService {
      */
     private Boolean ResolveMaterialReviewRequired() {
         return systemRuleConfigService.GetRuleBooleanValueOrDefault(
-            MATERIAL_REVIEW_REQUIRED_RULE_KEY,
+            SystemRuleKeyConstants.MATERIAL_REVIEW_REQUIRED,
             DEFAULT_MATERIAL_REVIEW_REQUIRED
         );
     }
@@ -328,7 +347,7 @@ public class MaterialServiceImpl implements MaterialService {
      */
     private Integer ResolveMaterialUploadRewardPoints() {
         Integer rewardPoints = systemRuleConfigService.GetRuleIntegerValueOrDefault(
-            MATERIAL_UPLOAD_REWARD_POINTS_RULE_KEY,
+            SystemRuleKeyConstants.MATERIAL_UPLOAD_REWARD_POINTS,
             DEFAULT_MATERIAL_UPLOAD_REWARD_POINTS
         );
         if (rewardPoints == null || rewardPoints < 0) {
@@ -342,7 +361,7 @@ public class MaterialServiceImpl implements MaterialService {
      */
     private Integer ResolveMaterialDownloadCostPoints() {
         Integer costPoints = systemRuleConfigService.GetRuleIntegerValueOrDefault(
-            MATERIAL_DOWNLOAD_COST_POINTS_RULE_KEY,
+            SystemRuleKeyConstants.MATERIAL_DOWNLOAD_COST_POINTS,
             DEFAULT_MATERIAL_DOWNLOAD_COST_POINTS
         );
         if (costPoints == null || costPoints < 0) {
@@ -591,7 +610,7 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
     /**
-     * 规范化文本
+     * 文本规范化
      */
     private String NormalizeText(String text) {
         return text == null ? "" : text.trim();

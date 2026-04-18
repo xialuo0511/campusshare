@@ -310,4 +310,16 @@
           AND has_effective_order = 1
           AND product_status = 'LOCKED'
     </update>
+
+    <update id="FinalizeProductOrderSuccess">
+        UPDATE product_info
+        SET
+            on_shelf = 0,
+            has_effective_order = 0,
+            product_status = 'CLOSED',
+            update_time = #{updateTime}
+        WHERE product_id = #{productId}
+          AND deleted = 0
+          AND has_effective_order = 1
+    </update>
 </mapper>

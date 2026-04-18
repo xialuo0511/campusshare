@@ -1,6 +1,7 @@
 package com.xialuo.campusshare.module.point.mapper;
 
 import com.xialuo.campusshare.entity.PointTransactionEntity;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -28,5 +29,9 @@ public interface PointTransactionMapper {
      * 统计用户积分流水总数
      */
     Long CountByUserId(@Param("userId") Long userId);
-}
 
+    /**
+     * 统计指定时间后的积分流水
+     */
+    Long CountTransactionsCreatedAfter(@Param("startTime") LocalDateTime startTime);
+}

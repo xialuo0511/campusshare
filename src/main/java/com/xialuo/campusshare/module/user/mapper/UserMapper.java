@@ -62,6 +62,11 @@ public interface UserMapper {
     );
 
     /**
+     * 统计指定时间后的新增用户
+     */
+    Long CountUsersCreatedAfter(@Param("startTime") LocalDateTime startTime);
+
+    /**
      * 增加用户积分
      */
     Integer IncreaseUserPointBalance(

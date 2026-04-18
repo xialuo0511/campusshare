@@ -1129,6 +1129,25 @@
     }
 
     /**
+     * 确保管理员会话可用
+     */
+    async function EnsureAdminSession() {
+        const token = GetAuthToken();
+        if (!token) {
+            return false;
+        }
+        let profile = GetCurrentUserProfile();
+        if (!profile || !profile.userId) {
+            try {
+                profile = await SyncSessionProfile();
+            } catch (error) {
+                return false;
+            }
+        }
+        return !!(profile && profile.userRole === ADMINISTRATOR_ROLE);
+    }
+
+    /**
      * 带超时的请求
      */
     async function FetchWithTimeout(path, requestInit) {
@@ -1270,6 +1289,7 @@
         RedirectToAuthPage,
         NavigateToPage,
         SyncSessionProfile,
+        EnsureAdminSession,
         RegisterUser(payload) {
             return RequestApi("/api/v1/users/register", "POST", payload, false);
         },
@@ -1563,6 +1583,12 @@
         },
         ListSystemRulesByAdmin() {
             return RequestApi("/api/v1/admin/rules", "GET", null, true);
+        },
+        GetAdminDashboardSummary() {
+            return RequestApi("/api/v1/admin/dashboard/summary", "GET", null, true);
+        },
+        GetAdminOpsSummary() {
+            return RequestApi("/api/v1/admin/ops/summary", "GET", null, true);
         },
         GetSystemRuleByAdmin(ruleKey) {
             return RequestApi(`/api/v1/admin/rules/${encodeURIComponent(String(ruleKey))}`, "GET", null, true);

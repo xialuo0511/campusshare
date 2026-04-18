@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.material.service.impl;
 
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
+import com.xialuo.campusshare.module.admin.constant.SystemRuleKeyConstants;
 import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import com.xialuo.campusshare.module.material.dto.MaterialFileUploadResponseDto;
 import com.xialuo.campusshare.module.material.service.MaterialFileStorageService;
@@ -25,10 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 public class MaterialFileStorageServiceImpl implements MaterialFileStorageService {
-    /** 文件大小规则键 */
-    private static final String MATERIAL_FILE_MAX_SIZE_MB_RULE_KEY = "MATERIAL_FILE_MAX_SIZE_MB";
-    /** 文件扩展名规则键 */
-    private static final String MATERIAL_FILE_ALLOWED_EXTENSIONS_RULE_KEY = "MATERIAL_FILE_ALLOWED_EXTENSIONS";
     /** 默认最大文件大小 */
     private static final Integer DEFAULT_MATERIAL_FILE_MAX_SIZE_MB = 25;
     /** 默认支持扩展名 */
@@ -178,7 +175,7 @@ public class MaterialFileStorageServiceImpl implements MaterialFileStorageServic
      */
     private Integer ResolveMaxFileSizeMegaBytes() {
         Integer maxFileSizeMegaBytes = systemRuleConfigService.GetRuleIntegerValueOrDefault(
-            MATERIAL_FILE_MAX_SIZE_MB_RULE_KEY,
+            SystemRuleKeyConstants.MATERIAL_FILE_MAX_SIZE_MB,
             DEFAULT_MATERIAL_FILE_MAX_SIZE_MB
         );
         if (maxFileSizeMegaBytes == null || maxFileSizeMegaBytes <= 0) {
@@ -199,7 +196,7 @@ public class MaterialFileStorageServiceImpl implements MaterialFileStorageServic
      */
     private Set<String> ResolveAllowedExtensions() {
         String extensionText = systemRuleConfigService.GetRuleValueOrDefault(
-            MATERIAL_FILE_ALLOWED_EXTENSIONS_RULE_KEY,
+            SystemRuleKeyConstants.MATERIAL_FILE_ALLOWED_EXTENSIONS,
             String.join(",", DEFAULT_ALLOWED_EXTENSIONS)
         );
         if (extensionText == null || extensionText.isBlank()) {

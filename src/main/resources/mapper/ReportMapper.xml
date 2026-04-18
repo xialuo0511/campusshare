@@ -121,6 +121,13 @@
         ORDER BY create_time ASC
     </select>
 
+    <select id="CountReportsCreatedAfter" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM report_info
+        WHERE deleted = 0
+          AND create_time &gt;= #{startTime}
+    </select>
+
     <select id="FindPendingReportByTarget" resultMap="ReportResultMap">
         SELECT
             <include refid="ReportColumns"/>

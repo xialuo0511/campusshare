@@ -57,6 +57,11 @@ public interface OrderMapper {
     );
 
     /**
+     * 统计指定时间后的订单数
+     */
+    Long CountOrdersCreatedAfter(@Param("startTime") LocalDateTime startTime);
+
+    /**
      * 统计买家已完成订单数
      */
     Long CountCompletedOrdersByProductAndBuyer(
@@ -69,6 +74,44 @@ public interface OrderMapper {
      */
     Integer CloseOngoingOrdersByProductId(
         @Param("productId") Long productId,
+        @Param("closeReason") String closeReason,
+        @Param("closeTime") LocalDateTime closeTime,
+        @Param("updateTime") LocalDateTime updateTime
+    );
+
+    /**
+     * 查询待卖家确认超时订单
+     */
+    List<OrderEntity> ListTimeoutPendingSellerConfirmOrders(
+        @Param("deadlineTime") LocalDateTime deadlineTime,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 查询待买家确认超时订单
+     */
+    List<OrderEntity> ListTimeoutPendingBuyerConfirmOrders(
+        @Param("deadlineTime") LocalDateTime deadlineTime,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 统计待卖家确认超时订单数
+     */
+    Long CountTimeoutPendingSellerConfirmOrders(@Param("deadlineTime") LocalDateTime deadlineTime);
+
+    /**
+     * 统计待买家确认超时订单数
+     */
+    Long CountTimeoutPendingBuyerConfirmOrders(@Param("deadlineTime") LocalDateTime deadlineTime);
+
+    /**
+     * 按状态更新订单
+     */
+    Integer UpdateOrderStatusIfMatch(
+        @Param("orderId") Long orderId,
+        @Param("fromStatus") OrderStatusEnum fromStatus,
+        @Param("toStatus") OrderStatusEnum toStatus,
         @Param("closeReason") String closeReason,
         @Param("closeTime") LocalDateTime closeTime,
         @Param("updateTime") LocalDateTime updateTime

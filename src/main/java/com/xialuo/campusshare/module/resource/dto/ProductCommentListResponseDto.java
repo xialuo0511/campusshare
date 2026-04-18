@@ -15,6 +15,16 @@ public class ProductCommentListResponseDto {
     private Long totalCount;
     /** 平均评分 */
     private BigDecimal averageScore;
+    /** 卖家用户ID */
+    private Long sellerUserId;
+    /** 卖家昵称 */
+    private String sellerDisplayName;
+    /** 卖家平均评分 */
+    private BigDecimal sellerAverageScore;
+    /** 卖家评价总数 */
+    private Long sellerScoreCount;
+    /** 卖家好评率 */
+    private BigDecimal sellerPositiveRate;
     /** 评论列表 */
     private List<ProductCommentResponseDto> commentList;
 
@@ -75,6 +85,76 @@ public class ProductCommentListResponseDto {
     }
 
     /**
+     * 获取卖家用户ID
+     */
+    public Long GetSellerUserId() {
+        return sellerUserId;
+    }
+
+    /**
+     * 设置卖家用户ID
+     */
+    public void SetSellerUserId(Long sellerUserId) {
+        this.sellerUserId = sellerUserId;
+    }
+
+    /**
+     * 获取卖家昵称
+     */
+    public String GetSellerDisplayName() {
+        return sellerDisplayName;
+    }
+
+    /**
+     * 设置卖家昵称
+     */
+    public void SetSellerDisplayName(String sellerDisplayName) {
+        this.sellerDisplayName = sellerDisplayName;
+    }
+
+    /**
+     * 获取卖家平均评分
+     */
+    public BigDecimal GetSellerAverageScore() {
+        return sellerAverageScore;
+    }
+
+    /**
+     * 设置卖家平均评分
+     */
+    public void SetSellerAverageScore(BigDecimal sellerAverageScore) {
+        this.sellerAverageScore = sellerAverageScore;
+    }
+
+    /**
+     * 获取卖家评价总数
+     */
+    public Long GetSellerScoreCount() {
+        return sellerScoreCount;
+    }
+
+    /**
+     * 设置卖家评价总数
+     */
+    public void SetSellerScoreCount(Long sellerScoreCount) {
+        this.sellerScoreCount = sellerScoreCount;
+    }
+
+    /**
+     * 获取卖家好评率
+     */
+    public BigDecimal GetSellerPositiveRate() {
+        return sellerPositiveRate;
+    }
+
+    /**
+     * 设置卖家好评率
+     */
+    public void SetSellerPositiveRate(BigDecimal sellerPositiveRate) {
+        this.sellerPositiveRate = sellerPositiveRate;
+    }
+
+    /**
      * 获取评论列表
      */
     public List<ProductCommentResponseDto> GetCommentList() {
@@ -88,4 +168,3 @@ public class ProductCommentListResponseDto {
         this.commentList = commentList;
     }
 }
-

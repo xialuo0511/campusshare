@@ -9,7 +9,7 @@
     /**
      * 绑定页面行为
      */
-    function BindAdminDashboardPage() {
+    async function BindAdminDashboardPage() {
         if (!window.CampusShareApi) {
             return;
         }
@@ -18,13 +18,15 @@
         const statCardList = document.querySelectorAll("section.grid.grid-cols-1.md\\:grid-cols-4 > div");
         const reviewPanel = document.querySelector("section.lg\\:col-span-2.bg-surface-container-lowest");
         const reviewTableBody = reviewPanel ? reviewPanel.querySelector("table tbody.divide-y") : null;
-        if (!pageHeader || statCardList.length < 4 || !reviewPanel || !reviewTableBody) {
+        if (!pageHeader || statCardList.length < 3 || !reviewPanel || !reviewTableBody) {
             return;
         }
 
         const messageBar = CreateMessageBar(pageHeader);
-        const profile = window.CampusShareApi.GetCurrentUserProfile();
-        if (!profile || !profile.userId) {
+        const governanceWorkspace = CreateGovernanceWorkspace();
+        const hasToken = !!window.CampusShareApi.GetAuthToken();
+        const hasAdminAccess = await window.CampusShareApi.EnsureAdminSession();
+        if (!hasAdminAccess && !hasToken) {
             ShowError(messageBar, "请先登录管理员账号后再访问后台");
             window.setTimeout(function RedirectToAuthPage() {
                 if (window.CampusShareApi.RedirectToAuthPage) {
@@ -35,7 +37,7 @@
             }, 700);
             return;
         }
-        if (profile.userRole !== "ADMINISTRATOR") {
+        if (!hasAdminAccess) {
             ShowError(messageBar, "当前账号不是管理员，无法访问后台");
             window.setTimeout(function RedirectToOverviewPage() {
                 window.location.href = "/pages/market_overview.html";
@@ -60,39 +62,85 @@
             RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
         });
 
-        BindReviewTableActions(reviewTableBody, statCardList, reviewState, taskPager, messageBar);
-        LoadDashboardData(statCardList, reviewTableBody, reviewState, taskPager, messageBar);
+        BindReviewTableActions(
+            reviewTableBody,
+            statCardList,
+            reviewState,
+            taskPager,
+            messageBar,
+            governanceWorkspace
+        );
+        BindGovernanceWorkspaceActions(governanceWorkspace, messageBar, function ReloadDashboardData() {
+            return LoadDashboardData(
+                statCardList,
+                reviewTableBody,
+                reviewState,
+                taskPager,
+                messageBar,
+                governanceWorkspace
+            );
+        });
+        LoadDashboardData(statCardList, reviewTableBody, reviewState, taskPager, messageBar, governanceWorkspace);
     }
 
     /**
      * 加载后台数据
      */
-    async function LoadDashboardData(statCardList, reviewTableBody, reviewState, taskPager, messageBar) {
+    async function LoadDashboardData(
+        statCardList,
+        reviewTableBody,
+        reviewState,
+        taskPager,
+        messageBar,
+        governanceWorkspace
+    ) {
         try {
             const [
+                dashboardSummary,
                 marketOverview,
                 teamRecruitmentList,
                 pendingReportList,
                 pendingUserList,
                 pendingTeamApplicationList,
                 pendingMaterialListResult,
-                orderListResult
+                orderListResult,
+                ruleConfigList,
+                productListResult,
+                adminOrderListResult,
+                auditLogListResult,
+                opsSummary
             ] = await Promise.all([
+                window.CampusShareApi.GetAdminDashboardSummary(),
                 window.CampusShareApi.GetMarketOverview(),
                 window.CampusShareApi.ListTeamRecruitments({ pageNo: 1, pageSize: 1 }),
                 window.CampusShareApi.ListPendingReports(),
                 window.CampusShareApi.ListPendingUsers(),
                 window.CampusShareApi.ListPendingTeamRecruitmentApplications(),
                 window.CampusShareApi.ListPendingMaterials(1, DEFAULT_PENDING_MATERIAL_FETCH_SIZE),
-                window.CampusShareApi.ListMyOrders(1, DEFAULT_ORDER_PAGE_SIZE)
+                window.CampusShareApi.ListOrdersByAdmin(1, DEFAULT_ORDER_PAGE_SIZE, "ALL"),
+                window.CampusShareApi.ListSystemRulesByAdmin(),
+                window.CampusShareApi.ListProductsByAdmin({ pageNo: 1, pageSize: 6 }),
+                window.CampusShareApi.ListOrdersByAdmin(1, 6, "ALL"),
+                window.CampusShareApi.ListAuditLogsByAdmin({ pageNo: 1, pageSize: 8 }),
+                window.CampusShareApi.GetAdminOpsSummary()
             ]);
 
             RenderStats(
                 statCardList,
+                dashboardSummary,
                 marketOverview,
                 teamRecruitmentList,
                 pendingReportList,
                 orderListResult
+            );
+            RenderGovernanceWorkspace(
+                governanceWorkspace,
+                dashboardSummary,
+                ruleConfigList,
+                productListResult,
+                adminOrderListResult,
+                auditLogListResult,
+                opsSummary
             );
 
             reviewState.reviewTaskList = BuildReviewTaskList(
@@ -114,12 +162,17 @@
      */
     function RenderStats(
         statCardList,
+        dashboardSummary,
         marketOverview,
         teamRecruitmentList,
         pendingReportList,
         orderListResult
     ) {
-        const publishedProductCount = SafeNumber(marketOverview && marketOverview.publishedProductCount);
+        const publishedProductCount = SafeNumber(
+            dashboardSummary && dashboardSummary.publishedProductCount != null
+                ? dashboardSummary.publishedProductCount
+                : (marketOverview && marketOverview.publishedProductCount)
+        );
         const publishedMaterialCount = SafeNumber(marketOverview && marketOverview.publishedMaterialCount);
         const recruitmentCount = SafeNumber(teamRecruitmentList && teamRecruitmentList.totalCount);
         const activePublishTotal = publishedProductCount + publishedMaterialCount + recruitmentCount;
@@ -143,7 +196,11 @@
             ].join("");
         }
 
-        const pendingReportCount = Array.isArray(pendingReportList) ? pendingReportList.length : 0;
+        const pendingReportCount = SafeNumber(
+            dashboardSummary && dashboardSummary.pendingReportCount != null
+                ? dashboardSummary.pendingReportCount
+                : (Array.isArray(pendingReportList) ? pendingReportList.length : 0)
+        );
         const pendingReportNumber = pendingReportCard.querySelector("h2");
         if (pendingReportNumber) {
             pendingReportNumber.textContent = FormatNumber(pendingReportCount);
@@ -164,15 +221,27 @@
             pendingProgress.style.width = `${progressPercent}%`;
         }
 
-        const totalOrderCount = SafeNumber(orderListResult && orderListResult.totalCount);
+        const totalOrderCount = SafeNumber(
+            dashboardSummary && dashboardSummary.totalOrderCount != null
+                ? dashboardSummary.totalOrderCount
+                : (orderListResult && orderListResult.totalCount)
+        );
         const recentOrderNumber = recentOrderCard.querySelector("h2");
         if (recentOrderNumber) {
             recentOrderNumber.textContent = FormatNumber(totalOrderCount);
         }
         const recentOrderHint = recentOrderCard.querySelector("p.text-xs");
         if (recentOrderHint) {
-            const ongoingCount = SafeNumber(orderListResult && orderListResult.ongoingCount);
-            const completedCount = SafeNumber(orderListResult && orderListResult.completedCount);
+            const ongoingCount = SafeNumber(
+                dashboardSummary && dashboardSummary.ongoingOrderCount != null
+                    ? dashboardSummary.ongoingOrderCount
+                    : (orderListResult && orderListResult.ongoingCount)
+            );
+            const completedCount = SafeNumber(
+                dashboardSummary && dashboardSummary.completedOrderCount != null
+                    ? dashboardSummary.completedOrderCount
+                    : (orderListResult && orderListResult.completedCount)
+            );
             recentOrderHint.innerHTML = `进行中：<span class=\"font-semibold\">${ongoingCount}</span>，已完成：<span class=\"font-semibold\">${completedCount}</span>`;
         }
     }
@@ -317,7 +386,14 @@
     /**
      * 绑定审核操作
      */
-    function BindReviewTableActions(reviewTableBody, statCardList, reviewState, taskPager, messageBar) {
+    function BindReviewTableActions(
+        reviewTableBody,
+        statCardList,
+        reviewState,
+        taskPager,
+        messageBar,
+        governanceWorkspace
+    ) {
         reviewTableBody.addEventListener("click", async function HandleReviewAction(event) {
             const actionButton = event.target.closest("button[data-task-action]");
             if (!actionButton) {
@@ -378,7 +454,14 @@
                     return;
                 }
                 ShowSuccess(messageBar, approved ? "审核已通过" : "审核已驳回");
-                await LoadDashboardData(statCardList, reviewTableBody, reviewState, taskPager, messageBar);
+                await LoadDashboardData(
+                    statCardList,
+                    reviewTableBody,
+                    reviewState,
+                    taskPager,
+                    messageBar,
+                    governanceWorkspace
+                );
             } catch (error) {
                 ShowError(messageBar, error instanceof Error ? error.message : "审核操作失败");
             } finally {
@@ -581,6 +664,390 @@
                 createTime: materialItem.createTime || null
             };
         });
+    }
+
+    /**
+     * 创建治理工作区
+     */
+    function CreateGovernanceWorkspace() {
+        const mainElement = document.querySelector("main");
+        if (!mainElement) {
+            return null;
+        }
+        const workspaceElement = document.createElement("section");
+        workspaceElement.className = "mt-8 grid grid-cols-1 xl:grid-cols-2 gap-6";
+        workspaceElement.innerHTML = [
+            "<div class=\"xl:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 p-5\">",
+            "<div class=\"flex items-center justify-between gap-3 mb-4\">",
+            "<div>",
+            "<h3 class=\"text-lg font-semibold text-on-surface\">治理总览</h3>",
+            "<p class=\"text-xs text-slate-500\">规则、商品、订单与审计日志联动面板</p>",
+            "</div>",
+            "<button data-governance-action=\"refresh\" class=\"px-3 py-1.5 text-xs rounded-md bg-surface-container text-slate-700 font-semibold hover:bg-surface-container-high\">刷新治理数据</button>",
+            "</div>",
+            "<div class=\"grid grid-cols-2 md:grid-cols-4 gap-3 text-xs\">",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">待审核用户</p><p data-role=\"summary-user-pending\" class=\"text-lg font-bold text-primary\">0</p></div>",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">待处理举报</p><p data-role=\"summary-report-pending\" class=\"text-lg font-bold text-primary\">0</p></div>",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">进行中订单</p><p data-role=\"summary-order-ongoing\" class=\"text-lg font-bold text-primary\">0</p></div>",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">近7天审计</p><p data-role=\"summary-audit-seven\" class=\"text-lg font-bold text-primary\">0</p></div>",
+            "</div>",
+            "<div class=\"mt-3 grid grid-cols-1 md:grid-cols-4 gap-3 text-xs\">",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">系统运行状态</p><p data-role=\"summary-ops-health\" class=\"text-sm font-semibold text-on-surface\">-</p></div>",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">邮件待派发/失败</p><p data-role=\"summary-ops-mail\" class=\"text-sm font-semibold text-on-surface\">0 / 0</p></div>",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">超时待卖家确认</p><p data-role=\"summary-ops-timeout-seller\" class=\"text-sm font-semibold text-on-surface\">0</p></div>",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">超时待买家确认</p><p data-role=\"summary-ops-timeout-buyer\" class=\"text-sm font-semibold text-on-surface\">0</p></div>",
+            "</div>",
+            "</div>",
+
+            "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden\">",
+            "<div class=\"px-5 py-4 border-b border-surface-container flex items-center justify-between\">",
+            "<h3 class=\"text-base font-semibold text-on-surface\">规则配置</h3>",
+            "<span class=\"text-xs text-slate-500\">可在线修改</span>",
+            "</div>",
+            "<div class=\"max-h-80 overflow-auto\">",
+            "<table class=\"w-full text-left border-collapse\">",
+            "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">规则键</th><th class=\"px-4 py-3\">规则值</th><th class=\"px-4 py-3 text-right\">操作</th></tr></thead>",
+            "<tbody data-role=\"rule-table\" class=\"divide-y divide-surface-container\"></tbody>",
+            "</table>",
+            "</div>",
+            "</div>",
+
+            "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden\">",
+            "<div class=\"px-5 py-4 border-b border-surface-container flex items-center justify-between\">",
+            "<h3 class=\"text-base font-semibold text-on-surface\">商品治理</h3>",
+            "<span class=\"text-xs text-slate-500\">可强制下架</span>",
+            "</div>",
+            "<div class=\"max-h-80 overflow-auto\">",
+            "<table class=\"w-full text-left border-collapse\">",
+            "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">商品</th><th class=\"px-4 py-3\">状态</th><th class=\"px-4 py-3 text-right\">操作</th></tr></thead>",
+            "<tbody data-role=\"product-table\" class=\"divide-y divide-surface-container\"></tbody>",
+            "</table>",
+            "</div>",
+            "</div>",
+
+            "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden\">",
+            "<div class=\"px-5 py-4 border-b border-surface-container flex items-center justify-between\">",
+            "<h3 class=\"text-base font-semibold text-on-surface\">订单治理</h3>",
+            "<span class=\"text-xs text-slate-500\">可强制关闭</span>",
+            "</div>",
+            "<div class=\"max-h-80 overflow-auto\">",
+            "<table class=\"w-full text-left border-collapse\">",
+            "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">订单号</th><th class=\"px-4 py-3\">状态</th><th class=\"px-4 py-3 text-right\">操作</th></tr></thead>",
+            "<tbody data-role=\"order-table\" class=\"divide-y divide-surface-container\"></tbody>",
+            "</table>",
+            "</div>",
+            "</div>",
+
+            "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden\">",
+            "<div class=\"px-5 py-4 border-b border-surface-container flex items-center justify-between\">",
+            "<h3 class=\"text-base font-semibold text-on-surface\">审计日志</h3>",
+            "<span class=\"text-xs text-slate-500\">最近操作</span>",
+            "</div>",
+            "<div class=\"max-h-80 overflow-auto\">",
+            "<table class=\"w-full text-left border-collapse\">",
+            "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">动作</th><th class=\"px-4 py-3\">对象</th><th class=\"px-4 py-3\">时间</th></tr></thead>",
+            "<tbody data-role=\"audit-table\" class=\"divide-y divide-surface-container\"></tbody>",
+            "</table>",
+            "</div>",
+            "</div>"
+        ].join("");
+        mainElement.appendChild(workspaceElement);
+        return {
+            wrapper: workspaceElement,
+            refreshButton: workspaceElement.querySelector("[data-governance-action='refresh']"),
+            summaryPendingUserNode: workspaceElement.querySelector("[data-role='summary-user-pending']"),
+            summaryPendingReportNode: workspaceElement.querySelector("[data-role='summary-report-pending']"),
+            summaryOngoingOrderNode: workspaceElement.querySelector("[data-role='summary-order-ongoing']"),
+            summarySevenDayAuditNode: workspaceElement.querySelector("[data-role='summary-audit-seven']"),
+            summaryOpsHealthNode: workspaceElement.querySelector("[data-role='summary-ops-health']"),
+            summaryOpsMailNode: workspaceElement.querySelector("[data-role='summary-ops-mail']"),
+            summaryOpsTimeoutSellerNode: workspaceElement.querySelector("[data-role='summary-ops-timeout-seller']"),
+            summaryOpsTimeoutBuyerNode: workspaceElement.querySelector("[data-role='summary-ops-timeout-buyer']"),
+            ruleTableBody: workspaceElement.querySelector("[data-role='rule-table']"),
+            productTableBody: workspaceElement.querySelector("[data-role='product-table']"),
+            orderTableBody: workspaceElement.querySelector("[data-role='order-table']"),
+            auditTableBody: workspaceElement.querySelector("[data-role='audit-table']")
+        };
+    }
+
+    /**
+     * 绑定治理工作区事件
+     */
+    function BindGovernanceWorkspaceActions(governanceWorkspace, messageBar, reloadDashboardDataFunction) {
+        if (!governanceWorkspace || !governanceWorkspace.wrapper) {
+            return;
+        }
+        if (governanceWorkspace.refreshButton) {
+            governanceWorkspace.refreshButton.addEventListener("click", function HandleRefreshClick() {
+                reloadDashboardDataFunction();
+            });
+        }
+        governanceWorkspace.wrapper.addEventListener("click", async function HandleGovernanceAction(event) {
+            const actionButton = event.target.closest("[data-governance-action]");
+            if (!actionButton) {
+                return;
+            }
+            const action = actionButton.getAttribute("data-governance-action");
+            if (!action || action === "refresh") {
+                return;
+            }
+            actionButton.disabled = true;
+            try {
+                if (action === "update-rule") {
+                    await HandleRuleUpdateAction(actionButton);
+                    ShowSuccess(messageBar, "规则已更新");
+                } else if (action === "product-offline") {
+                    await HandleProductOfflineAction(actionButton);
+                    ShowSuccess(messageBar, "商品已强制下架");
+                } else if (action === "order-close") {
+                    await HandleOrderCloseAction(actionButton);
+                    ShowSuccess(messageBar, "订单已强制关闭");
+                } else {
+                    return;
+                }
+                await reloadDashboardDataFunction();
+            } catch (error) {
+                ShowError(messageBar, error instanceof Error ? error.message : "治理操作失败");
+            } finally {
+                actionButton.disabled = false;
+            }
+        });
+    }
+
+    /**
+     * 渲染治理工作区
+     */
+    function RenderGovernanceWorkspace(
+        governanceWorkspace,
+        dashboardSummary,
+        ruleConfigList,
+        productListResult,
+        adminOrderListResult,
+        auditLogListResult,
+        opsSummary
+    ) {
+        if (!governanceWorkspace) {
+            return;
+        }
+        if (governanceWorkspace.summaryPendingUserNode) {
+            governanceWorkspace.summaryPendingUserNode.textContent = FormatNumber(
+                dashboardSummary && dashboardSummary.pendingUserReviewCount
+            );
+        }
+        if (governanceWorkspace.summaryPendingReportNode) {
+            governanceWorkspace.summaryPendingReportNode.textContent = FormatNumber(
+                dashboardSummary && dashboardSummary.pendingReportCount
+            );
+        }
+        if (governanceWorkspace.summaryOngoingOrderNode) {
+            governanceWorkspace.summaryOngoingOrderNode.textContent = FormatNumber(
+                dashboardSummary && dashboardSummary.ongoingOrderCount
+            );
+        }
+        if (governanceWorkspace.summarySevenDayAuditNode) {
+            governanceWorkspace.summarySevenDayAuditNode.textContent = FormatNumber(
+                dashboardSummary && dashboardSummary.sevenDayAuditCount
+            );
+        }
+        if (governanceWorkspace.summaryOpsHealthNode) {
+            governanceWorkspace.summaryOpsHealthNode.textContent = FormatOpsHealthStatus(opsSummary);
+        }
+        if (governanceWorkspace.summaryOpsMailNode) {
+            const pendingMailTaskCount = SafeNumber(opsSummary && opsSummary.pendingMailTaskCount);
+            const failedMailTaskCount = SafeNumber(opsSummary && opsSummary.failedMailTaskCount);
+            governanceWorkspace.summaryOpsMailNode.textContent = `${pendingMailTaskCount} / ${failedMailTaskCount}`;
+        }
+        if (governanceWorkspace.summaryOpsTimeoutSellerNode) {
+            governanceWorkspace.summaryOpsTimeoutSellerNode.textContent = FormatNumber(
+                opsSummary && opsSummary.timeoutPendingSellerConfirmOrderCount
+            );
+        }
+        if (governanceWorkspace.summaryOpsTimeoutBuyerNode) {
+            governanceWorkspace.summaryOpsTimeoutBuyerNode.textContent = FormatNumber(
+                opsSummary && opsSummary.timeoutPendingBuyerConfirmOrderCount
+            );
+        }
+
+        RenderRuleTable(governanceWorkspace.ruleTableBody, ruleConfigList);
+        RenderProductGovernanceTable(governanceWorkspace.productTableBody, productListResult);
+        RenderOrderGovernanceTable(governanceWorkspace.orderTableBody, adminOrderListResult);
+        RenderAuditTable(governanceWorkspace.auditTableBody, auditLogListResult);
+    }
+
+    /**
+     * 渲染规则表
+     */
+    function RenderRuleTable(ruleTableBody, ruleConfigList) {
+        if (!ruleTableBody) {
+            return;
+        }
+        const ruleList = Array.isArray(ruleConfigList) ? ruleConfigList : [];
+        if (!ruleList.length) {
+            ruleTableBody.innerHTML = "<tr><td colspan=\"3\" class=\"px-4 py-6 text-center text-xs text-slate-400\">暂无规则</td></tr>";
+            return;
+        }
+        ruleTableBody.innerHTML = ruleList.slice(0, 10).map(function BuildRuleRow(ruleItem) {
+            return [
+                "<tr class=\"hover:bg-surface-container-low transition-colors\">",
+                `<td class=\"px-4 py-3 text-xs text-on-surface font-semibold\">${EscapeHtml(ruleItem.ruleKey || "-")}</td>`,
+                `<td class=\"px-4 py-3 text-xs text-on-surface-variant\">${EscapeHtml(ruleItem.ruleValue || "")}</td>`,
+                "<td class=\"px-4 py-3 text-right\">",
+                `<button data-governance-action=\"update-rule\" data-rule-key=\"${EscapeHtml(ruleItem.ruleKey || "")}\" data-rule-value=\"${EscapeHtml(ruleItem.ruleValue || "")}\" class=\"px-2 py-1 text-xs rounded-md bg-primary/10 text-primary hover:bg-primary/20\">修改</button>`,
+                "</td>",
+                "</tr>"
+            ].join("");
+        }).join("");
+    }
+
+    /**
+     * 渲染商品治理表
+     */
+    function RenderProductGovernanceTable(productTableBody, productListResult) {
+        if (!productTableBody) {
+            return;
+        }
+        const productList = productListResult && Array.isArray(productListResult.productList)
+            ? productListResult.productList
+            : [];
+        if (!productList.length) {
+            productTableBody.innerHTML = "<tr><td colspan=\"3\" class=\"px-4 py-6 text-center text-xs text-slate-400\">暂无商品数据</td></tr>";
+            return;
+        }
+        productTableBody.innerHTML = productList.map(function BuildProductRow(productItem) {
+            const productStatus = String(productItem.productStatus || "UNKNOWN");
+            const canOffline = productStatus !== "OFFLINE";
+            return [
+                "<tr class=\"hover:bg-surface-container-low transition-colors\">",
+                `<td class=\"px-4 py-3 text-xs text-on-surface\">#${SafeNumber(productItem.productId)} ${EscapeHtml(productItem.title || "-")}</td>`,
+                `<td class=\"px-4 py-3 text-xs text-on-surface-variant\">${EscapeHtml(productStatus)}</td>`,
+                "<td class=\"px-4 py-3 text-right\">",
+                canOffline
+                    ? `<button data-governance-action=\"product-offline\" data-product-id=\"${SafeNumber(productItem.productId)}\" class=\"px-2 py-1 text-xs rounded-md bg-red-50 text-red-700 hover:bg-red-100\">强制下架</button>`
+                    : "<span class=\"text-xs text-slate-400\">已下架</span>",
+                "</td>",
+                "</tr>"
+            ].join("");
+        }).join("");
+    }
+
+    /**
+     * 渲染订单治理表
+     */
+    function RenderOrderGovernanceTable(orderTableBody, adminOrderListResult) {
+        if (!orderTableBody) {
+            return;
+        }
+        const orderList = adminOrderListResult && Array.isArray(adminOrderListResult.orderList)
+            ? adminOrderListResult.orderList
+            : [];
+        if (!orderList.length) {
+            orderTableBody.innerHTML = "<tr><td colspan=\"3\" class=\"px-4 py-6 text-center text-xs text-slate-400\">暂无订单数据</td></tr>";
+            return;
+        }
+        orderTableBody.innerHTML = orderList.map(function BuildOrderRow(orderItem) {
+            const orderStatus = String(orderItem.orderStatus || "UNKNOWN");
+            const canClose = IsOrderClosable(orderStatus);
+            return [
+                "<tr class=\"hover:bg-surface-container-low transition-colors\">",
+                `<td class=\"px-4 py-3 text-xs text-on-surface\">${EscapeHtml(orderItem.orderNo || `#${SafeNumber(orderItem.orderId)}`)}</td>`,
+                `<td class=\"px-4 py-3 text-xs text-on-surface-variant\">${EscapeHtml(orderStatus)}</td>`,
+                "<td class=\"px-4 py-3 text-right\">",
+                canClose
+                    ? `<button data-governance-action=\"order-close\" data-order-id=\"${SafeNumber(orderItem.orderId)}\" data-order-no=\"${EscapeHtml(orderItem.orderNo || "")}\" class=\"px-2 py-1 text-xs rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100\">强制关闭</button>`
+                    : "<span class=\"text-xs text-slate-400\">不可关闭</span>",
+                "</td>",
+                "</tr>"
+            ].join("");
+        }).join("");
+    }
+
+    /**
+     * 渲染审计表
+     */
+    function RenderAuditTable(auditTableBody, auditLogListResult) {
+        if (!auditTableBody) {
+            return;
+        }
+        const auditLogList = auditLogListResult && Array.isArray(auditLogListResult.auditLogList)
+            ? auditLogListResult.auditLogList
+            : [];
+        if (!auditLogList.length) {
+            auditTableBody.innerHTML = "<tr><td colspan=\"3\" class=\"px-4 py-6 text-center text-xs text-slate-400\">暂无审计日志</td></tr>";
+            return;
+        }
+        auditTableBody.innerHTML = auditLogList.map(function BuildAuditRow(auditItem) {
+            return [
+                "<tr class=\"hover:bg-surface-container-low transition-colors\">",
+                `<td class=\"px-4 py-3 text-xs text-on-surface\">${EscapeHtml(auditItem.actionType || "-")} / ${EscapeHtml(auditItem.actionResult || "-")}</td>`,
+                `<td class=\"px-4 py-3 text-xs text-on-surface-variant\">${EscapeHtml(auditItem.targetType || "-")} #${SafeNumber(auditItem.targetId)}</td>`,
+                `<td class=\"px-4 py-3 text-xs text-slate-500\">${EscapeHtml(FormatTime(auditItem.createTime))}</td>`,
+                "</tr>"
+            ].join("");
+        }).join("");
+    }
+
+    /**
+     * 处理规则更新
+     */
+    async function HandleRuleUpdateAction(actionButton) {
+        const ruleKey = actionButton.getAttribute("data-rule-key") || "";
+        const currentRuleValue = actionButton.getAttribute("data-rule-value") || "";
+        if (!ruleKey) {
+            throw new Error("规则键不存在");
+        }
+        const nextRuleValue = window.prompt(`请输入规则 ${ruleKey} 的新值`, currentRuleValue);
+        if (nextRuleValue == null) {
+            return;
+        }
+        await window.CampusShareApi.UpdateSystemRuleByAdmin(ruleKey, String(nextRuleValue).trim());
+    }
+
+    /**
+     * 处理商品强制下架
+     */
+    async function HandleProductOfflineAction(actionButton) {
+        const productId = SafeNumber(actionButton.getAttribute("data-product-id"));
+        if (!productId) {
+            throw new Error("商品ID不存在");
+        }
+        if (!window.confirm(`确定强制下架商品 #${productId} 吗？`)) {
+            return;
+        }
+        await window.CampusShareApi.OfflineProductByAdmin(productId, "后台治理强制下架");
+    }
+
+    /**
+     * 处理订单强制关闭
+     */
+    async function HandleOrderCloseAction(actionButton) {
+        const orderId = SafeNumber(actionButton.getAttribute("data-order-id"));
+        const orderNo = actionButton.getAttribute("data-order-no") || "";
+        if (!orderId) {
+            throw new Error("订单ID不存在");
+        }
+        if (!window.confirm(`确定强制关闭订单 ${orderNo || `#${orderId}`} 吗？`)) {
+            return;
+        }
+        await window.CampusShareApi.CloseOrderByAdmin(orderId, "后台治理强制关闭");
+    }
+
+    /**
+     * 是否可关闭订单
+     */
+    function IsOrderClosable(orderStatus) {
+        return orderStatus === "PENDING_SELLER_CONFIRM"
+            || orderStatus === "PENDING_OFFLINE_TRADE"
+            || orderStatus === "PENDING_BUYER_CONFIRM";
+    }
+
+    /**
+     * 格式化运行态健康文本
+     */
+    function FormatOpsHealthStatus(opsSummary) {
+        const overallStatus = String(opsSummary && opsSummary.overallStatus ? opsSummary.overallStatus : "UNKNOWN");
+        const databaseStatus = String(opsSummary && opsSummary.databaseStatus ? opsSummary.databaseStatus : "UNKNOWN");
+        const redisStatus = String(opsSummary && opsSummary.redisStatus ? opsSummary.redisStatus : "UNKNOWN");
+        return `${overallStatus} (DB:${databaseStatus} / Redis:${redisStatus})`;
     }
 
     /**

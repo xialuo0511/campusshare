@@ -5,17 +5,18 @@
     /**
      * 绑定页面
      */
-    function BindAdminBatchReviewPage() {
+    async function BindAdminBatchReviewPage() {
         if (!window.CampusShareApi) {
             return;
         }
-        if (!window.CampusShareApi.GetAuthToken()) {
+        const hasToken = !!window.CampusShareApi.GetAuthToken();
+        if (!hasToken) {
             window.CampusShareApi.RedirectToAuthPage("/pages/admin_batch_review.html");
             return;
         }
 
-        const profile = window.CampusShareApi.GetCurrentUserProfile() || {};
-        if (profile.userRole !== "ADMINISTRATOR") {
+        const hasAdminAccess = await window.CampusShareApi.EnsureAdminSession();
+        if (!hasAdminAccess) {
             window.location.href = "/pages/market_overview.html";
             return;
         }
@@ -145,8 +146,8 @@
             + pendingApplicationList.length
             + pendingMaterialList.length;
         statValueNodeList[0].textContent = String(totalCount);
-        statValueNodeList[1].textContent = "1.8h";
-        statValueNodeList[2].textContent = String(Math.max(0, 20 - totalCount));
+        statValueNodeList[1].textContent = String(pendingUserList.length);
+        statValueNodeList[2].textContent = String(pendingApplicationList.length);
         statValueNodeList[3].textContent = String(pendingReportList.length + pendingMaterialList.length);
     }
 

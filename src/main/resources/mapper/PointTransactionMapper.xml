@@ -82,5 +82,11 @@
         WHERE user_id = #{userId}
           AND deleted = 0
     </select>
-</mapper>
 
+    <select id="CountTransactionsCreatedAfter" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM point_transaction_info
+        WHERE deleted = 0
+          AND create_time &gt;= #{startTime}
+    </select>
+</mapper>

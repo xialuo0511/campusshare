@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.resource.service.impl;
 
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
+import com.xialuo.campusshare.common.service.ContentModerationService;
 import com.xialuo.campusshare.entity.ProductEntity;
 import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
@@ -30,21 +31,26 @@ public class ProductPublishServiceImpl implements ProductPublishService {
     private final OrderMapper orderMapper;
     /** 用户Mapper */
     private final UserMapper userMapper;
+    /** 内容治理服务 */
+    private final ContentModerationService contentModerationService;
 
     public ProductPublishServiceImpl(
         ProductMapper productMapper,
         OrderMapper orderMapper,
-        UserMapper userMapper
+        UserMapper userMapper,
+        ContentModerationService contentModerationService
     ) {
         this.productMapper = productMapper;
         this.orderMapper = orderMapper;
         this.userMapper = userMapper;
+        this.contentModerationService = contentModerationService;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ProductDetailResponseDto PublishProduct(PublishProductRequestDto requestDto, Long currentUserId) {
         ValidatePublishPermission(currentUserId);
+        ValidateSensitiveContent(requestDto);
         ProductEntity productEntity = BuildProductEntity(requestDto, currentUserId);
         Integer countRows = productMapper.InsertProduct(productEntity);
         if (countRows == null || countRows <= 0 || productEntity.GetProductId() == null) {
@@ -71,6 +77,7 @@ public class ProductPublishServiceImpl implements ProductPublishService {
             throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
         }
         ValidateManagePermission(productEntity, currentUserId, currentUserRole);
+        ValidateSensitiveContent(requestDto);
         if (Boolean.TRUE.equals(productEntity.GetHasEffectiveOrder())) {
             throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品存在进行中订单，不可编辑");
         }
@@ -118,7 +125,7 @@ public class ProductPublishServiceImpl implements ProductPublishService {
 
         String normalizedOfflineRemark = NormalizeText(offlineRemark);
         if (!normalizedOfflineRemark.isBlank()) {
-            // 预留备注字段，当前版本先保留入参
+            // 预留下架备注字段
         }
 
         Integer updatedRows = productMapper.OfflineProduct(productId, LocalDateTime.now());
@@ -270,7 +277,7 @@ public class ProductPublishServiceImpl implements ProductPublishService {
     }
 
     /**
-     * 获取卖家昵称
+     * 获取卖家显示名
      */
     private String ResolveSellerDisplayName(Long sellerUserId) {
         if (sellerUserId == null) {
@@ -310,6 +317,25 @@ public class ProductPublishServiceImpl implements ProductPublishService {
             .filter(imageFileId -> !imageFileId.isBlank())
             .distinct()
             .toList();
+    }
+
+    /**
+     * 校验敏感词
+     */
+    private void ValidateSensitiveContent(PublishProductRequestDto requestDto) {
+        if (requestDto == null) {
+            return;
+        }
+        contentModerationService.ValidateNoSensitiveWords(
+            List.of(
+                requestDto.GetTitle(),
+                requestDto.GetCategory(),
+                requestDto.GetConditionLevel(),
+                requestDto.GetTradeLocation(),
+                requestDto.GetDescription()
+            ),
+            "商品内容"
+        );
     }
 
     /**

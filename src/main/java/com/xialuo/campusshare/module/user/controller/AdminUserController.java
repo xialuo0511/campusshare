@@ -3,6 +3,7 @@ package com.xialuo.campusshare.module.user.controller;
 import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
+import com.xialuo.campusshare.module.admin.service.AuditLogService;
 import com.xialuo.campusshare.module.user.dto.SellerVerificationApplicationResponseDto;
 import com.xialuo.campusshare.module.user.dto.SellerVerificationReviewRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserProfilePageResponseDto;
@@ -32,13 +33,17 @@ public class AdminUserController {
     private final UserService userService;
     /** 卖家认证服务 */
     private final SellerVerificationService sellerVerificationService;
+    /** 审计日志服务 */
+    private final AuditLogService auditLogService;
 
     public AdminUserController(
         UserService userService,
-        SellerVerificationService sellerVerificationService
+        SellerVerificationService sellerVerificationService,
+        AuditLogService auditLogService
     ) {
         this.userService = userService;
         this.sellerVerificationService = sellerVerificationService;
+        this.auditLogService = auditLogService;
     }
 
     /**
@@ -84,6 +89,14 @@ public class AdminUserController {
         Long adminUserId = GetCurrentUserId(httpServletRequest);
         requestDto.SetUserId(userId);
         UserReviewResponseDto responseDto = userService.ReviewUser(requestDto, adminUserId);
+        auditLogService.RecordAuditLog(
+            adminUserId,
+            "USER_REVIEW",
+            "USER",
+            userId,
+            "SUCCESS",
+            BuildUserReviewAuditDetail(requestDto)
+        );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -99,6 +112,14 @@ public class AdminUserController {
             userId,
             GetCurrentUserId(httpServletRequest)
         );
+        auditLogService.RecordAuditLog(
+            GetCurrentUserId(httpServletRequest),
+            "USER_FREEZE",
+            "USER",
+            userId,
+            "SUCCESS",
+            "freeze=true"
+        );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -110,7 +131,16 @@ public class AdminUserController {
         @PathVariable("userId") Long userId,
         HttpServletRequest httpServletRequest
     ) {
+        Long adminUserId = GetCurrentUserId(httpServletRequest);
         UserProfileResponseDto responseDto = userService.UnfreezeUser(userId);
+        auditLogService.RecordAuditLog(
+            adminUserId,
+            "USER_UNFREEZE",
+            "USER",
+            userId,
+            "SUCCESS",
+            "freeze=false"
+        );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -140,6 +170,14 @@ public class AdminUserController {
             requestDto,
             adminUserId
         );
+        auditLogService.RecordAuditLog(
+            adminUserId,
+            "SELLER_VERIFICATION_REVIEW",
+            "SELLER_VERIFICATION",
+            applicationId,
+            "SUCCESS",
+            BuildSellerVerificationAuditDetail(requestDto)
+        );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -160,5 +198,38 @@ public class AdminUserController {
             return currentUserIdLong;
         }
         return Long.parseLong(currentUserId.toString());
+    }
+
+    /**
+     * 构建用户审核审计明细
+     */
+    private String BuildUserReviewAuditDetail(UserReviewRequestDto requestDto) {
+        if (requestDto == null) {
+            return "";
+        }
+        StringBuilder detailBuilder = new StringBuilder();
+        detailBuilder.append("approved=").append(Boolean.TRUE.equals(requestDto.GetApproved()));
+        detailBuilder.append(",reviewRemark=").append(SafeText(requestDto.GetReviewRemark()));
+        return detailBuilder.toString();
+    }
+
+    /**
+     * 构建卖家认证审核审计明细
+     */
+    private String BuildSellerVerificationAuditDetail(SellerVerificationReviewRequestDto requestDto) {
+        if (requestDto == null) {
+            return "";
+        }
+        StringBuilder detailBuilder = new StringBuilder();
+        detailBuilder.append("approved=").append(Boolean.TRUE.equals(requestDto.GetApproved()));
+        detailBuilder.append(",reviewRemark=").append(SafeText(requestDto.GetReviewRemark()));
+        return detailBuilder.toString();
+    }
+
+    /**
+     * 安全文本
+     */
+    private String SafeText(String text) {
+        return text == null ? "" : text.trim();
     }
 }

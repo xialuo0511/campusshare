@@ -1,6 +1,7 @@
 package com.xialuo.campusshare.module.admin.mapper;
 
 import com.xialuo.campusshare.entity.AuditLogEntity;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -36,5 +37,9 @@ public interface AuditLogMapper {
         @Param("targetType") String targetType,
         @Param("actionResult") String actionResult
     );
-}
 
+    /**
+     * 统计指定时间后的审计日志
+     */
+    Long CountAuditLogsCreatedAfter(@Param("startTime") LocalDateTime startTime);
+}

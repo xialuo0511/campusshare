@@ -170,6 +170,13 @@
         </if>
     </select>
 
+    <select id="CountUsersCreatedAfter" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM user_info
+        WHERE deleted = 0
+          AND create_time &gt;= #{startTime}
+    </select>
+
     <update id="IncreaseUserPointBalance">
         UPDATE user_info
         SET

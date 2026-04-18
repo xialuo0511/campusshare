@@ -6,6 +6,7 @@ import com.xialuo.campusshare.entity.NotificationEntity;
 import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.module.notification.dto.NotificationResponseDto;
 import com.xialuo.campusshare.module.notification.mapper.NotificationMapper;
+import com.xialuo.campusshare.module.notification.service.NotificationMailTaskService;
 import com.xialuo.campusshare.module.notification.service.NotificationService;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -20,9 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationServiceImpl implements NotificationService {
     /** 通知Mapper */
     private final NotificationMapper notificationMapper;
+    /** 通知邮件任务服务 */
+    private final NotificationMailTaskService notificationMailTaskService;
 
-    public NotificationServiceImpl(NotificationMapper notificationMapper) {
+    public NotificationServiceImpl(
+        NotificationMapper notificationMapper,
+        NotificationMailTaskService notificationMailTaskService
+    ) {
         this.notificationMapper = notificationMapper;
+        this.notificationMailTaskService = notificationMailTaskService;
     }
 
     @Override
@@ -52,6 +59,14 @@ public class NotificationServiceImpl implements NotificationService {
         notificationEntity.SetUpdateTime(LocalDateTime.now());
         notificationEntity.SetDeleted(Boolean.FALSE);
         notificationMapper.InsertNotification(notificationEntity);
+        notificationMailTaskService.CreateMailTask(
+            receiverUserId,
+            notificationType,
+            title,
+            content,
+            relatedBizType,
+            relatedBizId
+        );
     }
 
     @Override

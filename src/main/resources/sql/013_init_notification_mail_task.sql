@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS notification_mail_task (
+    mail_task_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'mail task id',
+    receiver_user_id BIGINT NOT NULL COMMENT 'receiver user id',
+    receiver_email VARCHAR(200) NOT NULL COMMENT 'receiver email',
+    notification_type VARCHAR(20) NOT NULL COMMENT 'notification type',
+    mail_subject VARCHAR(200) NOT NULL COMMENT 'mail subject',
+    mail_content VARCHAR(2000) NOT NULL COMMENT 'mail content',
+    related_biz_type VARCHAR(50) NULL COMMENT 'related biz type',
+    related_biz_id BIGINT NULL COMMENT 'related biz id',
+    dispatch_status VARCHAR(20) NOT NULL COMMENT 'dispatch status',
+    retry_count INT NOT NULL DEFAULT 0 COMMENT 'retry count',
+    max_retry_count INT NOT NULL DEFAULT 3 COMMENT 'max retry count',
+    next_retry_time DATETIME NOT NULL COMMENT 'next retry time',
+    last_fail_reason VARCHAR(500) NULL COMMENT 'last fail reason',
+    send_time DATETIME NULL COMMENT 'send time',
+    create_time DATETIME NOT NULL COMMENT 'create time',
+    update_time DATETIME NOT NULL COMMENT 'update time',
+    deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'deleted flag',
+    KEY idx_mail_task_status_retry (dispatch_status, next_retry_time),
+    KEY idx_mail_task_receiver (receiver_user_id, create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='notification mail task';

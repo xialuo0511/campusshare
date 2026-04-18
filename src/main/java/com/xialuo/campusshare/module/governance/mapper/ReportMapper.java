@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.governance.mapper;
 
 import com.xialuo.campusshare.entity.ReportEntity;
 import com.xialuo.campusshare.module.governance.enums.ReportTargetTypeEnum;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -30,6 +31,11 @@ public interface ReportMapper {
      * 查询待处理举报
      */
     List<ReportEntity> ListPendingReports();
+
+    /**
+     * 统计指定时间后的举报数
+     */
+    Long CountReportsCreatedAfter(@Param("startTime") LocalDateTime startTime);
 
     /**
      * 按对象查询同类待处理举报

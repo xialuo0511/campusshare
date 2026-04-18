@@ -15,6 +15,7 @@ import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
 import com.xialuo.campusshare.module.resource.service.ProductCommentService;
 import com.xialuo.campusshare.module.user.mapper.UserMapper;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class ProductCommentServiceImpl implements ProductCommentService {
+    /** 好评阈值 */
+    private static final Integer POSITIVE_SCORE_THRESHOLD = 4;
+
     /** 商品评论Mapper */
     private final ProductCommentMapper productCommentMapper;
     /** 商品Mapper */
@@ -60,12 +64,23 @@ public class ProductCommentServiceImpl implements ProductCommentService {
         ).stream().map(this::BuildCommentResponse).toList();
         Long totalCount = productCommentMapper.CountCommentsByProductId(productEntity.GetProductId());
         BigDecimal averageScore = productCommentMapper.AverageScoreByProductId(productEntity.GetProductId());
+        Long sellerScoreCount = productCommentMapper.CountCommentsBySellerUserId(productEntity.GetSellerUserId());
+        BigDecimal sellerAverageScore = productCommentMapper.AverageScoreBySellerUserId(productEntity.GetSellerUserId());
+        Long sellerPositiveCount = productCommentMapper.CountPositiveCommentsBySellerUserId(
+            productEntity.GetSellerUserId(),
+            POSITIVE_SCORE_THRESHOLD
+        );
 
         ProductCommentListResponseDto responseDto = new ProductCommentListResponseDto();
         responseDto.SetPageNo(resolvedPageNo);
         responseDto.SetPageSize(resolvedPageSize);
         responseDto.SetTotalCount(totalCount == null ? 0L : totalCount);
         responseDto.SetAverageScore(averageScore == null ? BigDecimal.ZERO : averageScore);
+        responseDto.SetSellerUserId(productEntity.GetSellerUserId());
+        responseDto.SetSellerDisplayName(ResolveUserDisplayName(productEntity.GetSellerUserId()));
+        responseDto.SetSellerScoreCount(sellerScoreCount == null ? 0L : sellerScoreCount);
+        responseDto.SetSellerAverageScore(sellerAverageScore == null ? BigDecimal.ZERO : sellerAverageScore);
+        responseDto.SetSellerPositiveRate(BuildPositiveRate(sellerPositiveCount, sellerScoreCount));
         responseDto.SetCommentList(commentResponseList);
         return responseDto;
     }
@@ -191,5 +206,19 @@ public class ProductCommentServiceImpl implements ProductCommentService {
      */
     private String NormalizeText(String text) {
         return text == null ? "" : text.trim();
+    }
+
+    /**
+     * 计算好评率
+     */
+    private BigDecimal BuildPositiveRate(Long positiveCount, Long totalCount) {
+        long safeTotalCount = totalCount == null ? 0L : totalCount;
+        if (safeTotalCount <= 0L) {
+            return BigDecimal.ZERO;
+        }
+        long safePositiveCount = positiveCount == null ? 0L : positiveCount;
+        return BigDecimal.valueOf(safePositiveCount)
+            .multiply(BigDecimal.valueOf(100))
+            .divide(BigDecimal.valueOf(safeTotalCount), 2, RoundingMode.HALF_UP);
     }
 }

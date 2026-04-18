@@ -92,5 +92,11 @@
             AND action_result = #{actionResult}
         </if>
     </select>
-</mapper>
 
+    <select id="CountAuditLogsCreatedAfter" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM audit_log_info
+        WHERE deleted = 0
+          AND create_time &gt;= #{startTime}
+    </select>
+</mapper>

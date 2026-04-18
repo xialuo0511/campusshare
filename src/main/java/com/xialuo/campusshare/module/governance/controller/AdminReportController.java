@@ -3,6 +3,7 @@ package com.xialuo.campusshare.module.governance.controller;
 import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
+import com.xialuo.campusshare.module.admin.service.AuditLogService;
 import com.xialuo.campusshare.module.governance.dto.ReportResponseDto;
 import com.xialuo.campusshare.module.governance.dto.ReportReviewRequestDto;
 import com.xialuo.campusshare.module.governance.service.ReportService;
@@ -24,9 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminReportController {
     /** 举报服务 */
     private final ReportService reportService;
+    /** 审计日志服务 */
+    private final AuditLogService auditLogService;
 
-    public AdminReportController(ReportService reportService) {
+    public AdminReportController(ReportService reportService, AuditLogService auditLogService) {
         this.reportService = reportService;
+        this.auditLogService = auditLogService;
     }
 
     /**
@@ -49,6 +53,14 @@ public class AdminReportController {
     ) {
         Long adminUserId = GetCurrentUserId(httpServletRequest);
         ReportResponseDto responseDto = reportService.ReviewReport(reportId, requestDto, adminUserId);
+        auditLogService.RecordAuditLog(
+            adminUserId,
+            "REPORT_REVIEW",
+            "REPORT",
+            reportId,
+            "SUCCESS",
+            BuildReportReviewAuditDetail(requestDto)
+        );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -69,5 +81,26 @@ public class AdminReportController {
             return currentUserIdLong;
         }
         return Long.parseLong(currentUserId.toString());
+    }
+
+    /**
+     * 构建举报审核审计明细
+     */
+    private String BuildReportReviewAuditDetail(ReportReviewRequestDto requestDto) {
+        if (requestDto == null) {
+            return "";
+        }
+        StringBuilder detailBuilder = new StringBuilder();
+        detailBuilder.append("approved=").append(Boolean.TRUE.equals(requestDto.GetApproved()));
+        detailBuilder.append(",dispositionAction=").append(SafeText(requestDto.GetDispositionAction()));
+        detailBuilder.append(",reviewRemark=").append(SafeText(requestDto.GetReviewRemark()));
+        return detailBuilder.toString();
+    }
+
+    /**
+     * 安全文本
+     */
+    private String SafeText(String text) {
+        return text == null ? "" : text.trim();
     }
 }

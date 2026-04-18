@@ -34,5 +34,22 @@ public interface ProductCommentMapper {
      * 统计商品平均分
      */
     BigDecimal AverageScoreByProductId(@Param("productId") Long productId);
-}
 
+    /**
+     * 统计卖家评价数
+     */
+    Long CountCommentsBySellerUserId(@Param("sellerUserId") Long sellerUserId);
+
+    /**
+     * 统计卖家平均分
+     */
+    BigDecimal AverageScoreBySellerUserId(@Param("sellerUserId") Long sellerUserId);
+
+    /**
+     * 统计卖家好评数
+     */
+    Long CountPositiveCommentsBySellerUserId(
+        @Param("sellerUserId") Long sellerUserId,
+        @Param("positiveScoreThreshold") Integer positiveScoreThreshold
+    );
+}

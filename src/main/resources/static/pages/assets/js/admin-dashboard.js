@@ -355,6 +355,10 @@
                     ? "badge"
                     : (taskItem.taskType === "TEAM" ? "groups" : (taskItem.taskType === "MATERIAL" ? "description" : "storefront")));
             const recruitmentIdValue = taskItem.recruitmentId || "";
+            const productIdValue = taskItem.taskType === "PRODUCT" ? taskItem.taskId : "";
+            const viewProductButton = taskItem.taskType === "PRODUCT"
+                ? `<button data-task-action=\"view-product\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${productIdValue}\" class=\"p-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100\" title=\"查看商品详情\"><span class=\"material-symbols-outlined text-sm\">visibility</span></button>`
+                : "";
 
             return [
                 "<tr class=\"hover:bg-surface-container-low transition-colors group\">",
@@ -372,6 +376,7 @@
                 `<td class=\"px-6 py-4\"><span class=\"${statusClass} text-[10px] font-bold px-2 py-0.5 rounded-full\">${EscapeHtml(statusText)}</span></td>`,
                 "<td class=\"px-6 py-4 text-right\">",
                 "<div class=\"flex justify-end gap-2\">",
+                viewProductButton,
                 `<button data-task-action=\"approve\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" data-recruitment-id=\"${recruitmentIdValue}\" class=\"p-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100\"><span class=\"material-symbols-outlined text-sm\">check</span></button>`,
                 `<button data-task-action=\"reject\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" data-recruitment-id=\"${recruitmentIdValue}\" class=\"p-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100\"><span class=\"material-symbols-outlined text-sm\">close</span></button>`,
                 "</div></td></tr>"
@@ -448,6 +453,10 @@
             const taskId = Number(actionButton.getAttribute("data-task-id"));
             const recruitmentId = Number(actionButton.getAttribute("data-recruitment-id"));
             if (!taskAction || !taskType || !taskId) {
+                return;
+            }
+            if (taskAction === "view-product" && taskType === "PRODUCT") {
+                window.open(`/pages/market_item_detail.html?productId=${encodeURIComponent(String(taskId))}`, "_blank");
                 return;
             }
             const approved = taskAction === "approve";

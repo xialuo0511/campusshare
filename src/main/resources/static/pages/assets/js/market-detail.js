@@ -197,7 +197,7 @@
         }
         document.title = `CampusShare | ${detailResult.title || `商品 #${productId}`}`;
         RenderProductGallery(detailResult.imageFileIds);
-        HideMessage(messageBar);
+        RenderProductReviewHint(detailResult, messageBar);
         return detailResult;
     }
 
@@ -235,6 +235,22 @@
         }
         buttonElement.disabled = true;
         buttonElement.classList.add("opacity-60", "cursor-not-allowed");
+    }
+
+    /**
+     * 渲染审核提示
+     */
+    function RenderProductReviewHint(detailResult, messageBar) {
+        const productStatus = String(detailResult && detailResult.productStatus ? detailResult.productStatus : "").toUpperCase();
+        if (productStatus === "PENDING_REVIEW") {
+            ShowInfo(messageBar, "该商品正在审核中，仅发布者和管理员可见");
+            return;
+        }
+        if (productStatus === "REJECTED") {
+            ShowInfo(messageBar, "该商品审核未通过，当前仅发布者和管理员可见");
+            return;
+        }
+        HideMessage(messageBar);
     }
 
     /**
@@ -297,7 +313,6 @@
             RenderCommentList(reviewListContainer, listResult.commentList || []);
             UpdateReviewTabText(reviewTabButton, Number(listResult.totalCount || 0));
             RenderSellerCreditSummary(listResult, sellerNameNode);
-            HideMessage(messageBar);
         } catch (error) {
             RenderCommentList(reviewListContainer, []);
             ShowError(messageBar, error instanceof Error ? error.message : "评论加载失败");
@@ -854,6 +869,15 @@
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";
         messageBar.className = "rounded-lg px-3 py-2 text-sm border border-red-200 bg-red-50 text-red-700 mb-4";
+        messageBar.textContent = message;
+    }
+
+    /**
+     * 显示提示
+     */
+    function ShowInfo(messageBar, message) {
+        messageBar.style.display = "block";
+        messageBar.className = "rounded-lg px-3 py-2 text-sm border border-blue-200 bg-blue-50 text-blue-700 mb-4";
         messageBar.textContent = message;
     }
 

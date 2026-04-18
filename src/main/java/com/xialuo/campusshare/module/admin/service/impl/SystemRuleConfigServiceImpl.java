@@ -10,6 +10,7 @@ import com.xialuo.campusshare.module.admin.mapper.SystemRuleConfigMapper;
 import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +24,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
     /** 日志 */
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemRuleConfigServiceImpl.class);
+    /** 规则表重试间隔毫秒 */
+    private static final long RULE_TABLE_RETRY_INTERVAL_MILLIS = 60_000L;
+    /** 默认值回退日志间隔毫秒 */
+    private static final long RULE_FALLBACK_LOG_INTERVAL_MILLIS = 60_000L;
     /** 规则Mapper */
     private final SystemRuleConfigMapper systemRuleConfigMapper;
     /** 规则表自愈初始化器 */
     private final SystemRuleConfigBootstrapInitializer bootstrapInitializer;
+    /** 规则表不可用标记 */
+    private volatile boolean ruleTableUnavailable;
+    /** 下次重试时间 */
+    private volatile long nextRuleTableRetryTimeMillis;
+    /** 下次记录回退日志时间 */
+    private final AtomicLong nextFallbackLogTimeMillis;
 
     public SystemRuleConfigServiceImpl(
         SystemRuleConfigMapper systemRuleConfigMapper,
@@ -34,6 +45,9 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
     ) {
         this.systemRuleConfigMapper = systemRuleConfigMapper;
         this.bootstrapInitializer = bootstrapInitializer;
+        this.ruleTableUnavailable = false;
+        this.nextRuleTableRetryTimeMillis = 0L;
+        this.nextFallbackLogTimeMillis = new AtomicLong(0L);
     }
 
     @Override
@@ -70,9 +84,17 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
 
     @Override
     public String GetRuleValueOrDefault(String ruleKey, String defaultValue) {
+        String normalizedRuleKey = NormalizeRuleKeyForRead(ruleKey);
+        if (normalizedRuleKey.isBlank()) {
+            return defaultValue;
+        }
+        if (!EnsureRuleTableReady(false)) {
+            LogRuleFallback(normalizedRuleKey, "rule table unavailable");
+            return defaultValue;
+        }
         try {
             SystemRuleConfigEntity ruleEntity = ExecuteWithRuleTableReady(
-                () -> systemRuleConfigMapper.FindRuleByKey(ruleKey)
+                () -> systemRuleConfigMapper.FindRuleByKey(normalizedRuleKey)
             );
             if (ruleEntity == null) {
                 return defaultValue;
@@ -83,7 +105,7 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
             }
             return ruleValue.trim();
         } catch (Exception exception) {
-            LOGGER.warn("Read rule failed, fallback default. ruleKey={}", ruleKey, exception);
+            LogRuleFallback(normalizedRuleKey, BuildErrorReason(exception));
             return defaultValue;
         }
     }
@@ -128,15 +150,13 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
      * 确保规则表可用后再执行数据库操作
      */
     private <T> T ExecuteWithRuleTableReady(Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (RuntimeException exception) {
-            boolean bootstrapSuccess = bootstrapInitializer.EnsureSystemRuleTable();
-            if (!bootstrapSuccess) {
-                throw exception;
-            }
-            return supplier.get();
+        if (!EnsureRuleTableReady(true)) {
+            throw new BusinessException(
+                BizCodeEnum.SYSTEM_ERROR,
+                "系统规则表未就绪，请执行数据库初始化脚本"
+            );
         }
+        return supplier.get();
     }
 
     /**
@@ -161,5 +181,64 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
             throw new BusinessException(BizCodeEnum.PARAM_INVALID, "规则键不能为空");
         }
         return normalizedRuleKey;
+    }
+
+    /**
+     * 读取场景规则键标准化
+     */
+    private String NormalizeRuleKeyForRead(String ruleKey) {
+        return ruleKey == null ? "" : ruleKey.trim();
+    }
+
+    /**
+     * 确保规则表就绪
+     */
+    private synchronized boolean EnsureRuleTableReady(boolean forceRetry) {
+        long now = System.currentTimeMillis();
+        if (ruleTableUnavailable && !forceRetry && now < nextRuleTableRetryTimeMillis) {
+            return false;
+        }
+
+        boolean tableReady = bootstrapInitializer.EnsureSystemRuleTable();
+        if (tableReady) {
+            if (ruleTableUnavailable) {
+                LOGGER.info("System rule table recovered");
+            }
+            ruleTableUnavailable = false;
+            nextRuleTableRetryTimeMillis = 0L;
+            return true;
+        }
+
+        ruleTableUnavailable = true;
+        nextRuleTableRetryTimeMillis = now + RULE_TABLE_RETRY_INTERVAL_MILLIS;
+        return false;
+    }
+
+    /**
+     * 记录规则回退日志
+     */
+    private void LogRuleFallback(String ruleKey, String reason) {
+        long now = System.currentTimeMillis();
+        long nextLogTime = nextFallbackLogTimeMillis.get();
+        if (now < nextLogTime) {
+            return;
+        }
+        if (!nextFallbackLogTimeMillis.compareAndSet(
+            nextLogTime,
+            now + RULE_FALLBACK_LOG_INTERVAL_MILLIS
+        )) {
+            return;
+        }
+        LOGGER.warn("Read rule fallback default. ruleKey={}, reason={}", ruleKey, reason);
+    }
+
+    /**
+     * 构建异常原因文本
+     */
+    private String BuildErrorReason(Exception exception) {
+        if (exception == null || exception.getMessage() == null || exception.getMessage().isBlank()) {
+            return "unknown";
+        }
+        return exception.getMessage().trim();
     }
 }

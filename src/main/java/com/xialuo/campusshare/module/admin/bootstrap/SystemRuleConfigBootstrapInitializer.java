@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 系统规则表启动自愈初始化器
@@ -29,6 +30,8 @@ public class SystemRuleConfigBootstrapInitializer {
     private static final String AUDIT_LOG_SCRIPT_PATH = "classpath:sql/012_init_audit_log.sql";
     /** 邮件任务脚本 */
     private static final String NOTIFICATION_MAIL_TASK_SCRIPT_PATH = "classpath:sql/013_init_notification_mail_task.sql";
+    /** 自愈失败日志间隔毫秒 */
+    private static final long BOOTSTRAP_WARN_LOG_INTERVAL_MILLIS = 60_000L;
 
     /** JDBC模板 */
     private final JdbcTemplate jdbcTemplate;
@@ -36,6 +39,8 @@ public class SystemRuleConfigBootstrapInitializer {
     private final ResourceLoader resourceLoader;
     /** 自愈开关 */
     private final Boolean ruleBootstrapEnabled;
+    /** 下次可记录自愈失败日志时间 */
+    private final AtomicLong nextBootstrapWarnLogTimeMillis;
 
     public SystemRuleConfigBootstrapInitializer(
         JdbcTemplate jdbcTemplate,
@@ -45,6 +50,7 @@ public class SystemRuleConfigBootstrapInitializer {
         this.jdbcTemplate = jdbcTemplate;
         this.resourceLoader = resourceLoader;
         this.ruleBootstrapEnabled = ruleBootstrapEnabled;
+        this.nextBootstrapWarnLogTimeMillis = new AtomicLong(0L);
     }
 
     /**
@@ -106,7 +112,7 @@ public class SystemRuleConfigBootstrapInitializer {
                 return true;
             }
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-            populator.setContinueOnError(true);
+            populator.setContinueOnError(false);
             populator.addScript(resourceLoader.getResource(scriptPath));
             DatabasePopulatorUtils.execute(populator, jdbcTemplate.getDataSource());
             boolean tableExists = Boolean.TRUE.equals(IsTableExists(tableName));
@@ -114,10 +120,14 @@ public class SystemRuleConfigBootstrapInitializer {
                 LOGGER.info("{} bootstrapped by startup initializer", tableDescription);
                 return true;
             }
-            LOGGER.warn("{} bootstrap finished but table still not found", tableDescription);
+            LogBootstrapWarning("{} bootstrap finished but table still not found", tableDescription);
             return false;
         } catch (Exception exception) {
-            LOGGER.warn("Bootstrap {} failed", tableDescription, exception);
+            LogBootstrapWarning(
+                "Bootstrap {} failed: {}",
+                tableDescription,
+                BuildErrorReason(exception)
+            );
             return Boolean.TRUE.equals(IsTableExists(tableName));
         }
     }
@@ -137,5 +147,33 @@ public class SystemRuleConfigBootstrapInitializer {
             tableName
         );
         return count != null && count > 0;
+    }
+
+    /**
+     * 记录自愈失败日志
+     */
+    private void LogBootstrapWarning(String messageTemplate, Object... args) {
+        long now = System.currentTimeMillis();
+        long nextLogTime = nextBootstrapWarnLogTimeMillis.get();
+        if (now < nextLogTime) {
+            return;
+        }
+        if (!nextBootstrapWarnLogTimeMillis.compareAndSet(
+            nextLogTime,
+            now + BOOTSTRAP_WARN_LOG_INTERVAL_MILLIS
+        )) {
+            return;
+        }
+        LOGGER.warn(messageTemplate, args);
+    }
+
+    /**
+     * 构建异常原因文本
+     */
+    private String BuildErrorReason(Exception exception) {
+        if (exception == null || exception.getMessage() == null || exception.getMessage().isBlank()) {
+            return "unknown";
+        }
+        return exception.getMessage().trim();
     }
 }

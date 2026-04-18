@@ -9,6 +9,8 @@ import com.xialuo.campusshare.module.admin.mapper.SystemRuleConfigMapper;
 import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
+    /** 日志 */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemRuleConfigServiceImpl.class);
     /** 规则Mapper */
     private final SystemRuleConfigMapper systemRuleConfigMapper;
 
@@ -58,15 +62,20 @@ public class SystemRuleConfigServiceImpl implements SystemRuleConfigService {
 
     @Override
     public String GetRuleValueOrDefault(String ruleKey, String defaultValue) {
-        SystemRuleConfigEntity ruleEntity = systemRuleConfigMapper.FindRuleByKey(ruleKey);
-        if (ruleEntity == null) {
+        try {
+            SystemRuleConfigEntity ruleEntity = systemRuleConfigMapper.FindRuleByKey(ruleKey);
+            if (ruleEntity == null) {
+                return defaultValue;
+            }
+            String ruleValue = ruleEntity.GetRuleValue();
+            if (ruleValue == null || ruleValue.isBlank()) {
+                return defaultValue;
+            }
+            return ruleValue.trim();
+        } catch (Exception exception) {
+            LOGGER.warn("Read rule failed, fallback default. ruleKey={}", ruleKey, exception);
             return defaultValue;
         }
-        String ruleValue = ruleEntity.GetRuleValue();
-        if (ruleValue == null || ruleValue.isBlank()) {
-            return defaultValue;
-        }
-        return ruleValue.trim();
     }
 
     @Override

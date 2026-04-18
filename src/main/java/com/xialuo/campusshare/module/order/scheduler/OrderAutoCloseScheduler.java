@@ -61,34 +61,38 @@ public class OrderAutoCloseScheduler {
      */
     @Scheduled(fixedDelayString = "${campusshare.order.scheduler.fixed-delay-ms:60000}")
     public void AutoCloseTimeoutOrders() {
-        Boolean enabled = systemRuleConfigService.GetRuleBooleanValueOrDefault(
-            SystemRuleKeyConstants.ORDER_AUTO_CLOSE_ENABLED,
-            Boolean.TRUE
-        );
-        if (!Boolean.TRUE.equals(enabled)) {
-            return;
+        try {
+            Boolean enabled = systemRuleConfigService.GetRuleBooleanValueOrDefault(
+                SystemRuleKeyConstants.ORDER_AUTO_CLOSE_ENABLED,
+                Boolean.TRUE
+            );
+            if (!Boolean.TRUE.equals(enabled)) {
+                return;
+            }
+
+            Integer batchSize = ResolveBatchSize();
+            Integer pendingSellerTimeoutMinutes = ResolvePendingSellerTimeoutMinutes();
+            Integer pendingBuyerTimeoutMinutes = ResolvePendingBuyerTimeoutMinutes();
+
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime pendingSellerDeadline = now.minusMinutes(pendingSellerTimeoutMinutes);
+            LocalDateTime pendingBuyerDeadline = now.minusMinutes(pendingBuyerTimeoutMinutes);
+
+            ProcessTimeoutOrderList(
+                orderMapper.ListTimeoutPendingSellerConfirmOrders(pendingSellerDeadline, batchSize),
+                OrderStatusEnum.PENDING_SELLER_CONFIRM,
+                "卖家超时未确认，系统自动关闭订单",
+                now
+            );
+            ProcessTimeoutOrderList(
+                orderMapper.ListTimeoutPendingBuyerConfirmOrders(pendingBuyerDeadline, batchSize),
+                OrderStatusEnum.PENDING_BUYER_CONFIRM,
+                "买家超时未确认，系统自动关闭订单",
+                now
+            );
+        } catch (Exception exception) {
+            LOGGER.warn("Auto close timeout orders failed", exception);
         }
-
-        Integer batchSize = ResolveBatchSize();
-        Integer pendingSellerTimeoutMinutes = ResolvePendingSellerTimeoutMinutes();
-        Integer pendingBuyerTimeoutMinutes = ResolvePendingBuyerTimeoutMinutes();
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime pendingSellerDeadline = now.minusMinutes(pendingSellerTimeoutMinutes);
-        LocalDateTime pendingBuyerDeadline = now.minusMinutes(pendingBuyerTimeoutMinutes);
-
-        ProcessTimeoutOrderList(
-            orderMapper.ListTimeoutPendingSellerConfirmOrders(pendingSellerDeadline, batchSize),
-            OrderStatusEnum.PENDING_SELLER_CONFIRM,
-            "卖家超时未确认，系统自动关闭订单",
-            now
-        );
-        ProcessTimeoutOrderList(
-            orderMapper.ListTimeoutPendingBuyerConfirmOrders(pendingBuyerDeadline, batchSize),
-            OrderStatusEnum.PENDING_BUYER_CONFIRM,
-            "买家超时未确认，系统自动关闭订单",
-            now
-        );
     }
 
     /**

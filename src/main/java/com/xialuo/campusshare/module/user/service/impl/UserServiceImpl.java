@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -155,23 +156,50 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserLoginResponseDto LoginUser(UserLoginRequestDto requestDto) {
-        UserEntity userEntity = userMapper.FindUserByAccount(requestDto.GetAccount());
+        String normalizedAccount = NormalizeAccount(requestDto.GetAccount());
+        LOGGER.info("用户登录请求: account={}", MaskAccount(normalizedAccount));
+
+        UserEntity userEntity;
+        try {
+            userEntity = userMapper.FindUserByAccount(normalizedAccount);
+        } catch (DataAccessException exception) {
+            LOGGER.error("用户登录查询失败: account={}", MaskAccount(normalizedAccount), exception);
+            throw exception;
+        }
         if (userEntity == null) {
+            LOGGER.warn("用户登录失败: account={}, reason=user_not_found", MaskAccount(normalizedAccount));
             throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
         }
         if (!PasswordUtil.VerifyPassword(requestDto.GetPassword(), userEntity.GetPasswordHash())) {
+            LOGGER.warn("用户登录失败: account={}, reason=password_invalid", MaskAccount(normalizedAccount));
             throw new BusinessException(BizCodeEnum.PASSWORD_INVALID, "密码错误");
         }
         if (userEntity.GetUserStatus() != UserStatusEnum.ACTIVE) {
+            LOGGER.warn(
+                "用户登录失败: account={}, reason=account_not_active, status={}",
+                MaskAccount(normalizedAccount),
+                userEntity.GetUserStatus()
+            );
             throw new BusinessException(BizCodeEnum.ACCOUNT_NOT_ACTIVE, "账号未审核通过");
         }
 
         userEntity.SetLastLoginTime(LocalDateTime.now());
         userEntity.SetUpdateTime(LocalDateTime.now());
-        userMapper.UpdateUser(userEntity);
+        try {
+            userMapper.UpdateUser(userEntity);
+        } catch (DataAccessException exception) {
+            LOGGER.error(
+                "用户登录更新最后登录时间失败: userId={}, account={}",
+                userEntity.GetUserId(),
+                MaskAccount(normalizedAccount),
+                exception
+            );
+            throw exception;
+        }
 
         String token = UUID.randomUUID().toString().replace("-", "");
         SaveUserSession(token, userEntity.GetUserId());
+        LOGGER.info("用户登录成功: userId={}, account={}", userEntity.GetUserId(), MaskAccount(normalizedAccount));
 
         UserLoginResponseDto responseDto = new UserLoginResponseDto();
         responseDto.SetUserId(userEntity.GetUserId());
@@ -436,6 +464,22 @@ public class UserServiceImpl implements UserService {
      */
     private String NormalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * 账号脱敏
+     */
+    private String MaskAccount(String account) {
+        String normalizedAccount = NormalizeAccount(account);
+        if (normalizedAccount.isBlank()) {
+            return "***";
+        }
+        if (normalizedAccount.length() <= 4) {
+            return normalizedAccount.charAt(0) + "***";
+        }
+        return normalizedAccount.substring(0, 2)
+            + "***"
+            + normalizedAccount.substring(normalizedAccount.length() - 2);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.team.dto.ApplyTeamRecruitmentRequestDto;
 import com.xialuo.campusshare.module.team.dto.PublishTeamRecruitmentRequestDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentApplicationResponseDto;
+import com.xialuo.campusshare.module.team.dto.TeamRecruitmentContentReviewRequestDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentListResponseDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentResponseDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentReviewRequestDto;
@@ -79,6 +80,26 @@ public interface TeamRecruitmentService {
         Long recruitmentId,
         Long applicationId,
         TeamRecruitmentReviewRequestDto requestDto,
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    );
+
+    /**
+     * 查询待审核招募
+     */
+    TeamRecruitmentListResponseDto ListPendingReviewRecruitments(
+        Integer pageNo,
+        Integer pageSize,
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    );
+
+    /**
+     * 审核招募
+     */
+    TeamRecruitmentResponseDto ReviewRecruitment(
+        Long recruitmentId,
+        TeamRecruitmentContentReviewRequestDto requestDto,
         Long currentUserId,
         UserRoleEnum currentUserRole
     );

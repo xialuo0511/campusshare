@@ -2,6 +2,7 @@ package com.xialuo.campusshare.module.resource.service;
 
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
+import com.xialuo.campusshare.module.resource.dto.ProductReviewRequestDto;
 import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
 
 /**
@@ -40,5 +41,14 @@ public interface ProductPublishService {
         Long productId,
         Long adminUserId,
         String offlineRemark
+    );
+
+    /**
+     * 管理员审核商品
+     */
+    ProductDetailResponseDto ReviewProductByAdmin(
+        Long productId,
+        ProductReviewRequestDto requestDto,
+        Long adminUserId
     );
 }

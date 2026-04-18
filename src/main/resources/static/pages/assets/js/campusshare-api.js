@@ -1670,6 +1670,25 @@
             const queryText = queryList.length ? `?${queryList.join("&")}` : "";
             return RequestApi(`/api/v1/admin/products${queryText}`, "GET", null, true);
         },
+        ListPendingProductsByAdmin(pageNo, pageSize) {
+            const queryList = [];
+            if (pageNo) {
+                queryList.push(`pageNo=${encodeURIComponent(String(pageNo))}`);
+            }
+            if (pageSize) {
+                queryList.push(`pageSize=${encodeURIComponent(String(pageSize))}`);
+            }
+            const queryText = queryList.length ? `?${queryList.join("&")}` : "";
+            return RequestApi(`/api/v1/admin/products/pending${queryText}`, "GET", null, true);
+        },
+        ReviewProductByAdmin(productId, approved, reviewRemark) {
+            return RequestApi(
+                `/api/v1/admin/products/${productId}/review`,
+                "POST",
+                { approved: !!approved, reviewRemark: reviewRemark || "" },
+                true
+            );
+        },
         OfflineProductByAdmin(productId, offlineRemark) {
             return RequestApi(
                 `/api/v1/admin/products/${productId}/offline`,
@@ -1747,6 +1766,25 @@
         },
         ListPendingTeamRecruitmentApplications() {
             return RequestApi("/api/v1/admin/team/applications/pending", "GET", null, true);
+        },
+        ListPendingTeamRecruitmentsByAdmin(pageNo, pageSize) {
+            const queryList = [];
+            if (pageNo) {
+                queryList.push(`pageNo=${encodeURIComponent(String(pageNo))}`);
+            }
+            if (pageSize) {
+                queryList.push(`pageSize=${encodeURIComponent(String(pageSize))}`);
+            }
+            const queryText = queryList.length ? `?${queryList.join("&")}` : "";
+            return RequestApi(`/api/v1/admin/team/recruitments/pending${queryText}`, "GET", null, true);
+        },
+        ReviewTeamRecruitmentByAdmin(recruitmentId, approved, reviewRemark) {
+            return RequestApi(
+                `/api/v1/admin/team/recruitments/${recruitmentId}/review`,
+                "POST",
+                { approved: !!approved, reviewRemark: reviewRemark || "" },
+                true
+            );
         }
     };
 

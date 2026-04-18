@@ -10,10 +10,13 @@ import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.enums.TeamRecruitmentApplicationStatusEnum;
 import com.xialuo.campusshare.enums.TeamRecruitmentStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
+import com.xialuo.campusshare.module.admin.constant.SystemRuleKeyConstants;
+import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
 import com.xialuo.campusshare.module.notification.service.NotificationService;
 import com.xialuo.campusshare.module.team.dto.ApplyTeamRecruitmentRequestDto;
 import com.xialuo.campusshare.module.team.dto.PublishTeamRecruitmentRequestDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentApplicationResponseDto;
+import com.xialuo.campusshare.module.team.dto.TeamRecruitmentContentReviewRequestDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentListResponseDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentResponseDto;
 import com.xialuo.campusshare.module.team.dto.TeamRecruitmentReviewRequestDto;
@@ -37,6 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
     /** 组队业务类型 */
     private static final String TEAM_BIZ_TYPE = "TEAM_RECRUITMENT";
+    /** 默认组队审核开关 */
+    private static final Boolean DEFAULT_TEAM_RECRUITMENT_REVIEW_REQUIRED = Boolean.TRUE;
 
     /** 招募Mapper */
     private final TeamRecruitmentMapper teamRecruitmentMapper;
@@ -46,17 +51,21 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
     private final UserMapper userMapper;
     /** 通知服务 */
     private final NotificationService notificationService;
+    /** 规则配置服务 */
+    private final SystemRuleConfigService systemRuleConfigService;
 
     public TeamRecruitmentServiceImpl(
         TeamRecruitmentMapper teamRecruitmentMapper,
         TeamRecruitmentApplicationMapper teamRecruitmentApplicationMapper,
         UserMapper userMapper,
-        NotificationService notificationService
+        NotificationService notificationService,
+        SystemRuleConfigService systemRuleConfigService
     ) {
         this.teamRecruitmentMapper = teamRecruitmentMapper;
         this.teamRecruitmentApplicationMapper = teamRecruitmentApplicationMapper;
         this.userMapper = userMapper;
         this.notificationService = notificationService;
+        this.systemRuleConfigService = systemRuleConfigService;
     }
 
     @Override
@@ -75,6 +84,8 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
         String resolvedKeyword = NormalizeText(keyword);
         String resolvedDirection = NormalizeText(direction);
         TeamRecruitmentStatusEnum resolvedStatus = ResolveStatus(status);
+        boolean isAdministrator = IsAdministrator(currentUserId);
+        ValidateListStatusPermission(resolvedStatus, isAdministrator);
         Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
 
         List<TeamRecruitmentEntity> recruitmentEntityList = teamRecruitmentMapper.ListRecruitments(
@@ -107,6 +118,8 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
         responseDto.SetFullCount(ResolveStatusCount(TeamRecruitmentStatusEnum.FULL));
         responseDto.SetClosedCount(ResolveStatusCount(TeamRecruitmentStatusEnum.CLOSED));
         responseDto.SetExpiredCount(ResolveStatusCount(TeamRecruitmentStatusEnum.EXPIRED));
+        responseDto.SetPendingReviewCount(ResolveStatusCount(TeamRecruitmentStatusEnum.PENDING_REVIEW));
+        responseDto.SetRejectedCount(ResolveStatusCount(TeamRecruitmentStatusEnum.REJECTED));
         responseDto.SetRecruitmentList(summaryResponseList);
         return responseDto;
     }
@@ -115,6 +128,7 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
     public TeamRecruitmentResponseDto GetRecruitmentDetail(Long recruitmentId, Long currentUserId) {
         RefreshExpiredRecruitments();
         TeamRecruitmentEntity recruitmentEntity = GetRecruitmentById(recruitmentId);
+        ValidateRecruitmentReadable(recruitmentEntity, currentUserId, IsAdministrator(currentUserId));
         boolean hasApplied = HasAppliedRecruitment(currentUserId, recruitmentId);
         TeamRecruitmentResponseDto responseDto = BuildRecruitmentResponse(recruitmentEntity, currentUserId, hasApplied);
         responseDto.SetApplicationCount(teamRecruitmentApplicationMapper.CountApplicationsByRecruitmentId(recruitmentId));
@@ -124,6 +138,7 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TeamRecruitmentResponseDto PublishRecruitment(PublishTeamRecruitmentRequestDto requestDto, Long currentUserId) {
+        TeamRecruitmentStatusEnum initialStatus = BuildInitialRecruitmentStatus(requestDto.GetMemberLimit());
         TeamRecruitmentEntity recruitmentEntity = new TeamRecruitmentEntity();
         recruitmentEntity.SetPublisherUserId(currentUserId);
         recruitmentEntity.SetEventName(NormalizeText(requestDto.GetEventName()));
@@ -131,7 +146,7 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
         recruitmentEntity.SetSkillRequirement(NormalizeText(requestDto.GetSkillRequirement()));
         recruitmentEntity.SetMemberLimit(requestDto.GetMemberLimit());
         recruitmentEntity.SetCurrentMemberCount(1);
-        recruitmentEntity.SetRecruitmentStatus(ResolveInitialStatus(requestDto.GetMemberLimit()));
+        recruitmentEntity.SetRecruitmentStatus(initialStatus);
         recruitmentEntity.SetDeadline(requestDto.GetDeadline());
         recruitmentEntity.SetCreateTime(LocalDateTime.now());
         recruitmentEntity.SetUpdateTime(LocalDateTime.now());
@@ -140,9 +155,15 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
 
         notificationService.CreateNotification(
             currentUserId,
-            NotificationTypeEnum.TEAM,
-            "招募发布成功",
-            "你的组队招募已发布，可在招募板查看",
+            initialStatus == TeamRecruitmentStatusEnum.PENDING_REVIEW
+                ? NotificationTypeEnum.REVIEW
+                : NotificationTypeEnum.TEAM,
+            initialStatus == TeamRecruitmentStatusEnum.PENDING_REVIEW
+                ? "招募提交成功"
+                : "招募发布成功",
+            initialStatus == TeamRecruitmentStatusEnum.PENDING_REVIEW
+                ? "你的组队招募已提交，等待管理员审核"
+                : "你的组队招募已发布，可在招募板查看",
             TEAM_BIZ_TYPE,
             recruitmentEntity.GetRecruitmentId()
         );
@@ -302,6 +323,88 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
     }
 
     @Override
+    public TeamRecruitmentListResponseDto ListPendingReviewRecruitments(
+        Integer pageNo,
+        Integer pageSize,
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    ) {
+        ValidateAdminPermission(currentUserId, currentUserRole);
+        Integer resolvedPageNo = ResolvePageNo(pageNo);
+        Integer resolvedPageSize = ResolvePageSize(pageSize);
+        Integer offset = (resolvedPageNo - 1) * resolvedPageSize;
+
+        List<TeamRecruitmentEntity> recruitmentEntityList = teamRecruitmentMapper.ListRecruitments(
+            null,
+            null,
+            TeamRecruitmentStatusEnum.PENDING_REVIEW,
+            offset,
+            resolvedPageSize
+        );
+        Long totalCount = teamRecruitmentMapper.CountRecruitments(
+            null,
+            null,
+            TeamRecruitmentStatusEnum.PENDING_REVIEW
+        );
+        List<TeamRecruitmentSummaryResponseDto> summaryResponseList = recruitmentEntityList.stream()
+            .map(recruitmentEntity -> BuildRecruitmentSummaryResponse(recruitmentEntity, currentUserId, false))
+            .toList();
+
+        TeamRecruitmentListResponseDto responseDto = new TeamRecruitmentListResponseDto();
+        responseDto.SetPageNo(resolvedPageNo);
+        responseDto.SetPageSize(resolvedPageSize);
+        responseDto.SetTotalCount(totalCount == null ? 0L : totalCount);
+        responseDto.SetRecruitingCount(ResolveStatusCount(TeamRecruitmentStatusEnum.RECRUITING));
+        responseDto.SetFullCount(ResolveStatusCount(TeamRecruitmentStatusEnum.FULL));
+        responseDto.SetClosedCount(ResolveStatusCount(TeamRecruitmentStatusEnum.CLOSED));
+        responseDto.SetExpiredCount(ResolveStatusCount(TeamRecruitmentStatusEnum.EXPIRED));
+        responseDto.SetPendingReviewCount(ResolveStatusCount(TeamRecruitmentStatusEnum.PENDING_REVIEW));
+        responseDto.SetRejectedCount(ResolveStatusCount(TeamRecruitmentStatusEnum.REJECTED));
+        responseDto.SetRecruitmentList(summaryResponseList);
+        return responseDto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TeamRecruitmentResponseDto ReviewRecruitment(
+        Long recruitmentId,
+        TeamRecruitmentContentReviewRequestDto requestDto,
+        Long currentUserId,
+        UserRoleEnum currentUserRole
+    ) {
+        ValidateAdminPermission(currentUserId, currentUserRole);
+        TeamRecruitmentEntity recruitmentEntity = GetRecruitmentById(recruitmentId);
+        if (recruitmentEntity.GetRecruitmentStatus() != TeamRecruitmentStatusEnum.PENDING_REVIEW) {
+            throw new BusinessException(BizCodeEnum.TEAM_RECRUITMENT_STATUS_INVALID, "当前招募状态不允许审核");
+        }
+        boolean approved = requestDto != null && Boolean.TRUE.equals(requestDto.GetApproved());
+        String reviewRemark = NormalizeText(requestDto == null ? "" : requestDto.GetReviewRemark());
+
+        if (approved) {
+            recruitmentEntity.SetRecruitmentStatus(ResolveApprovedRecruitmentStatus(recruitmentEntity.GetMemberLimit()));
+            recruitmentEntity.SetCloseTime(null);
+        } else {
+            recruitmentEntity.SetRecruitmentStatus(TeamRecruitmentStatusEnum.REJECTED);
+            recruitmentEntity.SetCloseTime(LocalDateTime.now());
+        }
+        recruitmentEntity.SetUpdateTime(LocalDateTime.now());
+        teamRecruitmentMapper.UpdateRecruitment(recruitmentEntity);
+
+        notificationService.CreateNotification(
+            recruitmentEntity.GetPublisherUserId(),
+            NotificationTypeEnum.REVIEW,
+            approved ? "招募审核通过" : "招募审核未通过",
+            BuildRecruitmentReviewContent(approved, reviewRemark),
+            TEAM_BIZ_TYPE,
+            recruitmentId
+        );
+
+        TeamRecruitmentResponseDto responseDto = BuildRecruitmentResponse(recruitmentEntity, currentUserId, false);
+        responseDto.SetApplicationCount(teamRecruitmentApplicationMapper.CountApplicationsByRecruitmentId(recruitmentId));
+        return responseDto;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public TeamRecruitmentResponseDto CloseRecruitment(Long recruitmentId, Long currentUserId, UserRoleEnum currentUserRole) {
         RefreshExpiredRecruitments();
@@ -390,6 +493,59 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
             return;
         }
         throw new BusinessException(BizCodeEnum.TEAM_RECRUITMENT_PERMISSION_DENIED, "无权管理该招募");
+    }
+
+    /**
+     * 校验管理员权限
+     */
+    private void ValidateAdminPermission(Long currentUserId, UserRoleEnum currentUserRole) {
+        if (currentUserId == null || currentUserId <= 0L) {
+            throw new BusinessException(BizCodeEnum.UNAUTHORIZED, "未登录或登录已失效");
+        }
+        if (currentUserRole != UserRoleEnum.ADMINISTRATOR) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "仅管理员可执行该操作");
+        }
+    }
+
+    /**
+     * 校验列表状态查询权限
+     */
+    private void ValidateListStatusPermission(
+        TeamRecruitmentStatusEnum recruitmentStatus,
+        boolean isAdministrator
+    ) {
+        if (recruitmentStatus == null) {
+            return;
+        }
+        if (recruitmentStatus != TeamRecruitmentStatusEnum.PENDING_REVIEW
+            && recruitmentStatus != TeamRecruitmentStatusEnum.REJECTED) {
+            return;
+        }
+        if (isAdministrator) {
+            return;
+        }
+        throw new BusinessException(BizCodeEnum.TEAM_RECRUITMENT_PERMISSION_DENIED, "无权查看该状态招募");
+    }
+
+    /**
+     * 校验详情可读权限
+     */
+    private void ValidateRecruitmentReadable(
+        TeamRecruitmentEntity recruitmentEntity,
+        Long currentUserId,
+        boolean isAdministrator
+    ) {
+        if (recruitmentEntity.GetRecruitmentStatus() != TeamRecruitmentStatusEnum.PENDING_REVIEW
+            && recruitmentEntity.GetRecruitmentStatus() != TeamRecruitmentStatusEnum.REJECTED) {
+            return;
+        }
+        if (isAdministrator) {
+            return;
+        }
+        if (currentUserId != null && currentUserId.equals(recruitmentEntity.GetPublisherUserId())) {
+            return;
+        }
+        throw new BusinessException(BizCodeEnum.TEAM_RECRUITMENT_PERMISSION_DENIED, "无权查看该招募");
     }
 
     /**
@@ -536,13 +692,60 @@ public class TeamRecruitmentServiceImpl implements TeamRecruitmentService {
     }
 
     /**
-     * 解析首个状态
+     * 构建初始状态
      */
-    private TeamRecruitmentStatusEnum ResolveInitialStatus(Integer memberLimit) {
+    private TeamRecruitmentStatusEnum BuildInitialRecruitmentStatus(Integer memberLimit) {
+        if (Boolean.TRUE.equals(ResolveTeamRecruitmentReviewRequired())) {
+            return TeamRecruitmentStatusEnum.PENDING_REVIEW;
+        }
+        return ResolveApprovedRecruitmentStatus(memberLimit);
+    }
+
+    /**
+     * 读取组队审核开关
+     */
+    private Boolean ResolveTeamRecruitmentReviewRequired() {
+        return systemRuleConfigService.GetRuleBooleanValueOrDefault(
+            SystemRuleKeyConstants.TEAM_RECRUITMENT_REVIEW_REQUIRED,
+            DEFAULT_TEAM_RECRUITMENT_REVIEW_REQUIRED
+        );
+    }
+
+    /**
+     * 解析审核通过后的初始状态
+     */
+    private TeamRecruitmentStatusEnum ResolveApprovedRecruitmentStatus(Integer memberLimit) {
         if (memberLimit == null || memberLimit <= 1) {
             return TeamRecruitmentStatusEnum.FULL;
         }
         return TeamRecruitmentStatusEnum.RECRUITING;
+    }
+
+    /**
+     * 是否管理员
+     */
+    private boolean IsAdministrator(Long currentUserId) {
+        if (currentUserId == null || currentUserId <= 0L) {
+            return false;
+        }
+        UserEntity userEntity = userMapper.FindUserById(currentUserId);
+        if (userEntity == null || userEntity.GetUserRole() == null) {
+            return false;
+        }
+        return userEntity.GetUserRole() == UserRoleEnum.ADMINISTRATOR;
+    }
+
+    /**
+     * 构建招募审核通知内容
+     */
+    private String BuildRecruitmentReviewContent(boolean approved, String reviewRemark) {
+        if (approved) {
+            return "招募审核通过，已可在招募板展示";
+        }
+        if (reviewRemark.isBlank()) {
+            return "招募审核未通过，请修改后重新提交";
+        }
+        return "招募审核未通过：" + reviewRemark;
     }
 
     /**

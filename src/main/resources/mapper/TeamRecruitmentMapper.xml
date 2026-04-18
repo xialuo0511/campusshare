@@ -115,12 +115,17 @@
         <if test="recruitmentStatus != null">
             AND recruitment_status = #{recruitmentStatus}
         </if>
+        <if test="recruitmentStatus == null">
+            AND recruitment_status IN ('RECRUITING', 'FULL', 'CLOSED', 'EXPIRED')
+        </if>
         ORDER BY
             CASE recruitment_status
-                WHEN 'RECRUITING' THEN 1
-                WHEN 'FULL' THEN 2
-                WHEN 'CLOSED' THEN 3
-                WHEN 'EXPIRED' THEN 4
+                WHEN 'PENDING_REVIEW' THEN 1
+                WHEN 'RECRUITING' THEN 2
+                WHEN 'FULL' THEN 3
+                WHEN 'CLOSED' THEN 4
+                WHEN 'EXPIRED' THEN 5
+                WHEN 'REJECTED' THEN 6
                 ELSE 99
             END ASC,
             deadline ASC,
@@ -179,4 +184,3 @@
           AND current_member_count &lt; member_limit
     </update>
 </mapper>
-

@@ -20,6 +20,8 @@ INSERT INTO system_rule_config (
     deleted
 ) VALUES
     ('MATERIAL_REVIEW_REQUIRED', 'true', 'BOOLEAN', 'material upload requires review', NOW(), NOW(), 0),
+    ('PRODUCT_REVIEW_REQUIRED', 'true', 'BOOLEAN', 'product publish requires review', NOW(), NOW(), 0),
+    ('TEAM_RECRUITMENT_REVIEW_REQUIRED', 'true', 'BOOLEAN', 'team recruitment publish requires review', NOW(), NOW(), 0),
     ('MATERIAL_UPLOAD_REWARD_POINTS', '2', 'INTEGER', 'material upload reward points', NOW(), NOW(), 0),
     ('MATERIAL_DOWNLOAD_COST_POINTS', '1', 'INTEGER', 'material download cost points', NOW(), NOW(), 0),
     ('MATERIAL_FILE_MAX_SIZE_MB', '25', 'INTEGER', 'material file max size in MB', NOW(), NOW(), 0),

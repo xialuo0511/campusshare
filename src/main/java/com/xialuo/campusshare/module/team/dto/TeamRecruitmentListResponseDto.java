@@ -20,6 +20,10 @@ public class TeamRecruitmentListResponseDto {
     private Long closedCount;
     /** 已过期数量 */
     private Long expiredCount;
+    /** 待审核数量 */
+    private Long pendingReviewCount;
+    /** 审核驳回数量 */
+    private Long rejectedCount;
     /** 列表 */
     private List<TeamRecruitmentSummaryResponseDto> recruitmentList;
 
@@ -122,6 +126,34 @@ public class TeamRecruitmentListResponseDto {
     }
 
     /**
+     * 获取待审核数量
+     */
+    public Long GetPendingReviewCount() {
+        return pendingReviewCount;
+    }
+
+    /**
+     * 设置待审核数量
+     */
+    public void SetPendingReviewCount(Long pendingReviewCount) {
+        this.pendingReviewCount = pendingReviewCount;
+    }
+
+    /**
+     * 获取驳回数量
+     */
+    public Long GetRejectedCount() {
+        return rejectedCount;
+    }
+
+    /**
+     * 设置驳回数量
+     */
+    public void SetRejectedCount(Long rejectedCount) {
+        this.rejectedCount = rejectedCount;
+    }
+
+    /**
      * 获取列表
      */
     public List<TeamRecruitmentSummaryResponseDto> GetRecruitmentList() {
@@ -135,4 +167,3 @@ public class TeamRecruitmentListResponseDto {
         this.recruitmentList = recruitmentList;
     }
 }
-

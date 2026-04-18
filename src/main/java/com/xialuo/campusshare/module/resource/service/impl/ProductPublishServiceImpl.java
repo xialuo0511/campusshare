@@ -5,11 +5,16 @@ import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.common.service.ContentModerationService;
 import com.xialuo.campusshare.entity.ProductEntity;
 import com.xialuo.campusshare.entity.UserEntity;
+import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.enums.UserStatusEnum;
+import com.xialuo.campusshare.module.admin.constant.SystemRuleKeyConstants;
+import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
+import com.xialuo.campusshare.module.notification.service.NotificationService;
 import com.xialuo.campusshare.module.order.mapper.OrderMapper;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
+import com.xialuo.campusshare.module.resource.dto.ProductReviewRequestDto;
 import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
 import com.xialuo.campusshare.module.resource.service.ProductPublishService;
@@ -25,6 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class ProductPublishServiceImpl implements ProductPublishService {
+    /** 商品业务类型 */
+    private static final String PRODUCT_BIZ_TYPE = "PRODUCT";
+    /** 默认商品审核开关 */
+    private static final Boolean DEFAULT_PRODUCT_REVIEW_REQUIRED = Boolean.TRUE;
+
     /** 商品Mapper */
     private final ProductMapper productMapper;
     /** 订单Mapper */
@@ -33,17 +43,25 @@ public class ProductPublishServiceImpl implements ProductPublishService {
     private final UserMapper userMapper;
     /** 内容治理服务 */
     private final ContentModerationService contentModerationService;
+    /** 规则配置服务 */
+    private final SystemRuleConfigService systemRuleConfigService;
+    /** 通知服务 */
+    private final NotificationService notificationService;
 
     public ProductPublishServiceImpl(
         ProductMapper productMapper,
         OrderMapper orderMapper,
         UserMapper userMapper,
-        ContentModerationService contentModerationService
+        ContentModerationService contentModerationService,
+        SystemRuleConfigService systemRuleConfigService,
+        NotificationService notificationService
     ) {
         this.productMapper = productMapper;
         this.orderMapper = orderMapper;
         this.userMapper = userMapper;
         this.contentModerationService = contentModerationService;
+        this.systemRuleConfigService = systemRuleConfigService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -89,6 +107,11 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         productEntity.SetTradeLocation(NormalizeText(requestDto.GetTradeLocation()));
         productEntity.SetDescription(NormalizeText(requestDto.GetDescription()));
         productEntity.SetImageFileIds(JoinImageFileIds(requestDto.GetImageFileIds()));
+        if (productEntity.GetProductStatus() == ProductStatusEnum.REJECTED) {
+            ProductStatusEnum initialStatus = BuildInitialProductStatus();
+            productEntity.SetProductStatus(initialStatus);
+            productEntity.SetOnShelf(initialStatus == ProductStatusEnum.PUBLISHED);
+        }
         productEntity.SetUpdateTime(LocalDateTime.now());
 
         Integer updatedRows = productMapper.UpdateProduct(productEntity);
@@ -167,6 +190,51 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         return BuildProductDetailResponse(latestProductEntity);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProductDetailResponseDto ReviewProductByAdmin(
+        Long productId,
+        ProductReviewRequestDto requestDto,
+        Long adminUserId
+    ) {
+        ProductEntity productEntity = productMapper.FindProductById(productId);
+        if (productEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        if (productEntity.GetProductStatus() != ProductStatusEnum.PENDING_REVIEW) {
+            throw new BusinessException(BizCodeEnum.BUSINESS_CONFLICT, "当前商品状态不允许审核");
+        }
+
+        boolean approved = requestDto != null && Boolean.TRUE.equals(requestDto.GetApproved());
+        String reviewRemark = NormalizeText(requestDto == null ? "" : requestDto.GetReviewRemark());
+        ProductStatusEnum targetStatus = approved ? ProductStatusEnum.PUBLISHED : ProductStatusEnum.REJECTED;
+        boolean targetOnShelf = approved;
+        Integer updatedRows = productMapper.UpdateProductReviewStatus(
+            productId,
+            targetStatus,
+            targetOnShelf,
+            LocalDateTime.now()
+        );
+        if (updatedRows == null || updatedRows <= 0) {
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "商品审核失败");
+        }
+
+        notificationService.CreateNotification(
+            productEntity.GetSellerUserId(),
+            NotificationTypeEnum.REVIEW,
+            approved ? "商品审核通过" : "商品审核未通过",
+            BuildProductReviewContent(approved, reviewRemark),
+            PRODUCT_BIZ_TYPE,
+            productId
+        );
+
+        ProductEntity latestProductEntity = productMapper.FindProductById(productId);
+        if (latestProductEntity == null) {
+            throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+        return BuildProductDetailResponse(latestProductEntity);
+    }
+
     /**
      * 校验管理权限
      */
@@ -205,6 +273,7 @@ public class ProductPublishServiceImpl implements ProductPublishService {
      * 构建商品实体
      */
     private ProductEntity BuildProductEntity(PublishProductRequestDto requestDto, Long currentUserId) {
+        ProductStatusEnum initialProductStatus = BuildInitialProductStatus();
         ProductEntity productEntity = new ProductEntity();
         productEntity.SetResourceId(null);
         productEntity.SetTitle(NormalizeText(requestDto.GetTitle()));
@@ -215,14 +284,27 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         productEntity.SetDescription(NormalizeText(requestDto.GetDescription()));
         productEntity.SetImageFileIds(JoinImageFileIds(requestDto.GetImageFileIds()));
         productEntity.SetSellerUserId(currentUserId);
-        productEntity.SetProductStatus(ProductStatusEnum.PUBLISHED);
-        productEntity.SetOnShelf(Boolean.TRUE);
+        productEntity.SetProductStatus(initialProductStatus);
+        productEntity.SetOnShelf(initialProductStatus == ProductStatusEnum.PUBLISHED);
         productEntity.SetStockCount(1);
         productEntity.SetHasEffectiveOrder(Boolean.FALSE);
         productEntity.SetCreateTime(LocalDateTime.now());
         productEntity.SetUpdateTime(LocalDateTime.now());
         productEntity.SetDeleted(Boolean.FALSE);
         return productEntity;
+    }
+
+    /**
+     * 构建商品审核通知内容
+     */
+    private String BuildProductReviewContent(boolean approved, String reviewRemark) {
+        if (approved) {
+            return "商品审核通过，已上架展示";
+        }
+        if (reviewRemark.isBlank()) {
+            return "商品审核未通过，请修改后重新提交";
+        }
+        return "商品审核未通过：" + reviewRemark;
     }
 
     /**
@@ -335,6 +417,25 @@ public class ProductPublishServiceImpl implements ProductPublishService {
                 requestDto.GetDescription()
             ),
             "商品内容"
+        );
+    }
+
+    /**
+     * 构建商品初始状态
+     */
+    private ProductStatusEnum BuildInitialProductStatus() {
+        return Boolean.TRUE.equals(ResolveProductReviewRequired())
+            ? ProductStatusEnum.PENDING_REVIEW
+            : ProductStatusEnum.PUBLISHED;
+    }
+
+    /**
+     * 读取商品审核开关
+     */
+    private Boolean ResolveProductReviewRequired() {
+        return systemRuleConfigService.GetRuleBooleanValueOrDefault(
+            SystemRuleKeyConstants.PRODUCT_REVIEW_REQUIRED,
+            DEFAULT_PRODUCT_REVIEW_REQUIRED
         );
     }
 

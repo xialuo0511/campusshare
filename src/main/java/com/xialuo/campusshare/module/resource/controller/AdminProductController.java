@@ -7,6 +7,7 @@ import com.xialuo.campusshare.module.admin.service.AuditLogService;
 import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductListResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductOfflineRequestDto;
+import com.xialuo.campusshare.module.resource.dto.ProductReviewRequestDto;
 import com.xialuo.campusshare.module.resource.service.ProductPublishService;
 import com.xialuo.campusshare.module.resource.service.ProductQueryService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -67,6 +68,26 @@ public class AdminProductController {
     }
 
     /**
+     * 查询待审核商品
+     */
+    @GetMapping("/pending")
+    public ApiResponse<ProductListResponseDto> ListPendingProducts(
+        @RequestParam(value = "pageNo", required = false) Integer pageNo,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        HttpServletRequest httpServletRequest
+    ) {
+        ProductListResponseDto responseDto = productQueryService.ListProductsForAdmin(
+            pageNo,
+            pageSize,
+            null,
+            null,
+            "PENDING_REVIEW",
+            null
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 管理员强制下架商品
      */
     @PostMapping("/{productId}/offline")
@@ -89,6 +110,32 @@ public class AdminProductController {
             productId,
             "SUCCESS",
             BuildProductOfflineAuditDetail(offlineRemark)
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 管理员审核商品
+     */
+    @PostMapping("/{productId}/review")
+    public ApiResponse<ProductDetailResponseDto> ReviewProductByAdmin(
+        @PathVariable("productId") Long productId,
+        @RequestBody @Valid ProductReviewRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long currentUserId = GetCurrentUserId(httpServletRequest);
+        ProductDetailResponseDto responseDto = productPublishService.ReviewProductByAdmin(
+            productId,
+            requestDto,
+            currentUserId
+        );
+        auditLogService.RecordAuditLog(
+            currentUserId,
+            "PRODUCT_REVIEW",
+            "PRODUCT",
+            productId,
+            "SUCCESS",
+            BuildProductReviewAuditDetail(requestDto)
         );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
@@ -121,5 +168,24 @@ public class AdminProductController {
         }
         return "offlineRemark=" + offlineRemark.trim();
     }
-}
 
+    /**
+     * 构建审核审计明细
+     */
+    private String BuildProductReviewAuditDetail(ProductReviewRequestDto requestDto) {
+        if (requestDto == null) {
+            return "";
+        }
+        StringBuilder detailBuilder = new StringBuilder();
+        detailBuilder.append("approved=").append(Boolean.TRUE.equals(requestDto.GetApproved()));
+        detailBuilder.append(",reviewRemark=").append(SafeText(requestDto.GetReviewRemark()));
+        return detailBuilder.toString();
+    }
+
+    /**
+     * 安全文本
+     */
+    private String SafeText(String text) {
+        return text == null ? "" : text.trim();
+    }
+}

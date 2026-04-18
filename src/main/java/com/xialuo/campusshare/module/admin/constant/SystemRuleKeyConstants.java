@@ -6,6 +6,10 @@ package com.xialuo.campusshare.module.admin.constant;
 public final class SystemRuleKeyConstants {
     /** 资料上传是否需要审核 */
     public static final String MATERIAL_REVIEW_REQUIRED = "MATERIAL_REVIEW_REQUIRED";
+    /** 商品发布是否需要审核 */
+    public static final String PRODUCT_REVIEW_REQUIRED = "PRODUCT_REVIEW_REQUIRED";
+    /** 组队招募是否需要审核 */
+    public static final String TEAM_RECRUITMENT_REVIEW_REQUIRED = "TEAM_RECRUITMENT_REVIEW_REQUIRED";
     /** 资料上传奖励积分 */
     public static final String MATERIAL_UPLOAD_REWARD_POINTS = "MATERIAL_UPLOAD_REWARD_POINTS";
     /** 资料下载消耗积分 */

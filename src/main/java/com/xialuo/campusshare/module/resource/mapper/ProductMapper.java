@@ -1,6 +1,7 @@
 package com.xialuo.campusshare.module.resource.mapper;
 
 import com.xialuo.campusshare.entity.ProductEntity;
+import com.xialuo.campusshare.enums.ProductStatusEnum;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,16 @@ public interface ProductMapper {
      * 更新商品
      */
     Integer UpdateProduct(ProductEntity productEntity);
+
+    /**
+     * 更新商品审核状态
+     */
+    Integer UpdateProductReviewStatus(
+        @Param("productId") Long productId,
+        @Param("productStatus") ProductStatusEnum productStatus,
+        @Param("onShelf") Boolean onShelf,
+        @Param("updateTime") LocalDateTime updateTime
+    );
 
     /**
      * 分页查询已上架商品

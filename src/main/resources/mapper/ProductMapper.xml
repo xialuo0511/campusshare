@@ -92,6 +92,18 @@
             trade_location = #{tradeLocation},
             description = #{description},
             image_file_ids = #{imageFileIds},
+            product_status = #{productStatus},
+            on_shelf = #{onShelf},
+            update_time = #{updateTime}
+        WHERE product_id = #{productId}
+          AND deleted = 0
+    </update>
+
+    <update id="UpdateProductReviewStatus">
+        UPDATE product_info
+        SET
+            product_status = #{productStatus},
+            on_shelf = #{onShelf},
             update_time = #{updateTime}
         WHERE product_id = #{productId}
           AND deleted = 0

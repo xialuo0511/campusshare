@@ -8,6 +8,8 @@ public enum ProductStatusEnum {
     PENDING_REVIEW,
     /** 已上架 */
     PUBLISHED,
+    /** 审核驳回 */
+    REJECTED,
     /** 已下架 */
     OFFLINE,
     /** 已锁定 */

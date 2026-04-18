@@ -5,6 +5,27 @@
     const DEFAULT_ORDER_PAGE_SIZE = 10;
     const DEFAULT_TASK_PAGE_SIZE = 8;
     const DEFAULT_PENDING_MATERIAL_FETCH_SIZE = 50;
+    const DEFAULT_PENDING_PRODUCT_FETCH_SIZE = 50;
+    const RULE_DESCRIPTION_TEXT_MAP = {
+        MATERIAL_REVIEW_REQUIRED: "资料上传后是否进入审核，true 需管理员审核",
+        PRODUCT_REVIEW_REQUIRED: "商品发布后是否进入审核，true 需管理员审核",
+        TEAM_RECRUITMENT_REVIEW_REQUIRED: "组队招募发布后是否进入审核",
+        MATERIAL_UPLOAD_REWARD_POINTS: "资料审核通过后奖励的积分值",
+        MATERIAL_DOWNLOAD_COST_POINTS: "下载一份资料扣减的积分值",
+        MATERIAL_FILE_MAX_SIZE_MB: "资料上传允许的单文件最大大小（MB）",
+        MATERIAL_FILE_ALLOWED_EXTENSIONS: "资料上传允许的文件扩展名，逗号分隔",
+        ORDER_AUTO_CLOSE_ENABLED: "是否启用订单超时自动关闭任务",
+        ORDER_PENDING_SELLER_CONFIRM_TIMEOUT_MINUTES: "待卖家确认的超时分钟数",
+        ORDER_PENDING_BUYER_CONFIRM_TIMEOUT_MINUTES: "待买家确认的超时分钟数",
+        ORDER_AUTO_CLOSE_BATCH_SIZE: "每轮自动关单处理数量上限",
+        MAIL_NOTIFICATION_ENABLED: "是否启用邮件通知派发",
+        MAIL_NOTIFICATION_MAX_RETRY: "邮件发送失败后的最大重试次数",
+        MAIL_NOTIFICATION_RETRY_INTERVAL_MINUTES: "邮件失败重试间隔（分钟）",
+        MAIL_NOTIFICATION_BATCH_SIZE: "每轮邮件派发任务的批量大小",
+        MAIL_NOTIFICATION_TYPE_SCOPE: "允许发送邮件的通知类型列表",
+        CONTENT_SENSITIVE_WORDS: "敏感词词库，逗号分隔",
+        CONTENT_SENSITIVE_STRICT_MODE: "敏感词拦截模式，true 为严格模式"
+    };
 
     /**
      * 绑定页面行为
@@ -103,6 +124,7 @@
                 pendingUserList,
                 pendingTeamApplicationList,
                 pendingMaterialListResult,
+                pendingProductListResult,
                 orderListResult,
                 ruleConfigList,
                 productListResult,
@@ -117,6 +139,7 @@
                 window.CampusShareApi.ListPendingUsers(),
                 window.CampusShareApi.ListPendingTeamRecruitmentApplications(),
                 window.CampusShareApi.ListPendingMaterials(1, DEFAULT_PENDING_MATERIAL_FETCH_SIZE),
+                window.CampusShareApi.ListPendingProductsByAdmin(1, DEFAULT_PENDING_PRODUCT_FETCH_SIZE),
                 window.CampusShareApi.ListOrdersByAdmin(1, DEFAULT_ORDER_PAGE_SIZE, "ALL"),
                 window.CampusShareApi.ListSystemRulesByAdmin(),
                 window.CampusShareApi.ListProductsByAdmin({ pageNo: 1, pageSize: 6 }),
@@ -147,7 +170,8 @@
                 pendingReportList,
                 pendingUserList,
                 pendingTeamApplicationList,
-                pendingMaterialListResult
+                pendingMaterialListResult,
+                pendingProductListResult
             );
             reviewState.pageNo = 1;
             RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
@@ -253,13 +277,15 @@
         pendingReportList,
         pendingUserList,
         pendingTeamApplicationList,
-        pendingMaterialListResult
+        pendingMaterialListResult,
+        pendingProductListResult
     ) {
         const reportTaskList = BuildReportReviewTaskList(pendingReportList);
         const userTaskList = BuildUserReviewTaskList(pendingUserList);
         const teamTaskList = BuildTeamApplicationReviewTaskList(pendingTeamApplicationList);
         const materialTaskList = BuildMaterialReviewTaskList(pendingMaterialListResult);
-        return reportTaskList.concat(userTaskList).concat(teamTaskList).concat(materialTaskList)
+        const productTaskList = BuildProductReviewTaskList(pendingProductListResult);
+        return reportTaskList.concat(userTaskList).concat(teamTaskList).concat(materialTaskList).concat(productTaskList)
             .sort(function SortReviewTask(a, b) {
                 return ResolveTimeValue(b.createTime) - ResolveTimeValue(a.createTime);
             });
@@ -290,32 +316,44 @@
                     ? `用户审核 #${taskItem.taskId} (${taskItem.account})`
                     : (taskItem.taskType === "TEAM"
                         ? `组队申请 #${taskItem.taskId} (招募 #${taskItem.recruitmentId})`
-                        : `资料审核 #${taskItem.taskId} (${taskItem.courseName || "-"})`));
+                        : (taskItem.taskType === "MATERIAL"
+                            ? `资料审核 #${taskItem.taskId} (${taskItem.courseName || "-"})`
+                            : `商品审核 #${taskItem.taskId} (${taskItem.title || "-"})`)));
             const resourceMeta = taskItem.taskType === "REPORT"
                 ? `${taskItem.targetType} #${taskItem.targetId}`
                 : (taskItem.taskType === "USER"
                     ? `${taskItem.college || "-"} · ${taskItem.grade || "-"}`
                     : (taskItem.taskType === "TEAM"
                         ? (taskItem.applyRemark || "未填写申请备注")
-                        : `文件: ${taskItem.fileType || "-"} · ${SafeNumber(taskItem.fileSizeBytes)} bytes`));
+                        : (taskItem.taskType === "MATERIAL"
+                            ? `文件: ${taskItem.fileType || "-"} · ${SafeNumber(taskItem.fileSizeBytes)} bytes`
+                            : `${taskItem.category || "-"} · ${taskItem.conditionLevel || "-"} · ¥${FormatPrice(taskItem.price)}`)));
             const contributor = taskItem.taskType === "REPORT"
                 ? `举报人ID: ${taskItem.reporterUserId}`
                 : (taskItem.taskType === "USER"
                     ? (taskItem.displayName || taskItem.account || `用户#${taskItem.taskId}`)
                     : (taskItem.taskType === "TEAM"
                         ? (taskItem.applicantDisplayName || `申请人#${taskItem.applicantUserId}`)
-                        : `上传者ID: ${taskItem.uploaderUserId || "-"}`));
+                        : (taskItem.taskType === "MATERIAL"
+                            ? `上传者ID: ${taskItem.uploaderUserId || "-"}`
+                            : (taskItem.sellerDisplayName || `卖家ID: ${taskItem.sellerUserId || "-"}`))));
             const statusText = taskItem.taskType === "REPORT"
                 ? "举报待审"
-                : (taskItem.taskType === "USER" ? "用户待审" : (taskItem.taskType === "TEAM" ? "申请待审" : "资料待审"));
+                : (taskItem.taskType === "USER"
+                    ? "用户待审"
+                    : (taskItem.taskType === "TEAM" ? "申请待审" : (taskItem.taskType === "MATERIAL" ? "资料待审" : "商品待审")));
             const statusClass = taskItem.taskType === "REPORT"
                 ? "bg-secondary-container text-on-secondary-container"
                 : (taskItem.taskType === "USER"
                     ? "bg-surface-container text-slate-600"
-                    : (taskItem.taskType === "TEAM" ? "bg-primary/10 text-primary" : "bg-amber-100 text-amber-700"));
+                    : (taskItem.taskType === "TEAM"
+                        ? "bg-primary/10 text-primary"
+                        : (taskItem.taskType === "MATERIAL" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700")));
             const iconName = taskItem.taskType === "REPORT"
                 ? "gavel"
-                : (taskItem.taskType === "USER" ? "badge" : (taskItem.taskType === "TEAM" ? "groups" : "description"));
+                : (taskItem.taskType === "USER"
+                    ? "badge"
+                    : (taskItem.taskType === "TEAM" ? "groups" : (taskItem.taskType === "MATERIAL" ? "description" : "storefront")));
             const recruitmentIdValue = taskItem.recruitmentId || "";
 
             return [
@@ -377,7 +415,13 @@
                 taskItem.grade || "",
                 taskItem.courseName || "",
                 taskItem.fileType || "",
-                String(taskItem.uploaderUserId || "")
+                String(taskItem.uploaderUserId || ""),
+                taskItem.title || "",
+                taskItem.category || "",
+                taskItem.conditionLevel || "",
+                taskItem.tradeLocation || "",
+                taskItem.sellerDisplayName || "",
+                String(taskItem.sellerUserId || "")
             ].join(" ").toLowerCase();
             return searchText.includes(keyword);
         });
@@ -450,6 +494,12 @@
                         approved,
                         approved ? "后台快速通过" : "后台快速驳回"
                     );
+                } else if (taskType === "PRODUCT") {
+                    await window.CampusShareApi.ReviewProductByAdmin(
+                        taskId,
+                        approved,
+                        approved ? "后台快速通过" : "后台快速驳回"
+                    );
                 } else {
                     return;
                 }
@@ -486,6 +536,7 @@
             "<option value=\"USER\">用户审核</option>",
             "<option value=\"TEAM\">组队申请</option>",
             "<option value=\"MATERIAL\">资料审核</option>",
+            "<option value=\"PRODUCT\">商品审核</option>",
             "</select>",
             "</div>",
             "<div class=\"flex items-center gap-2\">",
@@ -667,6 +718,29 @@
     }
 
     /**
+     * 构建商品审核任务列表
+     */
+    function BuildProductReviewTaskList(pendingProductListResult) {
+        const productList = pendingProductListResult && Array.isArray(pendingProductListResult.productList)
+            ? pendingProductListResult.productList
+            : [];
+        return productList.map(function MapProduct(productItem) {
+            return {
+                taskType: "PRODUCT",
+                taskId: SafeNumber(productItem.productId),
+                sellerUserId: SafeNumber(productItem.sellerUserId),
+                sellerDisplayName: productItem.sellerDisplayName || "",
+                title: productItem.title || "",
+                category: productItem.category || "",
+                conditionLevel: productItem.conditionLevel || "",
+                tradeLocation: productItem.tradeLocation || "",
+                price: SafeNumber(productItem.price),
+                createTime: productItem.createTime || null
+            };
+        });
+    }
+
+    /**
      * 创建治理工作区
      */
     function CreateGovernanceWorkspace() {
@@ -706,7 +780,7 @@
             "</div>",
             "<div class=\"max-h-80 overflow-auto\">",
             "<table class=\"w-full text-left border-collapse\">",
-            "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">规则键</th><th class=\"px-4 py-3\">规则值</th><th class=\"px-4 py-3 text-right\">操作</th></tr></thead>",
+            "<thead class=\"bg-surface-container-low text-xs uppercase tracking-widest text-on-surface-variant\"><tr><th class=\"px-4 py-3\">规则键</th><th class=\"px-4 py-3\">规则说明</th><th class=\"px-4 py-3\">规则值</th><th class=\"px-4 py-3 text-right\">操作</th></tr></thead>",
             "<tbody data-role=\"rule-table\" class=\"divide-y divide-surface-container\"></tbody>",
             "</table>",
             "</div>",
@@ -875,6 +949,22 @@
     }
 
     /**
+     * 解析规则说明
+     */
+    function ResolveRuleDescription(ruleItem) {
+        const ruleKey = String(ruleItem && ruleItem.ruleKey ? ruleItem.ruleKey : "").trim().toUpperCase();
+        const mappedDescription = RULE_DESCRIPTION_TEXT_MAP[ruleKey];
+        if (mappedDescription) {
+            return mappedDescription;
+        }
+        const backendDescription = String(ruleItem && ruleItem.ruleDesc ? ruleItem.ruleDesc : "").trim();
+        if (backendDescription) {
+            return backendDescription;
+        }
+        return "暂无说明";
+    }
+
+    /**
      * 渲染规则表
      */
     function RenderRuleTable(ruleTableBody, ruleConfigList) {
@@ -883,13 +973,15 @@
         }
         const ruleList = Array.isArray(ruleConfigList) ? ruleConfigList : [];
         if (!ruleList.length) {
-            ruleTableBody.innerHTML = "<tr><td colspan=\"3\" class=\"px-4 py-6 text-center text-xs text-slate-400\">暂无规则</td></tr>";
+            ruleTableBody.innerHTML = "<tr><td colspan=\"4\" class=\"px-4 py-6 text-center text-xs text-slate-400\">暂无规则</td></tr>";
             return;
         }
         ruleTableBody.innerHTML = ruleList.slice(0, 10).map(function BuildRuleRow(ruleItem) {
+            const ruleDescription = ResolveRuleDescription(ruleItem);
             return [
                 "<tr class=\"hover:bg-surface-container-low transition-colors\">",
                 `<td class=\"px-4 py-3 text-xs text-on-surface font-semibold\">${EscapeHtml(ruleItem.ruleKey || "-")}</td>`,
+                `<td class=\"px-4 py-3 text-xs text-on-surface-variant\">${EscapeHtml(ruleDescription)}</td>`,
                 `<td class=\"px-4 py-3 text-xs text-on-surface-variant\">${EscapeHtml(ruleItem.ruleValue || "")}</td>`,
                 "<td class=\"px-4 py-3 text-right\">",
                 `<button data-governance-action=\"update-rule\" data-rule-key=\"${EscapeHtml(ruleItem.ruleKey || "")}\" data-rule-value=\"${EscapeHtml(ruleItem.ruleValue || "")}\" class=\"px-2 py-1 text-xs rounded-md bg-primary/10 text-primary hover:bg-primary/20\">修改</button>`,
@@ -1135,6 +1227,17 @@
      */
     function FormatNumber(value) {
         return SafeNumber(value).toLocaleString("zh-CN");
+    }
+
+    /**
+     * 金额格式化
+     */
+    function FormatPrice(value) {
+        const priceValue = Number(value || 0);
+        if (Number.isNaN(priceValue)) {
+            return "0.00";
+        }
+        return priceValue.toFixed(2);
     }
 
     /**

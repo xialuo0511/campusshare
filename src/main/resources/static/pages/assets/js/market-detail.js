@@ -25,7 +25,7 @@
         const locationNode = document.querySelector("main div.flex.items-center.gap-1.text-on-surface-variant.text-sm span:last-child");
         const priceNode = document.querySelector("main span.text-4xl");
         const sellerNameNode = document.querySelector("main section span.font-bold.text-on-surface");
-        const descriptionNode = document.querySelector("article p.text-on-surface-variant.leading-relaxed.text-body-lg");
+        const descriptionNode = document.querySelector("[data-role='product-description']");
         const breadCrumbNode = document.querySelector("nav span.text-on-surface.font-medium");
         const buyButton = FindButtonByText("下单");
         const favoriteButton = FindFavoriteButton();

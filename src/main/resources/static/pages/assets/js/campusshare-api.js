@@ -1,5 +1,5 @@
-/**
- * CampusShare 页面接口封装
+﻿/**
+ * CampusShare 椤甸潰鎺ュ彛灏佽
  */
 (function InitCampusShareApi() {
     const AUTH_TOKEN_STORAGE_KEY = "campusshare.authToken";
@@ -50,21 +50,21 @@
     let selectEnhanceObserver = null;
 
     /**
-     * 生成请求ID
+     * 鐢熸垚璇锋眰ID
      */
     function BuildRequestId() {
         return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
     }
 
     /**
-     * 读取令牌
+     * 璇诲彇浠ょ墝
      */
     function GetAuthToken() {
         return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
     }
 
     /**
-     * 保存令牌
+     * 淇濆瓨浠ょ墝
      */
     function SetAuthToken(token) {
         if (!token) {
@@ -74,14 +74,14 @@
     }
 
     /**
-     * 清理令牌
+     * 娓呯悊浠ょ墝
      */
     function ClearAuthToken() {
         window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
     }
 
     /**
-     * 读取当前用户信息
+     * 璇诲彇褰撳墠鐢ㄦ埛淇℃伅
      */
     function GetCurrentUserProfile() {
         const profileText = window.localStorage.getItem(USER_PROFILE_STORAGE_KEY);
@@ -96,7 +96,7 @@
     }
 
     /**
-     * 保存当前用户信息
+     * 淇濆瓨褰撳墠鐢ㄦ埛淇℃伅
      */
     function SetCurrentUserProfile(profile) {
         if (!profile) {
@@ -106,14 +106,14 @@
     }
 
     /**
-     * 清理当前用户信息
+     * 娓呯悊褰撳墠鐢ㄦ埛淇℃伅
      */
     function ClearCurrentUserProfile() {
         window.localStorage.removeItem(USER_PROFILE_STORAGE_KEY);
     }
 
     /**
-     * 保存登录会话信息
+     * 淇濆瓨鐧诲綍浼氳瘽淇℃伅
      */
     function SetSessionFromLogin(loginData) {
         if (!loginData) {
@@ -132,7 +132,7 @@
     }
 
     /**
-     * 清理登录会话信息
+     * 娓呯悊鐧诲綍浼氳瘽淇℃伅
      */
     function ClearSession() {
         ClearAuthToken();
@@ -140,7 +140,7 @@
     }
 
     /**
-     * 写入登录提示
+     * 鍐欏叆鐧诲綍鎻愮ず
      */
     function SetAuthNotice(noticeText) {
         const safeNoticeText = noticeText == null ? "" : String(noticeText).trim();
@@ -150,12 +150,12 @@
         try {
             window.sessionStorage.setItem(AUTH_NOTICE_STORAGE_KEY, safeNoticeText);
         } catch (error) {
-            // 忽略会话存储异常
+            // 蹇界暐浼氳瘽瀛樺偍寮傚父
         }
     }
 
     /**
-     * 读取并清理登录提示
+     * 璇诲彇骞舵竻鐞嗙櫥褰曟彁绀?
      */
     function ConsumeAuthNotice() {
         try {
@@ -168,7 +168,7 @@
     }
 
     /**
-     * 解析安全页面路径
+     * 瑙ｆ瀽瀹夊叏椤甸潰璺緞
      */
     function ResolveSafePagePath(path) {
         if (!path || typeof path !== "string") {
@@ -185,7 +185,7 @@
     }
 
     /**
-     * 构建公开文件访问地址
+     * 鏋勫缓鍏紑鏂囦欢璁块棶鍦板潃
      */
     function BuildPublicFileUrl(fileId) {
         const safeFileId = fileId == null ? "" : String(fileId).trim();
@@ -196,7 +196,7 @@
     }
 
     /**
-     * 归一化页面路径
+     * 褰掍竴鍖栭〉闈㈣矾寰?
      */
     function NormalizePagePath(path) {
         const safePath = ResolveSafePagePath(path);
@@ -211,7 +211,7 @@
     }
 
     /**
-     * 是否为公开页面
+     * 鏄惁涓哄叕寮€椤甸潰
      */
     function IsPublicPagePath(path) {
         const normalizedPath = NormalizePagePath(path);
@@ -222,7 +222,7 @@
     }
 
     /**
-     * 是否需要登录
+     * 鏄惁闇€瑕佺櫥褰?
      */
     function IsAuthRequiredPagePath(path) {
         const normalizedPath = NormalizePagePath(path);
@@ -233,7 +233,7 @@
     }
 
     /**
-     * 当前页面路径
+     * 褰撳墠椤甸潰璺緞
      */
     function ResolveCurrentPagePathWithQuery() {
         const pathname = window.location.pathname || "";
@@ -246,7 +246,7 @@
     }
 
     /**
-     * 构建登录页地址
+     * 鏋勫缓鐧诲綍椤靛湴鍧€
      */
     function BuildAuthPageUrl(redirectPath) {
         const safeRedirectPath = ResolveSafePagePath(redirectPath || "");
@@ -257,7 +257,7 @@
     }
 
     /**
-     * 解析URL中的重定向路径
+     * 瑙ｆ瀽URL涓殑閲嶅畾鍚戣矾寰?
      */
     function ResolveRedirectPathFromQuery() {
         const searchParams = new URLSearchParams(window.location.search || "");
@@ -266,7 +266,7 @@
     }
 
     /**
-     * 解析默认首页
+     * 瑙ｆ瀽榛樿棣栭〉
      */
     function ResolveDefaultHomePathByRole(userRole) {
         if (userRole === ADMINISTRATOR_ROLE) {
@@ -276,7 +276,7 @@
     }
 
     /**
-     * 解析登录成功跳转地址
+     * 瑙ｆ瀽鐧诲綍鎴愬姛璺宠浆鍦板潃
      */
     function ResolveLoginSuccessRedirect(loginData) {
         const redirectPath = ResolveRedirectPathFromQuery();
@@ -291,7 +291,7 @@
     }
 
     /**
-     * 跳转登录页
+     * 璺宠浆鐧诲綍椤?
      */
     function RedirectToAuthPage(redirectPath, noticeText) {
         const targetPath = redirectPath || ResolveCurrentPagePathWithQuery();
@@ -300,7 +300,7 @@
     }
 
     /**
-     * 页面跳转
+     * 椤甸潰璺宠浆
      */
     function NavigateToPage(targetPath) {
         const safePath = ResolveSafePagePath(targetPath);
@@ -325,7 +325,7 @@
         const lowerText = text.toLowerCase();
         if (
             text.includes("管理员")
-            || text.includes("仪表板")
+            || text.includes("仪表盘")
             || text.includes("工作台")
             || lowerText.includes("dashboard")
             || lowerText.includes("admin")
@@ -350,46 +350,61 @@
         ) {
             return PAGE_PATH_MAP.MATERIAL_LISTING;
         }
-        if (text.includes("订单") || text.includes("交易请求") || lowerText.includes("trade requests")) {
+        if (
+            text.includes("订单")
+            || text.includes("交易请求")
+            || lowerText.includes("trade request")
+            || lowerText.includes("order")
+        ) {
             return PAGE_PATH_MAP.ORDER;
         }
-        if (text.includes("我的发布") || lowerText.includes("my listings")) {
+        if (text.includes("我的发布") || lowerText.includes("my listing")) {
             return PAGE_PATH_MAP.MY_PUBLISH;
         }
         if (
-            text === "发布"
-            || text === "开始发布"
-            || text === "去发布"
-            || lowerText === "publish"
-            || lowerText.includes("upload")
-        ) {
-            return PAGE_PATH_MAP.PUBLISH;
-        }
-        if (
-            text.includes("校园论坛")
-            || text.includes("论坛")
-            || lowerText.includes("forum")
-        ) {
-            return PAGE_PATH_MAP.FORUM_SUBVIEW;
-        }
-        if (
-            text.includes("招募")
+            text.includes("招募板")
+            || text.includes("组队招募")
+            || text.includes("招募")
             || text.includes("组队")
             || lowerText.includes("recruitment")
         ) {
             return PAGE_PATH_MAP.RECRUITMENT;
         }
+        if (
+            text.includes("校园论坛")
+            || text === "论坛"
+            || lowerText.includes("forum")
+        ) {
+            return PAGE_PATH_MAP.FORUM_SUBVIEW;
+        }
+        if (
+            text === "发布"
+            || text === "开始发布"
+            || text === "去发布"
+            || text === "发布商品"
+            || text === "上传资料"
+            || text === "发布招募"
+            || lowerText === "publish"
+            || lowerText === "upload"
+        ) {
+            return PAGE_PATH_MAP.PUBLISH;
+        }
         if (text.includes("消息") || lowerText.includes("message")) {
             return PAGE_PATH_MAP.NOTIFICATION;
         }
-        if (text.includes("设置") || lowerText.includes("setting")) {
+        if (
+            text.includes("设置")
+            || text.includes("个人设置")
+            || lowerText.includes("setting")
+            || lowerText.includes("profile")
+        ) {
             return PAGE_PATH_MAP.PROFILE;
         }
         return "";
     }
 
     /**
-     * 查找图标节点
+     * 鏌ユ壘鍥炬爣鑺傜偣
      */
     function FindMaterialIconElement(iconName) {
         if (!iconName) {
@@ -406,7 +421,7 @@
     }
 
     /**
-     * 解析图标触发节点
+     * 瑙ｆ瀽鍥炬爣瑙﹀彂鑺傜偣
      */
     function ResolveIconTriggerElement(iconElement) {
         if (!iconElement) {
@@ -419,7 +434,7 @@
     }
 
     /**
-     * 确保节点可点击
+     * 纭繚鑺傜偣鍙偣鍑?
      */
     function EnsureInteractiveElement(triggerElement) {
         if (!triggerElement) {
@@ -449,7 +464,7 @@
     }
 
     /**
-     * 注入全站下拉框样式
+     * 娉ㄥ叆鍏ㄧ珯涓嬫媺妗嗘牱寮?
      */
     function EnsureCustomSelectStyle() {
         if (document.getElementById("campusshare-select-style")) {
@@ -497,7 +512,7 @@
     }
 
     /**
-     * 统一增强下拉框样式
+     * 缁熶竴澧炲己涓嬫媺妗嗘牱寮?
      */
     function EnhanceSelectElements(rootElement) {
         EnsureCustomSelectStyle();
@@ -522,7 +537,7 @@
     }
 
     /**
-     * 监听动态节点并增强下拉框
+     * 鐩戝惉鍔ㄦ€佽妭鐐瑰苟澧炲己涓嬫媺妗?
      */
     function ObserveDynamicSelectElements() {
         if (selectEnhanceObserver || !document.body || typeof MutationObserver === "undefined") {
@@ -552,33 +567,29 @@
     }
 
     /**
-     * 修正通知触发节点基础样式
+     * 淇閫氱煡瑙﹀彂鑺傜偣鍩虹鏍峰紡
      */
     function EnsureNotificationTriggerStyle(triggerElement) {
         if (!triggerElement) {
             return;
         }
+        triggerElement.classList.add("campusshare-notification-trigger");
         const computedStyle = window.getComputedStyle(triggerElement);
         if (computedStyle.position === "static") {
             triggerElement.style.position = "relative";
         }
-        if (triggerElement.dataset.notificationTriggerPatched !== "true") {
-            triggerElement.dataset.notificationTriggerPatched = "true";
-            const tagName = (triggerElement.tagName || "").toLowerCase();
-            if (tagName !== "button") {
-                triggerElement.style.display = "inline-flex";
-                triggerElement.style.alignItems = "center";
-                triggerElement.style.justifyContent = "center";
-                triggerElement.style.width = "32px";
-                triggerElement.style.height = "32px";
-                triggerElement.style.borderRadius = "9999px";
-            }
-        }
+        triggerElement.dataset.notificationTriggerPatched = "true";
+        triggerElement.style.display = "inline-flex";
+        triggerElement.style.alignItems = "center";
+        triggerElement.style.justifyContent = "center";
+        triggerElement.style.width = "36px";
+        triggerElement.style.height = "36px";
+        triggerElement.style.borderRadius = "9999px";
         triggerElement.style.cursor = "pointer";
     }
 
     /**
-     * 注入通知面板样式
+     * 娉ㄥ叆閫氱煡闈㈡澘鏍峰紡
      */
     function EnsureNotificationPanelStyle() {
         if (document.getElementById(NOTIFICATION_PANEL_STYLE_ID)) {
@@ -716,12 +727,19 @@
                 padding: 0 4px;
                 box-shadow: 0 1px 4px rgba(15, 23, 42, 0.3);
             }
+            .campusshare-notification-trigger {
+                border-radius: 9999px;
+                transition: background-color 0.15s ease, color 0.15s ease;
+            }
+            .campusshare-notification-trigger:hover {
+                background-color: rgba(148, 163, 184, 0.16);
+            }
         `;
         document.head.appendChild(styleElement);
     }
 
     /**
-     * 构建通知面板节点
+     * 鏋勫缓閫氱煡闈㈡澘鑺傜偣
      */
     function EnsureNotificationPanelElement() {
         if (notificationPanelElement) {
@@ -734,12 +752,12 @@
         notificationPanelElement.setAttribute("aria-hidden", "true");
         notificationPanelElement.innerHTML = `
             <div class="campusshare-notification-header">
-                <span class="campusshare-notification-title">消息通知</span>
-                <button type="button" class="campusshare-notification-mark-all" data-action="mark-all-read">全部已读</button>
+                <span class="campusshare-notification-title">娑堟伅閫氱煡</span>
+                <button type="button" class="campusshare-notification-mark-all" data-action="mark-all-read">鍏ㄩ儴宸茶</button>
             </div>
-            <div class="campusshare-notification-summary" data-role="notification-summary">正在加载...</div>
+            <div class="campusshare-notification-summary" data-role="notification-summary">姝ｅ湪鍔犺浇...</div>
             <div class="campusshare-notification-list" data-role="notification-list">
-                <div class="campusshare-notification-empty">暂无通知</div>
+                <div class="campusshare-notification-empty">鏆傛棤閫氱煡</div>
             </div>
         `;
         document.body.appendChild(notificationPanelElement);
@@ -754,7 +772,7 @@
     }
 
     /**
-     * 更新面板摘要
+     * 鏇存柊闈㈡澘鎽樿
      */
     function SetNotificationSummary(totalCount, unreadCount) {
         if (!notificationSummaryElement) {
@@ -764,7 +782,7 @@
     }
 
     /**
-     * 更新铃铛角标
+     * 鏇存柊閾冮摏瑙掓爣
      */
     function UpdateNotificationBadge(unreadCount) {
         const notificationIcon = FindMaterialIconElement("notifications");
@@ -789,7 +807,7 @@
     }
 
     /**
-     * 关闭通知面板
+     * 鍏抽棴閫氱煡闈㈡澘
      */
     function CloseNotificationPanel() {
         if (!notificationPanelElement) {
@@ -801,7 +819,7 @@
     }
 
     /**
-     * 格式化时间
+     * 鏍煎紡鍖栨椂闂?
      */
     function FormatNotificationTime(timeText) {
         if (!timeText) {
@@ -820,7 +838,7 @@
     }
 
     /**
-     * 渲染通知列表
+     * 娓叉煋閫氱煡鍒楄〃
      */
     function RenderNotificationList() {
         const limitedNotificationList = (notificationDataList || []).slice(0, NOTIFICATION_MAX_RENDER_COUNT);
@@ -839,7 +857,7 @@
         if (!limitedNotificationList.length) {
             const emptyElement = document.createElement("div");
             emptyElement.className = "campusshare-notification-empty";
-            emptyElement.textContent = "暂无通知";
+            emptyElement.textContent = "鏆傛棤閫氱煡";
             notificationListElement.appendChild(emptyElement);
             return;
         }
@@ -848,7 +866,7 @@
             itemElement.className = `campusshare-notification-item${notificationItem.readFlag ? "" : " is-unread"}`;
             const titleElement = document.createElement("span");
             titleElement.className = "campusshare-notification-item-title";
-            titleElement.textContent = notificationItem.title || "系统通知";
+            titleElement.textContent = notificationItem.title || "绯荤粺閫氱煡";
 
             const contentElement = document.createElement("div");
             contentElement.className = "campusshare-notification-item-content";
@@ -864,7 +882,7 @@
             const readButton = document.createElement("button");
             readButton.type = "button";
             readButton.className = "campusshare-notification-item-action";
-            readButton.textContent = notificationItem.readFlag ? "已读" : "标记已读";
+            readButton.textContent = notificationItem.readFlag ? "宸茶" : "鏍囪宸茶";
             readButton.disabled = !!notificationItem.readFlag;
             readButton.addEventListener("click", function HandleReadNotification() {
                 MarkSingleNotificationRead(notificationItem.notificationId);
@@ -879,12 +897,12 @@
     }
 
     /**
-     * 拉取通知列表
+     * 鎷夊彇閫氱煡鍒楄〃
      */
     async function RefreshNotificationData() {
         const currentSequence = ++notificationRequestSequence;
         if (notificationSummaryElement) {
-            notificationSummaryElement.textContent = "正在加载...";
+            notificationSummaryElement.textContent = "姝ｅ湪鍔犺浇...";
         }
         try {
             const notificationList = await RequestApi("/api/v1/notifications", "GET", null, true);
@@ -902,18 +920,18 @@
                 notificationListElement.innerHTML = "";
                 const failElement = document.createElement("div");
                 failElement.className = "campusshare-notification-empty";
-                failElement.textContent = error.message || "通知加载失败";
+                failElement.textContent = error.message || "閫氱煡鍔犺浇澶辫触";
                 notificationListElement.appendChild(failElement);
             }
             UpdateNotificationBadge(0);
             if (notificationSummaryElement) {
-                notificationSummaryElement.textContent = "通知加载失败";
+                notificationSummaryElement.textContent = "閫氱煡鍔犺浇澶辫触";
             }
         }
     }
 
     /**
-     * 标记单条通知已读
+     * 鏍囪鍗曟潯閫氱煡宸茶
      */
     async function MarkSingleNotificationRead(notificationId) {
         if (!notificationId) {
@@ -929,12 +947,12 @@
             });
             RenderNotificationList();
         } catch (error) {
-            window.alert(error.message || "标记已读失败");
+            window.alert(error.message || "鏍囪宸茶澶辫触");
         }
     }
 
     /**
-     * 全部标记已读
+     * 鍏ㄩ儴鏍囪宸茶
      */
     async function MarkAllNotificationRead() {
         const unreadNotificationList = (notificationDataList || []).filter(function FilterUnread(notificationItem) {
@@ -945,7 +963,7 @@
         }
         if (notificationMarkAllReadButton) {
             notificationMarkAllReadButton.disabled = true;
-            notificationMarkAllReadButton.textContent = "处理中...";
+            notificationMarkAllReadButton.textContent = "澶勭悊涓?..";
         }
         try {
             await RequestApi("/api/v1/notifications/read/all", "POST", {}, true);
@@ -954,18 +972,18 @@
             });
             RenderNotificationList();
         } catch (error) {
-            window.alert(error.message || "批量已读失败");
+            window.alert(error.message || "鎵归噺宸茶澶辫触");
             RenderNotificationList();
         } finally {
             if (notificationMarkAllReadButton) {
                 notificationMarkAllReadButton.disabled = false;
-                notificationMarkAllReadButton.textContent = "全部已读";
+                notificationMarkAllReadButton.textContent = "鍏ㄩ儴宸茶";
             }
         }
     }
 
     /**
-     * 定位通知面板
+     * 瀹氫綅閫氱煡闈㈡澘
      */
     function PositionNotificationPanel(triggerElement) {
         if (!triggerElement || !notificationPanelElement) {
@@ -991,7 +1009,7 @@
     }
 
     /**
-     * 打开通知面板
+     * 鎵撳紑閫氱煡闈㈡澘
      */
     async function OpenNotificationPanel(triggerElement) {
         notificationPanelTriggerElement = triggerElement;
@@ -1005,7 +1023,7 @@
     }
 
     /**
-     * 切换通知面板
+     * 鍒囨崲閫氱煡闈㈡澘
      */
     async function ToggleNotificationPanel(triggerElement) {
         if (notificationPanelVisible) {
@@ -1016,7 +1034,7 @@
     }
 
     /**
-     * 文档点击时处理通知面板关闭
+     * 鏂囨。鐐瑰嚮鏃跺鐞嗛€氱煡闈㈡澘鍏抽棴
      */
     function HandleDocumentClickForNotification(event) {
         if (!notificationPanelVisible || !notificationPanelElement) {
@@ -1033,7 +1051,7 @@
     }
 
     /**
-     * 键盘关闭通知面板
+     * 閿洏鍏抽棴閫氱煡闈㈡澘
      */
     function HandleEscapeForNotification(event) {
         if (event.key === "Escape") {
@@ -1042,7 +1060,7 @@
     }
 
     /**
-     * 绑定页面跳转
+     * 缁戝畾椤甸潰璺宠浆
      */
     function BindPageNavigation(element, targetPath) {
         const safePath = ResolveSafePagePath(targetPath);
@@ -1061,7 +1079,7 @@
     }
 
     /**
-     * 处理会话失效
+     * 澶勭悊浼氳瘽澶辨晥
      */
     function HandleUnauthorizedState(messageText, needAuth) {
         ClearSession();
@@ -1077,14 +1095,14 @@
             return;
         }
         authRedirecting = true;
-        const noticeText = (messageText || "").trim() || "登录状态已失效，请重新登录";
+        const noticeText = (messageText || "").trim() || "鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍";
         window.setTimeout(function RedirectAfterUnauthorized() {
             RedirectToAuthPage(currentPathWithQuery, noticeText);
         }, 80);
     }
 
     /**
-     * 执行登出并跳转
+     * 鎵ц鐧诲嚭骞惰烦杞?
      */
     async function PerformLogoutAndRedirect() {
         const token = GetAuthToken();
@@ -1092,7 +1110,7 @@
             try {
                 await RequestApi("/api/v1/users/logout", "POST", {}, true);
             } catch (error) {
-                // 登出失败不阻塞本地清理
+                // 鐧诲嚭澶辫触涓嶉樆濉炴湰鍦版竻鐞?
             }
         }
         ClearSession();
@@ -1100,7 +1118,7 @@
     }
 
     /**
-     * 绑定链接导航
+     * 缁戝畾閾炬帴瀵艰埅
      */
     function BindAnchorNavigation() {
         const anchorList = Array.from(document.querySelectorAll("a"));
@@ -1118,7 +1136,7 @@
             if (!text) {
                 return;
             }
-            if (text.includes("登出") || text.toLowerCase().includes("logout")) {
+            if (text.includes("鐧诲嚭") || text.toLowerCase().includes("logout")) {
                 anchorElement.href = "javascript:void(0)";
                 if (anchorElement.dataset.logoutNavigationBound === "true") {
                     return;
@@ -1130,7 +1148,7 @@
                 });
                 return;
             }
-            if (text.includes("登录") || text.includes("注册")) {
+            if (text.includes("鐧诲綍") || text.includes("娉ㄥ唽")) {
                 anchorElement.href = PAGE_PATH_MAP.AUTH;
                 return;
             }
@@ -1152,7 +1170,7 @@
     }
 
     /**
-     * 绑定按钮导航
+     * 缁戝畾鎸夐挳瀵艰埅
      */
     function BindButtonNavigation() {
         const buttonList = Array.from(document.querySelectorAll("button"));
@@ -1206,7 +1224,7 @@
     }
 
     /**
-     * 绑定品牌标题导航
+     * 缁戝畾鍝佺墝鏍囬瀵艰埅
      */
     function BindBrandNavigation() {
         const brandElementList = Array.from(document.querySelectorAll("a, span, div, h1, h2"));
@@ -1250,7 +1268,7 @@
     }
 
     /**
-     * 页面访问控制
+     * 椤甸潰璁块棶鎺у埗
      */
     function EnsurePageAccessControl() {
         const currentPagePath = ResolveCurrentPagePathWithQuery();
@@ -1266,7 +1284,7 @@
     }
 
     /**
-     * 绑定图标导航
+     * 缁戝畾鍥炬爣瀵艰埅
      */
     function BindIconNavigation() {
         const accountIcon = FindMaterialIconElement("account_circle");
@@ -1309,7 +1327,7 @@
     }
 
     /**
-     * 绑定全局壳层导航
+     * 缁戝畾鍏ㄥ眬澹冲眰瀵艰埅
      */
     function BindGlobalShellNavigation() {
         EnhanceSelectElements(document);
@@ -1333,7 +1351,7 @@
     }
 
     /**
-     * 同步当前会话资料
+     * 鍚屾褰撳墠浼氳瘽璧勬枡
      */
     async function SyncSessionProfile() {
         const token = GetAuthToken();
@@ -1357,7 +1375,7 @@
     }
 
     /**
-     * 确保管理员会话可用
+     * 纭繚绠＄悊鍛樹細璇濆彲鐢?
      */
     async function EnsureAdminSession() {
         const token = GetAuthToken();
@@ -1376,7 +1394,7 @@
     }
 
     /**
-     * 带超时的请求
+     * 甯﹁秴鏃剁殑璇锋眰
      */
     async function FetchWithTimeout(path, requestInit) {
         const abortController = new AbortController();
@@ -1390,7 +1408,7 @@
             });
         } catch (error) {
             if (error && error.name === "AbortError") {
-                throw new Error("请求超时，请稍后重试");
+                throw new Error("璇锋眰瓒呮椂锛岃绋嶅悗閲嶈瘯");
             }
             throw new Error("网络异常，请检查网络连接");
         } finally {
@@ -1399,7 +1417,7 @@
     }
 
     /**
-     * 统一请求入口
+     * 缁熶竴璇锋眰鍏ュ彛
      */
     async function RequestApi(path, method, payload, needAuth) {
         const headers = {
@@ -1409,8 +1427,8 @@
         const token = GetAuthToken();
         if (needAuth) {
             if (!token) {
-                HandleUnauthorizedState("请先登录后再操作", true);
-                throw new Error("请先登录后再操作");
+                HandleUnauthorizedState("璇峰厛鐧诲綍鍚庡啀鎿嶄綔", true);
+                throw new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔");
             }
         }
         if (token) {
@@ -1428,20 +1446,20 @@
         try {
             responseBody = responseText ? JSON.parse(responseText) : null;
         } catch (error) {
-            throw new Error("接口返回格式异常");
+            throw new Error("鎺ュ彛杩斿洖鏍煎紡寮傚父");
         }
 
         if (!response.ok) {
             if (needAuth && (response.status === 401 || response.status === 403)) {
-                HandleUnauthorizedState("登录状态已失效，请重新登录", true);
-                throw new Error("登录状态已失效，请重新登录");
+                HandleUnauthorizedState("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍", true);
+                throw new Error("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍");
             }
-            throw new Error(`请求失败(${response.status})`);
+            throw new Error(`璇锋眰澶辫触(${response.status})`);
         }
         if (!responseBody || responseBody.code !== 0) {
             const message = responseBody && responseBody.message
                 ? responseBody.message
-                : "请求失败";
+                : "璇锋眰澶辫触";
             if (responseBody && responseBody.code === BIZ_CODE_UNAUTHORIZED) {
                 HandleUnauthorizedState(message, needAuth);
             }
@@ -1451,7 +1469,7 @@
     }
 
     /**
-     * multipart 请求入口
+     * multipart 璇锋眰鍏ュ彛
      */
     async function RequestMultipartApi(path, method, formData, needAuth) {
         const headers = {
@@ -1460,8 +1478,8 @@
         const token = GetAuthToken();
         if (needAuth) {
             if (!token) {
-                HandleUnauthorizedState("请先登录后再操作", true);
-                throw new Error("请先登录后再操作");
+                HandleUnauthorizedState("璇峰厛鐧诲綍鍚庡啀鎿嶄綔", true);
+                throw new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔");
             }
         }
         if (token) {
@@ -1479,19 +1497,19 @@
         try {
             responseBody = responseText ? JSON.parse(responseText) : null;
         } catch (error) {
-            throw new Error("接口返回格式异常");
+            throw new Error("鎺ュ彛杩斿洖鏍煎紡寮傚父");
         }
         if (!response.ok) {
             if (needAuth && (response.status === 401 || response.status === 403)) {
-                HandleUnauthorizedState("登录状态已失效，请重新登录", true);
-                throw new Error("登录状态已失效，请重新登录");
+                HandleUnauthorizedState("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍", true);
+                throw new Error("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍");
             }
-            throw new Error(`请求失败(${response.status})`);
+            throw new Error(`璇锋眰澶辫触(${response.status})`);
         }
         if (!responseBody || responseBody.code !== 0) {
             const message = responseBody && responseBody.message
                 ? responseBody.message
-                : "请求失败";
+                : "璇锋眰澶辫触";
             if (responseBody && responseBody.code === BIZ_CODE_UNAUTHORIZED) {
                 HandleUnauthorizedState(message, needAuth);
             }
@@ -1756,7 +1774,7 @@
         UpdateMyProfile(payload) {
             const currentProfile = GetCurrentUserProfile();
             if (!currentProfile || !currentProfile.userId) {
-                return Promise.reject(new Error("请先登录后再操作"));
+                return Promise.reject(new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔"));
             }
             return RequestApi(`/api/v1/users/${currentProfile.userId}/profile`, "PUT", payload || {}, true);
         },
@@ -1983,8 +2001,10 @@
         BindGlobalShellNavigation();
         if (GetAuthToken()) {
             SyncSessionProfile().catch(function IgnoreProfileSyncError() {
-                // 会话失效由页面请求层提示
+                // 浼氳瘽澶辨晥鐢遍〉闈㈣姹傚眰鎻愮ず
             });
         }
     });
 })();
+
+

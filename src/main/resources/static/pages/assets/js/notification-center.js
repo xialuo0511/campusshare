@@ -21,6 +21,10 @@
         if (!window.CampusShareApi) {
             return;
         }
+        if (!window.CampusShareApi.GetAuthToken()) {
+            window.CampusShareApi.RedirectToAuthPage("/pages/notification_center.html");
+            return;
+        }
 
         const mainElement = document.querySelector("main");
         if (!mainElement) {
@@ -35,6 +39,7 @@
         }
 
         const messageBar = BuildMessageBar(mainElement, listContainer);
+        listContainer.innerHTML = "<div class=\"bg-surface-container-lowest rounded-xl p-8 text-center text-sm text-slate-500\">正在加载消息...</div>";
         const state = {
             filterType: FILTER_TYPE_ALL,
             notificationList: []
@@ -95,7 +100,7 @@
     async function RefreshNotifications(state, listContainer, messageBar) {
         try {
             const listResult = await window.CampusShareApi.ListMyNotifications();
-            state.notificationList = Array.isArray(listResult) ? listResult : [];
+            state.notificationList = SortNotificationsBySendTime(Array.isArray(listResult) ? listResult : []);
             RenderNotificationList(state, listContainer);
             HideMessage(messageBar);
         } catch (error) {
@@ -251,11 +256,17 @@
     function ResolveNotificationTarget(notificationItem) {
         const bizType = String(notificationItem.relatedBizType || "").toUpperCase();
         const bizId = notificationItem.relatedBizId;
+        if (bizType === "PRODUCT" && bizId) {
+            return `/pages/market_item_detail.html?productId=${encodeURIComponent(String(bizId))}`;
+        }
         if (bizType === "ORDER" && bizId) {
             return `/pages/order_detail.html?orderId=${encodeURIComponent(String(bizId))}`;
         }
         if (bizType === "MATERIAL") {
             return "/pages/my_publish.html";
+        }
+        if (bizType === "SELLER_VERIFICATION" || bizType === "USER") {
+            return "/pages/user_profile.html";
         }
         if (bizType === "TEAM_RECRUITMENT") {
             return "/pages/recruitment_board.html";
@@ -264,6 +275,28 @@
             return "/pages/admin_batch_review.html";
         }
         return "";
+    }
+
+    /**
+     * 通知按时间倒序
+     */
+    function SortNotificationsBySendTime(notificationList) {
+        return notificationList.slice().sort(function CompareNotificationTime(leftItem, rightItem) {
+            const leftTime = ResolveTimeValue(leftItem.sendTime);
+            const rightTime = ResolveTimeValue(rightItem.sendTime);
+            return rightTime - leftTime;
+        });
+    }
+
+    /**
+     * 时间戳解析
+     */
+    function ResolveTimeValue(timeText) {
+        const timeValue = new Date(timeText || "");
+        if (Number.isNaN(timeValue.getTime())) {
+            return 0;
+        }
+        return timeValue.getTime();
     }
 
     /**

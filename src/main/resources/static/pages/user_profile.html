@@ -1,82 +1,15 @@
 ﻿<!DOCTYPE html>
-
-<html lang="zh-CN"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "surface-container-high": "#e7e8e9",
-                    "primary-fixed-dim": "#94ccff",
-                    "secondary": "#006878",
-                    "primary-fixed": "#cde5ff",
-                    "on-secondary-fixed-variant": "#004e5b",
-                    "on-primary": "#ffffff",
-                    "inverse-primary": "#94ccff",
-                    "error": "#ba1a1a",
-                    "on-error-container": "#93000a",
-                    "primary-container": "#0077b6",
-                    "outline-variant": "#bfc7d1",
-                    "secondary-fixed": "#a7edff",
-                    "on-secondary-fixed": "#001f25",
-                    "inverse-on-surface": "#f0f1f2",
-                    "on-primary-fixed": "#001d32",
-                    "error-container": "#ffdad6",
-                    "primary": "#005d90",
-                    "on-primary-container": "#f3f7ff",
-                    "surface-container-highest": "#e1e3e4",
-                    "tertiary-container": "#4770be",
-                    "surface-container-low": "#f3f4f5",
-                    "surface-bright": "#f8f9fa",
-                    "secondary-container": "#69e5ff",
-                    "surface": "#f8f9fa",
-                    "secondary-fixed-dim": "#58d6f1",
-                    "on-primary-fixed-variant": "#004b74",
-                    "on-error": "#ffffff",
-                    "surface-dim": "#d9dadb",
-                    "on-secondary": "#ffffff",
-                    "tertiary-fixed": "#d8e2ff",
-                    "on-tertiary": "#ffffff",
-                    "on-surface": "#191c1d",
-                    "tertiary-fixed-dim": "#aec6ff",
-                    "on-secondary-container": "#006575",
-                    "surface-tint": "#006399",
-                    "on-tertiary-fixed-variant": "#0f4490",
-                    "on-tertiary-container": "#f7f7ff",
-                    "on-surface-variant": "#404850",
-                    "tertiary": "#2b57a4",
-                    "surface-container": "#edeeef",
-                    "surface-variant": "#e1e3e4",
-                    "inverse-surface": "#2e3132",
-                    "surface-container-lowest": "#ffffff",
-                    "on-tertiary-fixed": "#001a42",
-                    "on-background": "#191c1d",
-                    "outline": "#707881",
-                    "background": "#f8f9fa"
-            },
-            "borderRadius": {
-                    "DEFAULT": "0.125rem",
-                    "lg": "0.25rem",
-                    "xl": "0.5rem",
-                    "full": "0.75rem"
-            },
-            "fontFamily": {
-                    "headline": ["Manrope"],
-                    "body": ["Inter"],
-                    "label": ["Inter"]
-            }
-          }
-        }
-      }
-    </script>
-<style>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CampusShare - 个人资料</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             display: inline-block;
@@ -88,259 +21,166 @@
         h1, h2, h3 { font-family: 'Manrope', sans-serif; }
     </style>
 </head>
-<body class="bg-surface text-on-surface min-h-screen">
-<!-- TopNavBar -->
-<header class="w-full top-0 sticky z-40 bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-8 h-16 w-full max-w-full">
-<div class="flex items-center gap-8">
-<span class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100">CampusShare</span>
-<nav class="hidden md:flex gap-6 items-center">
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150" href="#">Marketplace</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150" href="#">Textbooks</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150" href="#">Equipment</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150" href="#">Lab Space</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-150" href="#">Research</a>
-</nav>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full transition-all">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<button class="p-2 text-sky-800 dark:text-sky-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full transition-all">
-<span class="material-symbols-outlined">account_circle</span>
-</button>
-</div>
-</header>
-<div class="flex min-h-screen">
-<!-- SideNavBar -->
-<aside class="h-screen w-64 fixed left-0 flex flex-col py-6 px-4 bg-slate-50 dark:bg-slate-900">
-<div class="mb-8 px-2">
-<div class="flex items-center gap-3 mb-4">
-<img alt="User Profile Avatar" class="w-12 h-12 rounded-full border-2 border-primary-fixed" data-alt="Close-up professional portrait of a male academic in glasses with a neutral background and warm studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArC_kKuf8NdgCmlne5zJOJECyKE_PX7MHRmQbo5H28dwEnTbawNREGzKkxR00dw--xYC0SciAoL5wu6_qCtA-fmkgWrKY_P4oN0gobvccVLPQPy9zVE06SnQGTCxf3NignGPoX73lJllLr4Wv0uBAPilIeCbqSayASuX5QNDxNuaFND8ohyJ7YRTYMfxw8ZKUjwW_SebtydXNu8g_22e62IEB0py_9WGZaDZuQfEu-XcRhVP1Pr44cUoIWl8Flrw7nr0I9Lr7uNE4"/>
-<div>
-<p class="font-headline font-bold text-on-surface">Personal Center</p>
-<p class="text-xs text-slate-500">Verified Faculty/Student</p>
-</div>
-</div>
-</div>
-<nav class="flex-1 space-y-1">
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
-<span class="material-symbols-outlined">list_alt</span> My Listings
-                </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
-<span class="material-symbols-outlined">swap_horiz</span> Trade Requests
-                </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
-<span class="material-symbols-outlined">chat_bubble_outline</span> Messages
-                </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
-<span class="material-symbols-outlined">bookmark</span> Saved Items
-                </a>
-<a class="flex items-center gap-3 px-3 py-2 bg-white dark:bg-slate-800 text-sky-800 dark:text-sky-300 font-bold rounded-lg transition-all" href="#">
-<span class="material-symbols-outlined">settings</span> Settings
-                </a>
-</nav>
-<div class="pt-6 mt-6 border-t border-slate-200 dark:border-slate-800 space-y-1">
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 text-sm font-medium rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
-<span class="material-symbols-outlined">help_outline</span> Help Center
-                </a>
-<a class="flex items-center gap-3 px-3 py-2 text-error text-sm font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all" href="#">
-<span class="material-symbols-outlined">logout</span> Log Out
-                </a>
-</div>
-</aside>
-<!-- Main Content Canvas -->
-<main class="flex-1 ml-64 p-12 max-w-7xl mx-auto">
-<div class="mb-12">
-<h1 class="text-3xl font-bold text-on-surface tracking-tight mb-2">个人中心</h1>
-<p class="text-on-surface-variant">管理您的账户设置、资源列表与学术积分。</p>
-</div>
-<!-- Bento Grid Layout -->
-<div class="grid grid-cols-12 gap-8">
-<!-- Profile Card (Left Big) -->
-<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl p-8 border border-outline-variant/10">
-<div class="flex justify-between items-start mb-8">
-<div class="flex gap-6">
-<div class="relative">
-<img class="w-32 h-32 rounded-xl object-cover" data-alt="High-resolution profile photo of a middle-aged academic man with kind eyes and formal attire, set against a clean library background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDHrQPyp4QaKuyMjLWzc8RTE6w0cIEu43ozMqWsJAiUckGbhQb_sV8Gb2CKAKukgv_-LQvkrEzr8UF4oHtjrYjPVUYuoe2nV8Xp1p9UgCAbuyjXNYQ_jJCI6UJAmzyPrCoVPNy073ZmjD5H6b9uPKE7atl54g91SAIJGxTy7bPGqvsZos6zWY2BNwtkLPSFIs2DTn9dP11P2bGtBs1ZSCvyyK0YEBGJs8thY5CZpW7TGBCNBDol5HE9EiZU_xfbbHCInWtY1J_u3o"/>
-<span class="absolute -bottom-2 -right-2 bg-primary text-on-primary p-1.5 rounded-full shadow-lg">
-<span class="material-symbols-outlined text-sm">verified</span>
-</span>
-</div>
-<div class="flex flex-col justify-center">
-<h2 class="text-2xl font-bold text-on-surface">Dr. Alex Rivera</h2>
-<p class="text-on-surface-variant flex items-center gap-2 mt-1">
-<span class="material-symbols-outlined text-sm">account_balance</span> Engineering | Faculty
-                                </p>
-<div class="flex gap-2 mt-4">
-<span class="bg-secondary-container text-on-secondary-container text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full">Verified Scholar</span>
-<span class="bg-primary-fixed text-on-primary-fixed text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full">Administrator</span>
-</div>
-</div>
-</div>
-<button class="px-6 py-2 bg-primary text-on-primary rounded-lg font-semibold hover:bg-primary-container transition-all flex items-center gap-2">
-<span class="material-symbols-outlined text-sm">edit</span> 编辑资料
-                        </button>
-</div>
-<div class="grid grid-cols-2 gap-8 pt-8 border-t border-surface-container">
-<div>
-<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">联系方式</p>
-<p class="text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-sm opacity-60">mail</span> alex.rivera@campus.edu
-                            </p>
-<p class="text-on-surface flex items-center gap-2 mt-1">
-<span class="material-symbols-outlined text-sm opacity-60">phone</span> +1 (555) 012-3456
-                            </p>
-</div>
-<div>
-<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">账户统计</p>
-<div class="flex gap-6">
-<div>
-<p class="text-xl font-bold text-on-surface">24</p>
-<p class="text-xs text-on-surface-variant">我的发布</p>
-</div>
-<div>
-<p class="text-xl font-bold text-on-surface">156</p>
-<p class="text-xs text-on-surface-variant">资源借调</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Points Balance Card (Right Top) -->
-<div class="col-span-12 lg:col-span-4 bg-primary rounded-xl p-8 text-on-primary flex flex-col justify-between overflow-hidden relative group">
-<div class="relative z-10">
-<p class="text-xs font-bold uppercase tracking-[0.2em] opacity-80 mb-1">当前余额</p>
-<h3 class="text-5xl font-extrabold tracking-tighter">1,280 <span class="text-lg font-normal opacity-60 ml-1">Points</span></h3>
-</div>
-<div class="mt-8 relative z-10">
-<button class="w-full bg-white/10 hover:bg-white/20 transition-all py-3 rounded-lg flex items-center justify-center gap-2 border border-white/10 font-bold">
-                            查看权益 <span class="material-symbols-outlined text-sm">chevron_right</span>
-</button>
-</div>
-<!-- Decorative background element -->
-<div class="absolute -right-12 -bottom-12 w-48 h-48 bg-primary-container rounded-full opacity-20 blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
-</div>
-<!-- Transaction List (Bottom) -->
-<div class="col-span-12 bg-surface-container-low rounded-xl p-8">
-<div class="flex justify-between items-center mb-6">
-<h3 class="text-xl font-bold text-on-surface">积分收支记录</h3>
-<a class="text-primary font-bold text-sm hover:underline" href="#">查看全部</a>
-</div>
-<div class="space-y-4">
-<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg hover:bg-white transition-all">
-<div class="flex items-center gap-4">
-<div class="p-2 bg-green-50 text-green-700 rounded-full">
-<span class="material-symbols-outlined">add_circle</span>
-</div>
-<div>
-<p class="font-bold text-on-surface">发布实验室器材</p>
-<p class="text-xs text-on-surface-variant">2024-11-20 14:30</p>
-</div>
-</div>
-<p class="text-lg font-bold text-green-700">+50</p>
-</div>
-<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg hover:bg-white transition-all">
-<div class="flex items-center gap-4">
-<div class="p-2 bg-red-50 text-red-700 rounded-full">
-<span class="material-symbols-outlined">remove_circle</span>
-</div>
-<div>
-<p class="font-bold text-on-surface">借调《高级量子力学》</p>
-<p class="text-xs text-on-surface-variant">2024-11-18 09:12</p>
-</div>
-</div>
-<p class="text-lg font-bold text-red-700">-25</p>
-</div>
-<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg hover:bg-white transition-all">
-<div class="flex items-center gap-4">
-<div class="p-2 bg-green-50 text-green-700 rounded-full">
-<span class="material-symbols-outlined">stars</span>
-</div>
-<div>
-<p class="font-bold text-on-surface">每日登录奖励</p>
-<p class="text-xs text-on-surface-variant">2024-11-17 08:00</p>
-</div>
-</div>
-<p class="text-lg font-bold text-green-700">+5</p>
-</div>
-</div>
-</div>
-</div>
-</main>
-</div>
-<!-- Edit Profile Modal Overlay (Active state rendered as requested) -->
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-<div class="absolute inset-0 bg-on-surface/40 backdrop-blur-[2px]"></div>
-<div class="relative w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-2xl overflow-hidden">
-<div class="px-8 py-6 border-b border-surface-container flex justify-between items-center">
-<h3 class="text-xl font-bold text-on-surface">编辑个人资料</h3>
-<button class="p-2 hover:bg-surface-container-high rounded-full transition-all">
-<span class="material-symbols-outlined">close</span>
-</button>
-</div>
-<form class="p-8 space-y-6">
-<div class="flex flex-col gap-1.5">
-<label class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">姓名</label>
-<input class="w-full bg-surface-container-low border-0 rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary" type="text" value="Dr. Alex Rivera"/>
-</div>
-<div class="grid grid-cols-2 gap-6">
-<div class="flex flex-col gap-1.5">
-<label class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">学院</label>
-<select class="w-full bg-surface-container-low border-0 rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary">
-<option selected="">Engineering</option>
-<option>Science</option>
-<option>Medicine</option>
-</select>
-</div>
-<div class="flex flex-col gap-1.5">
-<label class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">职级/年级</label>
-<select class="w-full bg-surface-container-low border-0 rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary">
-<option selected="">Faculty</option>
-<option>Student</option>
-<option>Staff</option>
-</select>
-</div>
-</div>
-<div class="flex flex-col gap-1.5">
-<label class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">联系电话</label>
-<input class="w-full bg-surface-container-low border-0 rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary" type="tel" value="+1 (555) 012-3456"/>
-</div>
-<div class="pt-4 flex gap-3">
-<button class="flex-1 py-3 bg-surface-container-high text-on-surface font-bold rounded-lg hover:bg-surface-variant transition-all" type="button">取消</button>
-<button class="flex-1 py-3 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary-container transition-all" type="submit">保存更改</button>
-</div>
-</form>
-</div>
-</div>
-<!-- Toast Notifications Stack -->
-<div class="fixed bottom-8 right-8 z-[60] flex flex-col gap-4">
-<!-- Success Toast -->
-<div class="bg-green-700 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3">
-<span class="material-symbols-outlined">check_circle</span>
-<span class="font-medium">资料更新成功</span>
-</div>
-<!-- Error Toast (Example suppressed but available) -->
-<!-- 
-        <div class="bg-error text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3">
-            <span class="material-symbols-outlined">error</span>
-            <span class="font-medium">无法连接到服务器，请重试</span>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+<header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-sm">
+    <div class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-6">
+            <a class="text-2xl font-extrabold tracking-tight text-sky-800" href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html">CampusShare</a>
+            <nav class="hidden items-center gap-5 md:flex">
+                <a class="text-sm font-semibold text-slate-600 hover:text-sky-700" href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html">交易市场</a>
+                <a class="text-sm font-semibold text-slate-600 hover:text-sky-700" href="/pages/material_listing.html" data-nav-target="/pages/material_listing.html">学术资源</a>
+                <a class="text-sm font-semibold text-slate-600 hover:text-sky-700" href="/pages/recruitment_board.html" data-nav-target="/pages/recruitment_board.html">校园论坛</a>
+                <a class="text-sm font-semibold text-slate-600 hover:text-sky-700" href="/pages/my_publish.html" data-nav-target="/pages/my_publish.html">我的发布</a>
+            </nav>
         </div>
-        -->
+        <div class="flex items-center gap-3">
+            <button class="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100" type="button" aria-label="通知">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+            <a class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html">返回首页</a>
+        </div>
+    </div>
+</header>
+
+<main class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div data-role="message-bar" class="mb-5 hidden rounded-lg border px-3 py-2 text-sm"></div>
+
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">个人资料设置</h1>
+            <p class="mt-1 text-sm text-slate-500">查看并维护你的账号资料、积分和认证状态</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" href="/pages/order_center.html" data-nav-target="/pages/order_center.html">订单中心</a>
+            <a class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" href="/pages/my_publish.html" data-nav-target="/pages/my_publish.html">我的发布</a>
+            <button type="button" data-action="logout" class="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">退出登录</button>
+        </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        <section class="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-2">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-16 w-16 items-center justify-center rounded-xl bg-sky-100 text-2xl font-bold text-sky-700" data-role="avatar-initials">--</div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900" data-role="display-name">加载中</h2>
+                        <p class="text-sm text-slate-500">账号：<span data-role="account">-</span></p>
+                        <p class="mt-1 text-xs text-slate-500">角色：<span data-role="role-text">-</span> · 状态：<span data-role="status-text">-</span></p>
+                    </div>
+                </div>
+                <button type="button" data-action="open-edit" class="rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800">编辑资料</button>
+            </div>
+
+            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                <div class="rounded-lg bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">邮箱</p>
+                    <p class="mt-2 text-sm text-slate-800" data-role="email">-</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">手机号</p>
+                    <p class="mt-2 text-sm text-slate-800" data-role="phone">-</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">学院</p>
+                    <p class="mt-2 text-sm text-slate-800" data-role="college">-</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">年级</p>
+                    <p class="mt-2 text-sm text-slate-800" data-role="grade">-</p>
+                </div>
+            </div>
+
+            <p class="mt-4 text-xs text-slate-500">最近登录：<span data-role="last-login-time">-</span></p>
+        </section>
+
+        <section class="space-y-4">
+            <div class="rounded-xl border border-slate-200 bg-white p-5">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">当前积分</p>
+                <p class="mt-3 text-4xl font-extrabold text-sky-700" data-role="point-balance">0</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">我的商品</p>
+                <p class="mt-3 text-3xl font-bold text-slate-900" data-role="product-count">0</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">我的资料</p>
+                <p class="mt-3 text-3xl font-bold text-slate-900" data-role="material-count">0</p>
+            </div>
+        </section>
+    </div>
+
+    <section class="mt-6 grid gap-6 lg:grid-cols-2">
+        <div class="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 class="text-lg font-bold text-slate-900">卖家认证</h3>
+            <p class="mt-2 text-sm text-slate-500" data-role="seller-verify-status">未发起认证申请</p>
+            <button type="button" data-action="seller-verify" class="mt-4 rounded-lg border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-100">申请认证卖家</button>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 class="text-lg font-bold text-slate-900">快捷入口</h3>
+            <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
+                <a class="rounded-lg border border-slate-200 px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html">交易市场</a>
+                <a class="rounded-lg border border-slate-200 px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/material_listing.html" data-nav-target="/pages/material_listing.html">学术资源</a>
+                <a class="rounded-lg border border-slate-200 px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/notification_center.html" data-nav-target="/pages/notification_center.html">消息通知</a>
+                <a class="rounded-lg border border-slate-200 px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/order_center.html" data-nav-target="/pages/order_center.html">订单中心</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6">
+        <h3 class="text-lg font-bold text-slate-900">积分流水</h3>
+        <div data-role="ledger-list" class="mt-4 space-y-3">
+            <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">正在加载积分流水...</div>
+        </div>
+    </section>
+</main>
+
+<div data-role="profile-edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div data-role="modal-overlay" class="absolute inset-0 bg-slate-900/45"></div>
+    <div class="relative w-full max-w-lg rounded-xl bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+            <h3 class="text-xl font-bold text-slate-900">编辑资料</h3>
+            <button type="button" data-action="close-edit" class="rounded-lg p-1 text-slate-500 hover:bg-slate-100">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form data-role="profile-edit-form" class="space-y-4 px-6 py-5">
+            <div>
+                <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">昵称</label>
+                <input data-field="displayName" type="text" maxlength="20" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="请输入昵称" />
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">学院</label>
+                    <input data-field="college" type="text" maxlength="50" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="请输入学院" />
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">年级</label>
+                    <input data-field="grade" type="text" maxlength="20" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="请输入年级" />
+                </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">手机号</label>
+                    <input data-field="phone" type="text" maxlength="30" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="选填" />
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">邮箱</label>
+                    <input data-field="email" type="email" maxlength="100" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="选填" />
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-slate-200 pt-4">
+                <button type="button" data-action="cancel-edit" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">取消</button>
+                <button type="submit" class="rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800">保存</button>
+            </div>
+        </form>
+    </div>
 </div>
-<!-- Footer -->
-<footer class="w-full py-12 flex flex-col md:flex-row justify-between items-center px-12 w-full ml-64 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
-<div class="mb-4 md:mb-0">
-<span class="font-bold text-sky-900 dark:text-sky-100 mr-4">CampusShare</span>
-<span class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500">© 2026 CampusShare</span>
-</div>
-<div class="flex gap-8">
-<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors" href="#">Terms of Service</a>
-<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors" href="#">Privacy Policy</a>
-<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors" href="#">Accessibility</a>
-<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors" href="#">Contact Support</a>
-</div>
+
+<footer class="mt-10 border-t border-slate-200 bg-white px-6 py-6 text-center text-sm text-slate-500">
+    © 2026 CampusShare
 </footer>
+
 <script src="/pages/assets/js/campusshare-api.js"></script>
 <script src="/pages/assets/js/user-profile.js"></script>
-</body></html>
-
+</body>
+</html>

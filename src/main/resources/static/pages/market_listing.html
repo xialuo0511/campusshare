@@ -93,9 +93,9 @@
 <div class="flex items-center gap-8">
 <span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500">CampusShare</span>
 <nav class="hidden md:flex gap-6 font-['Manrope'] text-sm tracking-wide">
-<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-nav-target="/pages/material_listing.html" href="#">学术资源</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-nav-target="/pages/recruitment_board.html" href="#">校园论坛</a>
+<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" data-market-nav="MARKET" data-nav-target="local" href="#">交易市场</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-market-nav="MATERIAL" data-nav-target="local" href="#">学术资源</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-market-nav="FORUM" data-nav-target="local" href="#">校园论坛</a>
 </nav>
 </div>
 <div class="flex items-center gap-4">
@@ -109,7 +109,7 @@
 </div>
 </div>
 </header>
-<div class="flex max-w-[1440px] mx-auto min-h-screen">
+<div class="flex max-w-[1440px] mx-auto min-h-screen" data-market-panel="MARKET">
 <!-- Left Sidebar Filter -->
 <aside class="hidden lg:block w-72 p-6 bg-surface-bright border-r-0">
 <div class="sticky top-20">
@@ -456,6 +456,34 @@
 </div>
 </main>
 </div>
+<section class="hidden max-w-[1440px] mx-auto min-h-screen px-6 py-8" data-market-panel="MATERIAL">
+<div class="bg-surface-container-low rounded-xl p-8 shadow-sm ring-1 ring-outline-variant/10">
+<div class="flex items-center justify-between gap-4 mb-6">
+<div>
+<h1 class="text-3xl font-bold text-on-surface mb-1">学术资源</h1>
+<p class="text-sm text-on-surface-variant">与课程相关的资料和课件</p>
+</div>
+<button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold" data-nav-target="/pages/publish_create.html">上传资料</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" data-market-material-list>
+<div class="col-span-full text-sm text-slate-400 py-8 text-center">加载中...</div>
+</div>
+</div>
+</section>
+<section class="hidden max-w-[1440px] mx-auto min-h-screen px-6 py-8" data-market-panel="FORUM">
+<div class="bg-surface-container-low rounded-xl p-8 shadow-sm ring-1 ring-outline-variant/10">
+<div class="flex items-center justify-between gap-4 mb-6">
+<div>
+<h1 class="text-3xl font-bold text-on-surface mb-1">校园论坛</h1>
+<p class="text-sm text-on-surface-variant">查看组队、活动与交流话题</p>
+</div>
+<button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold" data-nav-target="/pages/publish_create.html">发布帖子</button>
+</div>
+<div class="space-y-4" data-market-forum-list>
+<div class="text-sm text-slate-400 py-8 text-center">加载中...</div>
+</div>
+</div>
+</section>
 <!-- Footer -->
 <footer class="bg-[#f8f9fa] dark:bg-slate-950 w-full py-12 px-6 mt-auto border-t border-slate-200 dark:border-slate-800">
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">

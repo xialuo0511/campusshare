@@ -15,24 +15,43 @@
         if (typeof window.CampusShareApi.EnhanceSelectElements === "function") {
             window.CampusShareApi.EnhanceSelectElements(document);
         }
+        const marketNavItemList = Array.from(document.querySelectorAll("[data-market-nav]"));
+        const marketPanelList = Array.from(document.querySelectorAll("[data-market-panel]"));
+        const materialSubviewList = document.querySelector("[data-market-material-list]");
+        const forumSubviewList = document.querySelector("[data-market-forum-list]");
         const productGrid = document.querySelector("main div.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-4.gap-6");
         if (!productGrid) {
             return;
         }
 
         const summaryText = document.querySelector("main p.text-on-surface-variant.text-sm.font-medium");
-        const searchInput = document.querySelector("header input[placeholder='搜索市场...']");
+        const searchInput = document.querySelector("header input[type='text']");
         const sortSelect = FindSortSelect();
         const categoryCheckboxList = Array.from(document.querySelectorAll("aside input[type='checkbox']"));
-        const minPriceInput = document.querySelector("aside input[placeholder='最低']");
-        const maxPriceInput = document.querySelector("aside input[placeholder='最高']");
+        const priceInputList = Array.from(document.querySelectorAll("aside input[type='text']"));
+        const minPriceInput = priceInputList[0] || null;
+        const maxPriceInput = priceInputList[1] || null;
         const conditionButtonList = Array.from(document.querySelectorAll("aside section:nth-of-type(3) button"));
         const locationSelect = FindLocationSelect();
-        const clearFilterButton = FindButtonByText("清除所有筛选");
+        const clearFilterButton = document.querySelector("aside button.w-full.py-2\\.5")
+            || FindButtonByText("清除所有筛选");
         const paginationArea = document.querySelector("main div.mt-16.flex.justify-center");
 
         const messageBar = BuildMessageBar(productGrid);
         const pageText = BuildPaginationText(paginationArea);
+        const subviewState = {
+            currentView: "MARKET",
+            materialLoaded: false,
+            forumLoaded: false
+        };
+
+        BindMarketSubviewNavigation(
+            marketNavItemList,
+            marketPanelList,
+            materialSubviewList,
+            forumSubviewList,
+            subviewState
+        );
 
         const state = {
             pageNo: DEFAULT_PAGE_NO,
@@ -86,6 +105,151 @@
         BindProductClick(productGrid);
 
         LoadProductList(state, productGrid, summaryText, pageText, messageBar);
+    }
+
+    /**
+     * 绑定顶部子界面导航
+     */
+    function BindMarketSubviewNavigation(
+        marketNavItemList,
+        marketPanelList,
+        materialSubviewList,
+        forumSubviewList,
+        subviewState
+    ) {
+        if (!Array.isArray(marketNavItemList) || marketNavItemList.length === 0) {
+            return;
+        }
+        const initialNavItem = marketNavItemList.find(function FindActiveItem(item) {
+            return item.classList.contains("font-bold");
+        }) || marketNavItemList[0];
+        const initialViewKey = initialNavItem.getAttribute("data-market-nav") || "MARKET";
+        subviewState.currentView = initialViewKey;
+        ApplyMarketNavState(marketNavItemList, initialViewKey);
+        SwitchMarketPanel(marketPanelList, initialViewKey);
+
+        marketNavItemList.forEach(function BindNav(item) {
+            item.addEventListener("click", async function HandleClick(event) {
+                event.preventDefault();
+                const viewKey = item.getAttribute("data-market-nav") || "MARKET";
+                if (viewKey === subviewState.currentView) {
+                    return;
+                }
+                subviewState.currentView = viewKey;
+                ApplyMarketNavState(marketNavItemList, viewKey);
+                SwitchMarketPanel(marketPanelList, viewKey);
+                if (viewKey === "MATERIAL" && !subviewState.materialLoaded) {
+                    await LoadMaterialSubview(materialSubviewList);
+                    subviewState.materialLoaded = true;
+                }
+                if (viewKey === "FORUM" && !subviewState.forumLoaded) {
+                    await LoadForumSubview(forumSubviewList);
+                    subviewState.forumLoaded = true;
+                }
+            });
+        });
+    }
+
+    /**
+     * 顶部导航激活样式
+     */
+    function ApplyMarketNavState(marketNavItemList, activeViewKey) {
+        const activeClassList = ["text-[#005d90]", "dark:text-sky-400", "font-bold", "border-b-2", "border-[#005d90]", "pb-1"];
+        const inactiveClassList = ["text-slate-600", "dark:text-slate-400", "font-medium", "hover:text-[#005d90]", "dark:hover:text-sky-300", "transition-colors"];
+        marketNavItemList.forEach(function Toggle(item) {
+            const isActive = (item.getAttribute("data-market-nav") || "") === activeViewKey;
+            if (isActive) {
+                item.classList.remove.apply(item.classList, inactiveClassList);
+                item.classList.add.apply(item.classList, activeClassList);
+                item.setAttribute("aria-current", "page");
+                return;
+            }
+            item.classList.remove.apply(item.classList, activeClassList);
+            item.classList.add.apply(item.classList, inactiveClassList);
+            item.removeAttribute("aria-current");
+        });
+    }
+
+    /**
+     * 子界面切换
+     */
+    function SwitchMarketPanel(marketPanelList, activeViewKey) {
+        if (!Array.isArray(marketPanelList) || marketPanelList.length === 0) {
+            return;
+        }
+        marketPanelList.forEach(function Toggle(panel) {
+            const panelKey = panel.getAttribute("data-market-panel") || "";
+            panel.classList.toggle("hidden", panelKey !== activeViewKey);
+        });
+    }
+
+    /**
+     * 学术资源子界面
+     */
+    async function LoadMaterialSubview(materialSubviewList) {
+        if (!materialSubviewList) {
+            return;
+        }
+        materialSubviewList.innerHTML = "<div class=\"col-span-full text-sm text-slate-400 py-8 text-center\">加载中...</div>";
+        try {
+            const result = await window.CampusShareApi.ListPublishedMaterials({ pageNo: 1, pageSize: 9 });
+            const materialList = result && Array.isArray(result.materialList) ? result.materialList : [];
+            if (materialList.length === 0) {
+                materialSubviewList.innerHTML = "<div class=\"col-span-full text-sm text-slate-400 py-8 text-center\">暂无公开学术资源</div>";
+                return;
+            }
+            materialSubviewList.innerHTML = materialList.map(function BuildCard(materialItem) {
+                const tagList = Array.isArray(materialItem.tags) ? materialItem.tags.slice(0, 3) : [];
+                const tagHtml = tagList.length
+                    ? tagList.map(function BuildTag(tagText) {
+                        return `<span class=\"px-2 py-1 rounded-full bg-surface-container text-xs text-on-surface-variant\">${EscapeHtml(tagText)}</span>`;
+                    }).join("")
+                    : "<span class=\"px-2 py-1 rounded-full bg-surface-container text-xs text-on-surface-variant\">无标签</span>";
+                return [
+                    "<article class=\"bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-5\">",
+                    `<div class=\"flex items-start justify-between gap-3 mb-3\"><h3 class=\"text-base font-bold text-on-surface line-clamp-2\">${EscapeHtml(materialItem.courseName || "未命名资料")}</h3><span class=\"text-primary text-sm font-bold\">${EscapeHtml(String(Number(materialItem.downloadCostPoints || 0)))} 积分</span></div>`,
+                    `<p class=\"text-sm text-slate-600 line-clamp-2 min-h-[44px]\">${EscapeHtml(materialItem.description || "暂无资料描述")}</p>`,
+                    `<div class=\"mt-4 flex flex-wrap gap-2\">${tagHtml}</div>`,
+                    `<div class=\"mt-4 text-xs text-slate-500\">格式：${EscapeHtml(materialItem.fileType || "-")} · 下载：${EscapeHtml(String(Number(materialItem.downloadCount || 0)))} 次</div>`,
+                    "</article>"
+                ].join("");
+            }).join("");
+        } catch (error) {
+            materialSubviewList.innerHTML = `<div class=\"col-span-full text-sm text-red-500 py-8 text-center\">${EscapeHtml(error instanceof Error ? error.message : "学术资源加载失败")}</div>`;
+        }
+    }
+
+    /**
+     * 校园论坛子界面
+     */
+    async function LoadForumSubview(forumSubviewList) {
+        if (!forumSubviewList) {
+            return;
+        }
+        forumSubviewList.innerHTML = "<div class=\"text-sm text-slate-400 py-8 text-center\">加载中...</div>";
+        try {
+            const result = await window.CampusShareApi.ListTeamRecruitments({ pageNo: 1, pageSize: 8 });
+            const recruitmentList = result && Array.isArray(result.recruitmentList) ? result.recruitmentList : [];
+            if (recruitmentList.length === 0) {
+                forumSubviewList.innerHTML = "<div class=\"text-sm text-slate-400 py-8 text-center\">暂无论坛招募内容</div>";
+                return;
+            }
+            forumSubviewList.innerHTML = recruitmentList.map(function BuildRecruitmentCard(item) {
+                return [
+                    "<article class=\"bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-5\">",
+                    "<div class=\"flex items-center justify-between gap-3 mb-2\">",
+                    `<h3 class=\"text-base font-bold text-on-surface line-clamp-1\">${EscapeHtml(item.eventName || "未命名话题")}</h3>`,
+                    `<span class=\"text-xs px-2 py-1 rounded-full bg-surface-container text-on-surface-variant\">${EscapeHtml(item.recruitmentStatus || "OPEN")}</span>`,
+                    "</div>",
+                    `<p class=\"text-sm text-slate-600 mb-3\">方向：${EscapeHtml(item.direction || "-")}</p>`,
+                    `<p class=\"text-sm text-slate-500 line-clamp-2\">${EscapeHtml(item.skillRequirement || "暂无内容")}</p>`,
+                    `<div class=\"mt-4 text-xs text-slate-500\">发起人：${EscapeHtml(item.publisherDisplayName || "未知用户")} · 截止：${EscapeHtml(FormatRelativeTime(item.deadline))}</div>`,
+                    "</article>"
+                ].join("");
+            }).join("");
+        } catch (error) {
+            forumSubviewList.innerHTML = `<div class=\"text-sm text-red-500 py-8 text-center\">${EscapeHtml(error instanceof Error ? error.message : "论坛内容加载失败")}</div>`;
+        }
     }
 
     /**

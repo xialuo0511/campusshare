@@ -23,6 +23,9 @@
             return;
         }
 
+        const sideNavItemList = Array.from(document.querySelectorAll("aside [data-order-nav]"));
+        const orderPanelList = Array.from(document.querySelectorAll("main [data-order-panel]"));
+        const profileForm = document.querySelector("[data-order-profile-form]");
         const tableBody = document.querySelector("tbody.divide-y");
         const summaryNumberList = document.querySelectorAll("main .grid p.text-3xl");
         const filterButtonList = document.querySelectorAll(".px-6.py-4.border-b button");
@@ -48,6 +51,9 @@
             return;
         }
 
+        BindOrderViewNavigation(sideNavItemList, orderPanelList, profileForm, messageBar);
+        BindProfileForm(profileForm, messageBar);
+
         const state = {
             pageNo: DEFAULT_PAGE_NO,
             pageSize: DEFAULT_PAGE_SIZE,
@@ -66,6 +72,210 @@
 
         LoadOrderList(state, currentUserId, summaryNumberList, tableBody, paginationText, paginationButtonContainer, messageBar);
         LoadPointLedger(pointPanel, summaryNumberList, messageBar);
+    }
+
+    /**
+     * 绑定侧栏子界面
+     */
+    function BindOrderViewNavigation(sideNavItemList, orderPanelList, profileForm, messageBar) {
+        if (!Array.isArray(sideNavItemList) || sideNavItemList.length === 0) {
+            return;
+        }
+        const initialNavItem = sideNavItemList.find(function FindActiveItem(item) {
+            return item.classList.contains("translate-x-1");
+        }) || sideNavItemList[0];
+        const initialViewKey = initialNavItem ? (initialNavItem.getAttribute("data-order-nav") || "ORDER_LIST") : "ORDER_LIST";
+        ApplyOrderNavState(sideNavItemList, initialViewKey);
+        SwitchOrderPanel(orderPanelList, initialViewKey);
+        if (initialViewKey === "PROFILE") {
+            LoadProfileFormData(profileForm, messageBar);
+        }
+
+        sideNavItemList.forEach(function BindNavItem(item) {
+            item.addEventListener("click", function HandleClick(event) {
+                event.preventDefault();
+                const viewKey = item.getAttribute("data-order-nav") || "ORDER_LIST";
+                ApplyOrderNavState(sideNavItemList, viewKey);
+                SwitchOrderPanel(orderPanelList, viewKey);
+                if (viewKey === "PROFILE") {
+                    LoadProfileFormData(profileForm, messageBar);
+                }
+            });
+        });
+    }
+
+    /**
+     * 侧栏激活态
+     */
+    function ApplyOrderNavState(sideNavItemList, activeViewKey) {
+        const activeClassList = ["bg-[#ffffff]", "dark:bg-slate-800", "text-[#005d90]", "dark:text-sky-400", "font-semibold", "shadow-sm", "translate-x-1"];
+        const inactiveClassList = ["text-slate-600", "dark:text-slate-400", "hover:bg-[#edeeef]", "dark:hover:bg-slate-800/50"];
+        sideNavItemList.forEach(function Toggle(item) {
+            const isActive = (item.getAttribute("data-order-nav") || "") === activeViewKey;
+            if (isActive) {
+                item.classList.remove.apply(item.classList, inactiveClassList);
+                item.classList.add.apply(item.classList, activeClassList);
+                item.setAttribute("aria-current", "page");
+                return;
+            }
+            item.classList.remove.apply(item.classList, activeClassList);
+            item.classList.add.apply(item.classList, inactiveClassList);
+            item.removeAttribute("aria-current");
+        });
+    }
+
+    /**
+     * 切换右侧面板
+     */
+    function SwitchOrderPanel(orderPanelList, viewKey) {
+        if (!Array.isArray(orderPanelList) || orderPanelList.length === 0) {
+            return;
+        }
+        const targetPanelKey = viewKey === "PROFILE" ? "PROFILE" : "ORDER_LIST";
+        orderPanelList.forEach(function Toggle(panel) {
+            const panelKey = panel.getAttribute("data-order-panel") || "";
+            panel.classList.toggle("hidden", panelKey !== targetPanelKey);
+        });
+    }
+
+    /**
+     * 绑定个人设置表单
+     */
+    function BindProfileForm(profileForm, messageBar) {
+        if (!profileForm || profileForm.dataset.bound === "true") {
+            return;
+        }
+        profileForm.dataset.bound = "true";
+
+        profileForm.addEventListener("submit", async function HandleSubmit(event) {
+            event.preventDefault();
+            const displayName = ReadProfileField(profileForm, "displayName");
+            const college = ReadProfileField(profileForm, "college");
+            const grade = ReadProfileField(profileForm, "grade");
+            const contact = ReadProfileField(profileForm, "contact");
+            if (!displayName) {
+                ShowError(messageBar, "昵称不能为空");
+                return;
+            }
+
+            const saveButton = profileForm.querySelector("[data-order-profile-action='save']");
+            if (saveButton) {
+                saveButton.disabled = true;
+            }
+            try {
+                const profilePayload = { displayName };
+                if (college) {
+                    profilePayload.college = college;
+                }
+                if (grade) {
+                    profilePayload.grade = grade;
+                }
+                if (contact) {
+                    profilePayload.contact = contact;
+                }
+                await window.CampusShareApi.UpdateMyProfile(profilePayload);
+                WriteProfileSnapshot(profileForm, { displayName, college, grade, contact });
+                const cachedProfile = window.CampusShareApi.GetCurrentUserProfile();
+                if (cachedProfile) {
+                    cachedProfile.displayName = displayName;
+                    window.CampusShareApi.SetCurrentUserProfile(cachedProfile);
+                }
+                ShowSuccess(messageBar, "个人设置已保存");
+            } catch (error) {
+                ShowError(messageBar, ResolveErrorText(error, "个人设置保存失败"));
+            } finally {
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
+            }
+        });
+
+        const resetButton = profileForm.querySelector("[data-order-profile-action='reset']");
+        if (resetButton) {
+            resetButton.addEventListener("click", function HandleReset() {
+                RestoreProfileSnapshot(profileForm);
+            });
+        }
+    }
+
+    /**
+     * 加载个人设置数据
+     */
+    async function LoadProfileFormData(profileForm, messageBar) {
+        if (!profileForm || profileForm.dataset.loading === "true") {
+            return;
+        }
+        profileForm.dataset.loading = "true";
+        try {
+            let profileData = null;
+            try {
+                profileData = await window.CampusShareApi.SyncSessionProfile();
+            } catch (error) {
+                profileData = window.CampusShareApi.GetCurrentUserProfile();
+            }
+            const safeData = profileData || {};
+            SetProfileField(profileForm, "displayName", safeData.displayName || "");
+            SetProfileField(profileForm, "college", safeData.college || "");
+            SetProfileField(profileForm, "grade", safeData.grade || "");
+            SetProfileField(profileForm, "contact", safeData.contact || "");
+            WriteProfileSnapshot(profileForm, {
+                displayName: safeData.displayName || "",
+                college: safeData.college || "",
+                grade: safeData.grade || "",
+                contact: safeData.contact || ""
+            });
+        } catch (error) {
+            ShowError(messageBar, ResolveErrorText(error, "个人设置加载失败"));
+        } finally {
+            profileForm.dataset.loading = "false";
+        }
+    }
+
+    /**
+     * 读取设置字段
+     */
+    function ReadProfileField(profileForm, fieldName) {
+        const fieldNode = profileForm.querySelector(`[data-order-profile-field='${fieldName}']`);
+        if (!fieldNode) {
+            return "";
+        }
+        return (fieldNode.value || "").trim();
+    }
+
+    /**
+     * 写入设置字段
+     */
+    function SetProfileField(profileForm, fieldName, value) {
+        const fieldNode = profileForm.querySelector(`[data-order-profile-field='${fieldName}']`);
+        if (!fieldNode) {
+            return;
+        }
+        fieldNode.value = value == null ? "" : String(value);
+    }
+
+    /**
+     * 记录初始值
+     */
+    function WriteProfileSnapshot(profileForm, profileData) {
+        profileForm.dataset.originalProfile = JSON.stringify(profileData || {});
+    }
+
+    /**
+     * 恢复初始值
+     */
+    function RestoreProfileSnapshot(profileForm) {
+        let snapshot = {};
+        try {
+            snapshot = profileForm.dataset.originalProfile
+                ? JSON.parse(profileForm.dataset.originalProfile)
+                : {};
+        } catch (error) {
+            snapshot = {};
+        }
+        SetProfileField(profileForm, "displayName", snapshot.displayName || "");
+        SetProfileField(profileForm, "college", snapshot.college || "");
+        SetProfileField(profileForm, "grade", snapshot.grade || "");
+        SetProfileField(profileForm, "contact", snapshot.contact || "");
     }
 
     /**

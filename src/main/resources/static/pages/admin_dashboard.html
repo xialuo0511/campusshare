@@ -102,30 +102,30 @@
 </div>
 <nav class="flex-1 space-y-1">
 <!-- Active Navigation Logic: Mapping "Dashboard" -->
-<a class="flex items-center gap-3 px-3 py-2 bg-[#ffffff] dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm transition-all duration-200 ease-in-out translate-x-1" href="#">
+<a class="flex items-center gap-3 px-3 py-2 bg-[#ffffff] dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm transition-all duration-200 ease-in-out translate-x-1" data-admin-nav="DASHBOARD" data-nav-target="local" href="#">
 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
 <span class="font-['Inter'] text-sm">仪表板</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="MANAGEMENT" data-nav-target="local" href="#">
 <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
 <span class="font-['Inter'] text-sm">管理</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="ORDER_LIST" data-nav-target="local" href="#">
 <span class="material-symbols-outlined" data-icon="format_list_bulleted">format_list_bulleted</span>
-<span class="font-['Inter'] text-sm">列表</span>
+<span class="font-['Inter'] text-sm">订单列表</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="PROFILE" data-nav-target="local" href="#">
 <span class="material-symbols-outlined" data-icon="settings">settings</span>
-<span class="font-['Inter'] text-sm">设置</span>
+<span class="font-['Inter'] text-sm">个人设置</span>
 </a>
 <div class="pt-6 pb-2 px-3">
 <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">管理员工具</p>
 </div>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="WORKBENCH" data-nav-target="local" href="#">
 <span class="material-symbols-outlined" data-icon="gavel">gavel</span>
 <span class="font-['Inter'] text-sm">工作台</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="ANALYTICS" data-nav-target="local" href="#">
 <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
 <span class="font-['Inter'] text-sm">数据分析</span>
 </a>
@@ -145,9 +145,9 @@
 </div>
 </aside>
 <!-- Main Content Area -->
-<main class="ml-64 p-8 pb-24">
+<main class="ml-64 p-8 pb-24" data-admin-main>
 <!-- Top Header Area -->
-<header class="flex justify-between items-center mb-10">
+<header class="flex justify-between items-center mb-10" data-admin-section="header">
 <div>
 <h1 class="text-3xl font-bold text-on-surface tracking-tight">机构概览</h1>
 <p class="text-on-surface-variant text-sm mt-1">实时平台活动和管理工作台。</p>
@@ -166,7 +166,7 @@
 </div>
 </header>
 <!-- High-Level Stats (Bento Grid Style) -->
-<section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+<section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10" data-admin-section="stats">
 <div class="col-span-1 md:col-span-2 bg-surface-container-lowest p-6 rounded-xl border-none ring-1 ring-outline-variant/10 shadow-sm relative overflow-hidden">
 <div class="flex justify-between items-start">
 <div>
@@ -201,7 +201,7 @@
 </div>
 </section>
 <!-- Secondary Section: Analytics and Table -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" data-admin-section="workbench">
 <!-- Table View: Pending Reviews -->
 <section class="lg:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden">
 <div class="px-6 py-4 border-b border-surface-container flex justify-between items-center">

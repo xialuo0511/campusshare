@@ -1097,6 +1097,10 @@
         const anchorList = Array.from(document.querySelectorAll("a"));
         anchorList.forEach(function BindAnchor(anchorElement) {
             const dataTargetPath = anchorElement.getAttribute("data-nav-target") || "";
+            if (dataTargetPath === "local") {
+                anchorElement.href = "javascript:void(0)";
+                return;
+            }
             if (dataTargetPath) {
                 BindPageNavigation(anchorElement, dataTargetPath);
                 return;
@@ -1145,6 +1149,9 @@
         const buttonList = Array.from(document.querySelectorAll("button"));
         buttonList.forEach(function BindButton(buttonElement) {
             const dataTargetPath = buttonElement.getAttribute("data-nav-target") || "";
+            if (dataTargetPath === "local") {
+                return;
+            }
             if (dataTargetPath && buttonElement.dataset.pageNavigationBound !== "true") {
                 buttonElement.dataset.pageNavigationBound = "true";
                 buttonElement.addEventListener("click", function HandleDataTargetNavigation(event) {

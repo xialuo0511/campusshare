@@ -45,6 +45,11 @@
 
         const messageBar = CreateMessageBar(pageHeader);
         const governanceWorkspace = CreateGovernanceWorkspace();
+        const mainElement = document.querySelector("main[data-admin-main]") || document.querySelector("main");
+        const statsSection = document.querySelector("[data-admin-section='stats']");
+        const workbenchSection = document.querySelector("[data-admin-section='workbench']");
+        const adminNavItemList = Array.from(document.querySelectorAll("aside [data-admin-nav]"));
+        const settingsPanel = CreateAdminSettingsPanel(mainElement);
         const hasToken = !!window.CampusShareApi.GetAuthToken();
         const hasAdminAccess = await window.CampusShareApi.EnsureAdminSession();
         if (!hasAdminAccess && !hasToken) {
@@ -65,6 +70,16 @@
             }, 900);
             return;
         }
+
+        const adminSubviewContext = {
+            pageHeader,
+            statsSection,
+            workbenchSection,
+            governanceWorkspace,
+            settingsPanel
+        };
+        BindAdminSubviewNavigation(adminNavItemList, adminSubviewContext, messageBar);
+        BindAdminProfileForm(settingsPanel, messageBar);
 
         const reviewState = {
             taskTypeFilter: "ALL",
@@ -184,6 +199,316 @@
     /**
      * 渲染统计卡片
      */
+    function CreateAdminSettingsPanel(mainElement) {
+        if (!mainElement) {
+            return null;
+        }
+        let settingsPanel = mainElement.querySelector("[data-admin-section='profile']");
+        if (settingsPanel) {
+            return settingsPanel;
+        }
+        settingsPanel = document.createElement("section");
+        settingsPanel.className = "hidden bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 p-8 mb-8";
+        settingsPanel.setAttribute("data-admin-section", "profile");
+        settingsPanel.innerHTML = [
+            "<div class=\"mb-8\">",
+            "<h2 class=\"text-2xl font-bold text-on-surface\">\u4e2a\u4eba\u8bbe\u7f6e</h2>",
+            "<p class=\"text-sm text-slate-500 mt-1\">\u7ba1\u7406\u5458\u8d44\u6599\u4e0e\u8054\u7cfb\u4fe1\u606f</p>",
+            "</div>",
+            "<form data-admin-profile-form class=\"space-y-6\">",
+            "<div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">",
+            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u6635\u79f0</span><input data-admin-profile-field=\"displayName\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u6635\u79f0\" type=\"text\"/></label>",
+            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u90ae\u7bb1</span><input data-admin-profile-field=\"contact\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-2.5 text-sm text-slate-500\" placeholder=\"\u90ae\u7bb1\u5730\u5740\" type=\"text\" readonly/></label>",
+            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u5b66\u9662</span><input data-admin-profile-field=\"college\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u5b66\u9662\" type=\"text\"/></label>",
+            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u5e74\u7ea7</span><input data-admin-profile-field=\"grade\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u5e74\u7ea7\" type=\"text\"/></label>",
+            "</div>",
+            "<div class=\"flex items-center gap-3\">",
+            "<button type=\"submit\" data-admin-profile-action=\"save\" class=\"px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:opacity-90\">\u4fdd\u5b58\u8bbe\u7f6e</button>",
+            "<button type=\"button\" data-admin-profile-action=\"reset\" class=\"px-5 py-2.5 rounded-lg border border-outline-variant/40 text-sm font-semibold text-slate-600 hover:bg-surface-container\">\u91cd\u7f6e</button>",
+            "</div>",
+            "</form>"
+        ].join("");
+        const statsSection = mainElement.querySelector("[data-admin-section='stats']");
+        if (statsSection) {
+            statsSection.insertAdjacentElement("beforebegin", settingsPanel);
+        } else {
+            mainElement.appendChild(settingsPanel);
+        }
+        return settingsPanel;
+    }
+
+    function BindAdminSubviewNavigation(adminNavItemList, context, messageBar) {
+        if (!Array.isArray(adminNavItemList) || adminNavItemList.length === 0) {
+            return;
+        }
+        const initialNavItem = adminNavItemList.find(function FindActive(item) {
+            return item.classList.contains("translate-x-1");
+        }) || adminNavItemList[0];
+        const initialViewKey = initialNavItem.getAttribute("data-admin-nav") || "DASHBOARD";
+        ApplyAdminNavState(adminNavItemList, initialViewKey);
+        SwitchAdminSubview(context, initialViewKey);
+        if (initialViewKey === "PROFILE") {
+            LoadAdminProfileFormData(context.settingsPanel, messageBar);
+        }
+
+        adminNavItemList.forEach(function BindNavItem(item) {
+            item.addEventListener("click", function HandleClick(event) {
+                event.preventDefault();
+                const viewKey = item.getAttribute("data-admin-nav") || "DASHBOARD";
+                ApplyAdminNavState(adminNavItemList, viewKey);
+                SwitchAdminSubview(context, viewKey);
+                if (viewKey === "PROFILE") {
+                    LoadAdminProfileFormData(context.settingsPanel, messageBar);
+                }
+            });
+        });
+    }
+
+    function ApplyAdminNavState(adminNavItemList, activeViewKey) {
+        const activeClassList = [
+            "bg-[#ffffff]",
+            "dark:bg-slate-800",
+            "text-[#005d90]",
+            "dark:text-sky-400",
+            "font-semibold",
+            "rounded-md",
+            "shadow-sm",
+            "translate-x-1"
+        ];
+        const inactiveClassList = [
+            "text-slate-600",
+            "dark:text-slate-400",
+            "hover:bg-[#edeeef]",
+            "dark:hover:bg-slate-800/50"
+        ];
+        adminNavItemList.forEach(function ToggleNavItem(item) {
+            const isActive = (item.getAttribute("data-admin-nav") || "") === activeViewKey;
+            if (isActive) {
+                item.classList.remove.apply(item.classList, inactiveClassList);
+                item.classList.add.apply(item.classList, activeClassList);
+                item.setAttribute("aria-current", "page");
+                return;
+            }
+            item.classList.remove.apply(item.classList, activeClassList);
+            item.classList.add.apply(item.classList, inactiveClassList);
+            item.removeAttribute("aria-current");
+        });
+    }
+
+    function SwitchAdminSubview(context, viewKey) {
+        const headerNode = context && context.pageHeader ? context.pageHeader : null;
+        const statsSection = context && context.statsSection ? context.statsSection : null;
+        const workbenchSection = context && context.workbenchSection ? context.workbenchSection : null;
+        const governanceSection = context && context.governanceWorkspace ? context.governanceWorkspace.wrapper : null;
+        const profileSection = context && context.settingsPanel ? context.settingsPanel : null;
+        const titleNode = headerNode ? headerNode.querySelector("h1") : null;
+        const subtitleNode = headerNode ? headerNode.querySelector("p") : null;
+
+        const viewMetaMap = {
+            DASHBOARD: {
+                title: "\u673a\u6784\u6982\u89c8",
+                subtitle: "\u5b9e\u65f6\u5e73\u53f0\u6d3b\u52a8\u548c\u7ba1\u7406\u5de5\u4f5c\u53f0",
+                showStats: true,
+                showWorkbench: true,
+                showGovernance: true,
+                showProfile: false
+            },
+            MANAGEMENT: {
+                title: "\u6cbb\u7406\u7ba1\u7406",
+                subtitle: "\u96c6\u4e2d\u5904\u7406\u89c4\u5219\u3001\u5546\u54c1\u3001\u8ba2\u5355\u4e0e\u5ba1\u8ba1",
+                showStats: false,
+                showWorkbench: false,
+                showGovernance: true,
+                showProfile: false
+            },
+            ORDER_LIST: {
+                title: "\u8ba2\u5355\u5217\u8868",
+                subtitle: "\u67e5\u770b\u5e76\u6cbb\u7406\u5e73\u53f0\u8ba2\u5355\u72b6\u6001",
+                showStats: false,
+                showWorkbench: false,
+                showGovernance: true,
+                showProfile: false
+            },
+            WORKBENCH: {
+                title: "\u5de5\u4f5c\u53f0",
+                subtitle: "\u5904\u7406\u5f85\u5ba1\u6838\u4efb\u52a1\u4e0e\u98ce\u9669\u4e8b\u9879",
+                showStats: false,
+                showWorkbench: true,
+                showGovernance: false,
+                showProfile: false
+            },
+            ANALYTICS: {
+                title: "\u6570\u636e\u5206\u6790",
+                subtitle: "\u67e5\u770b\u5e73\u53f0\u6982\u89c8\u4e0e\u8d8b\u52bf\u53d8\u5316",
+                showStats: true,
+                showWorkbench: true,
+                showGovernance: false,
+                showProfile: false
+            },
+            PROFILE: {
+                title: "\u4e2a\u4eba\u8bbe\u7f6e",
+                subtitle: "\u7ef4\u62a4\u7ba1\u7406\u5458\u4e2a\u4eba\u8d44\u6599",
+                showStats: false,
+                showWorkbench: false,
+                showGovernance: false,
+                showProfile: true
+            }
+        };
+        const viewMeta = viewMetaMap[viewKey] || viewMetaMap.DASHBOARD;
+        if (titleNode) {
+            titleNode.textContent = viewMeta.title;
+        }
+        if (subtitleNode) {
+            subtitleNode.textContent = viewMeta.subtitle;
+        }
+        if (statsSection) {
+            statsSection.classList.toggle("hidden", !viewMeta.showStats);
+        }
+        if (workbenchSection) {
+            workbenchSection.classList.toggle("hidden", !viewMeta.showWorkbench);
+        }
+        if (governanceSection) {
+            governanceSection.classList.toggle("hidden", !viewMeta.showGovernance);
+        }
+        if (profileSection) {
+            profileSection.classList.toggle("hidden", !viewMeta.showProfile);
+        }
+    }
+
+    function BindAdminProfileForm(settingsPanel, messageBar) {
+        if (!settingsPanel) {
+            return;
+        }
+        const profileForm = settingsPanel.querySelector("[data-admin-profile-form]");
+        if (!profileForm || profileForm.dataset.bound === "true") {
+            return;
+        }
+        profileForm.dataset.bound = "true";
+        profileForm.addEventListener("submit", async function HandleSubmit(event) {
+            event.preventDefault();
+            const displayName = ReadAdminProfileField(profileForm, "displayName");
+            const college = ReadAdminProfileField(profileForm, "college");
+            const grade = ReadAdminProfileField(profileForm, "grade");
+            const contact = ReadAdminProfileField(profileForm, "contact");
+            if (!displayName) {
+                ShowError(messageBar, "\u6635\u79f0\u4e0d\u80fd\u4e3a\u7a7a");
+                return;
+            }
+
+            const saveButton = profileForm.querySelector("[data-admin-profile-action='save']");
+            if (saveButton) {
+                saveButton.disabled = true;
+            }
+            try {
+                const payload = { displayName };
+                if (college) {
+                    payload.college = college;
+                }
+                if (grade) {
+                    payload.grade = grade;
+                }
+                if (contact) {
+                    payload.contact = contact;
+                }
+                await window.CampusShareApi.UpdateMyProfile(payload);
+                const currentUser = window.CampusShareApi.GetCurrentUserProfile();
+                if (currentUser) {
+                    currentUser.displayName = displayName;
+                    currentUser.college = college;
+                    currentUser.grade = grade;
+                    if (contact) {
+                        currentUser.contact = contact;
+                    }
+                    window.CampusShareApi.SetCurrentUserProfile(currentUser);
+                }
+                WriteAdminProfileSnapshot(profileForm, { displayName, college, grade, contact });
+                ShowSuccess(messageBar, "\u4e2a\u4eba\u8bbe\u7f6e\u5df2\u4fdd\u5b58");
+            } catch (error) {
+                ShowError(messageBar, error instanceof Error ? error.message : "\u4e2a\u4eba\u8bbe\u7f6e\u4fdd\u5b58\u5931\u8d25");
+            } finally {
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
+            }
+        });
+
+        const resetButton = profileForm.querySelector("[data-admin-profile-action='reset']");
+        if (resetButton) {
+            resetButton.addEventListener("click", function HandleReset() {
+                RestoreAdminProfileSnapshot(profileForm);
+            });
+        }
+    }
+
+    async function LoadAdminProfileFormData(settingsPanel, messageBar) {
+        if (!settingsPanel) {
+            return;
+        }
+        const profileForm = settingsPanel.querySelector("[data-admin-profile-form]");
+        if (!profileForm || profileForm.dataset.loading === "true") {
+            return;
+        }
+        profileForm.dataset.loading = "true";
+        try {
+            let profileData = null;
+            try {
+                profileData = await window.CampusShareApi.SyncSessionProfile();
+            } catch (error) {
+                profileData = window.CampusShareApi.GetCurrentUserProfile();
+            }
+            const safeProfile = profileData || {};
+            SetAdminProfileField(profileForm, "displayName", safeProfile.displayName || "");
+            SetAdminProfileField(profileForm, "contact", safeProfile.contact || "");
+            SetAdminProfileField(profileForm, "college", safeProfile.college || "");
+            SetAdminProfileField(profileForm, "grade", safeProfile.grade || "");
+            WriteAdminProfileSnapshot(profileForm, {
+                displayName: safeProfile.displayName || "",
+                contact: safeProfile.contact || "",
+                college: safeProfile.college || "",
+                grade: safeProfile.grade || ""
+            });
+        } catch (error) {
+            ShowError(messageBar, error instanceof Error ? error.message : "\u4e2a\u4eba\u8bbe\u7f6e\u52a0\u8f7d\u5931\u8d25");
+        } finally {
+            profileForm.dataset.loading = "false";
+        }
+    }
+
+    function ReadAdminProfileField(profileForm, fieldName) {
+        const fieldNode = profileForm.querySelector(`[data-admin-profile-field='${fieldName}']`);
+        if (!fieldNode) {
+            return "";
+        }
+        return (fieldNode.value || "").trim();
+    }
+
+    function SetAdminProfileField(profileForm, fieldName, value) {
+        const fieldNode = profileForm.querySelector(`[data-admin-profile-field='${fieldName}']`);
+        if (!fieldNode) {
+            return;
+        }
+        fieldNode.value = value == null ? "" : String(value);
+    }
+
+    function WriteAdminProfileSnapshot(profileForm, profileData) {
+        profileForm.dataset.originalProfile = JSON.stringify(profileData || {});
+    }
+
+    function RestoreAdminProfileSnapshot(profileForm) {
+        let snapshot = {};
+        try {
+            snapshot = profileForm.dataset.originalProfile
+                ? JSON.parse(profileForm.dataset.originalProfile)
+                : {};
+        } catch (error) {
+            snapshot = {};
+        }
+        SetAdminProfileField(profileForm, "displayName", snapshot.displayName || "");
+        SetAdminProfileField(profileForm, "contact", snapshot.contact || "");
+        SetAdminProfileField(profileForm, "college", snapshot.college || "");
+        SetAdminProfileField(profileForm, "grade", snapshot.grade || "");
+    }
+
     function RenderStats(
         statCardList,
         dashboardSummary,

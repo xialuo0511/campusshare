@@ -219,6 +219,7 @@
             "<div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">",
             "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u6635\u79f0</span><input data-admin-profile-field=\"displayName\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u6635\u79f0\" type=\"text\"/></label>",
             "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u90ae\u7bb1</span><input data-admin-profile-field=\"contact\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-2.5 text-sm text-slate-500\" placeholder=\"\u90ae\u7bb1\u5730\u5740\" type=\"text\" readonly/></label>",
+            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u5b66\u53f7</span><input data-admin-profile-field=\"account\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-2.5 text-sm text-slate-500\" placeholder=\"\u5b66\u53f7\" type=\"text\" readonly/></label>",
             "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u5b66\u9662</span><input data-admin-profile-field=\"college\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u5b66\u9662\" type=\"text\"/></label>",
             "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u5e74\u7ea7</span><input data-admin-profile-field=\"grade\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u5e74\u7ea7\" type=\"text\"/></label>",
             "</div>",
@@ -390,6 +391,7 @@
             const college = ReadAdminProfileField(profileForm, "college");
             const grade = ReadAdminProfileField(profileForm, "grade");
             const contact = ReadAdminProfileField(profileForm, "contact");
+            const account = ReadAdminProfileField(profileForm, "account");
             if (!displayName) {
                 ShowError(messageBar, "\u6635\u79f0\u4e0d\u80fd\u4e3a\u7a7a");
                 return;
@@ -421,7 +423,7 @@
                     }
                     window.CampusShareApi.SetCurrentUserProfile(currentUser);
                 }
-                WriteAdminProfileSnapshot(profileForm, { displayName, college, grade, contact });
+                WriteAdminProfileSnapshot(profileForm, { displayName, college, grade, contact, account });
                 ShowSuccess(messageBar, "\u4e2a\u4eba\u8bbe\u7f6e\u5df2\u4fdd\u5b58");
             } catch (error) {
                 ShowError(messageBar, error instanceof Error ? error.message : "\u4e2a\u4eba\u8bbe\u7f6e\u4fdd\u5b58\u5931\u8d25");
@@ -456,14 +458,17 @@
             } catch (error) {
                 profileData = window.CampusShareApi.GetCurrentUserProfile();
             }
-            const safeProfile = profileData || {};
+            const cachedProfile = window.CampusShareApi.GetCurrentUserProfile() || {};
+            const safeProfile = profileData || cachedProfile;
             SetAdminProfileField(profileForm, "displayName", safeProfile.displayName || "");
-            SetAdminProfileField(profileForm, "contact", safeProfile.contact || "");
+            SetAdminProfileField(profileForm, "contact", safeProfile.contact || cachedProfile.contact || "");
+            SetAdminProfileField(profileForm, "account", safeProfile.account || cachedProfile.account || "");
             SetAdminProfileField(profileForm, "college", safeProfile.college || "");
             SetAdminProfileField(profileForm, "grade", safeProfile.grade || "");
             WriteAdminProfileSnapshot(profileForm, {
                 displayName: safeProfile.displayName || "",
-                contact: safeProfile.contact || "",
+                contact: safeProfile.contact || cachedProfile.contact || "",
+                account: safeProfile.account || cachedProfile.account || "",
                 college: safeProfile.college || "",
                 grade: safeProfile.grade || ""
             });
@@ -505,6 +510,7 @@
         }
         SetAdminProfileField(profileForm, "displayName", snapshot.displayName || "");
         SetAdminProfileField(profileForm, "contact", snapshot.contact || "");
+        SetAdminProfileField(profileForm, "account", snapshot.account || "");
         SetAdminProfileField(profileForm, "college", snapshot.college || "");
         SetAdminProfileField(profileForm, "grade", snapshot.grade || "");
     }

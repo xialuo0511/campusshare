@@ -18,6 +18,7 @@
         AUTH: "/pages/auth_access.html",
         OVERVIEW: "/pages/market_overview.html",
         LISTING: "/pages/market_listing.html",
+        FORUM_SUBVIEW: "/pages/market_listing.html?view=FORUM",
         MATERIAL_LISTING: "/pages/material_listing.html",
         DETAIL: "/pages/market_item_detail.html",
         ORDER: "/pages/order_center.html",
@@ -123,7 +124,10 @@
             userId: loginData.userId,
             account: loginData.account,
             displayName: loginData.displayName,
-            userRole: loginData.userRole
+            userRole: loginData.userRole,
+            contact: loginData.contact || "",
+            college: loginData.college || "",
+            grade: loginData.grade || ""
         });
     }
 
@@ -364,8 +368,13 @@
         if (
             text.includes("校园论坛")
             || text.includes("论坛")
-            || text.includes("招募")
             || lowerText.includes("forum")
+        ) {
+            return PAGE_PATH_MAP.FORUM_SUBVIEW;
+        }
+        if (
+            text.includes("招募")
+            || text.includes("组队")
             || lowerText.includes("recruitment")
         ) {
             return PAGE_PATH_MAP.RECRUITMENT;
@@ -1339,7 +1348,10 @@
             userId: profileResponse.userId,
             account: profileResponse.account,
             displayName: profileResponse.displayName,
-            userRole: profileResponse.userRole
+            userRole: profileResponse.userRole,
+            contact: profileResponse.contact || "",
+            college: profileResponse.college || "",
+            grade: profileResponse.grade || ""
         });
         return profileResponse;
     }

@@ -120,13 +120,19 @@
         if (!Array.isArray(marketNavItemList) || marketNavItemList.length === 0) {
             return;
         }
-        const initialNavItem = marketNavItemList.find(function FindActiveItem(item) {
-            return item.classList.contains("font-bold");
-        }) || marketNavItemList[0];
-        const initialViewKey = initialNavItem.getAttribute("data-market-nav") || "MARKET";
+        const initialViewKey = ResolveInitialMarketViewKey(marketNavItemList);
         subviewState.currentView = initialViewKey;
         ApplyMarketNavState(marketNavItemList, initialViewKey);
         SwitchMarketPanel(marketPanelList, initialViewKey);
+        UpdateSubviewUrl(initialViewKey);
+        if (initialViewKey === "MATERIAL" && !subviewState.materialLoaded) {
+            LoadMaterialSubview(materialSubviewList);
+            subviewState.materialLoaded = true;
+        }
+        if (initialViewKey === "FORUM" && !subviewState.forumLoaded) {
+            LoadForumSubview(forumSubviewList);
+            subviewState.forumLoaded = true;
+        }
 
         marketNavItemList.forEach(function BindNav(item) {
             item.addEventListener("click", async function HandleClick(event) {
@@ -146,8 +152,67 @@
                     await LoadForumSubview(forumSubviewList);
                     subviewState.forumLoaded = true;
                 }
+                UpdateSubviewUrl(viewKey);
             });
         });
+    }
+
+    /**
+     * 解析 URL 指定的子界面
+     */
+    function ResolveInitialMarketViewKey(marketNavItemList) {
+        const searchParams = new URLSearchParams(window.location.search || "");
+        const queryViewText = (searchParams.get("view") || "").trim();
+        const hashViewText = (window.location.hash || "").replace(/^#/, "").trim();
+        const expectedViewKey = NormalizeMarketViewKey(queryViewText || hashViewText);
+        if (expectedViewKey && marketNavItemList.some(function HasView(item) {
+            return (item.getAttribute("data-market-nav") || "") === expectedViewKey;
+        })) {
+            return expectedViewKey;
+        }
+        const initialNavItem = marketNavItemList.find(function FindActiveItem(item) {
+            return item.classList.contains("font-bold");
+        }) || marketNavItemList[0];
+        return initialNavItem.getAttribute("data-market-nav") || "MARKET";
+    }
+
+    /**
+     * 标准化子界面键
+     */
+    function NormalizeMarketViewKey(viewText) {
+        const normalizedText = (viewText || "").trim().toUpperCase();
+        if (!normalizedText) {
+            return "";
+        }
+        if (normalizedText === "MATERIAL" || normalizedText === "RESOURCE" || normalizedText === "RESOURCES") {
+            return "MATERIAL";
+        }
+        if (normalizedText === "FORUM" || normalizedText === "COMMUNITY") {
+            return "FORUM";
+        }
+        if (normalizedText === "MARKET" || normalizedText === "LISTING") {
+            return "MARKET";
+        }
+        return "";
+    }
+
+    /**
+     * 同步子界面状态到 URL
+     */
+    function UpdateSubviewUrl(viewKey) {
+        if (!window.history || typeof window.history.replaceState !== "function") {
+            return;
+        }
+        const normalizedViewKey = NormalizeMarketViewKey(viewKey) || "MARKET";
+        const searchParams = new URLSearchParams(window.location.search || "");
+        if (normalizedViewKey === "MARKET") {
+            searchParams.delete("view");
+        } else {
+            searchParams.set("view", normalizedViewKey);
+        }
+        const nextSearch = searchParams.toString();
+        const nextPath = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}`;
+        window.history.replaceState(null, "", nextPath);
     }
 
     /**

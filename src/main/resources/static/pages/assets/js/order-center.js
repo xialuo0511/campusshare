@@ -153,6 +153,7 @@
             const college = ReadProfileField(profileForm, "college");
             const grade = ReadProfileField(profileForm, "grade");
             const contact = ReadProfileField(profileForm, "contact");
+            const account = ReadProfileField(profileForm, "account");
             if (!displayName) {
                 ShowError(messageBar, "昵称不能为空");
                 return;
@@ -174,7 +175,7 @@
                     profilePayload.contact = contact;
                 }
                 await window.CampusShareApi.UpdateMyProfile(profilePayload);
-                WriteProfileSnapshot(profileForm, { displayName, college, grade, contact });
+                WriteProfileSnapshot(profileForm, { displayName, college, grade, contact, account });
                 const cachedProfile = window.CampusShareApi.GetCurrentUserProfile();
                 if (cachedProfile) {
                     cachedProfile.displayName = displayName;
@@ -213,16 +214,19 @@
             } catch (error) {
                 profileData = window.CampusShareApi.GetCurrentUserProfile();
             }
-            const safeData = profileData || {};
+            const cachedProfile = window.CampusShareApi.GetCurrentUserProfile() || {};
+            const safeData = profileData || cachedProfile;
             SetProfileField(profileForm, "displayName", safeData.displayName || "");
             SetProfileField(profileForm, "college", safeData.college || "");
             SetProfileField(profileForm, "grade", safeData.grade || "");
-            SetProfileField(profileForm, "contact", safeData.contact || "");
+            SetProfileField(profileForm, "contact", safeData.contact || cachedProfile.contact || "");
+            SetProfileField(profileForm, "account", safeData.account || cachedProfile.account || "");
             WriteProfileSnapshot(profileForm, {
                 displayName: safeData.displayName || "",
                 college: safeData.college || "",
                 grade: safeData.grade || "",
-                contact: safeData.contact || ""
+                contact: safeData.contact || cachedProfile.contact || "",
+                account: safeData.account || cachedProfile.account || ""
             });
         } catch (error) {
             ShowError(messageBar, ResolveErrorText(error, "个人设置加载失败"));
@@ -276,6 +280,7 @@
         SetProfileField(profileForm, "college", snapshot.college || "");
         SetProfileField(profileForm, "grade", snapshot.grade || "");
         SetProfileField(profileForm, "contact", snapshot.contact || "");
+        SetProfileField(profileForm, "account", snapshot.account || "");
     }
 
     /**

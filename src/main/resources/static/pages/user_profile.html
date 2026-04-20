@@ -73,6 +73,10 @@
 
             <div class="mt-6 grid gap-4 sm:grid-cols-2">
                 <div class="rounded-lg bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">学号 / 工号</p>
+                    <p class="mt-2 text-sm text-slate-800" data-role="account-readonly">-</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 p-4">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">邮箱</p>
                     <p class="mt-2 text-sm text-slate-800" data-role="email">-</p>
                 </div>
@@ -144,6 +148,16 @@
             </button>
         </div>
         <form data-role="profile-edit-form" class="space-y-4 px-6 py-5">
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">学号 / 工号</label>
+                    <input data-field="accountReadonly" type="text" class="w-full rounded-lg border-slate-300 bg-slate-100 text-sm text-slate-600" readonly />
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">邮箱</label>
+                    <input data-field="emailReadonly" type="email" class="w-full rounded-lg border-slate-300 bg-slate-100 text-sm text-slate-600" readonly />
+                </div>
+            </div>
             <div>
                 <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">昵称</label>
                 <input data-field="displayName" type="text" maxlength="20" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="请输入昵称" />
@@ -158,15 +172,9 @@
                     <input data-field="grade" type="text" maxlength="20" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="请输入年级" />
                 </div>
             </div>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">手机号</label>
-                    <input data-field="phone" type="text" maxlength="30" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="选填" />
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">邮箱</label>
-                    <input data-field="email" type="email" maxlength="100" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="选填" />
-                </div>
+            <div>
+                <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">手机号</label>
+                <input data-field="phone" type="text" maxlength="30" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="选填" />
             </div>
             <div class="flex justify-end gap-2 border-t border-slate-200 pt-4">
                 <button type="button" data-action="cancel-edit" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">取消</button>

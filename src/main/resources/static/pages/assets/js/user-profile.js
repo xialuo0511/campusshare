@@ -95,6 +95,7 @@
 
         SetText("display-name", displayName);
         SetText("account", account);
+        SetText("account-readonly", account);
         SetText("role-text", roleText);
         SetText("status-text", statusText);
         SetText("email", profile.email || profile.contact || "未设置");
@@ -218,8 +219,7 @@
                 displayName: ReadFormField("displayName"),
                 college: ReadFormField("college"),
                 grade: ReadFormField("grade"),
-                phone: ReadFormField("phone"),
-                email: ReadFormField("email")
+                phone: ReadFormField("phone")
             };
 
             if (!payload.displayName) {
@@ -373,7 +373,8 @@
         WriteFormField("college", safeProfile.college || "");
         WriteFormField("grade", safeProfile.grade || "");
         WriteFormField("phone", safeProfile.phone || "");
-        WriteFormField("email", safeProfile.email || safeProfile.contact || "");
+        WriteFormField("accountReadonly", safeProfile.account || "");
+        WriteFormField("emailReadonly", safeProfile.email || safeProfile.contact || "");
     }
 
     /**

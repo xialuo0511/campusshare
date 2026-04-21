@@ -121,9 +121,9 @@
 <div class="pt-6 pb-2 px-3">
 <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">管理员工具</p>
 </div>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="WORKBENCH" data-nav-target="local" href="#">
-<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
-<span class="font-['Inter'] text-sm">工作台</span>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="CONTENT_REVIEW" data-nav-target="local" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span class="font-['Inter'] text-sm">内容审核</span>
 </a>
 <a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="ANALYTICS" data-nav-target="local" href="#">
 <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
@@ -201,32 +201,7 @@
 </div>
 </section>
 <!-- Secondary Section: Analytics and Table -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" data-admin-section="workbench">
-<!-- Table View: Pending Reviews -->
-<section class="lg:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden" data-admin-review-panel>
-<div class="px-6 py-4 border-b border-surface-container flex justify-between items-center">
-<h3 class="text-title-md font-semibold text-on-surface">工作台：待审核</h3>
-<a class="text-primary text-sm font-semibold hover:underline" href="/pages/admin_content_review.html">查看全部</a>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-surface-container-low text-on-surface-variant text-xs uppercase tracking-widest font-bold">
-<th class="px-6 py-3">资源项</th>
-<th class="px-6 py-3">贡献者</th>
-<th class="px-6 py-3">提交日期</th>
-<th class="px-6 py-3">状态</th>
-<th class="px-6 py-3 text-right">操作</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-surface-container" data-admin-review-table-body>
-<tr>
-<td class="px-6 py-8 text-center text-sm text-slate-400" colspan="5">正在加载待审核任务...</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
+<div class="grid grid-cols-1 gap-8 items-start" data-admin-section="workbench">
 <!-- Analytics Chart Module (Visual Placeholder) -->
 <section class="bg-surface-container-lowest p-6 rounded-xl shadow-sm ring-1 ring-outline-variant/10" data-admin-activity-panel>
 <h3 class="text-title-md font-semibold text-on-surface mb-6">平台活动</h3>
@@ -253,6 +228,11 @@
 </div>
 </section>
 </div>
+<section class="hidden mt-8" data-admin-section="content-review">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden h-[calc(100vh-12rem)] min-h-[760px]">
+<iframe class="w-full h-full border-0 bg-white" data-admin-content-review-frame src="/pages/admin_content_review.html?embedded=1" title="内容审核子界面"></iframe>
+</div>
+</section>
 </main>
 <!-- Footer Component (Shared Anchor) -->
 <footer class="ml-64 bg-[#f8f9fa] dark:bg-slate-950 py-6 px-6 border-t border-slate-200 dark:border-slate-800">

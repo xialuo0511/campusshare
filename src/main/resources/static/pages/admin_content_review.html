@@ -48,11 +48,29 @@
             background: rgba(64, 72, 80, 0.25);
             border-radius: 999px;
         }
+        body.embedded-review {
+            min-height: auto;
+            background: transparent;
+        }
+        body.embedded-review [data-review-shell-sidebar] {
+            display: none;
+        }
+        body.embedded-review [data-review-page-main] {
+            margin-left: 0;
+            min-height: auto;
+        }
+        body.embedded-review [data-review-page-header] {
+            position: static;
+        }
+        body.embedded-review [data-review-main-grid] {
+            height: calc(100vh - 10rem);
+            min-height: 680px;
+        }
     </style>
 </head>
 <body class="bg-surface text-slate-800 min-h-screen">
-<div class="flex min-h-screen">
-    <aside class="fixed left-0 top-0 h-screen w-64 bg-surface-low border-r border-outline/30 p-4 flex flex-col z-30">
+<div class="flex min-h-screen" data-review-layout-root>
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-surface-low border-r border-outline/30 p-4 flex flex-col z-30" data-review-shell-sidebar>
         <div class="mb-8">
             <p class="text-lg font-bold text-primary">CampusShare</p>
             <p class="text-xs text-slate-500 mt-1">内容审核中心</p>
@@ -66,7 +84,7 @@
                 <span class="material-symbols-outlined">fact_check</span>
                 <span class="text-sm font-semibold">内容审核</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-white transition-colors" href="/pages/admin_batch_review.html">
+            <a class="hidden flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-white transition-colors" href="/pages/admin_batch_review.html">
                 <span class="material-symbols-outlined">task</span>
                 <span class="text-sm font-semibold">批量处理</span>
             </a>
@@ -74,7 +92,7 @@
     </aside>
 
     <main class="ml-64 flex-1 min-h-screen flex flex-col" data-review-page-main>
-        <header class="h-20 px-8 bg-surface-card border-b border-outline/25 sticky top-0 z-20 flex items-center justify-between">
+        <header class="h-20 px-8 bg-surface-card border-b border-outline/25 sticky top-0 z-20 flex items-center justify-between" data-review-page-header>
             <div>
                 <h1 class="text-3xl font-extrabold">内容审核工作台</h1>
                 <p class="text-sm text-slate-500 mt-1">帖子与商品统一审核入口</p>
@@ -111,7 +129,7 @@
         </section>
 
         <section class="px-8 pb-8 flex-1 min-h-0">
-            <div class="grid grid-cols-12 gap-6 h-[calc(100vh-16rem)] min-h-[740px]">
+            <div class="grid grid-cols-12 gap-6 h-[calc(100vh-16rem)] min-h-[740px]" data-review-main-grid>
                 <section class="col-span-3 bg-surface-card rounded-xl ring-1 ring-outline/20 shadow-soft overflow-hidden flex flex-col">
                     <div class="px-5 py-4 border-b border-outline/20">
                         <h3 class="text-lg font-bold">审核队列</h3>
@@ -180,6 +198,14 @@
         </section>
     </main>
 </div>
+<script>
+    (function ApplyEmbeddedMode() {
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get("embedded") === "1") {
+            document.body.classList.add("embedded-review");
+        }
+    })();
+</script>
 <script src="/pages/assets/js/campusshare-api.js?v=20260421"></script>
 <script src="/pages/assets/js/admin-content-review.js?v=20260421"></script>
 </body>

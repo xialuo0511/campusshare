@@ -48,12 +48,14 @@
         const mainElement = document.querySelector("main[data-admin-main]") || document.querySelector("main");
         const statsSection = document.querySelector("[data-admin-section='stats']");
         const workbenchSection = document.querySelector("[data-admin-section='workbench']");
+        const contentReviewSection = document.querySelector("[data-admin-section='content-review']");
         const adminNavItemList = Array.from(document.querySelectorAll("aside [data-admin-nav]"));
         const settingsPanel = CreateAdminSettingsPanel(mainElement);
         const adminSubviewContext = {
             pageHeader,
             statsSection,
             workbenchSection,
+            contentReviewSection,
             governanceWorkspace,
             settingsPanel
         };
@@ -112,8 +114,6 @@
                 governanceWorkspace,
                 activityPanel
             );
-        } else {
-            console.warn("[AdminDashboard] review panel missing, skip review table bindings");
         }
         BindGovernanceWorkspaceActions(governanceWorkspace, messageBar, function ReloadDashboardData() {
             return LoadDashboardData(
@@ -370,6 +370,7 @@
         const headerNode = context && context.pageHeader ? context.pageHeader : null;
         const statsSection = context && context.statsSection ? context.statsSection : null;
         const workbenchSection = context && context.workbenchSection ? context.workbenchSection : null;
+        const contentReviewSection = context && context.contentReviewSection ? context.contentReviewSection : null;
         const governanceSection = context && context.governanceWorkspace ? context.governanceWorkspace.wrapper : null;
         const profileSection = context && context.settingsPanel ? context.settingsPanel : null;
         const titleNode = headerNode ? headerNode.querySelector("h1") : null;
@@ -381,6 +382,7 @@
                 subtitle: "\u5b9e\u65f6\u5e73\u53f0\u6d3b\u52a8\u548c\u7ba1\u7406\u5de5\u4f5c\u53f0",
                 showStats: true,
                 showWorkbench: true,
+                showContentReview: false,
                 showGovernance: true,
                 showProfile: false
             },
@@ -389,6 +391,7 @@
                 subtitle: "\u96c6\u4e2d\u5904\u7406\u89c4\u5219\u3001\u5546\u54c1\u3001\u8ba2\u5355\u4e0e\u5ba1\u8ba1",
                 showStats: false,
                 showWorkbench: false,
+                showContentReview: false,
                 showGovernance: true,
                 showProfile: false
             },
@@ -397,14 +400,16 @@
                 subtitle: "\u67e5\u770b\u5e76\u6cbb\u7406\u5e73\u53f0\u8ba2\u5355\u72b6\u6001",
                 showStats: false,
                 showWorkbench: false,
+                showContentReview: false,
                 showGovernance: true,
                 showProfile: false
             },
-            WORKBENCH: {
-                title: "\u5de5\u4f5c\u53f0",
-                subtitle: "\u5904\u7406\u5f85\u5ba1\u6838\u4efb\u52a1\u4e0e\u98ce\u9669\u4e8b\u9879",
+            CONTENT_REVIEW: {
+                title: "\u5185\u5bb9\u5ba1\u6838",
+                subtitle: "\u5e16\u5b50\u4e0e\u5546\u54c1\u7edf\u4e00\u5728\u5b50\u754c\u9762\u5185\u5b8c\u6210\u5ba1\u6838",
                 showStats: false,
-                showWorkbench: true,
+                showWorkbench: false,
+                showContentReview: true,
                 showGovernance: false,
                 showProfile: false
             },
@@ -413,6 +418,7 @@
                 subtitle: "\u67e5\u770b\u5e73\u53f0\u6982\u89c8\u4e0e\u8d8b\u52bf\u53d8\u5316",
                 showStats: true,
                 showWorkbench: true,
+                showContentReview: false,
                 showGovernance: false,
                 showProfile: false
             },
@@ -421,6 +427,7 @@
                 subtitle: "\u7ef4\u62a4\u7ba1\u7406\u5458\u4e2a\u4eba\u8d44\u6599",
                 showStats: false,
                 showWorkbench: false,
+                showContentReview: false,
                 showGovernance: false,
                 showProfile: true
             }
@@ -437,6 +444,9 @@
         }
         if (workbenchSection) {
             workbenchSection.classList.toggle("hidden", !viewMeta.showWorkbench);
+        }
+        if (contentReviewSection) {
+            contentReviewSection.classList.toggle("hidden", !viewMeta.showContentReview);
         }
         if (governanceSection) {
             governanceSection.classList.toggle("hidden", !viewMeta.showGovernance);

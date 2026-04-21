@@ -30,6 +30,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/**").permitAll()
                 .anyRequest().denyAll()
             )
+            .headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.sameOrigin())
+            )
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable);
         return httpSecurity.build();

@@ -513,6 +513,7 @@ public class MaterialServiceImpl implements MaterialService {
         MaterialResponseDto responseDto = new MaterialResponseDto();
         responseDto.SetMaterialId(materialEntity.GetMaterialId());
         responseDto.SetUploaderUserId(materialEntity.GetUploaderUserId());
+        responseDto.SetUploaderDisplayName(ResolveUserDisplayName(materialEntity.GetUploaderUserId()));
         responseDto.SetCourseName(materialEntity.GetCourseName());
         responseDto.SetTags(SplitTags(materialEntity.GetTags()));
         responseDto.SetDescription(materialEntity.GetDescription());
@@ -527,6 +528,20 @@ public class MaterialServiceImpl implements MaterialService {
         responseDto.SetLastReviewTime(materialEntity.GetLastReviewTime());
         responseDto.SetCreateTime(materialEntity.GetCreateTime());
         return responseDto;
+    }
+
+    /**
+     * 解析用户昵称
+     */
+    private String ResolveUserDisplayName(Long userId) {
+        if (userId == null || userId <= 0) {
+            return "";
+        }
+        UserEntity userEntity = userMapper.FindUserById(userId);
+        if (userEntity == null || userEntity.GetDisplayName() == null) {
+            return "";
+        }
+        return userEntity.GetDisplayName().trim();
     }
 
     /**

@@ -12,6 +12,8 @@ public class MaterialResponseDto {
     private Long materialId;
     /** 上传者ID */
     private Long uploaderUserId;
+    /** 上传者昵称 */
+    private String uploaderDisplayName;
     /** 课程名 */
     private String courseName;
     /** 标签列表 */
@@ -65,6 +67,20 @@ public class MaterialResponseDto {
      */
     public void SetUploaderUserId(Long uploaderUserId) {
         this.uploaderUserId = uploaderUserId;
+    }
+
+    /**
+     * 获取上传者昵称
+     */
+    public String GetUploaderDisplayName() {
+        return uploaderDisplayName;
+    }
+
+    /**
+     * 设置上传者昵称
+     */
+    public void SetUploaderDisplayName(String uploaderDisplayName) {
+        this.uploaderDisplayName = uploaderDisplayName;
     }
 
     /**

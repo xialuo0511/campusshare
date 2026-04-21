@@ -315,7 +315,7 @@
                 taskType: "MATERIAL",
                 taskId: materialId,
                 title: item.courseName || `资料 #${materialId}`,
-                ownerText: item.uploaderDisplayName || `用户ID ${SafeNumber(item.uploaderUserId)}`,
+                ownerText: ResolveMaterialUploaderDisplayName(item) || `用户ID ${SafeNumber(item.uploaderUserId)}`,
                 metaText: `${item.fileType || "-"} · ${FormatFileSize(item.fileSizeBytes)}${tags ? ` · ${tags}` : ""}`,
                 createTime: item.createTime,
                 rawItem: item
@@ -604,7 +604,7 @@
         };
         return [
             BuildFieldGridSection("核心字段（含中文说明）", summaryFieldMap, CORE_FIELD_META.TEAM_RECRUITMENT),
-            BuildLivePreviewSection("完整帖子预览", BuildRecruitmentPreviewUrl(taskItem, detailItem), "可直接在审核页查看完整组队帖子。"),
+            BuildLivePreviewSection("完整帖子预览", BuildRecruitmentPreviewUrl(taskItem, detailItem), "可直接在审核页查看普通帖子列表。"),
             BuildTextSection("技能要求", detailItem.skillRequirement || "未填写"),
             BuildObjectSection("完整字段（详情接口）", detailItem),
             BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || {})
@@ -612,11 +612,15 @@
     }
 
     function BuildMaterialDetailHtml(taskItem, detailItem) {
+        const uploaderDisplayName = ResolveMaterialUploaderDisplayName(
+            detailItem,
+            taskItem && taskItem.rawItem
+        );
         const summaryFieldMap = {
             materialId: detailItem.materialId,
             courseName: detailItem.courseName,
             uploaderUserId: detailItem.uploaderUserId,
-            uploaderDisplayName: detailItem.uploaderDisplayName,
+            uploaderDisplayName: uploaderDisplayName,
             materialStatus: detailItem.materialStatus,
             fileType: detailItem.fileType,
             fileSizeBytes: detailItem.fileSizeBytes,
@@ -748,10 +752,7 @@
     }
 
     function BuildRecruitmentPreviewUrl(taskItem, detailItem) {
-        const recruitmentId = SafeNumber((detailItem && detailItem.recruitmentId) || (taskItem && taskItem.taskId));
-        return recruitmentId > 0
-            ? `/pages/recruitment_board.html?focusRecruitmentId=${encodeURIComponent(String(recruitmentId))}`
-            : "";
+        return "/pages/market_listing.html?view=FORUM";
     }
 
     function BuildProductImageUrlList(taskItem, detailItem) {
@@ -828,6 +829,29 @@
             return "";
         }
         return window.CampusShareApi.BuildPublicFileUrl(safeFileId) || "";
+    }
+
+    function ResolveMaterialUploaderDisplayName() {
+        for (let index = 0; index < arguments.length; index += 1) {
+            const source = arguments[index];
+            if (!source || typeof source !== "object") {
+                continue;
+            }
+            const candidateList = [
+                source.uploaderDisplayName,
+                source.uploaderName,
+                source.uploaderNickname,
+                source.publisherDisplayName,
+                source.publisherName
+            ];
+            for (let candidateIndex = 0; candidateIndex < candidateList.length; candidateIndex += 1) {
+                const candidateText = String(candidateList[candidateIndex] || "").trim();
+                if (candidateText) {
+                    return candidateText;
+                }
+            }
+        }
+        return "";
     }
 
     function EnsureImagePreviewModal() {

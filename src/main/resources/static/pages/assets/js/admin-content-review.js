@@ -54,7 +54,7 @@
             uploaderDisplayName: { label: "上传者昵称", note: "前台展示名" },
             materialStatus: { label: "资料状态", note: "审核/发布状态" },
             fileType: { label: "文件类型", note: "如 PDF/JPG/PNG" },
-            fileSizeBytes: { label: "文件大小", note: "单位：字节" },
+            fileSizeBytes: { label: "文件大小", note: "自动进位显示（KB/MB/GB）" },
             downloadCostPoints: { label: "下载积分", note: "下载所需积分" },
             downloadCount: { label: "下载次数", note: "累计下载量" },
             copyrightDeclared: { label: "版权声明", note: "上传者版权勾选状态" },
@@ -623,7 +623,7 @@
             uploaderDisplayName: uploaderDisplayName,
             materialStatus: detailItem.materialStatus,
             fileType: detailItem.fileType,
-            fileSizeBytes: detailItem.fileSizeBytes,
+            fileSizeBytes: FormatFileSize(detailItem.fileSizeBytes),
             downloadCostPoints: detailItem.downloadCostPoints,
             downloadCount: detailItem.downloadCount,
             copyrightDeclared: detailItem.copyrightDeclared,
@@ -1073,9 +1073,16 @@
         if (Number.isNaN(size) || size <= 0) {
             return "-";
         }
-        if (size < 1024) return `${size}B`;
-        if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)}KB`;
-        return `${(size / (1024 * 1024)).toFixed(1)}MB`;
+        if (size < 1024) {
+            return `${Math.floor(size)} B`;
+        }
+        if (size < 1024 * 1024) {
+            return `${(size / 1024).toFixed(2)} KB`;
+        }
+        if (size < 1024 * 1024 * 1024) {
+            return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+        }
+        return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
     }
 
     function ResolveTimeValue(timeText) {

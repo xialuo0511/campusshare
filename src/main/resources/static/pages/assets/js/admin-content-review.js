@@ -132,7 +132,8 @@
             nextButton: pageMain.querySelector("[data-review-next]"),
             approveButton: pageMain.querySelector("[data-review-approve]"),
             rejectButton: pageMain.querySelector("[data-review-reject]"),
-            imagePreviewModal: EnsureImagePreviewModal()
+            imagePreviewModal: EnsureImagePreviewModal(),
+            decisionConfirmModal: EnsureDecisionConfirmModal()
         };
     }
 
@@ -937,6 +938,142 @@
         }
     }
 
+    function EnsureDecisionConfirmModal() {
+        let modalNode = document.getElementById("admin-review-decision-confirm-modal");
+        if (!modalNode) {
+            modalNode = document.createElement("div");
+            modalNode.id = "admin-review-decision-confirm-modal";
+            modalNode.className = "fixed inset-0 z-[1250] bg-black/45 hidden items-center justify-center p-4";
+            modalNode.innerHTML = [
+                "<div class=\"w-full max-w-md rounded-2xl bg-white ring-1 ring-outline/30 shadow-soft overflow-hidden\">",
+                "<div class=\"px-5 py-4 border-b border-outline/20 flex items-center justify-between\">",
+                "<p class=\"text-base font-extrabold\" data-review-confirm-title>确认操作</p>",
+                "<button type=\"button\" data-review-confirm-close class=\"w-8 h-8 rounded-full bg-surface-container-low text-slate-600 hover:bg-surface-container inline-flex items-center justify-center\">",
+                "<span class=\"material-symbols-outlined !text-lg\">close</span>",
+                "</button>",
+                "</div>",
+                "<div class=\"px-5 py-5\">",
+                "<div class=\"flex items-start gap-3\">",
+                "<div data-review-confirm-icon-badge class=\"w-10 h-10 rounded-xl bg-primary/10 text-primary inline-flex items-center justify-center shrink-0\">",
+                "<span class=\"material-symbols-outlined\" data-review-confirm-icon>task_alt</span>",
+                "</div>",
+                "<div>",
+                "<p class=\"text-sm text-slate-700 leading-6\" data-review-confirm-message>请确认是否继续该审核操作。</p>",
+                "</div>",
+                "</div>",
+                "</div>",
+                "<div class=\"px-5 py-4 border-t border-outline/20 bg-surface-container-low flex items-center justify-end gap-3\">",
+                "<button type=\"button\" data-review-confirm-cancel class=\"px-4 py-2 rounded-lg bg-white ring-1 ring-outline/30 text-sm font-semibold text-slate-700 hover:bg-surface\">取消</button>",
+                "<button type=\"button\" data-review-confirm-submit class=\"px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:opacity-95 transition-opacity\">确认</button>",
+                "</div>",
+                "</div>"
+            ].join("");
+            document.body.appendChild(modalNode);
+        }
+
+        const modalRef = {
+            container: modalNode,
+            title: modalNode.querySelector("[data-review-confirm-title]"),
+            message: modalNode.querySelector("[data-review-confirm-message]"),
+            iconBadge: modalNode.querySelector("[data-review-confirm-icon-badge]"),
+            icon: modalNode.querySelector("[data-review-confirm-icon]"),
+            closeButton: modalNode.querySelector("[data-review-confirm-close]"),
+            cancelButton: modalNode.querySelector("[data-review-confirm-cancel]"),
+            submitButton: modalNode.querySelector("[data-review-confirm-submit]"),
+            resolveCallback: null
+        };
+
+        if (!modalNode.getAttribute("data-bound")) {
+            modalNode.setAttribute("data-bound", "1");
+            modalNode.addEventListener("click", function HandleBackdropClick(event) {
+                if (event.target === modalNode) {
+                    ResolveDecisionConfirmModal(modalRef, false);
+                }
+            });
+            if (modalRef.closeButton) {
+                modalRef.closeButton.addEventListener("click", function HandleCloseClick() {
+                    ResolveDecisionConfirmModal(modalRef, false);
+                });
+            }
+            if (modalRef.cancelButton) {
+                modalRef.cancelButton.addEventListener("click", function HandleCancelClick() {
+                    ResolveDecisionConfirmModal(modalRef, false);
+                });
+            }
+            if (modalRef.submitButton) {
+                modalRef.submitButton.addEventListener("click", function HandleSubmitClick() {
+                    ResolveDecisionConfirmModal(modalRef, true);
+                });
+            }
+            window.addEventListener("keydown", function HandleEsc(event) {
+                if (event.key === "Escape" && !modalNode.classList.contains("hidden")) {
+                    ResolveDecisionConfirmModal(modalRef, false);
+                }
+            });
+        }
+
+        return modalRef;
+    }
+
+    function OpenDecisionConfirmModal(modalRef, options) {
+        if (!modalRef || !modalRef.container) {
+            return Promise.resolve(false);
+        }
+        if (typeof modalRef.resolveCallback === "function") {
+            modalRef.resolveCallback(false);
+            modalRef.resolveCallback = null;
+        }
+
+        const safeOptions = options || {};
+        const isApprove = !!safeOptions.approved;
+        const titleText = String(safeOptions.title || "确认操作").trim();
+        const messageText = String(safeOptions.message || "请确认是否继续该审核操作。").trim();
+        const confirmText = String(safeOptions.confirmText || "确认").trim();
+
+        if (modalRef.title) {
+            modalRef.title.textContent = titleText;
+        }
+        if (modalRef.message) {
+            modalRef.message.textContent = messageText;
+        }
+        if (modalRef.submitButton) {
+            modalRef.submitButton.textContent = confirmText;
+            modalRef.submitButton.classList.remove("bg-primary", "bg-red-700");
+            modalRef.submitButton.classList.add(isApprove ? "bg-primary" : "bg-red-700");
+        }
+        if (modalRef.iconBadge) {
+            modalRef.iconBadge.classList.remove("bg-primary/10", "text-primary", "bg-red-100", "text-red-700");
+            modalRef.iconBadge.classList.add(isApprove ? "bg-primary/10" : "bg-red-100");
+            modalRef.iconBadge.classList.add(isApprove ? "text-primary" : "text-red-700");
+        }
+        if (modalRef.icon) {
+            modalRef.icon.textContent = isApprove ? "task_alt" : "warning";
+        }
+
+        modalRef.container.classList.remove("hidden");
+        modalRef.container.classList.add("flex");
+        if (modalRef.submitButton) {
+            modalRef.submitButton.focus();
+        }
+
+        return new Promise(function WaitUserConfirm(resolve) {
+            modalRef.resolveCallback = resolve;
+        });
+    }
+
+    function ResolveDecisionConfirmModal(modalRef, confirmed) {
+        if (!modalRef || !modalRef.container) {
+            return;
+        }
+        modalRef.container.classList.add("hidden");
+        modalRef.container.classList.remove("flex");
+        const resolveCallback = modalRef.resolveCallback;
+        modalRef.resolveCallback = null;
+        if (typeof resolveCallback === "function") {
+            resolveCallback(!!confirmed);
+        }
+    }
+
     async function SubmitDecision(refs, state, messageBar, approved) {
         const selectedTask = GetSelectedTask(state, state.filteredTaskList);
         if (!selectedTask) {
@@ -949,7 +1086,15 @@
             ShowError(messageBar, "驳回时请填写审核意见");
             return;
         }
-        if (!window.confirm(approved ? "确认通过该任务？" : "确认驳回该任务？")) {
+        const confirmed = await OpenDecisionConfirmModal(refs.decisionConfirmModal, {
+            approved: approved,
+            title: approved ? "确认通过该内容？" : "确认驳回该内容？",
+            message: approved
+                ? "通过后该内容将发布到前台，是否继续？"
+                : "驳回后发布者将收到驳回通知，是否继续？",
+            confirmText: approved ? "确认通过" : "确认驳回"
+        });
+        if (!confirmed) {
             return;
         }
 

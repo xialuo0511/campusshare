@@ -2,9 +2,10 @@
  * Admin content review page logic:
  * - pending product review
  * - pending team recruitment review
+ * - pending material review
  */
 (function InitAdminContentReviewPage() {
-    const FILTER_VALUE_LIST = ["ALL", "PRODUCT", "TEAM_RECRUITMENT", "HIGH_RISK", "RECENT"];
+    const FILTER_VALUE_LIST = ["ALL", "PRODUCT", "TEAM_RECRUITMENT", "MATERIAL", "HIGH_RISK", "RECENT"];
     const REJECT_TEMPLATE_LIST = [
         { value: "", text: "请选择意见模板" },
         { value: "内容信息不完整，请补充关键信息后重新提交。", text: "信息不完整" },
@@ -23,7 +24,6 @@
             window.CampusShareApi.RedirectToAuthPage("/pages/admin_content_review.html");
             return;
         }
-
         const hasAdminAccess = await window.CampusShareApi.EnsureAdminSession();
         if (!hasAdminAccess) {
             window.location.href = "/pages/market_overview.html";
@@ -59,7 +59,7 @@
         BindActionButtons(refs, state, messageBar);
 
         await ReloadTaskQueue(refs, state, messageBar);
-        ApplyInitialFocusFromQuery(refs, state);
+        ApplyInitialFocusFromQuery(state);
         RenderAll(refs, state);
     }
 
@@ -187,17 +187,20 @@
         try {
             const resultList = await Promise.all([
                 window.CampusShareApi.ListPendingProductsByAdmin(1, 300),
-                window.CampusShareApi.ListPendingTeamRecruitmentsByAdmin(1, 300)
+                window.CampusShareApi.ListPendingTeamRecruitmentsByAdmin(1, 300),
+                window.CampusShareApi.ListPendingMaterials(1, 300)
             ]);
-
             const pendingProductList = resultList[0] && Array.isArray(resultList[0].productList)
                 ? resultList[0].productList
                 : [];
             const pendingRecruitmentList = resultList[1] && Array.isArray(resultList[1].recruitmentList)
                 ? resultList[1].recruitmentList
                 : [];
+            const pendingMaterialList = resultList[2] && Array.isArray(resultList[2].materialList)
+                ? resultList[2].materialList
+                : [];
 
-            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList);
+            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList, pendingMaterialList);
             if (!state.selectedTaskKey && state.taskList.length) {
                 state.selectedTaskKey = BuildTaskKey(state.taskList[0]);
             }
@@ -209,7 +212,7 @@
         }
     }
 
-    function BuildTaskList(productList, recruitmentList) {
+    function BuildTaskList(productList, recruitmentList, materialList) {
         const productTaskList = (Array.isArray(productList) ? productList : []).map(function MapProduct(item) {
             const productId = SafeNumber(item.productId);
             return {
@@ -234,31 +237,28 @@
                 rawItem: item
             };
         });
-        return productTaskList.concat(recruitmentTaskList).sort(function SortByTimeDesc(leftItem, rightItem) {
+        const materialTaskList = (Array.isArray(materialList) ? materialList : []).map(function MapMaterial(item) {
+            const materialId = SafeNumber(item.materialId);
+            const tagText = Array.isArray(item.tags) ? item.tags.join("/") : "";
+            return {
+                taskType: "MATERIAL",
+                taskId: materialId,
+                title: item.courseName || `资料 #${materialId}`,
+                ownerText: item.uploaderDisplayName || `上传者ID ${SafeNumber(item.uploaderUserId)}`,
+                metaText: `${item.fileType || "-"} · ${SafeNumber(item.fileSizeBytes)}B${tagText ? ` · ${tagText}` : ""}`,
+                createTime: item.createTime,
+                rawItem: item
+            };
+        });
+        return productTaskList.concat(recruitmentTaskList, materialTaskList).sort(function SortByTimeDesc(leftItem, rightItem) {
             return ResolveTimeValue(rightItem.createTime) - ResolveTimeValue(leftItem.createTime);
         });
     }
 
-    function ApplyInitialFocusFromQuery(refs, state) {
+    function ApplyInitialFocusFromQuery(state) {
         const searchParams = new URLSearchParams(window.location.search);
-        let taskType = String(searchParams.get("taskType") || "").toUpperCase();
-        let taskId = SafeNumber(searchParams.get("taskId"));
-
-        if (!taskType) {
-            const focusRecruitmentId = SafeNumber(searchParams.get("focusRecruitmentId"));
-            if (focusRecruitmentId > 0) {
-                taskType = "TEAM_RECRUITMENT";
-                taskId = focusRecruitmentId;
-            }
-        }
-        if (!taskType) {
-            const productId = SafeNumber(searchParams.get("productId"));
-            if (productId > 0) {
-                taskType = "PRODUCT";
-                taskId = productId;
-            }
-        }
-
+        const taskType = String(searchParams.get("taskType") || "").toUpperCase();
+        const taskId = SafeNumber(searchParams.get("taskId"));
         if (taskType && taskId > 0) {
             const focusedTask = state.taskList.find(function MatchTask(item) {
                 return item.taskType === taskType && item.taskId === taskId;
@@ -267,17 +267,11 @@
                 state.selectedTaskKey = BuildTaskKey(focusedTask);
             }
         }
-
-        const intendedDecision = String(searchParams.get("intendedDecision") || "").toUpperCase();
-        if (intendedDecision === "REJECT" && refs.reviewNoteInput && !refs.reviewNoteInput.value) {
-            refs.reviewNoteInput.value = "请补充审核意见后执行驳回。";
-        }
     }
 
     function RenderAll(refs, state) {
         const filteredTaskList = FilterTaskList(state);
         state.filteredTaskList = filteredTaskList;
-
         if (!filteredTaskList.length) {
             state.selectedTaskKey = "";
         } else if (!filteredTaskList.some(function HasSelected(item) {
@@ -285,7 +279,6 @@
         })) {
             state.selectedTaskKey = BuildTaskKey(filteredTaskList[0]);
         }
-
         RenderFilterButtons(refs, state);
         RenderStats(refs, state, filteredTaskList);
         RenderQueue(refs, state, filteredTaskList);
@@ -295,30 +288,15 @@
 
     function FilterTaskList(state) {
         return state.taskList.filter(function FilterTask(taskItem) {
-            if (state.filterType === "PRODUCT" && taskItem.taskType !== "PRODUCT") {
-                return false;
-            }
-            if (state.filterType === "TEAM_RECRUITMENT" && taskItem.taskType !== "TEAM_RECRUITMENT") {
-                return false;
-            }
-            if (state.filterType === "HIGH_RISK" && !IsHighRiskTask(taskItem)) {
-                return false;
-            }
-            if (state.filterType === "RECENT") {
-                if ((Date.now() - ResolveTimeValue(taskItem.createTime)) > DAY_MS) {
-                    return false;
-                }
-            }
-            if (!state.keyword) {
-                return true;
-            }
-            const searchText = [
-                taskItem.taskType,
-                taskItem.taskId,
-                taskItem.title,
-                taskItem.ownerText,
-                taskItem.metaText
-            ].join(" ").toLowerCase();
+            if (state.filterType === "PRODUCT" && taskItem.taskType !== "PRODUCT") return false;
+            if (state.filterType === "TEAM_RECRUITMENT" && taskItem.taskType !== "TEAM_RECRUITMENT") return false;
+            if (state.filterType === "MATERIAL" && taskItem.taskType !== "MATERIAL") return false;
+            if (state.filterType === "HIGH_RISK" && !IsHighRiskTask(taskItem)) return false;
+            if (state.filterType === "RECENT" && (Date.now() - ResolveTimeValue(taskItem.createTime)) > DAY_MS) return false;
+            if (!state.keyword) return true;
+            const searchText = [taskItem.taskType, taskItem.taskId, taskItem.title, taskItem.ownerText, taskItem.metaText]
+                .join(" ")
+                .toLowerCase();
             return searchText.includes(state.keyword);
         });
     }
@@ -341,89 +319,63 @@
     }
 
     function RenderStats(refs, state, filteredTaskList) {
-        if (!refs.statCardList || refs.statCardList.length < 4) {
-            return;
-        }
+        if (!refs.statCardList || refs.statCardList.length < 4) return;
         const pendingCount = filteredTaskList.length;
-        const productCount = state.taskList.filter(function MatchTask(item) {
-            return item.taskType === "PRODUCT";
-        }).length;
-        const recruitmentCount = state.taskList.filter(function MatchTask(item) {
-            return item.taskType === "TEAM_RECRUITMENT";
-        }).length;
+        const productCount = state.taskList.filter(item => item.taskType === "PRODUCT").length;
+        const recruitmentCount = state.taskList.filter(item => item.taskType === "TEAM_RECRUITMENT").length;
+        const materialCount = state.taskList.filter(item => item.taskType === "MATERIAL").length;
         const avgWaitHours = pendingCount
-            ? filteredTaskList.reduce(function SumWaitHours(total, item) {
-                return total + (Date.now() - ResolveTimeValue(item.createTime));
-            }, 0) / pendingCount / 1000 / 60 / 60
+            ? filteredTaskList.reduce((total, item) => total + (Date.now() - ResolveTimeValue(item.createTime)), 0) / pendingCount / 1000 / 60 / 60
             : 0;
-
         PatchStatCard(refs.statCardList[0], String(pendingCount), `筛选: ${MapFilterText(state.filterType)}`);
         PatchStatCard(refs.statCardList[1], String(state.processedCount), "当前会话累计");
         PatchStatCard(refs.statCardList[2], `${avgWaitHours.toFixed(1)}h`, "按当前队列估算");
-        PatchStatCard(refs.statCardList[3], `商品 ${productCount} / 帖子 ${recruitmentCount}`, "全量待审");
+        PatchStatCard(refs.statCardList[3], `商品 ${productCount} / 帖子 ${recruitmentCount} / 资料 ${materialCount}`, "全量待审");
     }
 
     function MapFilterText(filterType) {
-        if (filterType === "PRODUCT") {
-            return "商品";
-        }
-        if (filterType === "TEAM_RECRUITMENT") {
-            return "帖子";
-        }
-        if (filterType === "HIGH_RISK") {
-            return "高风险";
-        }
-        if (filterType === "RECENT") {
-            return "最新";
-        }
+        if (filterType === "PRODUCT") return "商品";
+        if (filterType === "TEAM_RECRUITMENT") return "帖子";
+        if (filterType === "MATERIAL") return "资料";
+        if (filterType === "HIGH_RISK") return "高风险";
+        if (filterType === "RECENT") return "最新";
         return "全部";
     }
 
     function PatchStatCard(cardNode, valueText, tipText) {
-        if (!cardNode) {
-            return;
-        }
+        if (!cardNode) return;
         const valueNode = cardNode.querySelector("h2");
         const tipNode = cardNode.querySelector("p:last-child");
-        if (valueNode) {
-            valueNode.textContent = valueText;
-        }
-        if (tipNode) {
-            tipNode.textContent = tipText;
-        }
+        if (valueNode) valueNode.textContent = valueText;
+        if (tipNode) tipNode.textContent = tipText;
     }
 
     function RenderQueue(refs, state, filteredTaskList) {
-        if (!refs.queueListNode) {
-            return;
-        }
+        if (!refs.queueListNode) return;
         if (!filteredTaskList.length) {
             refs.queueListNode.innerHTML = "<div class=\"p-4 rounded-xl bg-surface-low text-sm text-slate-500\">暂无待审核任务</div>";
             return;
         }
-
         refs.queueListNode.innerHTML = filteredTaskList.map(function BuildTaskCard(taskItem) {
             const taskKey = BuildTaskKey(taskItem);
             const isSelected = state.selectedTaskKey === taskKey;
             const tagClass = taskItem.taskType === "PRODUCT"
                 ? "bg-blue-50 text-blue-700"
-                : "bg-indigo-50 text-indigo-700";
-            const iconName = taskItem.taskType === "PRODUCT" ? "inventory_2" : "forum";
-            const riskText = IsHighRiskTask(taskItem)
-                ? "<span class=\"ml-2 px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-[10px] font-bold\">高风险</span>"
-                : "";
+                : (taskItem.taskType === "MATERIAL" ? "bg-amber-50 text-amber-700" : "bg-indigo-50 text-indigo-700");
+            const iconName = taskItem.taskType === "PRODUCT" ? "inventory_2" : (taskItem.taskType === "MATERIAL" ? "description" : "forum");
+            const typeText = taskItem.taskType === "PRODUCT" ? "商品" : (taskItem.taskType === "MATERIAL" ? "资料" : "帖子");
             return [
                 `<button type="button" data-task-key="${EscapeHtml(taskKey)}" class="w-full text-left rounded-xl p-4 border transition-colors ${isSelected ? "border-primary bg-blue-50/50" : "border-outline/20 bg-white hover:border-primary/40"}">`,
                 "<div class=\"flex items-start justify-between gap-3\">",
                 "<div class=\"flex items-start gap-2\">",
                 `<span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-low text-slate-700"><span class="material-symbols-outlined text-base">${iconName}</span></span>`,
                 "<div>",
-                `<p class="text-sm font-bold text-slate-800 leading-5">${EscapeHtml(taskItem.title)}${riskText}</p>`,
+                `<p class="text-sm font-bold text-slate-800 leading-5">${EscapeHtml(taskItem.title)}</p>`,
                 `<p class="text-xs text-slate-500 mt-1">${EscapeHtml(taskItem.ownerText)}</p>`,
                 `<p class="text-xs text-slate-500">${EscapeHtml(taskItem.metaText)}</p>`,
                 "</div>",
                 "</div>",
-                `<span class="px-2 py-1 rounded-full text-[10px] font-bold ${tagClass}">${taskItem.taskType === "PRODUCT" ? "商品" : "帖子"}</span>`,
+                `<span class="px-2 py-1 rounded-full text-[10px] font-bold ${tagClass}">${typeText}</span>`,
                 "</div>",
                 `<p class="text-xs text-slate-400 mt-3">提交: ${EscapeHtml(FormatTime(taskItem.createTime))}</p>`,
                 "</button>"
@@ -432,20 +384,10 @@
     }
 
     function RenderDecisionPanel(refs, state, filteredTaskList) {
-        const selectedTask = GetSelectedTask(state, filteredTaskList);
-        const hasTask = !!selectedTask;
-        if (refs.prevButton) {
-            refs.prevButton.disabled = !hasTask;
-        }
-        if (refs.nextButton) {
-            refs.nextButton.disabled = !hasTask;
-        }
-        if (refs.approveButton) {
-            refs.approveButton.disabled = !hasTask;
-        }
-        if (refs.rejectButton) {
-            refs.rejectButton.disabled = !hasTask;
-        }
+        const hasTask = !!GetSelectedTask(state, filteredTaskList);
+        [refs.prevButton, refs.nextButton, refs.approveButton, refs.rejectButton].filter(Boolean).forEach(function PatchButton(buttonNode) {
+            buttonNode.disabled = !hasTask;
+        });
         if (refs.currentStatusNode) {
             refs.currentStatusNode.textContent = hasTask ? "待审核" : "无任务";
         }
@@ -458,21 +400,15 @@
             refs.detailBodyNode.innerHTML = "<article class=\"rounded-xl bg-surface-low p-5 text-sm text-slate-600\">当前没有可展示的审核详情。</article>";
             return;
         }
-
         const currentRenderToken = ++state.detailRenderToken;
         refs.detailBodyNode.innerHTML = "<article class=\"rounded-xl bg-surface-low p-5 text-sm text-slate-600\">正在加载详情...</article>";
-
         try {
             const detailResult = await LoadTaskDetail(state, selectedTask);
-            if (currentRenderToken !== state.detailRenderToken || state.selectedTaskKey !== BuildTaskKey(selectedTask)) {
-                return;
-            }
+            if (currentRenderToken !== state.detailRenderToken || state.selectedTaskKey !== BuildTaskKey(selectedTask)) return;
             PatchDetailHeader(refs.detailHeaderNode, selectedTask, detailResult);
             PatchDetailBody(refs.detailBodyNode, selectedTask, detailResult);
         } catch (error) {
-            if (currentRenderToken !== state.detailRenderToken) {
-                return;
-            }
+            if (currentRenderToken !== state.detailRenderToken) return;
             PatchDetailHeader(refs.detailHeaderNode, selectedTask, null);
             refs.detailBodyNode.innerHTML = `<article class="rounded-xl bg-red-50 text-red-700 p-5 text-sm">加载详情失败：${EscapeHtml(error instanceof Error ? error.message : "未知错误")}</article>`;
         }
@@ -480,30 +416,27 @@
 
     async function LoadTaskDetail(state, taskItem) {
         const cacheKey = BuildTaskKey(taskItem);
-        if (state.detailCacheMap.has(cacheKey)) {
-            return state.detailCacheMap.get(cacheKey);
-        }
+        if (state.detailCacheMap.has(cacheKey)) return state.detailCacheMap.get(cacheKey);
         let detailResult = null;
-        if (taskItem.taskType === "PRODUCT") {
-            detailResult = await window.CampusShareApi.GetProductDetail(taskItem.taskId);
-        } else {
-            detailResult = await window.CampusShareApi.GetTeamRecruitmentDetail(taskItem.taskId);
-        }
+        if (taskItem.taskType === "PRODUCT") detailResult = await window.CampusShareApi.GetProductDetail(taskItem.taskId);
+        else if (taskItem.taskType === "MATERIAL") detailResult = await window.CampusShareApi.GetMaterialDetail(taskItem.taskId);
+        else detailResult = await window.CampusShareApi.GetTeamRecruitmentDetail(taskItem.taskId);
         state.detailCacheMap.set(cacheKey, detailResult);
         return detailResult;
     }
 
     function PatchDetailHeader(headerNode, taskItem, detailItem) {
-        const isProduct = taskItem.taskType === "PRODUCT";
-        const typeText = isProduct ? "商品发布" : "组队帖子";
-        const idText = isProduct ? `商品ID: ${taskItem.taskId}` : `帖子ID: ${taskItem.taskId}`;
+        const typeText = taskItem.taskType === "PRODUCT" ? "商品发布" : (taskItem.taskType === "MATERIAL" ? "资料发布" : "组队帖子");
+        const idText = taskItem.taskType === "PRODUCT"
+            ? `商品ID: ${taskItem.taskId}`
+            : (taskItem.taskType === "MATERIAL" ? `资料ID: ${taskItem.taskId}` : `帖子ID: ${taskItem.taskId}`);
         const createTimeText = FormatTime((detailItem && detailItem.createTime) || taskItem.createTime);
         headerNode.innerHTML = [
             "<div class=\"flex items-start justify-between gap-6\">",
             "<div>",
             `<div class="flex items-center gap-2 mb-2"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700">${typeText}</span><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-low text-slate-600">待审核</span></div>`,
             `<h2 class="text-2xl font-bold">${EscapeHtml(taskItem.title)}</h2>`,
-            `<p class="text-sm text-slate-500 mt-1">${EscapeHtml(idText)} · 发布者: ${EscapeHtml(taskItem.ownerText || "-")}</p>`,
+            `<p class="text-sm text-slate-500 mt-1">${EscapeHtml(idText)} · 发布者 ${EscapeHtml(taskItem.ownerText || "-")}</p>`,
             "</div>",
             "<div class=\"text-right\">",
             "<p class=\"text-xs uppercase tracking-widest text-slate-500 font-semibold\">提交时间</p>",
@@ -518,17 +451,14 @@
             bodyNode.innerHTML = BuildProductDetailHtml(taskItem, detailItem || {});
             return;
         }
+        if (taskItem.taskType === "MATERIAL") {
+            bodyNode.innerHTML = BuildMaterialDetailHtml(taskItem, detailItem || {});
+            return;
+        }
         bodyNode.innerHTML = BuildRecruitmentDetailHtml(taskItem, detailItem || {});
     }
 
     function BuildProductDetailHtml(taskItem, detailItem) {
-        const imageUrlList = BuildImageUrlList(detailItem.imageFileIds || taskItem.rawItem.imageFileIds);
-        const galleryHtml = imageUrlList.length
-            ? `<div class="grid grid-cols-3 gap-3">${imageUrlList.map(function BuildImage(url) {
-                return `<img class="w-full h-40 object-cover rounded-xl bg-surface-low ring-1 ring-outline/20" src="${EscapeHtml(url)}" alt="商品图片"/>`;
-            }).join("")}</div>`
-            : "<div class=\"rounded-xl bg-surface-low p-5 text-sm text-slate-500 ring-1 ring-outline/20\">暂无图片</div>";
-
         const summaryFieldMap = {
             productId: detailItem.productId,
             title: detailItem.title,
@@ -539,13 +469,9 @@
             sellerUserId: detailItem.sellerUserId,
             sellerDisplayName: detailItem.sellerDisplayName,
             productStatus: detailItem.productStatus,
-            onShelf: detailItem.onShelf,
-            stockCount: detailItem.stockCount,
             createTime: detailItem.createTime
         };
-
         return [
-            galleryHtml,
             BuildFieldGridSection("核心字段", summaryFieldMap),
             BuildTextSection("内容描述", detailItem.description || "暂无描述"),
             BuildObjectSection("完整字段（详情接口）", detailItem),
@@ -564,17 +490,34 @@
             recruitmentStatus: detailItem.recruitmentStatus,
             publisherUserId: detailItem.publisherUserId,
             publisherDisplayName: detailItem.publisherDisplayName,
-            deadline: detailItem.deadline,
-            closeTime: detailItem.closeTime,
-            applicationCount: detailItem.applicationCount,
-            createTime: detailItem.createTime,
-            canApply: detailItem.canApply,
-            hasApplied: detailItem.hasApplied
+            createTime: detailItem.createTime
         };
-
         return [
             BuildFieldGridSection("核心字段", summaryFieldMap),
             BuildTextSection("技能要求", detailItem.skillRequirement || "未填写"),
+            BuildObjectSection("完整字段（详情接口）", detailItem),
+            BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || {})
+        ].join("");
+    }
+
+    function BuildMaterialDetailHtml(taskItem, detailItem) {
+        const summaryFieldMap = {
+            materialId: detailItem.materialId,
+            courseName: detailItem.courseName,
+            uploaderUserId: detailItem.uploaderUserId,
+            uploaderDisplayName: detailItem.uploaderDisplayName,
+            materialStatus: detailItem.materialStatus,
+            fileType: detailItem.fileType,
+            fileSizeBytes: detailItem.fileSizeBytes,
+            downloadCostPoints: detailItem.downloadCostPoints,
+            downloadCount: detailItem.downloadCount,
+            createTime: detailItem.createTime
+        };
+        const tagText = Array.isArray(detailItem.tags) ? detailItem.tags.join(" / ") : "";
+        return [
+            BuildFieldGridSection("核心字段", summaryFieldMap),
+            BuildTextSection("资料简介", detailItem.description || "暂无资料简介"),
+            BuildTextSection("标签", tagText || "-"),
             BuildObjectSection("完整字段（详情接口）", detailItem),
             BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || {})
         ].join("");
@@ -641,42 +584,27 @@
             ShowError(messageBar, "请先选择审核任务");
             return;
         }
-
         const reviewRemark = String(refs.reviewNoteInput ? refs.reviewNoteInput.value || "" : "").trim();
         if (!approved && !reviewRemark) {
             ShowError(messageBar, "驳回时请填写审核意见");
             return;
         }
-
-        const confirmText = approved ? "确认通过该任务？" : "确认驳回该任务？";
-        if (!window.confirm(confirmText)) {
+        if (!window.confirm(approved ? "确认通过该任务？" : "确认驳回该任务？")) {
             return;
         }
-
         ToggleActionDisabled(refs, true);
         try {
             if (selectedTask.taskType === "PRODUCT") {
-                await window.CampusShareApi.ReviewProductByAdmin(
-                    selectedTask.taskId,
-                    approved,
-                    reviewRemark || (approved ? "内容审核通过" : "内容审核驳回")
-                );
+                await window.CampusShareApi.ReviewProductByAdmin(selectedTask.taskId, approved, reviewRemark || (approved ? "内容审核通过" : "内容审核驳回"));
+            } else if (selectedTask.taskType === "MATERIAL") {
+                await window.CampusShareApi.ReviewMaterial(selectedTask.taskId, approved, reviewRemark || (approved ? "内容审核通过" : "内容审核驳回"));
             } else {
-                await window.CampusShareApi.ReviewTeamRecruitmentByAdmin(
-                    selectedTask.taskId,
-                    approved,
-                    reviewRemark || (approved ? "内容审核通过" : "内容审核驳回")
-                );
+                await window.CampusShareApi.ReviewTeamRecruitmentByAdmin(selectedTask.taskId, approved, reviewRemark || (approved ? "内容审核通过" : "内容审核驳回"));
             }
-
             state.processedCount += 1;
             RemoveTaskAndSelectNext(state, selectedTask);
-            if (refs.reviewNoteInput) {
-                refs.reviewNoteInput.value = "";
-            }
-            if (refs.rejectTemplateSelect) {
-                refs.rejectTemplateSelect.value = "";
-            }
+            if (refs.reviewNoteInput) refs.reviewNoteInput.value = "";
+            if (refs.rejectTemplateSelect) refs.rejectTemplateSelect.value = "";
             ShowSuccess(messageBar, approved ? "审核已通过" : "审核已驳回");
             RenderAll(refs, state);
         } catch (error) {
@@ -689,15 +617,9 @@
     function RemoveTaskAndSelectNext(state, selectedTask) {
         const selectedKey = BuildTaskKey(selectedTask);
         const currentFilteredList = FilterTaskList(state);
-        const selectedIndex = currentFilteredList.findIndex(function FindItem(item) {
-            return BuildTaskKey(item) === selectedKey;
-        });
-
-        state.taskList = state.taskList.filter(function FilterItem(item) {
-            return BuildTaskKey(item) !== selectedKey;
-        });
+        const selectedIndex = currentFilteredList.findIndex(item => BuildTaskKey(item) === selectedKey);
+        state.taskList = state.taskList.filter(item => BuildTaskKey(item) !== selectedKey);
         state.detailCacheMap.delete(selectedKey);
-
         const nextFilteredList = FilterTaskList(state);
         if (!nextFilteredList.length) {
             state.selectedTaskKey = "";
@@ -709,30 +631,18 @@
 
     function SwitchSelectionByOffset(state, offset) {
         const list = state.filteredTaskList;
-        if (!Array.isArray(list) || !list.length || !state.selectedTaskKey) {
-            return;
-        }
-        const currentIndex = list.findIndex(function FindItem(item) {
-            return BuildTaskKey(item) === state.selectedTaskKey;
-        });
-        if (currentIndex < 0) {
-            return;
-        }
+        if (!Array.isArray(list) || !list.length || !state.selectedTaskKey) return;
+        const currentIndex = list.findIndex(item => BuildTaskKey(item) === state.selectedTaskKey);
+        if (currentIndex < 0) return;
         const targetIndex = currentIndex + offset;
-        if (targetIndex < 0 || targetIndex >= list.length) {
-            return;
-        }
+        if (targetIndex < 0 || targetIndex >= list.length) return;
         state.selectedTaskKey = BuildTaskKey(list[targetIndex]);
     }
 
     function GetSelectedTask(state, taskList) {
         const safeList = Array.isArray(taskList) ? taskList : [];
-        if (!state.selectedTaskKey) {
-            return null;
-        }
-        return safeList.find(function MatchTask(item) {
-            return BuildTaskKey(item) === state.selectedTaskKey;
-        }) || null;
+        if (!state.selectedTaskKey) return null;
+        return safeList.find(item => BuildTaskKey(item) === state.selectedTaskKey) || null;
     }
 
     function BuildTaskKey(taskItem) {
@@ -742,66 +652,31 @@
     function ToggleActionDisabled(refs, disabled) {
         [refs.prevButton, refs.nextButton, refs.approveButton, refs.rejectButton]
             .filter(Boolean)
-            .forEach(function PatchButton(buttonNode) {
-                buttonNode.disabled = !!disabled;
-            });
-    }
-
-    function BuildImageUrlList(fileIdList) {
-        const safeList = Array.isArray(fileIdList) ? fileIdList : [];
-        return safeList.map(function MapFileId(fileId) {
-            if (!window.CampusShareApi || !window.CampusShareApi.BuildPublicFileUrl) {
-                return "";
-            }
-            return window.CampusShareApi.BuildPublicFileUrl(fileId);
-        }).filter(Boolean);
+            .forEach(buttonNode => { buttonNode.disabled = !!disabled; });
     }
 
     function FormatValue(value) {
-        if (value === null || value === undefined) {
-            return "-";
-        }
-        if (Array.isArray(value)) {
-            if (!value.length) {
-                return "[]";
-            }
-            return value.map(function MapValue(item) {
-                return typeof item === "object" ? JSON.stringify(item) : String(item);
-            }).join(", ");
-        }
-        if (typeof value === "object") {
-            return JSON.stringify(value);
-        }
-        if (value === "") {
-            return "(空)";
-        }
+        if (value == null) return "-";
+        if (Array.isArray(value)) return value.length ? value.map(item => (typeof item === "object" ? JSON.stringify(item) : String(item))).join(", ") : "[]";
+        if (typeof value === "object") return JSON.stringify(value);
+        if (value === "") return "(空)";
         return String(value);
     }
 
     function FormatPrice(value) {
         const numberValue = Number(value);
-        if (Number.isNaN(numberValue)) {
-            return "0.00";
-        }
-        return numberValue.toFixed(2);
+        return Number.isNaN(numberValue) ? "0.00" : numberValue.toFixed(2);
     }
 
     function ResolveTimeValue(timeText) {
         const dateValue = new Date(timeText || "");
-        if (Number.isNaN(dateValue.getTime())) {
-            return 0;
-        }
-        return dateValue.getTime();
+        return Number.isNaN(dateValue.getTime()) ? 0 : dateValue.getTime();
     }
 
     function FormatTime(timeText) {
-        if (!timeText) {
-            return "-";
-        }
+        if (!timeText) return "-";
         const dateValue = new Date(timeText);
-        if (Number.isNaN(dateValue.getTime())) {
-            return String(timeText);
-        }
+        if (Number.isNaN(dateValue.getTime())) return String(timeText);
         return `${dateValue.getFullYear()}-${PadTime(dateValue.getMonth() + 1)}-${PadTime(dateValue.getDate())} ${PadTime(dateValue.getHours())}:${PadTime(dateValue.getMinutes())}`;
     }
 
@@ -811,16 +686,14 @@
 
     function SafeNumber(value) {
         const numberValue = Number(value);
-        if (Number.isNaN(numberValue)) {
-            return 0;
-        }
-        return numberValue;
+        return Number.isNaN(numberValue) ? 0 : numberValue;
     }
 
     function BuildMessageBar(pageMain) {
         const messageBar = document.createElement("div");
         messageBar.className = "hidden mx-8 mt-4 px-4 py-3 rounded-xl text-sm font-semibold";
-        pageMain.insertBefore(messageBar, pageMain.firstElementChild.nextElementSibling);
+        const anchorNode = pageMain.children.length > 1 ? pageMain.children[1] : null;
+        pageMain.insertBefore(messageBar, anchorNode);
         return messageBar;
     }
 
@@ -833,22 +706,15 @@
     }
 
     function ShowMessage(messageBar, messageText, messageType) {
-        if (!messageBar) {
-            return;
-        }
+        if (!messageBar) return;
         messageBar.classList.remove("hidden", "bg-red-50", "text-red-700", "bg-green-50", "text-green-700");
-        if (messageType === "error") {
-            messageBar.classList.add("bg-red-50", "text-red-700");
-        } else {
-            messageBar.classList.add("bg-green-50", "text-green-700");
-        }
+        if (messageType === "error") messageBar.classList.add("bg-red-50", "text-red-700");
+        else messageBar.classList.add("bg-green-50", "text-green-700");
         messageBar.textContent = messageText || "";
     }
 
     function HideMessage(messageBar) {
-        if (!messageBar) {
-            return;
-        }
+        if (!messageBar) return;
         messageBar.classList.add("hidden");
         messageBar.textContent = "";
     }

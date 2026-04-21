@@ -344,7 +344,7 @@
             const result = await window.CampusShareApi.UploadMaterial(payload);
             return {
                 successText: `上传成功，资料ID：${result.materialId}`,
-                redirectPath: "/pages/material_listing.html"
+                redirectPath: "/pages/market_listing.html?view=MATERIAL"
             };
         }
 

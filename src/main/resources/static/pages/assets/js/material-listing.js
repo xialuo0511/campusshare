@@ -99,7 +99,7 @@
                 if (!window.CampusShareApi.GetAuthToken()) {
                     ShowError(messageBar, "请先登录后再下载资料");
                     if (window.CampusShareApi.RedirectToAuthPage) {
-                        window.CampusShareApi.RedirectToAuthPage("/pages/material_listing.html");
+                        window.CampusShareApi.RedirectToAuthPage("/pages/market_listing.html?view=MATERIAL");
                     }
                     return;
                 }

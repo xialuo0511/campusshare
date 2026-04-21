@@ -19,7 +19,7 @@
         OVERVIEW: "/pages/market_overview.html",
         LISTING: "/pages/market_listing.html",
         FORUM_SUBVIEW: "/pages/market_listing.html?view=FORUM",
-        MATERIAL_LISTING: "/pages/material_listing.html",
+        MATERIAL_LISTING: "/pages/market_listing.html?view=MATERIAL",
         DETAIL: "/pages/market_item_detail.html",
         ORDER: "/pages/order_center.html",
         ORDER_DETAIL: "/pages/order_detail.html",

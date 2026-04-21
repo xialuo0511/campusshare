@@ -1,13 +1,10 @@
 /**
- * 内容审核工作台页面逻辑（商品审核 + 帖子审核）
+ * Admin content review page logic:
+ * - pending product review
+ * - pending team recruitment review
  */
 (function InitAdminContentReviewPage() {
     const FILTER_VALUE_LIST = ["ALL", "PRODUCT", "TEAM_RECRUITMENT", "HIGH_RISK", "RECENT"];
-    const DECISION_OPTION_LIST = [
-        { value: "", text: "请选择审核结论" },
-        { value: "APPROVE", text: "通过并发布" },
-        { value: "REJECT", text: "驳回并退回修改" }
-    ];
     const REJECT_TEMPLATE_LIST = [
         { value: "", text: "请选择意见模板" },
         { value: "内容信息不完整，请补充关键信息后重新提交。", text: "信息不完整" },
@@ -15,13 +12,14 @@
         { value: "描述与分类不匹配，请修正后重新提交。", text: "分类不匹配" },
         { value: "请补充更清晰的说明后重新提交。", text: "说明不清晰" }
     ];
+    const RISK_KEYWORD_LIST = ["代装", "预装", "私聊", "vx", "微信", "导流"];
+    const DAY_MS = 24 * 60 * 60 * 1000;
 
     async function BindPage() {
         if (!window.CampusShareApi) {
             return;
         }
-        const hasToken = !!window.CampusShareApi.GetAuthToken();
-        if (!hasToken) {
+        if (!window.CampusShareApi.GetAuthToken()) {
             window.CampusShareApi.RedirectToAuthPage("/pages/admin_content_review.html");
             return;
         }
@@ -37,47 +35,44 @@
             return;
         }
 
-        const pageRefs = CollectPageRefs(pageMain);
-        if (!pageRefs.queueListNode || !pageRefs.detailHeaderNode || !pageRefs.detailBodyNode) {
+        const refs = CollectPageRefs(pageMain);
+        if (!refs.queueListNode || !refs.detailHeaderNode || !refs.detailBodyNode) {
             return;
         }
 
         const messageBar = BuildMessageBar(pageMain);
-        const reviewState = {
+        const state = {
             taskList: [],
             filteredTaskList: [],
             selectedTaskKey: "",
             filterType: "ALL",
             keyword: "",
             processedCount: 0,
-            detailCacheMap: new Map()
+            detailCacheMap: new Map(),
+            detailRenderToken: 0
         };
 
-        PrepareDecisionControls(pageRefs);
-        BindFilterControls(pageRefs, reviewState);
-        BindKeywordControls(pageRefs, reviewState);
-        BindQueueSelection(pageRefs, reviewState);
-        BindActionButtons(pageRefs, reviewState, messageBar);
+        PrepareRejectTemplateSelect(refs);
+        BindFilterControls(refs, state);
+        BindSearchControls(refs, state);
+        BindQueueClick(refs, state);
+        BindActionButtons(refs, state, messageBar);
 
-        await ReloadTaskQueue(pageRefs, reviewState, messageBar);
-        ApplyInitialFocusFromQuery(pageRefs, reviewState);
-        RenderAll(pageRefs, reviewState);
+        await ReloadTaskQueue(refs, state, messageBar);
+        ApplyInitialFocusFromQuery(refs, state);
+        RenderAll(refs, state);
     }
 
     function CollectPageRefs(pageMain) {
-        const filterButtonList = Array.from(
-            pageMain.querySelectorAll("[data-review-filter-group] button")
-        );
         return {
             statCardList: Array.from(pageMain.querySelectorAll("[data-review-stat-grid] article")),
-            filterButtonList,
+            filterButtonList: Array.from(pageMain.querySelectorAll("[data-review-filter-group] button")),
             queueSearchInput: pageMain.querySelector("[data-review-queue-search]"),
             globalSearchInput: pageMain.querySelector("[data-review-global-search]"),
             queueListNode: pageMain.querySelector("[data-review-queue-list]"),
             detailHeaderNode: pageMain.querySelector("[data-review-detail-header]"),
             detailBodyNode: pageMain.querySelector("[data-review-detail-body]"),
             currentStatusNode: pageMain.querySelector("[data-review-current-status]"),
-            decisionSelect: document.getElementById("review-decision"),
             rejectTemplateSelect: document.getElementById("reject-template"),
             reviewNoteInput: document.getElementById("review-note"),
             prevButton: pageMain.querySelector("[data-review-prev]"),
@@ -87,71 +82,69 @@
         };
     }
 
-    function PrepareDecisionControls(pageRefs) {
-        if (pageRefs.decisionSelect) {
-            pageRefs.decisionSelect.innerHTML = DECISION_OPTION_LIST.map(function BuildOption(optionItem) {
-                return `<option value="${EscapeHtml(optionItem.value)}">${EscapeHtml(optionItem.text)}</option>`;
-            }).join("");
-            if (window.CampusShareApi.EnhanceSelectElements) {
-                window.CampusShareApi.EnhanceSelectElements(pageRefs.decisionSelect.parentElement || pageRefs.decisionSelect);
-            }
+    function PrepareRejectTemplateSelect(refs) {
+        if (!refs.rejectTemplateSelect) {
+            return;
         }
-        if (pageRefs.rejectTemplateSelect) {
-            pageRefs.rejectTemplateSelect.innerHTML = REJECT_TEMPLATE_LIST.map(function BuildOption(optionItem) {
-                return `<option value="${EscapeHtml(optionItem.value)}">${EscapeHtml(optionItem.text)}</option>`;
-            }).join("");
-            pageRefs.rejectTemplateSelect.addEventListener("change", function HandleTemplateChange() {
-                if (!pageRefs.reviewNoteInput) {
-                    return;
-                }
-                const templateText = pageRefs.rejectTemplateSelect.value || "";
-                if (!templateText) {
-                    return;
-                }
-                const currentText = String(pageRefs.reviewNoteInput.value || "").trim();
-                if (!currentText || REJECT_TEMPLATE_LIST.some(function MatchTemplate(item) {
-                    return item.value && item.value === currentText;
-                })) {
-                    pageRefs.reviewNoteInput.value = templateText;
-                }
-            });
-            if (window.CampusShareApi.EnhanceSelectElements) {
-                window.CampusShareApi.EnhanceSelectElements(pageRefs.rejectTemplateSelect.parentElement || pageRefs.rejectTemplateSelect);
+        refs.rejectTemplateSelect.innerHTML = REJECT_TEMPLATE_LIST.map(function BuildOption(item) {
+            return `<option value="${EscapeHtml(item.value)}">${EscapeHtml(item.text)}</option>`;
+        }).join("");
+        refs.rejectTemplateSelect.addEventListener("change", function HandleTemplateChange() {
+            if (!refs.reviewNoteInput) {
+                return;
             }
+            const nextValue = String(refs.rejectTemplateSelect.value || "");
+            if (!nextValue) {
+                return;
+            }
+            const currentValue = String(refs.reviewNoteInput.value || "").trim();
+            if (!currentValue || IsTemplateValue(currentValue)) {
+                refs.reviewNoteInput.value = nextValue;
+            }
+        });
+        if (window.CampusShareApi.EnhanceSelectElements) {
+            window.CampusShareApi.EnhanceSelectElements(refs.rejectTemplateSelect.parentElement || refs.rejectTemplateSelect);
         }
     }
 
-    function BindFilterControls(pageRefs, reviewState) {
-        pageRefs.filterButtonList.forEach(function BindFilterButton(buttonNode, index) {
+    function IsTemplateValue(text) {
+        return REJECT_TEMPLATE_LIST.some(function MatchTemplate(item) {
+            return item.value && item.value === text;
+        });
+    }
+
+    function BindFilterControls(refs, state) {
+        refs.filterButtonList.forEach(function BindFilter(buttonNode, index) {
             buttonNode.addEventListener("click", function HandleFilterClick() {
-                reviewState.filterType = FILTER_VALUE_LIST[index] || "ALL";
-                RenderAll(pageRefs, reviewState);
+                state.filterType = FILTER_VALUE_LIST[index] || "ALL";
+                RenderAll(refs, state);
             });
         });
     }
 
-    function BindKeywordControls(pageRefs, reviewState) {
-        function HandleKeywordInput(sourceInput, syncInput) {
+    function BindSearchControls(refs, state) {
+        function BindInput(sourceInput, mirrorInput) {
             if (!sourceInput) {
                 return;
             }
             sourceInput.addEventListener("input", function HandleInput() {
-                reviewState.keyword = String(sourceInput.value || "").trim().toLowerCase();
-                if (syncInput && syncInput.value !== sourceInput.value) {
-                    syncInput.value = sourceInput.value;
+                const nextKeyword = String(sourceInput.value || "").trim().toLowerCase();
+                state.keyword = nextKeyword;
+                if (mirrorInput && mirrorInput.value !== sourceInput.value) {
+                    mirrorInput.value = sourceInput.value;
                 }
-                RenderAll(pageRefs, reviewState);
+                RenderAll(refs, state);
             });
         }
-        HandleKeywordInput(pageRefs.queueSearchInput, pageRefs.globalSearchInput);
-        HandleKeywordInput(pageRefs.globalSearchInput, pageRefs.queueSearchInput);
+        BindInput(refs.queueSearchInput, refs.globalSearchInput);
+        BindInput(refs.globalSearchInput, refs.queueSearchInput);
     }
 
-    function BindQueueSelection(pageRefs, reviewState) {
-        if (!pageRefs.queueListNode) {
+    function BindQueueClick(refs, state) {
+        if (!refs.queueListNode) {
             return;
         }
-        pageRefs.queueListNode.addEventListener("click", function HandleQueueClick(event) {
+        refs.queueListNode.addEventListener("click", function HandleQueueClick(event) {
             const cardNode = event.target.closest("[data-task-key]");
             if (!cardNode) {
                 return;
@@ -160,42 +153,43 @@
             if (!taskKey) {
                 return;
             }
-            reviewState.selectedTaskKey = taskKey;
-            RenderAll(pageRefs, reviewState);
+            state.selectedTaskKey = taskKey;
+            RenderAll(refs, state);
         });
     }
 
-    function BindActionButtons(pageRefs, reviewState, messageBar) {
-        if (pageRefs.prevButton) {
-            pageRefs.prevButton.addEventListener("click", function HandlePrevClick() {
-                SwitchSelectionByOffset(reviewState, -1);
-                RenderAll(pageRefs, reviewState);
+    function BindActionButtons(refs, state, messageBar) {
+        if (refs.prevButton) {
+            refs.prevButton.addEventListener("click", function HandlePrevClick() {
+                SwitchSelectionByOffset(state, -1);
+                RenderAll(refs, state);
             });
         }
-        if (pageRefs.nextButton) {
-            pageRefs.nextButton.addEventListener("click", function HandleNextClick() {
-                SwitchSelectionByOffset(reviewState, 1);
-                RenderAll(pageRefs, reviewState);
+        if (refs.nextButton) {
+            refs.nextButton.addEventListener("click", function HandleNextClick() {
+                SwitchSelectionByOffset(state, 1);
+                RenderAll(refs, state);
             });
         }
-        if (pageRefs.approveButton) {
-            pageRefs.approveButton.addEventListener("click", function HandleApproveClick() {
-                SubmitDecision(pageRefs, reviewState, messageBar, true);
+        if (refs.approveButton) {
+            refs.approveButton.addEventListener("click", function HandleApproveClick() {
+                SubmitDecision(refs, state, messageBar, true);
             });
         }
-        if (pageRefs.rejectButton) {
-            pageRefs.rejectButton.addEventListener("click", function HandleRejectClick() {
-                SubmitDecision(pageRefs, reviewState, messageBar, false);
+        if (refs.rejectButton) {
+            refs.rejectButton.addEventListener("click", function HandleRejectClick() {
+                SubmitDecision(refs, state, messageBar, false);
             });
         }
     }
 
-    async function ReloadTaskQueue(pageRefs, reviewState, messageBar) {
+    async function ReloadTaskQueue(refs, state, messageBar) {
         try {
             const resultList = await Promise.all([
-                window.CampusShareApi.ListPendingProductsByAdmin(1, 200),
-                window.CampusShareApi.ListPendingTeamRecruitmentsByAdmin(1, 200)
+                window.CampusShareApi.ListPendingProductsByAdmin(1, 300),
+                window.CampusShareApi.ListPendingTeamRecruitmentsByAdmin(1, 300)
             ]);
+
             const pendingProductList = resultList[0] && Array.isArray(resultList[0].productList)
                 ? resultList[0].productList
                 : [];
@@ -203,49 +197,49 @@
                 ? resultList[1].recruitmentList
                 : [];
 
-            reviewState.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList);
-            if (!reviewState.selectedTaskKey) {
-                reviewState.selectedTaskKey = reviewState.taskList.length
-                    ? BuildTaskKey(reviewState.taskList[0])
-                    : "";
+            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList);
+            if (!state.selectedTaskKey && state.taskList.length) {
+                state.selectedTaskKey = BuildTaskKey(state.taskList[0]);
             }
             HideMessage(messageBar);
         } catch (error) {
             ShowError(messageBar, error instanceof Error ? error.message : "加载审核任务失败");
-            reviewState.taskList = [];
-            reviewState.selectedTaskKey = "";
+            state.taskList = [];
+            state.selectedTaskKey = "";
         }
     }
 
-    function BuildTaskList(pendingProductList, pendingRecruitmentList) {
-        const productTaskList = pendingProductList.map(function MapProduct(item) {
+    function BuildTaskList(productList, recruitmentList) {
+        const productTaskList = (Array.isArray(productList) ? productList : []).map(function MapProduct(item) {
+            const productId = SafeNumber(item.productId);
             return {
                 taskType: "PRODUCT",
-                taskId: SafeNumber(item.productId),
-                title: item.title || `商品 #${SafeNumber(item.productId)}`,
+                taskId: productId,
+                title: item.title || `商品 #${productId}`,
                 ownerText: item.sellerDisplayName || `卖家ID ${SafeNumber(item.sellerUserId)}`,
                 metaText: `${item.category || "-"} · ${item.conditionLevel || "-"} · ￥${FormatPrice(item.price)}`,
                 createTime: item.createTime,
                 rawItem: item
             };
         });
-        const recruitmentTaskList = pendingRecruitmentList.map(function MapRecruitment(item) {
+        const recruitmentTaskList = (Array.isArray(recruitmentList) ? recruitmentList : []).map(function MapRecruitment(item) {
+            const recruitmentId = SafeNumber(item.recruitmentId);
             return {
                 taskType: "TEAM_RECRUITMENT",
-                taskId: SafeNumber(item.recruitmentId),
-                title: item.eventName || `招募 #${SafeNumber(item.recruitmentId)}`,
+                taskId: recruitmentId,
+                title: item.eventName || `帖子 #${recruitmentId}`,
                 ownerText: item.publisherDisplayName || `发布者ID ${SafeNumber(item.publisherUserId)}`,
                 metaText: `${item.direction || "-"} · ${SafeNumber(item.currentMemberCount)}/${SafeNumber(item.memberLimit)}`,
                 createTime: item.createTime,
                 rawItem: item
             };
         });
-        return productTaskList.concat(recruitmentTaskList).sort(function SortTask(leftItem, rightItem) {
+        return productTaskList.concat(recruitmentTaskList).sort(function SortByTimeDesc(leftItem, rightItem) {
             return ResolveTimeValue(rightItem.createTime) - ResolveTimeValue(leftItem.createTime);
         });
     }
 
-    function ApplyInitialFocusFromQuery(pageRefs, reviewState) {
+    function ApplyInitialFocusFromQuery(refs, state) {
         const searchParams = new URLSearchParams(window.location.search);
         let taskType = String(searchParams.get("taskType") || "").toUpperCase();
         let taskId = SafeNumber(searchParams.get("taskId"));
@@ -257,86 +251,88 @@
                 taskId = focusRecruitmentId;
             }
         }
-        if (!taskType && SafeNumber(searchParams.get("productId")) > 0) {
-            taskType = "PRODUCT";
-            taskId = SafeNumber(searchParams.get("productId"));
+        if (!taskType) {
+            const productId = SafeNumber(searchParams.get("productId"));
+            if (productId > 0) {
+                taskType = "PRODUCT";
+                taskId = productId;
+            }
         }
 
         if (taskType && taskId > 0) {
-            const targetTask = reviewState.taskList.find(function MatchTask(item) {
+            const focusedTask = state.taskList.find(function MatchTask(item) {
                 return item.taskType === taskType && item.taskId === taskId;
             });
-            if (targetTask) {
-                reviewState.selectedTaskKey = BuildTaskKey(targetTask);
+            if (focusedTask) {
+                state.selectedTaskKey = BuildTaskKey(focusedTask);
             }
         }
 
         const intendedDecision = String(searchParams.get("intendedDecision") || "").toUpperCase();
-        if (pageRefs.decisionSelect && (intendedDecision === "APPROVE" || intendedDecision === "REJECT")) {
-            pageRefs.decisionSelect.value = intendedDecision;
+        if (intendedDecision === "REJECT" && refs.reviewNoteInput && !refs.reviewNoteInput.value) {
+            refs.reviewNoteInput.value = "请补充审核意见后执行驳回。";
         }
     }
 
-    function RenderAll(pageRefs, reviewState) {
-        const filteredTaskList = FilterTaskList(reviewState);
-        reviewState.filteredTaskList = filteredTaskList;
+    function RenderAll(refs, state) {
+        const filteredTaskList = FilterTaskList(state);
+        state.filteredTaskList = filteredTaskList;
 
         if (!filteredTaskList.length) {
-            reviewState.selectedTaskKey = "";
+            state.selectedTaskKey = "";
         } else if (!filteredTaskList.some(function HasSelected(item) {
-            return BuildTaskKey(item) === reviewState.selectedTaskKey;
+            return BuildTaskKey(item) === state.selectedTaskKey;
         })) {
-            reviewState.selectedTaskKey = BuildTaskKey(filteredTaskList[0]);
+            state.selectedTaskKey = BuildTaskKey(filteredTaskList[0]);
         }
 
-        RenderFilterButtons(pageRefs, reviewState);
-        RenderStats(pageRefs, reviewState, filteredTaskList);
-        RenderQueue(pageRefs, reviewState, filteredTaskList);
-        RenderDecisionPanel(pageRefs, reviewState, filteredTaskList);
-        RenderTaskDetail(pageRefs, reviewState);
+        RenderFilterButtons(refs, state);
+        RenderStats(refs, state, filteredTaskList);
+        RenderQueue(refs, state, filteredTaskList);
+        RenderDecisionPanel(refs, state, filteredTaskList);
+        RenderTaskDetail(refs, state);
     }
 
-    function FilterTaskList(reviewState) {
-        return reviewState.taskList.filter(function FilterTask(item) {
-            if (reviewState.filterType === "PRODUCT" && item.taskType !== "PRODUCT") {
+    function FilterTaskList(state) {
+        return state.taskList.filter(function FilterTask(taskItem) {
+            if (state.filterType === "PRODUCT" && taskItem.taskType !== "PRODUCT") {
                 return false;
             }
-            if (reviewState.filterType === "TEAM_RECRUITMENT" && item.taskType !== "TEAM_RECRUITMENT") {
+            if (state.filterType === "TEAM_RECRUITMENT" && taskItem.taskType !== "TEAM_RECRUITMENT") {
                 return false;
             }
-            if (reviewState.filterType === "HIGH_RISK" && !IsHighRiskTask(item)) {
+            if (state.filterType === "HIGH_RISK" && !IsHighRiskTask(taskItem)) {
                 return false;
             }
-            if (reviewState.filterType === "RECENT") {
-                const dayValue = 24 * 60 * 60 * 1000;
-                if ((Date.now() - ResolveTimeValue(item.createTime)) > dayValue) {
+            if (state.filterType === "RECENT") {
+                if ((Date.now() - ResolveTimeValue(taskItem.createTime)) > DAY_MS) {
                     return false;
                 }
             }
-            if (!reviewState.keyword) {
+            if (!state.keyword) {
                 return true;
             }
             const searchText = [
-                item.taskType,
-                item.taskId,
-                item.title,
-                item.ownerText,
-                item.metaText
+                taskItem.taskType,
+                taskItem.taskId,
+                taskItem.title,
+                taskItem.ownerText,
+                taskItem.metaText
             ].join(" ").toLowerCase();
-            return searchText.includes(reviewState.keyword);
+            return searchText.includes(state.keyword);
         });
     }
 
     function IsHighRiskTask(taskItem) {
-        const contentText = `${taskItem.title || ""} ${taskItem.metaText || ""}`.toLowerCase();
-        return ["代装", "预装", "vx", "微信", "私聊", "导流"].some(function MatchWord(word) {
-            return contentText.includes(word);
+        const fullText = `${taskItem.title || ""} ${taskItem.metaText || ""}`.toLowerCase();
+        return RISK_KEYWORD_LIST.some(function MatchKeyword(word) {
+            return fullText.includes(word);
         });
     }
 
-    function RenderFilterButtons(pageRefs, reviewState) {
-        pageRefs.filterButtonList.forEach(function RenderButton(buttonNode, index) {
-            const isActive = (FILTER_VALUE_LIST[index] || "ALL") === reviewState.filterType;
+    function RenderFilterButtons(refs, state) {
+        refs.filterButtonList.forEach(function PatchButton(buttonNode, index) {
+            const isActive = (FILTER_VALUE_LIST[index] || "ALL") === state.filterType;
             buttonNode.classList.toggle("bg-primary", isActive);
             buttonNode.classList.toggle("text-white", isActive);
             buttonNode.classList.toggle("bg-surface-low", !isActive);
@@ -344,31 +340,46 @@
         });
     }
 
-    function RenderStats(pageRefs, reviewState, filteredTaskList) {
-        const statCardList = pageRefs.statCardList;
-        if (statCardList.length < 4) {
+    function RenderStats(refs, state, filteredTaskList) {
+        if (!refs.statCardList || refs.statCardList.length < 4) {
             return;
         }
         const pendingCount = filteredTaskList.length;
-        const productCount = reviewState.taskList.filter(function MatchTask(item) {
+        const productCount = state.taskList.filter(function MatchTask(item) {
             return item.taskType === "PRODUCT";
         }).length;
-        const recruitmentCount = reviewState.taskList.filter(function MatchTask(item) {
+        const recruitmentCount = state.taskList.filter(function MatchTask(item) {
             return item.taskType === "TEAM_RECRUITMENT";
         }).length;
-        const waitHours = pendingCount
-            ? (filteredTaskList.reduce(function SumHours(total, item) {
+        const avgWaitHours = pendingCount
+            ? filteredTaskList.reduce(function SumWaitHours(total, item) {
                 return total + (Date.now() - ResolveTimeValue(item.createTime));
-            }, 0) / pendingCount / 1000 / 60 / 60)
+            }, 0) / pendingCount / 1000 / 60 / 60
             : 0;
 
-        PatchStatCardValue(statCardList[0], String(pendingCount), `当前筛选: ${reviewState.filterType}`);
-        PatchStatCardValue(statCardList[1], String(reviewState.processedCount), "当前会话累计");
-        PatchStatCardValue(statCardList[2], `${waitHours.toFixed(1)}h`, "待审任务平均等待");
-        PatchStatCardValue(statCardList[3], `商品 ${productCount} / 帖子 ${recruitmentCount}`, "全量队列");
+        PatchStatCard(refs.statCardList[0], String(pendingCount), `筛选: ${MapFilterText(state.filterType)}`);
+        PatchStatCard(refs.statCardList[1], String(state.processedCount), "当前会话累计");
+        PatchStatCard(refs.statCardList[2], `${avgWaitHours.toFixed(1)}h`, "按当前队列估算");
+        PatchStatCard(refs.statCardList[3], `商品 ${productCount} / 帖子 ${recruitmentCount}`, "全量待审");
     }
 
-    function PatchStatCardValue(cardNode, valueText, tipText) {
+    function MapFilterText(filterType) {
+        if (filterType === "PRODUCT") {
+            return "商品";
+        }
+        if (filterType === "TEAM_RECRUITMENT") {
+            return "帖子";
+        }
+        if (filterType === "HIGH_RISK") {
+            return "高风险";
+        }
+        if (filterType === "RECENT") {
+            return "最新";
+        }
+        return "全部";
+    }
+
+    function PatchStatCard(cardNode, valueText, tipText) {
         if (!cardNode) {
             return;
         }
@@ -382,88 +393,95 @@
         }
     }
 
-    function RenderQueue(pageRefs, reviewState, filteredTaskList) {
-        if (!pageRefs.queueListNode) {
+    function RenderQueue(refs, state, filteredTaskList) {
+        if (!refs.queueListNode) {
             return;
         }
         if (!filteredTaskList.length) {
-            pageRefs.queueListNode.innerHTML = "<div class=\"p-4 rounded-xl bg-surface-low text-sm text-slate-500\">暂无待审核任务</div>";
+            refs.queueListNode.innerHTML = "<div class=\"p-4 rounded-xl bg-surface-low text-sm text-slate-500\">暂无待审核任务</div>";
             return;
         }
-        pageRefs.queueListNode.innerHTML = filteredTaskList.map(function BuildCard(taskItem) {
+
+        refs.queueListNode.innerHTML = filteredTaskList.map(function BuildTaskCard(taskItem) {
             const taskKey = BuildTaskKey(taskItem);
-            const isSelected = reviewState.selectedTaskKey === taskKey;
-            const iconName = taskItem.taskType === "PRODUCT" ? "inventory_2" : "forum";
+            const isSelected = state.selectedTaskKey === taskKey;
             const tagClass = taskItem.taskType === "PRODUCT"
                 ? "bg-blue-50 text-blue-700"
                 : "bg-indigo-50 text-indigo-700";
+            const iconName = taskItem.taskType === "PRODUCT" ? "inventory_2" : "forum";
+            const riskText = IsHighRiskTask(taskItem)
+                ? "<span class=\"ml-2 px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-[10px] font-bold\">高风险</span>"
+                : "";
             return [
                 `<button type="button" data-task-key="${EscapeHtml(taskKey)}" class="w-full text-left rounded-xl p-4 border transition-colors ${isSelected ? "border-primary bg-blue-50/50" : "border-outline/20 bg-white hover:border-primary/40"}">`,
                 "<div class=\"flex items-start justify-between gap-3\">",
                 "<div class=\"flex items-start gap-2\">",
                 `<span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-low text-slate-700"><span class="material-symbols-outlined text-base">${iconName}</span></span>`,
                 "<div>",
-                `<p class="text-sm font-bold text-slate-800 leading-5">${EscapeHtml(taskItem.title)}</p>`,
+                `<p class="text-sm font-bold text-slate-800 leading-5">${EscapeHtml(taskItem.title)}${riskText}</p>`,
                 `<p class="text-xs text-slate-500 mt-1">${EscapeHtml(taskItem.ownerText)}</p>`,
                 `<p class="text-xs text-slate-500">${EscapeHtml(taskItem.metaText)}</p>`,
-                "</div></div>",
+                "</div>",
+                "</div>",
                 `<span class="px-2 py-1 rounded-full text-[10px] font-bold ${tagClass}">${taskItem.taskType === "PRODUCT" ? "商品" : "帖子"}</span>`,
                 "</div>",
-                `<p class="text-xs text-slate-400 mt-3">提交时间：${EscapeHtml(FormatTime(taskItem.createTime))}</p>`,
+                `<p class="text-xs text-slate-400 mt-3">提交: ${EscapeHtml(FormatTime(taskItem.createTime))}</p>`,
                 "</button>"
             ].join("");
         }).join("");
     }
 
-    function RenderDecisionPanel(pageRefs, reviewState, filteredTaskList) {
-        const selectedTask = GetSelectedTask(reviewState, filteredTaskList);
+    function RenderDecisionPanel(refs, state, filteredTaskList) {
+        const selectedTask = GetSelectedTask(state, filteredTaskList);
         const hasTask = !!selectedTask;
-        if (pageRefs.prevButton) {
-            pageRefs.prevButton.disabled = !hasTask;
+        if (refs.prevButton) {
+            refs.prevButton.disabled = !hasTask;
         }
-        if (pageRefs.nextButton) {
-            pageRefs.nextButton.disabled = !hasTask;
+        if (refs.nextButton) {
+            refs.nextButton.disabled = !hasTask;
         }
-        if (pageRefs.approveButton) {
-            pageRefs.approveButton.disabled = !hasTask;
+        if (refs.approveButton) {
+            refs.approveButton.disabled = !hasTask;
         }
-        if (pageRefs.rejectButton) {
-            pageRefs.rejectButton.disabled = !hasTask;
+        if (refs.rejectButton) {
+            refs.rejectButton.disabled = !hasTask;
         }
-        if (pageRefs.currentStatusNode) {
-            pageRefs.currentStatusNode.textContent = hasTask ? "待审核" : "无任务";
+        if (refs.currentStatusNode) {
+            refs.currentStatusNode.textContent = hasTask ? "待审核" : "无任务";
         }
     }
 
-    async function RenderTaskDetail(pageRefs, reviewState) {
-        const selectedTask = GetSelectedTask(reviewState, reviewState.filteredTaskList);
+    async function RenderTaskDetail(refs, state) {
+        const selectedTask = GetSelectedTask(state, state.filteredTaskList);
         if (!selectedTask) {
-            pageRefs.detailHeaderNode.innerHTML = "<h2 class=\"text-xl font-bold\">暂无任务</h2><p class=\"text-sm text-slate-500 mt-2\">请调整筛选条件。</p>";
-            pageRefs.detailBodyNode.innerHTML = "<article class=\"rounded-xl bg-surface-low p-5 text-sm text-slate-600\">当前没有可展示的审核详情。</article>";
+            refs.detailHeaderNode.innerHTML = "<h2 class=\"text-xl font-bold\">暂无任务</h2><p class=\"text-sm text-slate-500 mt-2\">请调整筛选条件。</p>";
+            refs.detailBodyNode.innerHTML = "<article class=\"rounded-xl bg-surface-low p-5 text-sm text-slate-600\">当前没有可展示的审核详情。</article>";
             return;
         }
-        const taskKey = BuildTaskKey(selectedTask);
+
+        const currentRenderToken = ++state.detailRenderToken;
+        refs.detailBodyNode.innerHTML = "<article class=\"rounded-xl bg-surface-low p-5 text-sm text-slate-600\">正在加载详情...</article>";
 
         try {
-            const detailResult = await LoadTaskDetail(reviewState, selectedTask);
-            if (reviewState.selectedTaskKey !== taskKey) {
+            const detailResult = await LoadTaskDetail(state, selectedTask);
+            if (currentRenderToken !== state.detailRenderToken || state.selectedTaskKey !== BuildTaskKey(selectedTask)) {
                 return;
             }
-            PatchDetailHeader(pageRefs.detailHeaderNode, selectedTask, detailResult);
-            PatchDetailBody(pageRefs.detailBodyNode, selectedTask, detailResult);
+            PatchDetailHeader(refs.detailHeaderNode, selectedTask, detailResult);
+            PatchDetailBody(refs.detailBodyNode, selectedTask, detailResult);
         } catch (error) {
-            if (reviewState.selectedTaskKey !== taskKey) {
+            if (currentRenderToken !== state.detailRenderToken) {
                 return;
             }
-            PatchDetailHeader(pageRefs.detailHeaderNode, selectedTask, null);
-            pageRefs.detailBodyNode.innerHTML = `<article class="rounded-xl bg-red-50 text-red-700 p-5 text-sm">加载详情失败：${EscapeHtml(error instanceof Error ? error.message : "未知错误")}</article>`;
+            PatchDetailHeader(refs.detailHeaderNode, selectedTask, null);
+            refs.detailBodyNode.innerHTML = `<article class="rounded-xl bg-red-50 text-red-700 p-5 text-sm">加载详情失败：${EscapeHtml(error instanceof Error ? error.message : "未知错误")}</article>`;
         }
     }
 
-    async function LoadTaskDetail(reviewState, taskItem) {
+    async function LoadTaskDetail(state, taskItem) {
         const cacheKey = BuildTaskKey(taskItem);
-        if (reviewState.detailCacheMap.has(cacheKey)) {
-            return reviewState.detailCacheMap.get(cacheKey);
+        if (state.detailCacheMap.has(cacheKey)) {
+            return state.detailCacheMap.get(cacheKey);
         }
         let detailResult = null;
         if (taskItem.taskType === "PRODUCT") {
@@ -471,97 +489,160 @@
         } else {
             detailResult = await window.CampusShareApi.GetTeamRecruitmentDetail(taskItem.taskId);
         }
-        reviewState.detailCacheMap.set(cacheKey, detailResult);
+        state.detailCacheMap.set(cacheKey, detailResult);
         return detailResult;
     }
 
-    function PatchDetailHeader(headerNode, taskItem, detailResult) {
-        const typeTag = taskItem.taskType === "PRODUCT" ? "商品发布" : "组队帖子";
-        const ownerText = taskItem.ownerText || "-";
-        const idText = `ID: ${taskItem.taskId}`;
-        const timeText = FormatTime((detailResult && detailResult.createTime) || taskItem.createTime);
+    function PatchDetailHeader(headerNode, taskItem, detailItem) {
+        const isProduct = taskItem.taskType === "PRODUCT";
+        const typeText = isProduct ? "商品发布" : "组队帖子";
+        const idText = isProduct ? `商品ID: ${taskItem.taskId}` : `帖子ID: ${taskItem.taskId}`;
+        const createTimeText = FormatTime((detailItem && detailItem.createTime) || taskItem.createTime);
         headerNode.innerHTML = [
             "<div class=\"flex items-start justify-between gap-6\">",
             "<div>",
-            `<div class="flex items-center gap-2 mb-2"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700">${EscapeHtml(typeTag)}</span><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-low text-slate-600">待审核</span></div>`,
+            `<div class="flex items-center gap-2 mb-2"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700">${typeText}</span><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-low text-slate-600">待审核</span></div>`,
             `<h2 class="text-2xl font-bold">${EscapeHtml(taskItem.title)}</h2>`,
-            `<p class="text-sm text-slate-500 mt-1">${EscapeHtml(idText)} · 发布者: ${EscapeHtml(ownerText)}</p>`,
+            `<p class="text-sm text-slate-500 mt-1">${EscapeHtml(idText)} · 发布者: ${EscapeHtml(taskItem.ownerText || "-")}</p>`,
             "</div>",
             "<div class=\"text-right\">",
             "<p class=\"text-xs uppercase tracking-widest text-slate-500 font-semibold\">提交时间</p>",
-            `<p class="text-sm font-semibold mt-1">${EscapeHtml(timeText)}</p>`,
-            "</div></div>"
+            `<p class="text-sm font-semibold mt-1">${EscapeHtml(createTimeText)}</p>`,
+            "</div>",
+            "</div>"
         ].join("");
     }
 
-    function PatchDetailBody(bodyNode, taskItem, detailResult) {
+    function PatchDetailBody(bodyNode, taskItem, detailItem) {
         if (taskItem.taskType === "PRODUCT") {
-            bodyNode.innerHTML = BuildProductDetailHtml(taskItem, detailResult || {});
+            bodyNode.innerHTML = BuildProductDetailHtml(taskItem, detailItem || {});
             return;
         }
-        bodyNode.innerHTML = BuildRecruitmentDetailHtml(taskItem, detailResult || {});
+        bodyNode.innerHTML = BuildRecruitmentDetailHtml(taskItem, detailItem || {});
     }
 
     function BuildProductDetailHtml(taskItem, detailItem) {
         const imageUrlList = BuildImageUrlList(detailItem.imageFileIds || taskItem.rawItem.imageFileIds);
-        const firstImageUrl = imageUrlList[0] || "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80";
+        const galleryHtml = imageUrlList.length
+            ? `<div class="grid grid-cols-3 gap-3">${imageUrlList.map(function BuildImage(url) {
+                return `<img class="w-full h-40 object-cover rounded-xl bg-surface-low ring-1 ring-outline/20" src="${EscapeHtml(url)}" alt="商品图片"/>`;
+            }).join("")}</div>`
+            : "<div class=\"rounded-xl bg-surface-low p-5 text-sm text-slate-500 ring-1 ring-outline/20\">暂无图片</div>";
+
+        const summaryFieldMap = {
+            productId: detailItem.productId,
+            title: detailItem.title,
+            category: detailItem.category,
+            conditionLevel: detailItem.conditionLevel,
+            price: detailItem.price,
+            tradeLocation: detailItem.tradeLocation,
+            sellerUserId: detailItem.sellerUserId,
+            sellerDisplayName: detailItem.sellerDisplayName,
+            productStatus: detailItem.productStatus,
+            onShelf: detailItem.onShelf,
+            stockCount: detailItem.stockCount,
+            createTime: detailItem.createTime
+        };
+
         return [
-            `<div class="rounded-xl overflow-hidden bg-surface-low ring-1 ring-outline/20"><img class="w-full max-h-[360px] object-cover" src="${EscapeHtml(firstImageUrl)}" alt="商品图片"/></div>`,
-            "<div class=\"grid grid-cols-2 gap-4\">",
-            "<article class=\"bg-surface-low rounded-xl p-4 ring-1 ring-outline/20\">",
-            "<h3 class=\"text-sm font-bold mb-3\">发布信息</h3>",
-            "<dl class=\"space-y-2 text-sm\">",
-            `<div class="flex justify-between gap-4"><dt class="text-slate-500">分类</dt><dd class="font-semibold">${EscapeHtml(detailItem.category || taskItem.rawItem.category || "-")}</dd></div>`,
-            `<div class="flex justify-between gap-4"><dt class="text-slate-500">价格</dt><dd class="font-semibold text-primary">￥${FormatPrice(detailItem.price || taskItem.rawItem.price)}</dd></div>`,
-            `<div class="flex justify-between gap-4"><dt class="text-slate-500">成色</dt><dd class="font-semibold">${EscapeHtml(detailItem.conditionLevel || taskItem.rawItem.conditionLevel || "-")}</dd></div>`,
-            `<div class="flex justify-between gap-4"><dt class="text-slate-500">交易地点</dt><dd class="font-semibold">${EscapeHtml(detailItem.tradeLocation || taskItem.rawItem.tradeLocation || "-")}</dd></div>`,
-            "</dl></article>",
-            "<article class=\"bg-surface-low rounded-xl p-4 ring-1 ring-outline/20\">",
-            "<h3 class=\"text-sm font-bold mb-3\">发布者信息</h3>",
-            "<dl class=\"space-y-2 text-sm\">",
-            `<div class="flex justify-between gap-4"><dt class="text-slate-500">昵称</dt><dd class="font-semibold">${EscapeHtml(detailItem.sellerDisplayName || taskItem.ownerText)}</dd></div>`,
-            `<div class="flex justify-between gap-4"><dt class="text-slate-500">用户ID</dt><dd class="font-semibold">${SafeNumber(detailItem.sellerUserId || taskItem.rawItem.sellerUserId)}</dd></div>`,
-            `<div class="flex justify-between gap-4"><dt class="text-slate-500">状态</dt><dd class="font-semibold">${EscapeHtml(MapProductStatus(detailItem.productStatus || taskItem.rawItem.productStatus))}</dd></div>`,
-            "</dl></article></div>",
-            "<article class=\"bg-surface-low rounded-xl p-5 ring-1 ring-outline/20\">",
-            "<h3 class=\"text-sm font-bold mb-3\">内容描述</h3>",
-            `<p class="text-sm leading-7 text-slate-700 whitespace-pre-wrap">${EscapeHtml(detailItem.description || "暂无描述")}</p>`,
-            "</article>"
+            galleryHtml,
+            BuildFieldGridSection("核心字段", summaryFieldMap),
+            BuildTextSection("内容描述", detailItem.description || "暂无描述"),
+            BuildObjectSection("完整字段（详情接口）", detailItem),
+            BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || {})
         ].join("");
     }
 
     function BuildRecruitmentDetailHtml(taskItem, detailItem) {
+        const summaryFieldMap = {
+            recruitmentId: detailItem.recruitmentId,
+            eventName: detailItem.eventName,
+            direction: detailItem.direction,
+            skillRequirement: detailItem.skillRequirement,
+            memberLimit: detailItem.memberLimit,
+            currentMemberCount: detailItem.currentMemberCount,
+            recruitmentStatus: detailItem.recruitmentStatus,
+            publisherUserId: detailItem.publisherUserId,
+            publisherDisplayName: detailItem.publisherDisplayName,
+            deadline: detailItem.deadline,
+            closeTime: detailItem.closeTime,
+            applicationCount: detailItem.applicationCount,
+            createTime: detailItem.createTime,
+            canApply: detailItem.canApply,
+            hasApplied: detailItem.hasApplied
+        };
+
         return [
-            "<article class=\"bg-surface-low rounded-xl p-4 ring-1 ring-outline/20\">",
-            "<h3 class=\"text-sm font-bold mb-3\">招募信息</h3>",
-            "<dl class=\"grid grid-cols-2 gap-3 text-sm\">",
-            `<div><dt class="text-slate-500">赛事/主题</dt><dd class="font-semibold mt-1">${EscapeHtml(detailItem.eventName || taskItem.title)}</dd></div>`,
-            `<div><dt class="text-slate-500">方向</dt><dd class="font-semibold mt-1">${EscapeHtml(detailItem.direction || taskItem.rawItem.direction || "-")}</dd></div>`,
-            `<div><dt class="text-slate-500">成员规模</dt><dd class="font-semibold mt-1">${SafeNumber(detailItem.currentMemberCount || taskItem.rawItem.currentMemberCount)}/${SafeNumber(detailItem.memberLimit || taskItem.rawItem.memberLimit)}</dd></div>`,
-            `<div><dt class="text-slate-500">截止时间</dt><dd class="font-semibold mt-1">${EscapeHtml(FormatTime(detailItem.deadline || taskItem.rawItem.deadline))}</dd></div>`,
-            `<div><dt class="text-slate-500">申请数</dt><dd class="font-semibold mt-1">${SafeNumber(detailItem.applicationCount)}</dd></div>`,
-            `<div><dt class="text-slate-500">状态</dt><dd class="font-semibold mt-1">${EscapeHtml(MapRecruitmentStatus(detailItem.recruitmentStatus || taskItem.rawItem.recruitmentStatus))}</dd></div>`,
-            "</dl></article>",
-            "<article class=\"bg-surface-low rounded-xl p-5 ring-1 ring-outline/20\">",
-            "<h3 class=\"text-sm font-bold mb-3\">技能需求</h3>",
-            `<p class="text-sm leading-7 text-slate-700 whitespace-pre-wrap">${EscapeHtml(detailItem.skillRequirement || taskItem.rawItem.skillRequirement || "未填写")}</p>`,
+            BuildFieldGridSection("核心字段", summaryFieldMap),
+            BuildTextSection("技能要求", detailItem.skillRequirement || "未填写"),
+            BuildObjectSection("完整字段（详情接口）", detailItem),
+            BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || {})
+        ].join("");
+    }
+
+    function BuildFieldGridSection(title, fieldMap) {
+        const safeFieldMap = fieldMap || {};
+        const rowHtml = Object.keys(safeFieldMap).map(function BuildRow(key) {
+            return [
+                "<div class=\"py-2 border-b border-outline/20 grid grid-cols-[180px_1fr] gap-3 text-sm\">",
+                `<dt class="text-slate-500 break-all">${EscapeHtml(key)}</dt>`,
+                `<dd class="font-semibold text-slate-800 break-all">${EscapeHtml(FormatValue(safeFieldMap[key]))}</dd>`,
+                "</div>"
+            ].join("");
+        }).join("");
+        return [
+            "<article class=\"rounded-xl bg-surface-low p-5 ring-1 ring-outline/20\">",
+            `<h3 class="text-sm font-bold mb-3">${EscapeHtml(title)}</h3>`,
+            "<dl>",
+            rowHtml || "<div class=\"text-sm text-slate-500\">无数据</div>",
+            "</dl>",
             "</article>"
         ].join("");
     }
 
-    async function SubmitDecision(pageRefs, reviewState, messageBar, approved) {
-        const selectedTask = GetSelectedTask(reviewState, reviewState.filteredTaskList);
+    function BuildTextSection(title, textValue) {
+        return [
+            "<article class=\"rounded-xl bg-surface-low p-5 ring-1 ring-outline/20\">",
+            `<h3 class="text-sm font-bold mb-3">${EscapeHtml(title)}</h3>`,
+            `<p class="text-sm text-slate-700 leading-7 whitespace-pre-wrap">${EscapeHtml(textValue || "-")}</p>`,
+            "</article>"
+        ].join("");
+    }
+
+    function BuildObjectSection(title, objectValue) {
+        const normalizedObject = objectValue && typeof objectValue === "object" ? objectValue : {};
+        const keyList = Object.keys(normalizedObject).sort();
+        const keyValueRows = keyList.map(function BuildRow(key) {
+            return [
+                "<div class=\"py-2 border-b border-outline/20 grid grid-cols-[180px_1fr] gap-3 text-sm\">",
+                `<div class="text-slate-500 break-all">${EscapeHtml(key)}</div>`,
+                `<div class="font-semibold text-slate-800 break-all">${EscapeHtml(FormatValue(normalizedObject[key]))}</div>`,
+                "</div>"
+            ].join("");
+        }).join("");
+        const jsonText = JSON.stringify(normalizedObject, null, 2);
+        return [
+            "<article class=\"rounded-xl bg-surface-low p-5 ring-1 ring-outline/20\">",
+            `<h3 class="text-sm font-bold mb-3">${EscapeHtml(title)}</h3>`,
+            "<div class=\"mb-4\">",
+            keyValueRows || "<div class=\"text-sm text-slate-500\">无字段</div>",
+            "</div>",
+            "<details class=\"rounded-lg bg-white ring-1 ring-outline/20 p-3\">",
+            "<summary class=\"cursor-pointer text-sm font-semibold text-slate-700\">查看完整 JSON</summary>",
+            `<pre class="mt-3 text-xs text-slate-700 whitespace-pre-wrap break-all">${EscapeHtml(jsonText || "{}")}</pre>`,
+            "</details>",
+            "</article>"
+        ].join("");
+    }
+
+    async function SubmitDecision(refs, state, messageBar, approved) {
+        const selectedTask = GetSelectedTask(state, state.filteredTaskList);
         if (!selectedTask) {
             ShowError(messageBar, "请先选择审核任务");
             return;
         }
 
-        if (pageRefs.decisionSelect) {
-            pageRefs.decisionSelect.value = approved ? "APPROVE" : "REJECT";
-        }
-        const reviewRemark = pageRefs.reviewNoteInput
-            ? String(pageRefs.reviewNoteInput.value || "").trim()
-            : "";
+        const reviewRemark = String(refs.reviewNoteInput ? refs.reviewNoteInput.value || "" : "").trim();
         if (!approved && !reviewRemark) {
             ShowError(messageBar, "驳回时请填写审核意见");
             return;
@@ -572,7 +653,7 @@
             return;
         }
 
-        ToggleActionDisabled(pageRefs, true);
+        ToggleActionDisabled(refs, true);
         try {
             if (selectedTask.taskType === "PRODUCT") {
                 await window.CampusShareApi.ReviewProductByAdmin(
@@ -588,54 +669,69 @@
                 );
             }
 
-            reviewState.processedCount += 1;
-            reviewState.taskList = reviewState.taskList.filter(function FilterTask(item) {
-                return BuildTaskKey(item) !== BuildTaskKey(selectedTask);
-            });
-            reviewState.detailCacheMap.delete(BuildTaskKey(selectedTask));
-            SwitchSelectionAfterProcessed(reviewState);
+            state.processedCount += 1;
+            RemoveTaskAndSelectNext(state, selectedTask);
+            if (refs.reviewNoteInput) {
+                refs.reviewNoteInput.value = "";
+            }
+            if (refs.rejectTemplateSelect) {
+                refs.rejectTemplateSelect.value = "";
+            }
             ShowSuccess(messageBar, approved ? "审核已通过" : "审核已驳回");
-            RenderAll(pageRefs, reviewState);
+            RenderAll(refs, state);
         } catch (error) {
             ShowError(messageBar, error instanceof Error ? error.message : "审核操作失败");
         } finally {
-            ToggleActionDisabled(pageRefs, false);
+            ToggleActionDisabled(refs, false);
         }
     }
 
-    function SwitchSelectionAfterProcessed(reviewState) {
-        if (!reviewState.filteredTaskList.length) {
-            reviewState.selectedTaskKey = "";
-            return;
-        }
-        const nextTask = reviewState.taskList[0];
-        reviewState.selectedTaskKey = nextTask ? BuildTaskKey(nextTask) : "";
-    }
-
-    function SwitchSelectionByOffset(reviewState, offset) {
-        if (!reviewState.filteredTaskList.length || !reviewState.selectedTaskKey) {
-            return;
-        }
-        const selectedIndex = reviewState.filteredTaskList.findIndex(function FindTask(item) {
-            return BuildTaskKey(item) === reviewState.selectedTaskKey;
+    function RemoveTaskAndSelectNext(state, selectedTask) {
+        const selectedKey = BuildTaskKey(selectedTask);
+        const currentFilteredList = FilterTaskList(state);
+        const selectedIndex = currentFilteredList.findIndex(function FindItem(item) {
+            return BuildTaskKey(item) === selectedKey;
         });
-        if (selectedIndex < 0) {
+
+        state.taskList = state.taskList.filter(function FilterItem(item) {
+            return BuildTaskKey(item) !== selectedKey;
+        });
+        state.detailCacheMap.delete(selectedKey);
+
+        const nextFilteredList = FilterTaskList(state);
+        if (!nextFilteredList.length) {
+            state.selectedTaskKey = "";
             return;
         }
-        const targetIndex = selectedIndex + offset;
-        if (targetIndex < 0 || targetIndex >= reviewState.filteredTaskList.length) {
-            return;
-        }
-        reviewState.selectedTaskKey = BuildTaskKey(reviewState.filteredTaskList[targetIndex]);
+        const fallbackIndex = selectedIndex < 0 ? 0 : Math.min(selectedIndex, nextFilteredList.length - 1);
+        state.selectedTaskKey = BuildTaskKey(nextFilteredList[fallbackIndex]);
     }
 
-    function GetSelectedTask(reviewState, taskList) {
-        const safeTaskList = Array.isArray(taskList) ? taskList : [];
-        if (!reviewState.selectedTaskKey) {
+    function SwitchSelectionByOffset(state, offset) {
+        const list = state.filteredTaskList;
+        if (!Array.isArray(list) || !list.length || !state.selectedTaskKey) {
+            return;
+        }
+        const currentIndex = list.findIndex(function FindItem(item) {
+            return BuildTaskKey(item) === state.selectedTaskKey;
+        });
+        if (currentIndex < 0) {
+            return;
+        }
+        const targetIndex = currentIndex + offset;
+        if (targetIndex < 0 || targetIndex >= list.length) {
+            return;
+        }
+        state.selectedTaskKey = BuildTaskKey(list[targetIndex]);
+    }
+
+    function GetSelectedTask(state, taskList) {
+        const safeList = Array.isArray(taskList) ? taskList : [];
+        if (!state.selectedTaskKey) {
             return null;
         }
-        return safeTaskList.find(function MatchTask(item) {
-            return BuildTaskKey(item) === reviewState.selectedTaskKey;
+        return safeList.find(function MatchTask(item) {
+            return BuildTaskKey(item) === state.selectedTaskKey;
         }) || null;
     }
 
@@ -643,64 +739,82 @@
         return `${taskItem.taskType}:${taskItem.taskId}`;
     }
 
-    function ToggleActionDisabled(pageRefs, disabled) {
-        [pageRefs.approveButton, pageRefs.rejectButton, pageRefs.prevButton, pageRefs.nextButton]
+    function ToggleActionDisabled(refs, disabled) {
+        [refs.prevButton, refs.nextButton, refs.approveButton, refs.rejectButton]
             .filter(Boolean)
-            .forEach(function PatchDisabled(buttonNode) {
+            .forEach(function PatchButton(buttonNode) {
                 buttonNode.disabled = !!disabled;
             });
     }
 
-    function BuildImageUrlList(imageFileIds) {
-        const safeFileIdList = Array.isArray(imageFileIds) ? imageFileIds : [];
-        return safeFileIdList
-            .map(function MapFileId(fileId) {
-                if (!window.CampusShareApi || !window.CampusShareApi.BuildPublicFileUrl) {
-                    return "";
-                }
-                return window.CampusShareApi.BuildPublicFileUrl(fileId);
-            })
-            .filter(Boolean);
+    function BuildImageUrlList(fileIdList) {
+        const safeList = Array.isArray(fileIdList) ? fileIdList : [];
+        return safeList.map(function MapFileId(fileId) {
+            if (!window.CampusShareApi || !window.CampusShareApi.BuildPublicFileUrl) {
+                return "";
+            }
+            return window.CampusShareApi.BuildPublicFileUrl(fileId);
+        }).filter(Boolean);
     }
 
-    function MapProductStatus(statusText) {
-        const safeStatus = String(statusText || "").toUpperCase();
-        if (safeStatus === "PENDING_REVIEW") {
-            return "待审核";
+    function FormatValue(value) {
+        if (value === null || value === undefined) {
+            return "-";
         }
-        if (safeStatus === "ON_SHELF") {
-            return "已上架";
+        if (Array.isArray(value)) {
+            if (!value.length) {
+                return "[]";
+            }
+            return value.map(function MapValue(item) {
+                return typeof item === "object" ? JSON.stringify(item) : String(item);
+            }).join(", ");
         }
-        if (safeStatus === "REJECTED") {
-            return "已驳回";
+        if (typeof value === "object") {
+            return JSON.stringify(value);
         }
-        if (safeStatus === "OFFLINE") {
-            return "已下架";
+        if (value === "") {
+            return "(空)";
         }
-        return safeStatus || "-";
+        return String(value);
     }
 
-    function MapRecruitmentStatus(statusText) {
-        const safeStatus = String(statusText || "").toUpperCase();
-        if (safeStatus === "PENDING_REVIEW") {
-            return "待审核";
+    function FormatPrice(value) {
+        const numberValue = Number(value);
+        if (Number.isNaN(numberValue)) {
+            return "0.00";
         }
-        if (safeStatus === "RECRUITING") {
-            return "招募中";
+        return numberValue.toFixed(2);
+    }
+
+    function ResolveTimeValue(timeText) {
+        const dateValue = new Date(timeText || "");
+        if (Number.isNaN(dateValue.getTime())) {
+            return 0;
         }
-        if (safeStatus === "FULL") {
-            return "已满员";
+        return dateValue.getTime();
+    }
+
+    function FormatTime(timeText) {
+        if (!timeText) {
+            return "-";
         }
-        if (safeStatus === "CLOSED") {
-            return "已关闭";
+        const dateValue = new Date(timeText);
+        if (Number.isNaN(dateValue.getTime())) {
+            return String(timeText);
         }
-        if (safeStatus === "EXPIRED") {
-            return "已过期";
+        return `${dateValue.getFullYear()}-${PadTime(dateValue.getMonth() + 1)}-${PadTime(dateValue.getDate())} ${PadTime(dateValue.getHours())}:${PadTime(dateValue.getMinutes())}`;
+    }
+
+    function PadTime(value) {
+        return value < 10 ? `0${value}` : `${value}`;
+    }
+
+    function SafeNumber(value) {
+        const numberValue = Number(value);
+        if (Number.isNaN(numberValue)) {
+            return 0;
         }
-        if (safeStatus === "REJECTED") {
-            return "已驳回";
-        }
-        return safeStatus || "-";
+        return numberValue;
     }
 
     function BuildMessageBar(pageMain) {
@@ -737,45 +851,6 @@
         }
         messageBar.classList.add("hidden");
         messageBar.textContent = "";
-    }
-
-    function ResolveTimeValue(timeText) {
-        const timeValue = new Date(timeText || "");
-        if (Number.isNaN(timeValue.getTime())) {
-            return 0;
-        }
-        return timeValue.getTime();
-    }
-
-    function FormatTime(timeText) {
-        if (!timeText) {
-            return "-";
-        }
-        const dateValue = new Date(timeText);
-        if (Number.isNaN(dateValue.getTime())) {
-            return String(timeText);
-        }
-        return `${dateValue.getFullYear()}-${PadTime(dateValue.getMonth() + 1)}-${PadTime(dateValue.getDate())} ${PadTime(dateValue.getHours())}:${PadTime(dateValue.getMinutes())}`;
-    }
-
-    function PadTime(value) {
-        return value < 10 ? `0${value}` : `${value}`;
-    }
-
-    function FormatPrice(value) {
-        const numberValue = Number(value);
-        if (Number.isNaN(numberValue)) {
-            return "0.00";
-        }
-        return numberValue.toFixed(2);
-    }
-
-    function SafeNumber(value) {
-        const numberValue = Number(value);
-        if (Number.isNaN(numberValue)) {
-            return 0;
-        }
-        return numberValue;
     }
 
     function EscapeHtml(text) {

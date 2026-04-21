@@ -604,7 +604,7 @@
         };
         return [
             BuildFieldGridSection("核心字段（含中文说明）", summaryFieldMap, CORE_FIELD_META.TEAM_RECRUITMENT),
-            BuildLivePreviewSection("完整帖子预览", BuildRecruitmentPreviewUrl(taskItem, detailItem), "可直接在审核页查看普通帖子列表。"),
+            BuildLivePreviewSection("完整帖子预览", BuildRecruitmentPreviewUrl(taskItem, detailItem), "可直接在审核页查看帖子详情预览。"),
             BuildTextSection("技能要求", detailItem.skillRequirement || "未填写"),
             BuildObjectSection("完整字段（详情接口）", detailItem),
             BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || {})
@@ -752,7 +752,11 @@
     }
 
     function BuildRecruitmentPreviewUrl(taskItem, detailItem) {
-        return "/pages/market_listing.html?view=FORUM";
+        const recruitmentId = SafeNumber((detailItem && detailItem.recruitmentId) || (taskItem && taskItem.taskId));
+        if (recruitmentId <= 0) {
+            return "/pages/team_post_preview.html";
+        }
+        return `/pages/team_post_preview.html?recruitmentId=${encodeURIComponent(String(recruitmentId))}`;
     }
 
     function BuildProductImageUrlList(taskItem, detailItem) {
@@ -849,6 +853,10 @@
                 if (candidateText) {
                     return candidateText;
                 }
+            }
+            const uploaderUserId = SafeNumber(source.uploaderUserId);
+            if (uploaderUserId > 0) {
+                return `用户#${uploaderUserId}`;
             }
         }
         return "";

@@ -535,13 +535,21 @@ public class MaterialServiceImpl implements MaterialService {
      */
     private String ResolveUserDisplayName(Long userId) {
         if (userId == null || userId <= 0) {
-            return "";
+            return "未知用户";
         }
         UserEntity userEntity = userMapper.FindUserById(userId);
-        if (userEntity == null || userEntity.GetDisplayName() == null) {
-            return "";
+        if (userEntity == null) {
+            return "用户#" + userId;
         }
-        return userEntity.GetDisplayName().trim();
+        String displayName = userEntity.GetDisplayName() == null ? "" : userEntity.GetDisplayName().trim();
+        if (!displayName.isBlank()) {
+            return displayName;
+        }
+        String account = userEntity.GetAccount() == null ? "" : userEntity.GetAccount().trim();
+        if (!account.isBlank()) {
+            return account;
+        }
+        return "用户#" + userId;
     }
 
     /**

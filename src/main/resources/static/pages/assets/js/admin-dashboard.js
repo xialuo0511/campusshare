@@ -878,6 +878,23 @@
         return "storefront";
     }
 
+    function BuildAdminContentReviewPath(taskType, taskId, intendedDecision) {
+        const safeType = String(taskType || "").toUpperCase();
+        const safeId = Number(taskId);
+        const searchParams = new URLSearchParams();
+        if ((safeType === "PRODUCT" || safeType === "TEAM_RECRUITMENT") && !Number.isNaN(safeId) && safeId > 0) {
+            searchParams.set("taskType", safeType);
+            searchParams.set("taskId", String(safeId));
+        }
+        if (intendedDecision) {
+            searchParams.set("intendedDecision", String(intendedDecision).toUpperCase());
+        }
+        const queryText = searchParams.toString();
+        return queryText
+            ? `/pages/admin_content_review.html?${queryText}`
+            : "/pages/admin_content_review.html";
+    }
+
     /**
      * 鎸夌姸鎬佹覆鏌撳鏍歌〃
      */
@@ -905,18 +922,12 @@
             const iconName = ResolveTaskIconName(taskItem);
             const recruitmentIdValue = taskItem.recruitmentId || "";
             const productIdValue = taskItem.taskType === "PRODUCT" ? taskItem.taskId : "";
-            const productDetailPath = `/pages/market_item_detail.html?productId=${encodeURIComponent(String(taskItem.taskId || ""))}`;
-            const recruitmentDetailPath = `/pages/recruitment_board.html?focusRecruitmentId=${encodeURIComponent(String(taskItem.taskId || ""))}`;
-            const resourceTitleHtml = taskItem.taskType === "PRODUCT"
-                ? `<a href="${productDetailPath}" target="_blank" class="text-sm font-semibold text-primary hover:underline">${EscapeHtml(resourceTitle)}</a>`
-                : (taskItem.taskType === "TEAM_RECRUITMENT"
-                    ? `<a href="${recruitmentDetailPath}" target="_blank" class="text-sm font-semibold text-primary hover:underline">${EscapeHtml(resourceTitle)}</a>`
-                    : `<p class="text-sm font-semibold text-on-surface">${EscapeHtml(resourceTitle)}</p>`);
-            const viewProductButton = taskItem.taskType === "PRODUCT"
-                ? `<button data-task-action=\"view-product\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${productIdValue}\" class=\"p-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100\" title=\"查看商品详情\"><span class=\"material-symbols-outlined text-sm\">visibility</span></button>`
-                : "";
-            const viewRecruitmentButton = taskItem.taskType === "TEAM_RECRUITMENT"
-                ? `<button data-task-action=\"view-recruitment\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" class=\"p-1.5 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100\" title=\"查看帖子详情\"><span class=\"material-symbols-outlined text-sm\">visibility</span></button>`
+            const contentReviewPath = BuildAdminContentReviewPath(taskItem.taskType, taskItem.taskId);
+            const resourceTitleHtml = (taskItem.taskType === "PRODUCT" || taskItem.taskType === "TEAM_RECRUITMENT")
+                ? `<a href="${contentReviewPath}" target="_blank" class="text-sm font-semibold text-primary hover:underline">${EscapeHtml(resourceTitle)}</a>`
+                : `<p class="text-sm font-semibold text-on-surface">${EscapeHtml(resourceTitle)}</p>`;
+            const contentReviewButton = (taskItem.taskType === "PRODUCT" || taskItem.taskType === "TEAM_RECRUITMENT")
+                ? `<button data-task-action=\"open-content-review\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${productIdValue || taskItem.taskId}\" class=\"p-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100\" title=\"进入内容审核\"><span class=\"material-symbols-outlined text-sm\">open_in_new</span></button>`
                 : "";
 
             return [
@@ -935,8 +946,7 @@
                 `<td class=\"px-6 py-4\"><span class=\"${statusClass} text-[10px] font-bold px-2 py-0.5 rounded-full\">${EscapeHtml(statusText)}</span></td>`,
                 "<td class=\"px-6 py-4 text-right\">",
                 "<div class=\"flex justify-end gap-2\">",
-                viewProductButton,
-                viewRecruitmentButton,
+                contentReviewButton,
                 `<button data-task-action=\"approve\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" data-recruitment-id=\"${recruitmentIdValue}\" class=\"p-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100\"><span class=\"material-symbols-outlined text-sm\">check</span></button>`,
                 `<button data-task-action=\"reject\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" data-recruitment-id=\"${recruitmentIdValue}\" class=\"p-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100\"><span class=\"material-symbols-outlined text-sm\">close</span></button>`,
                 "</div></td></tr>"
@@ -1020,12 +1030,15 @@
             if (!taskAction || !taskType || !taskId) {
                 return;
             }
-            if (taskAction === "view-product" && taskType === "PRODUCT") {
-                window.open(`/pages/market_item_detail.html?productId=${encodeURIComponent(String(taskId))}`, "_blank");
+            if (taskAction === "open-content-review" && (taskType === "PRODUCT" || taskType === "TEAM_RECRUITMENT")) {
+                window.open(BuildAdminContentReviewPath(taskType, taskId), "_blank");
                 return;
             }
-            if (taskAction === "view-recruitment" && taskType === "TEAM_RECRUITMENT") {
-                window.open(`/pages/recruitment_board.html?focusRecruitmentId=${encodeURIComponent(String(taskId))}`, "_blank");
+            if ((taskType === "PRODUCT" || taskType === "TEAM_RECRUITMENT") && (taskAction === "approve" || taskAction === "reject")) {
+                window.open(
+                    BuildAdminContentReviewPath(taskType, taskId, taskAction === "approve" ? "APPROVE" : "REJECT"),
+                    "_blank"
+                );
                 return;
             }
             const approved = taskAction === "approve";

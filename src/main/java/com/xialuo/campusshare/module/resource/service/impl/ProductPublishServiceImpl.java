@@ -142,7 +142,9 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         if (Boolean.TRUE.equals(productEntity.GetHasEffectiveOrder())) {
             throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品存在进行中订单，不可下架");
         }
-        if (!Boolean.TRUE.equals(productEntity.GetOnShelf()) || productEntity.GetProductStatus() == ProductStatusEnum.OFFLINE) {
+        if (!Boolean.TRUE.equals(productEntity.GetOnShelf())
+            || productEntity.GetProductStatus() == ProductStatusEnum.OFFLINE
+            || productEntity.GetProductStatus() == ProductStatusEnum.FORCE_OFFLINE) {
             throw new BusinessException(BizCodeEnum.PRODUCT_UNAVAILABLE, "商品已下架");
         }
 
@@ -174,14 +176,29 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         if (productEntity == null) {
             throw new BusinessException(BizCodeEnum.PRODUCT_NOT_FOUND, "商品不存在");
         }
+
+        String normalizedOfflineRemark = NormalizeText(offlineRemark);
+        if (normalizedOfflineRemark.isBlank()) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "强制下线原因不能为空");
+        }
+
         LocalDateTime now = LocalDateTime.now();
         orderMapper.CloseOngoingOrdersByProductId(
             productId,
-            NormalizeText(offlineRemark).isBlank() ? "管理员强制下架关闭订单" : NormalizeText(offlineRemark),
+            normalizedOfflineRemark,
             now,
             now
         );
         productMapper.ForceOfflineProduct(productId, now);
+
+        notificationService.CreateNotification(
+            productEntity.GetSellerUserId(),
+            NotificationTypeEnum.REVIEW,
+            "商品已被强制下线",
+            BuildForceOfflineContent(normalizedOfflineRemark),
+            PRODUCT_BIZ_TYPE,
+            productId
+        );
 
         ProductEntity latestProductEntity = productMapper.FindProductById(productId);
         if (latestProductEntity == null) {
@@ -292,6 +309,13 @@ public class ProductPublishServiceImpl implements ProductPublishService {
         productEntity.SetUpdateTime(LocalDateTime.now());
         productEntity.SetDeleted(Boolean.FALSE);
         return productEntity;
+    }
+
+    /**
+     * 构建商品强制下线通知内容
+     */
+    private String BuildForceOfflineContent(String offlineRemark) {
+        return "平台治理已将该商品强制下线，原因：" + offlineRemark;
     }
 
     /**

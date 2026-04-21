@@ -15,6 +15,13 @@
         CLOSED: "已关闭"
     };
 
+    const TRACKING_STAGE_LIST = [
+        { key: "PENDING_SELLER_CONFIRM", label: "已下单" },
+        { key: "PENDING_OFFLINE_TRADE", label: "卖家确认" },
+        { key: "PENDING_BUYER_CONFIRM", label: "待买家确认" },
+        { key: "COMPLETED", label: "已完成" }
+    ];
+
     /**
      * 页面初始化
      */
@@ -23,264 +30,115 @@
             return;
         }
 
-        const sideNavItemList = Array.from(document.querySelectorAll("aside [data-order-nav]"));
-        const orderPanelList = Array.from(document.querySelectorAll("main [data-order-panel]"));
-        const profileForm = document.querySelector("[data-order-profile-form]");
         const tableBody = document.querySelector("tbody.divide-y");
-        const summaryNumberList = document.querySelectorAll("main .grid p.text-3xl");
-        const filterButtonList = document.querySelectorAll(".px-6.py-4.border-b button");
         const historyCard = document.querySelector("main .bg-surface-container-lowest.rounded-xl.shadow-sm.overflow-hidden");
+        const filterButtonList = document.querySelectorAll(".px-6.py-4.border-b button");
         const paginationBar = document.querySelector(".bg-surface-container-low.p-4.flex.justify-between.items-center.px-6");
         const paginationText = paginationBar ? paginationBar.querySelector("p.text-xs") : null;
         const paginationButtonContainer = paginationBar ? paginationBar.querySelector("div.flex.gap-1") : null;
-        if (!tableBody || summaryNumberList.length < 4 || !historyCard || !paginationBar || !paginationText || !paginationButtonContainer) {
+        const summaryNodeMap = {
+            total: document.querySelector("[data-role='order-summary-total']"),
+            ongoing: document.querySelector("[data-role='order-summary-ongoing']"),
+            completed: document.querySelector("[data-role='order-summary-completed']"),
+            point: document.querySelector("[data-role='order-summary-point']")
+        };
+        const trackingSection = document.querySelector("[data-role='order-tracking-section']");
+
+        if (!tableBody || !historyCard || !paginationText || !paginationButtonContainer || !trackingSection) {
             return;
         }
 
-        const profile = window.CampusShareApi.GetCurrentUserProfile();
-        const currentUserId = profile && profile.userId ? Number(profile.userId) : null;
+        if (!window.CampusShareApi.GetAuthToken()) {
+            window.CampusShareApi.RedirectToAuthPage("/pages/order_center.html");
+            return;
+        }
+
+        const profile = window.CampusShareApi.GetCurrentUserProfile() || {};
+        const currentUserId = Number(profile.userId || 0);
         const messageBar = BuildMessageBar(historyCard);
         const pointPanel = BuildPointPanel();
         historyCard.insertAdjacentElement("afterend", pointPanel.panel);
-
-        if (!window.CampusShareApi.GetAuthToken()) {
-            ShowError(messageBar, "请先登录后再查看订单中心");
-            window.setTimeout(function RedirectToAuthPage() {
-                window.CampusShareApi.RedirectToAuthPage("/pages/order_center.html");
-            }, 700);
-            return;
-        }
-
-        BindOrderViewNavigation(sideNavItemList, orderPanelList, profileForm, messageBar);
-        BindProfileForm(profileForm, messageBar);
+        const reviewModal = BuildReviewModal();
+        document.body.appendChild(reviewModal.wrapper);
 
         const state = {
             pageNo: DEFAULT_PAGE_NO,
             pageSize: DEFAULT_PAGE_SIZE,
             totalCount: 0,
             totalPages: 1,
-            statusFilter: "ALL"
+            statusFilter: "ALL",
+            orderMap: new Map()
         };
 
         BindFilterButtons(filterButtonList, state, function ReloadFromFilter() {
-            LoadOrderList(state, currentUserId, summaryNumberList, tableBody, paginationText, paginationButtonContainer, messageBar);
+            LoadOrderList(
+                state,
+                currentUserId,
+                summaryNodeMap,
+                tableBody,
+                trackingSection,
+                paginationText,
+                paginationButtonContainer,
+                messageBar
+            );
         });
-        BindActionButtons(tableBody, state, currentUserId, summaryNumberList, pointPanel, paginationText, paginationButtonContainer, messageBar);
+        BindActionButtons(
+            tableBody,
+            state,
+            currentUserId,
+            summaryNodeMap,
+            pointPanel,
+            trackingSection,
+            paginationText,
+            paginationButtonContainer,
+            messageBar,
+            reviewModal
+        );
+        BindTrackingActions(trackingSection);
         BindPaginationButtons(paginationButtonContainer, state, function ReloadFromPage() {
-            LoadOrderList(state, currentUserId, summaryNumberList, tableBody, paginationText, paginationButtonContainer, messageBar);
+            LoadOrderList(
+                state,
+                currentUserId,
+                summaryNodeMap,
+                tableBody,
+                trackingSection,
+                paginationText,
+                paginationButtonContainer,
+                messageBar
+            );
         });
 
-        LoadOrderList(state, currentUserId, summaryNumberList, tableBody, paginationText, paginationButtonContainer, messageBar);
-        LoadPointLedger(pointPanel, summaryNumberList, messageBar);
+        LoadOrderList(
+            state,
+            currentUserId,
+            summaryNodeMap,
+            tableBody,
+            trackingSection,
+            paginationText,
+            paginationButtonContainer,
+            messageBar
+        );
+        LoadPointLedger(pointPanel, summaryNodeMap, messageBar);
     }
 
     /**
-     * 绑定侧栏子界面
+     * 绑定追踪区域动作
      */
-    function BindOrderViewNavigation(sideNavItemList, orderPanelList, profileForm, messageBar) {
-        if (!Array.isArray(sideNavItemList) || sideNavItemList.length === 0) {
+    function BindTrackingActions(trackingSection) {
+        if (!trackingSection) {
             return;
         }
-        const initialNavItem = sideNavItemList.find(function FindActiveItem(item) {
-            return item.classList.contains("translate-x-1");
-        }) || sideNavItemList[0];
-        const initialViewKey = initialNavItem ? (initialNavItem.getAttribute("data-order-nav") || "ORDER_LIST") : "ORDER_LIST";
-        ApplyOrderNavState(sideNavItemList, initialViewKey);
-        SwitchOrderPanel(orderPanelList, initialViewKey);
-        if (initialViewKey === "PROFILE") {
-            LoadProfileFormData(profileForm, messageBar);
-        }
-
-        sideNavItemList.forEach(function BindNavItem(item) {
-            item.addEventListener("click", function HandleClick(event) {
-                event.preventDefault();
-                const viewKey = item.getAttribute("data-order-nav") || "ORDER_LIST";
-                ApplyOrderNavState(sideNavItemList, viewKey);
-                SwitchOrderPanel(orderPanelList, viewKey);
-                if (viewKey === "PROFILE") {
-                    LoadProfileFormData(profileForm, messageBar);
-                }
-            });
-        });
-    }
-
-    /**
-     * 侧栏激活态
-     */
-    function ApplyOrderNavState(sideNavItemList, activeViewKey) {
-        const activeClassList = ["bg-[#ffffff]", "dark:bg-slate-800", "text-[#005d90]", "dark:text-sky-400", "font-semibold", "shadow-sm", "translate-x-1"];
-        const inactiveClassList = ["text-slate-600", "dark:text-slate-400", "hover:bg-[#edeeef]", "dark:hover:bg-slate-800/50"];
-        sideNavItemList.forEach(function Toggle(item) {
-            const isActive = (item.getAttribute("data-order-nav") || "") === activeViewKey;
-            if (isActive) {
-                item.classList.remove.apply(item.classList, inactiveClassList);
-                item.classList.add.apply(item.classList, activeClassList);
-                item.setAttribute("aria-current", "page");
+        trackingSection.addEventListener("click", function HandleTrackingClick(event) {
+            const actionButton = event.target.closest("button[data-order-action='detail']");
+            if (!actionButton) {
                 return;
             }
-            item.classList.remove.apply(item.classList, activeClassList);
-            item.classList.add.apply(item.classList, inactiveClassList);
-            item.removeAttribute("aria-current");
-        });
-    }
-
-    /**
-     * 切换右侧面板
-     */
-    function SwitchOrderPanel(orderPanelList, viewKey) {
-        if (!Array.isArray(orderPanelList) || orderPanelList.length === 0) {
-            return;
-        }
-        const targetPanelKey = viewKey === "PROFILE" ? "PROFILE" : "ORDER_LIST";
-        orderPanelList.forEach(function Toggle(panel) {
-            const panelKey = panel.getAttribute("data-order-panel") || "";
-            panel.classList.toggle("hidden", panelKey !== targetPanelKey);
-        });
-    }
-
-    /**
-     * 绑定个人设置表单
-     */
-    function BindProfileForm(profileForm, messageBar) {
-        if (!profileForm || profileForm.dataset.bound === "true") {
-            return;
-        }
-        profileForm.dataset.bound = "true";
-
-        profileForm.addEventListener("submit", async function HandleSubmit(event) {
-            event.preventDefault();
-            const displayName = ReadProfileField(profileForm, "displayName");
-            const college = ReadProfileField(profileForm, "college");
-            const grade = ReadProfileField(profileForm, "grade");
-            const contact = ReadProfileField(profileForm, "contact");
-            const account = ReadProfileField(profileForm, "account");
-            if (!displayName) {
-                ShowError(messageBar, "昵称不能为空");
+            const orderId = Number(actionButton.getAttribute("data-order-id") || "0");
+            if (!orderId) {
                 return;
             }
-
-            const saveButton = profileForm.querySelector("[data-order-profile-action='save']");
-            if (saveButton) {
-                saveButton.disabled = true;
-            }
-            try {
-                const profilePayload = { displayName };
-                if (college) {
-                    profilePayload.college = college;
-                }
-                if (grade) {
-                    profilePayload.grade = grade;
-                }
-                if (contact) {
-                    profilePayload.contact = contact;
-                }
-                await window.CampusShareApi.UpdateMyProfile(profilePayload);
-                WriteProfileSnapshot(profileForm, { displayName, college, grade, contact, account });
-                const cachedProfile = window.CampusShareApi.GetCurrentUserProfile();
-                if (cachedProfile) {
-                    cachedProfile.displayName = displayName;
-                    window.CampusShareApi.SetCurrentUserProfile(cachedProfile);
-                }
-                ShowSuccess(messageBar, "个人设置已保存");
-            } catch (error) {
-                ShowError(messageBar, ResolveErrorText(error, "个人设置保存失败"));
-            } finally {
-                if (saveButton) {
-                    saveButton.disabled = false;
-                }
-            }
+            window.location.href = `/pages/order_detail.html?orderId=${encodeURIComponent(String(orderId))}`;
         });
-
-        const resetButton = profileForm.querySelector("[data-order-profile-action='reset']");
-        if (resetButton) {
-            resetButton.addEventListener("click", function HandleReset() {
-                RestoreProfileSnapshot(profileForm);
-            });
-        }
-    }
-
-    /**
-     * 加载个人设置数据
-     */
-    async function LoadProfileFormData(profileForm, messageBar) {
-        if (!profileForm || profileForm.dataset.loading === "true") {
-            return;
-        }
-        profileForm.dataset.loading = "true";
-        try {
-            let profileData = null;
-            try {
-                profileData = await window.CampusShareApi.SyncSessionProfile();
-            } catch (error) {
-                profileData = window.CampusShareApi.GetCurrentUserProfile();
-            }
-            const cachedProfile = window.CampusShareApi.GetCurrentUserProfile() || {};
-            const safeData = profileData || cachedProfile;
-            SetProfileField(profileForm, "displayName", safeData.displayName || "");
-            SetProfileField(profileForm, "college", safeData.college || "");
-            SetProfileField(profileForm, "grade", safeData.grade || "");
-            SetProfileField(profileForm, "contact", safeData.contact || cachedProfile.contact || "");
-            SetProfileField(profileForm, "account", safeData.account || cachedProfile.account || "");
-            WriteProfileSnapshot(profileForm, {
-                displayName: safeData.displayName || "",
-                college: safeData.college || "",
-                grade: safeData.grade || "",
-                contact: safeData.contact || cachedProfile.contact || "",
-                account: safeData.account || cachedProfile.account || ""
-            });
-        } catch (error) {
-            ShowError(messageBar, ResolveErrorText(error, "个人设置加载失败"));
-        } finally {
-            profileForm.dataset.loading = "false";
-        }
-    }
-
-    /**
-     * 读取设置字段
-     */
-    function ReadProfileField(profileForm, fieldName) {
-        const fieldNode = profileForm.querySelector(`[data-order-profile-field='${fieldName}']`);
-        if (!fieldNode) {
-            return "";
-        }
-        return (fieldNode.value || "").trim();
-    }
-
-    /**
-     * 写入设置字段
-     */
-    function SetProfileField(profileForm, fieldName, value) {
-        const fieldNode = profileForm.querySelector(`[data-order-profile-field='${fieldName}']`);
-        if (!fieldNode) {
-            return;
-        }
-        fieldNode.value = value == null ? "" : String(value);
-    }
-
-    /**
-     * 记录初始值
-     */
-    function WriteProfileSnapshot(profileForm, profileData) {
-        profileForm.dataset.originalProfile = JSON.stringify(profileData || {});
-    }
-
-    /**
-     * 恢复初始值
-     */
-    function RestoreProfileSnapshot(profileForm) {
-        let snapshot = {};
-        try {
-            snapshot = profileForm.dataset.originalProfile
-                ? JSON.parse(profileForm.dataset.originalProfile)
-                : {};
-        } catch (error) {
-            snapshot = {};
-        }
-        SetProfileField(profileForm, "displayName", snapshot.displayName || "");
-        SetProfileField(profileForm, "college", snapshot.college || "");
-        SetProfileField(profileForm, "grade", snapshot.grade || "");
-        SetProfileField(profileForm, "contact", snapshot.contact || "");
-        SetProfileField(profileForm, "account", snapshot.account || "");
     }
 
     /**
@@ -314,20 +172,48 @@
         tableBody,
         state,
         currentUserId,
-        summaryNumberList,
+        summaryNodeMap,
         pointPanel,
+        trackingSection,
         paginationText,
         paginationButtonContainer,
-        messageBar
+        messageBar,
+        reviewModal
     ) {
         tableBody.addEventListener("click", async function HandleActionClick(event) {
             const actionButton = event.target.closest("button[data-order-action]");
             if (!actionButton) {
                 return;
             }
-            const orderId = Number(actionButton.getAttribute("data-order-id"));
             const action = actionButton.getAttribute("data-order-action");
-            if (!orderId || !action) {
+            const orderId = Number(actionButton.getAttribute("data-order-id") || "0");
+            if (!action || !orderId) {
+                return;
+            }
+
+            if (action === "detail") {
+                window.location.href = `/pages/order_detail.html?orderId=${encodeURIComponent(String(orderId))}`;
+                return;
+            }
+
+            if (action === "review") {
+                const targetOrder = state.orderMap.get(orderId);
+                if (!targetOrder) {
+                    ShowError(messageBar, "未找到可评价订单");
+                    return;
+                }
+                OpenReviewModal(reviewModal, targetOrder, messageBar, async function AfterReviewSubmitted() {
+                    await LoadOrderList(
+                        state,
+                        currentUserId,
+                        summaryNodeMap,
+                        tableBody,
+                        trackingSection,
+                        paginationText,
+                        paginationButtonContainer,
+                        messageBar
+                    );
+                });
                 return;
             }
 
@@ -338,7 +224,7 @@
                     ShowSuccess(messageBar, `订单 #${orderId} 已确认`);
                 } else if (action === "handover") {
                     await window.CampusShareApi.HandoverOrder(orderId);
-                    ShowSuccess(messageBar, `订单 #${orderId} 已转入待买家确认`);
+                    ShowSuccess(messageBar, `订单 #${orderId} 已转为待买家确认`);
                 } else if (action === "complete") {
                     await window.CampusShareApi.CompleteOrder(orderId);
                     ShowSuccess(messageBar, `订单 #${orderId} 已完成`);
@@ -348,22 +234,20 @@
                 } else if (action === "close") {
                     await window.CampusShareApi.CloseOrder(orderId, "用户手动关闭");
                     ShowSuccess(messageBar, `订单 #${orderId} 已关闭`);
-                } else if (action === "detail") {
-                    window.location.href = `/pages/order_detail.html?orderId=${encodeURIComponent(String(orderId))}`;
-                    return;
                 } else {
                     return;
                 }
                 await LoadOrderList(
                     state,
                     currentUserId,
-                    summaryNumberList,
+                    summaryNodeMap,
                     tableBody,
+                    trackingSection,
                     paginationText,
                     paginationButtonContainer,
                     messageBar
                 );
-                await LoadPointLedger(pointPanel, summaryNumberList, messageBar);
+                await LoadPointLedger(pointPanel, summaryNodeMap, messageBar);
             } catch (error) {
                 ShowError(messageBar, ResolveErrorText(error, "订单操作失败"));
             } finally {
@@ -384,7 +268,6 @@
             const action = pageButton.getAttribute("data-page-action");
             const targetPageNo = Number(pageButton.getAttribute("data-page-no") || state.pageNo);
             let nextPageNo = state.pageNo;
-
             if (action === "prev") {
                 nextPageNo = Math.max(1, state.pageNo - 1);
             } else if (action === "next") {
@@ -392,7 +275,6 @@
             } else if (action === "jump" && !Number.isNaN(targetPageNo)) {
                 nextPageNo = Math.max(1, Math.min(state.totalPages, targetPageNo));
             }
-
             if (nextPageNo === state.pageNo) {
                 return;
             }
@@ -407,8 +289,9 @@
     async function LoadOrderList(
         state,
         currentUserId,
-        summaryNumberList,
+        summaryNodeMap,
         tableBody,
+        trackingSection,
         paginationText,
         paginationButtonContainer,
         messageBar
@@ -424,13 +307,19 @@
                 state.pageNo = state.totalPages;
             }
 
-            RenderSummaryCards(summaryNumberList, listResult);
             const orderList = Array.isArray(listResult.orderList) ? listResult.orderList : [];
+            state.orderMap = new Map(orderList.map(function MapOrder(item) {
+                return [Number(item.orderId), item];
+            }));
+
+            RenderSummaryCards(summaryNodeMap, listResult);
+            RenderOrderTracking(trackingSection, orderList, currentUserId);
             RenderOrderTable(orderList, currentUserId, tableBody);
             RenderPaginationArea(state, orderList.length, paginationText, paginationButtonContainer);
             HideMessage(messageBar);
         } catch (error) {
             ShowError(messageBar, ResolveErrorText(error, "订单列表加载失败"));
+            RenderOrderTracking(trackingSection, [], currentUserId);
             RenderOrderTable([], currentUserId, tableBody);
         }
     }
@@ -438,10 +327,10 @@
     /**
      * 加载积分流水
      */
-    async function LoadPointLedger(pointPanel, summaryNumberList, messageBar) {
+    async function LoadPointLedger(pointPanel, summaryNodeMap, messageBar) {
         try {
             const ledgerResult = await window.CampusShareApi.ListPointLedger(DEFAULT_PAGE_NO, LEDGER_PREVIEW_SIZE);
-            RenderPointSummary(summaryNumberList, ledgerResult);
+            RenderPointSummary(summaryNodeMap, ledgerResult);
             RenderPointLedgerList(pointPanel, ledgerResult);
         } catch (error) {
             ShowError(messageBar, ResolveErrorText(error, "积分流水加载失败"));
@@ -451,10 +340,73 @@
     /**
      * 渲染统计卡
      */
-    function RenderSummaryCards(summaryNumberList, listResult) {
-        summaryNumberList[0].textContent = String(SafeNumber(listResult.totalCount));
-        summaryNumberList[1].textContent = String(SafeNumber(listResult.ongoingCount));
-        summaryNumberList[2].textContent = String(SafeNumber(listResult.completedCount));
+    function RenderSummaryCards(summaryNodeMap, listResult) {
+        if (summaryNodeMap.total) {
+            summaryNodeMap.total.textContent = String(SafeNumber(listResult.totalCount));
+        }
+        if (summaryNodeMap.ongoing) {
+            summaryNodeMap.ongoing.textContent = String(SafeNumber(listResult.ongoingCount));
+        }
+        if (summaryNodeMap.completed) {
+            summaryNodeMap.completed.textContent = String(SafeNumber(listResult.completedCount));
+        }
+    }
+
+    /**
+     * 渲染订单追踪
+     */
+    function RenderOrderTracking(trackingSection, orderList, currentUserId) {
+        if (!trackingSection) {
+            return;
+        }
+        const ongoingOrder = (orderList || []).find(function FindOngoing(item) {
+            return item.orderStatus === "PENDING_SELLER_CONFIRM"
+                || item.orderStatus === "PENDING_OFFLINE_TRADE"
+                || item.orderStatus === "PENDING_BUYER_CONFIRM";
+        });
+        const targetOrder = ongoingOrder || (orderList && orderList.length ? orderList[0] : null);
+        if (!targetOrder) {
+            trackingSection.innerHTML = "<div class=\"text-center text-sm text-slate-400 py-6\">暂无可追踪订单</div>";
+            return;
+        }
+
+        const stageIndex = ResolveTrackingStageIndex(targetOrder.orderStatus);
+        const progressWidth = Math.max(0, Math.min(100, (stageIndex / (TRACKING_STAGE_LIST.length - 1)) * 100));
+        const statusText = STATUS_TEXT_MAP[targetOrder.orderStatus] || targetOrder.orderStatus || "未知状态";
+        const counterpartText = BuildCounterpartText(targetOrder, currentUserId);
+        const stepsHtml = TRACKING_STAGE_LIST.map(function BuildStep(step, index) {
+            const reached = index <= stageIndex;
+            return [
+                "<div class=\"relative z-10 flex flex-col items-center\">",
+                `<div class="w-10 h-10 rounded-full flex items-center justify-center ${reached ? "bg-primary text-white" : "bg-surface-container text-slate-300 border-4 border-white"}">`,
+                `<span class="material-symbols-outlined">${reached ? "check" : "circle"}</span>`,
+                "</div>",
+                `<span class="mt-3 text-xs font-bold ${reached ? "text-on-surface" : "text-slate-400"}">${EscapeHtml(step.label)}</span>`,
+                `<span class="text-[10px] text-slate-400">${EscapeHtml(index === stageIndex ? FormatTime(targetOrder.updateTime) : "--")}</span>`,
+                "</div>"
+            ].join("");
+        }).join("");
+
+        trackingSection.innerHTML = [
+            "<div class=\"flex justify-between items-center mb-6\">",
+            "<h2 class=\"text-xl font-bold text-on-surface\">订单追踪</h2>",
+            `<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold uppercase tracking-widest">${EscapeHtml(statusText)}</span>`,
+            "</div>",
+            "<div class=\"flex items-center justify-between relative mb-12\">",
+            "<div class=\"absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -translate-y-1/2 z-0\"></div>",
+            `<div class="absolute top-1/2 left-0 h-0.5 bg-primary -translate-y-1/2 z-0" style="width:${progressWidth}%"></div>`,
+            stepsHtml,
+            "</div>",
+            "<div class=\"bg-surface-container-low p-5 rounded-lg flex items-center justify-between gap-4 flex-wrap\">",
+            "<div class=\"min-w-0\">",
+            `<p class="text-sm font-bold text-on-surface">订单号: #${EscapeHtml(targetOrder.orderNo || targetOrder.orderId)}</p>`,
+            `<p class="text-xs text-slate-500 mt-1">商品ID: ${EscapeHtml(String(targetOrder.productId || "-"))} · ${EscapeHtml(counterpartText)}</p>`,
+            "</div>",
+            "<div class=\"flex gap-3\">",
+            `<button class="bg-white text-on-surface border border-outline-variant text-xs font-bold px-5 py-2 rounded-lg hover:bg-surface-container transition-all" data-order-action="detail" data-order-id="${EscapeHtml(String(targetOrder.orderId))}">查看详情</button>`,
+            "</div>",
+            "</div>"
+        ].join("");
     }
 
     /**
@@ -558,10 +510,122 @@
                 `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">取消</button>`
             ].join("");
         }
-        if ((orderItem.orderStatus === "PENDING_SELLER_CONFIRM" || orderItem.orderStatus === "PENDING_OFFLINE_TRADE") && isSeller) {
-            return `<button data-order-action="close" data-order-id="${orderItem.orderId}" class="${buttonClass} text-slate-600">关闭</button>`;
+        if (orderItem.orderStatus === "COMPLETED" && isBuyer) {
+            return [
+                `<button data-order-action="review" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">去评价</button>`,
+                `<button data-order-action="detail" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">详情</button>`
+            ].join("");
         }
         return `<button data-order-action="detail" data-order-id="${orderItem.orderId}" class="${buttonClass} text-slate-600">查看</button>`;
+    }
+
+    /**
+     * 构建评价弹窗
+     */
+    function BuildReviewModal() {
+        const wrapper = document.createElement("div");
+        wrapper.className = "hidden fixed inset-0 z-[1300] bg-black/40 backdrop-blur-[1px] flex items-center justify-center px-4";
+        wrapper.innerHTML = [
+            "<div class=\"w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-xl p-6\">",
+            "<div class=\"flex items-center justify-between mb-4\">",
+            "<h3 class=\"text-lg font-bold text-on-surface\">订单评价</h3>",
+            "<button type=\"button\" data-role=\"close\" class=\"material-symbols-outlined text-slate-500 hover:text-slate-700\">close</button>",
+            "</div>",
+            "<p class=\"text-sm text-slate-500 mb-4\" data-role=\"order-label\">-</p>",
+            "<label class=\"block mb-4\">",
+            "<span class=\"text-xs text-slate-500 font-semibold\">评分</span>",
+            "<select data-role=\"score\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm\">",
+            "<option value=\"5\">5 分</option>",
+            "<option value=\"4\">4 分</option>",
+            "<option value=\"3\">3 分</option>",
+            "<option value=\"2\">2 分</option>",
+            "<option value=\"1\">1 分</option>",
+            "</select>",
+            "</label>",
+            "<label class=\"block\">",
+            "<span class=\"text-xs text-slate-500 font-semibold\">评价内容</span>",
+            "<textarea data-role=\"content\" maxlength=\"500\" rows=\"4\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg p-3 text-sm resize-none\" placeholder=\"请输入本次交易体验\"></textarea>",
+            "</label>",
+            "<div class=\"flex justify-end items-center gap-3 mt-5\">",
+            "<button type=\"button\" data-role=\"cancel\" class=\"px-4 py-2 rounded-lg text-sm text-on-surface-variant hover:bg-surface-container\">取消</button>",
+            "<button type=\"button\" data-role=\"submit\" class=\"px-4 py-2 rounded-lg text-sm bg-primary text-white font-semibold\">提交评价</button>",
+            "</div>",
+            "</div>"
+        ].join("");
+
+        return {
+            wrapper,
+            closeButton: wrapper.querySelector("[data-role='close']"),
+            cancelButton: wrapper.querySelector("[data-role='cancel']"),
+            submitButton: wrapper.querySelector("[data-role='submit']"),
+            orderLabel: wrapper.querySelector("[data-role='order-label']"),
+            scoreSelect: wrapper.querySelector("[data-role='score']"),
+            contentInput: wrapper.querySelector("[data-role='content']"),
+            currentOrder: null
+        };
+    }
+
+    /**
+     * 打开评价弹窗
+     */
+    function OpenReviewModal(reviewModal, orderItem, messageBar, onSubmitted) {
+        if (!reviewModal || !orderItem) {
+            return;
+        }
+        reviewModal.currentOrder = orderItem;
+        reviewModal.orderLabel.textContent = `订单 #${orderItem.orderNo || orderItem.orderId} · 商品ID ${orderItem.productId || "-"}`;
+        reviewModal.scoreSelect.value = "5";
+        reviewModal.contentInput.value = "";
+        reviewModal.wrapper.classList.remove("hidden");
+
+        const closeModal = function CloseModal() {
+            reviewModal.wrapper.classList.add("hidden");
+            reviewModal.currentOrder = null;
+        };
+
+        reviewModal.closeButton.onclick = closeModal;
+        reviewModal.cancelButton.onclick = closeModal;
+        reviewModal.wrapper.onclick = function HandleOverlayClick(event) {
+            if (event.target === reviewModal.wrapper) {
+                closeModal();
+            }
+        };
+
+        reviewModal.submitButton.onclick = async function HandleSubmitReview() {
+            const currentOrder = reviewModal.currentOrder;
+            if (!currentOrder || !currentOrder.productId) {
+                ShowError(messageBar, "当前订单缺少商品信息，无法评价");
+                return;
+            }
+            const score = Number(reviewModal.scoreSelect.value || "0");
+            const content = reviewModal.contentInput.value ? reviewModal.contentInput.value.trim() : "";
+            if (!score || score < 1 || score > 5) {
+                ShowError(messageBar, "评分需在 1 到 5 分之间");
+                return;
+            }
+            if (!content) {
+                ShowError(messageBar, "评价内容不能为空");
+                return;
+            }
+
+            reviewModal.submitButton.disabled = true;
+            try {
+                await window.CampusShareApi.CreateProductComment(currentOrder.productId, {
+                    score: score,
+                    content: content,
+                    toUserId: currentOrder.sellerUserId || null
+                });
+                closeModal();
+                ShowSuccess(messageBar, "评价已提交");
+                if (typeof onSubmitted === "function") {
+                    await onSubmitted();
+                }
+            } catch (error) {
+                ShowError(messageBar, ResolveErrorText(error, "评价提交失败"));
+            } finally {
+                reviewModal.submitButton.disabled = false;
+            }
+        };
     }
 
     /**
@@ -589,7 +653,7 @@
             "</div>"
         ].join("");
         return {
-            panel,
+            panel: panel,
             listBody: panel.querySelector("tbody")
         };
     }
@@ -597,21 +661,9 @@
     /**
      * 渲染积分摘要
      */
-    function RenderPointSummary(summaryNumberList, ledgerResult) {
-        summaryNumberList[3].textContent = String(SafeNumber(ledgerResult.availablePoints));
-        const summaryCardList = document.querySelectorAll("main .max-w-6xl > .grid > div");
-        if (summaryCardList.length < 4) {
-            return;
-        }
-        const pointCard = summaryCardList[3];
-        const labelNode = pointCard.querySelector("p.text-xs");
-        const helperNode = pointCard.querySelector("div.text-xs");
-        if (labelNode) {
-            labelNode.textContent = "当前积分";
-        }
-        if (helperNode) {
-            helperNode.className = "mt-2 text-xs text-slate-500 font-medium";
-            helperNode.textContent = `累计获得 ${SafeNumber(ledgerResult.totalEarnedPoints)} / 累计消耗 ${SafeNumber(ledgerResult.totalConsumedPoints)}`;
+    function RenderPointSummary(summaryNodeMap, ledgerResult) {
+        if (summaryNodeMap.point) {
+            summaryNodeMap.point.textContent = String(SafeNumber(ledgerResult.availablePoints));
         }
     }
 
@@ -638,7 +690,7 @@
     }
 
     /**
-     * 应用筛选按钮样式
+     * 筛选按钮样式
      */
     function ApplyFilterButtonState(buttonList, activeButton) {
         buttonList.forEach(function ResetButtonStyle(button) {
@@ -666,7 +718,7 @@
     }
 
     /**
-     * 构建区间列表
+     * 构建区间
      */
     function BuildRange(start, end) {
         const result = [];
@@ -674,6 +726,25 @@
             result.push(value);
         }
         return result;
+    }
+
+    /**
+     * 追踪阶段索引
+     */
+    function ResolveTrackingStageIndex(orderStatus) {
+        if (orderStatus === "PENDING_SELLER_CONFIRM") {
+            return 0;
+        }
+        if (orderStatus === "PENDING_OFFLINE_TRADE") {
+            return 1;
+        }
+        if (orderStatus === "PENDING_BUYER_CONFIRM") {
+            return 2;
+        }
+        if (orderStatus === "COMPLETED") {
+            return 3;
+        }
+        return 0;
     }
 
     /**
@@ -693,28 +764,22 @@
     }
 
     /**
-     * 积分变动颜色
+     * 积分变动样式
      */
     function ResolvePointChangeClass(changeAmount) {
-        if (Number(changeAmount) >= 0) {
-            return "text-green-700";
-        }
-        return "text-red-700";
+        return Number(changeAmount) >= 0 ? "text-green-700" : "text-red-700";
     }
 
     /**
-     * 积分变动格式化
+     * 积分变动格式
      */
     function FormatChangeAmount(changeAmount) {
         const amount = Number(changeAmount || 0);
-        if (amount >= 0) {
-            return `+${amount}`;
-        }
-        return String(amount);
+        return amount >= 0 ? `+${amount}` : String(amount);
     }
 
     /**
-     * 流水类型格式化
+     * 流水类型格式
      */
     function FormatTransactionType(transactionType) {
         if (transactionType === "UPLOAD_REWARD") {
@@ -733,7 +798,7 @@
     }
 
     /**
-     * 金额格式化
+     * 金额格式
      */
     function FormatAmount(orderAmount) {
         const amount = Number(orderAmount || 0);
@@ -744,7 +809,7 @@
     }
 
     /**
-     * 时间格式化
+     * 时间格式
      */
     function FormatTime(timeText) {
         if (!timeText) {
@@ -765,7 +830,7 @@
     }
 
     /**
-     * HTML转义
+     * HTML 转义
      */
     function EscapeHtml(text) {
         return String(text || "")
@@ -785,7 +850,7 @@
     }
 
     /**
-     * 统一错误文案
+     * 错误文案
      */
     function ResolveErrorText(error, fallback) {
         if (error instanceof Error && error.message) {
@@ -795,7 +860,7 @@
     }
 
     /**
-     * 构建消息条
+     * 构建消息栏
      */
     function BuildMessageBar(historyCard) {
         const messageBar = document.createElement("div");
@@ -806,7 +871,7 @@
     }
 
     /**
-     * 显示成功
+     * 成功提示
      */
     function ShowSuccess(messageBar, message) {
         messageBar.style.display = "block";
@@ -815,7 +880,7 @@
     }
 
     /**
-     * 显示错误
+     * 错误提示
      */
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";

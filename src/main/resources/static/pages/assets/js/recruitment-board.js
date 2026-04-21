@@ -51,7 +51,8 @@
             pageNo: DEFAULT_PAGE_NO,
             pageSize: DEFAULT_PAGE_SIZE,
             keyword: "",
-            direction: ""
+            direction: "",
+            focusRecruitmentId: ResolveFocusRecruitmentId()
         };
 
         BindSearchInput(searchInput, state, function ReloadBySearch() {
@@ -106,7 +107,8 @@
             const recruitmentList = Array.isArray(listResult.recruitmentList)
                 ? listResult.recruitmentList
                 : [];
-            RenderRecruitmentCards(recruitmentGrid, recruitmentList, currentUserId, currentUserRole);
+            await EnsureFocusedRecruitmentIncluded(recruitmentList, state.focusRecruitmentId);
+            RenderRecruitmentCards(recruitmentGrid, recruitmentList, currentUserId, currentUserRole, state.focusRecruitmentId);
             HideMessage(messageBar);
         } catch (error) {
             ShowError(messageBar, error instanceof Error ? error.message : "招募列表加载失败");
@@ -116,7 +118,7 @@
     /**
      * 渲染卡片
      */
-    function RenderRecruitmentCards(recruitmentGrid, recruitmentList, currentUserId, currentUserRole) {
+    function RenderRecruitmentCards(recruitmentGrid, recruitmentList, currentUserId, currentUserRole, focusRecruitmentId) {
         if (recruitmentList.length === 0) {
             recruitmentGrid.innerHTML = "<div class=\"col-span-1 md:col-span-2 lg:col-span-3 bg-surface-container-lowest rounded-xl p-10 text-center text-slate-500\">暂无招募信息</div>";
             return;
@@ -132,6 +134,7 @@
             const isOwner = currentUserId !== null && Number(item.publisherUserId) === Number(currentUserId);
             const isAdministrator = currentUserRole === ADMINISTRATOR_ROLE;
             const canApply = !!item.canApply && !isOwner;
+            const isFocused = focusRecruitmentId !== null && Number(item.recruitmentId) === Number(focusRecruitmentId);
 
             const applyButtonHtml = BuildApplyActionButton(item.recruitmentId, canApply, isOwner);
             const manageButtonHtml = BuildManageActionButtons(
@@ -141,7 +144,7 @@
             );
 
             return [
-                "<div class=\"bg-surface-container-lowest rounded-xl p-6 flex flex-col hover:shadow-lg transition-shadow border-none group\">",
+                `<div data-recruitment-card-id=\"${SafeNumber(item.recruitmentId)}\" class=\"bg-surface-container-lowest rounded-xl p-6 flex flex-col hover:shadow-lg transition-shadow border-none group ${isFocused ? "ring-2 ring-primary/40" : ""}\">`,
                 "<div class=\"flex justify-between items-start mb-4\">",
                 `<span class=\"bg-surface-container-high text-on-surface-variant px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider\">${EscapeHtml(statusText)}</span>`,
                 `<span class=\"text-outline text-[10px] font-medium\">${EscapeHtml(deadlineText)}</span>`,
@@ -159,6 +162,43 @@
                 "</div>"
             ].join("");
         }).join("");
+        if (focusRecruitmentId !== null) {
+            HighlightFocusedRecruitmentCard(recruitmentGrid, focusRecruitmentId);
+        }
+    }
+
+    function ResolveFocusRecruitmentId() {
+        const searchParams = new URLSearchParams(window.location.search);
+        const focusIdValue = Number(searchParams.get("focusRecruitmentId"));
+        return Number.isFinite(focusIdValue) && focusIdValue > 0 ? focusIdValue : null;
+    }
+
+    async function EnsureFocusedRecruitmentIncluded(recruitmentList, focusRecruitmentId) {
+        if (!Array.isArray(recruitmentList) || focusRecruitmentId === null) {
+            return;
+        }
+        const hasFocusedRecruitment = recruitmentList.some(function MatchFocusedRecruitment(item) {
+            return Number(item.recruitmentId) === Number(focusRecruitmentId);
+        });
+        if (hasFocusedRecruitment) {
+            return;
+        }
+        try {
+            const recruitmentDetail = await window.CampusShareApi.GetTeamRecruitmentDetail(focusRecruitmentId);
+            if (recruitmentDetail && Number(recruitmentDetail.recruitmentId) === Number(focusRecruitmentId)) {
+                recruitmentList.unshift(recruitmentDetail);
+            }
+        } catch (error) {
+            console.warn("[RecruitmentBoard] load focused recruitment failed", error);
+        }
+    }
+
+    function HighlightFocusedRecruitmentCard(recruitmentGrid, focusRecruitmentId) {
+        const targetCard = recruitmentGrid.querySelector(`[data-recruitment-card-id='${focusRecruitmentId}']`);
+        if (!targetCard) {
+            return;
+        }
+        targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     /**

@@ -1,5 +1,5 @@
-/**
- * 管理后台页面逻辑
+﻿/**
+ * 绠＄悊鍚庡彴椤甸潰閫昏緫
  */
 (function InitAdminDashboardPage() {
     const DEFAULT_ORDER_PAGE_SIZE = 10;
@@ -28,18 +28,18 @@
     };
 
     /**
-     * 绑定页面行为
+     * 缁戝畾椤甸潰琛屼负
      */
     async function BindAdminDashboardPage() {
-        if (!window.CampusShareApi) {
-            return;
-        }
-
-        const pageHeader = document.querySelector("main > header");
-        const statCardList = document.querySelectorAll("section.grid.grid-cols-1.md\\:grid-cols-4 > div");
-        const reviewPanel = document.querySelector("section.lg\\:col-span-2.bg-surface-container-lowest");
-        const reviewTableBody = reviewPanel ? reviewPanel.querySelector("table tbody.divide-y") : null;
-        if (!pageHeader || statCardList.length < 3 || !reviewPanel || !reviewTableBody) {
+        const pageHeader = document.querySelector("main[data-admin-main] > header") || document.querySelector("main > header");
+        const statCardList = document.querySelectorAll("[data-admin-section='stats'] > div");
+        const reviewPanel = document.querySelector("[data-admin-review-panel]")
+            || document.querySelector("section.lg\\:col-span-2.bg-surface-container-lowest");
+        const reviewTableBody = reviewPanel
+            ? (reviewPanel.querySelector("[data-admin-review-table-body]") || reviewPanel.querySelector("table tbody.divide-y"))
+            : null;
+        const activityPanel = document.querySelector("[data-admin-activity-panel]");
+        if (!pageHeader) {
             return;
         }
 
@@ -50,6 +50,19 @@
         const workbenchSection = document.querySelector("[data-admin-section='workbench']");
         const adminNavItemList = Array.from(document.querySelectorAll("aside [data-admin-nav]"));
         const settingsPanel = CreateAdminSettingsPanel(mainElement);
+        const adminSubviewContext = {
+            pageHeader,
+            statsSection,
+            workbenchSection,
+            governanceWorkspace,
+            settingsPanel
+        };
+        BindAdminSubviewNavigation(adminNavItemList, adminSubviewContext, messageBar);
+        BindAdminProfileForm(settingsPanel, messageBar);
+        if (!window.CampusShareApi) {
+            ShowError(messageBar, "后台脚本加载失败，请刷新页面后重试");
+            return;
+        }
         const hasToken = !!window.CampusShareApi.GetAuthToken();
         const hasAdminAccess = await window.CampusShareApi.EnsureAdminSession();
         if (!hasAdminAccess && !hasToken) {
@@ -71,16 +84,6 @@
             return;
         }
 
-        const adminSubviewContext = {
-            pageHeader,
-            statsSection,
-            workbenchSection,
-            governanceWorkspace,
-            settingsPanel
-        };
-        BindAdminSubviewNavigation(adminNavItemList, adminSubviewContext, messageBar);
-        BindAdminProfileForm(settingsPanel, messageBar);
-
         const reviewState = {
             taskTypeFilter: "ALL",
             keyword: "",
@@ -89,23 +92,29 @@
             reviewTaskList: []
         };
 
-        const taskToolbar = CreateTaskToolbar(reviewPanel);
-        const taskPager = CreateTaskPager(reviewPanel);
-        BindTaskToolbarActions(taskToolbar, reviewState, function HandleToolbarChange() {
-            RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
-        });
-        BindTaskPagerActions(taskPager, reviewState, function HandlePageChange() {
-            RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
-        });
+        let taskPager = null;
+        if (reviewPanel && reviewTableBody) {
+            const taskToolbar = CreateTaskToolbar(reviewPanel);
+            taskPager = CreateTaskPager(reviewPanel);
+            BindTaskToolbarActions(taskToolbar, reviewState, function HandleToolbarChange() {
+                RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
+            });
+            BindTaskPagerActions(taskPager, reviewState, function HandlePageChange() {
+                RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
+            });
 
-        BindReviewTableActions(
-            reviewTableBody,
-            statCardList,
-            reviewState,
-            taskPager,
-            messageBar,
-            governanceWorkspace
-        );
+            BindReviewTableActions(
+                reviewTableBody,
+                statCardList,
+                reviewState,
+                taskPager,
+                messageBar,
+                governanceWorkspace,
+                activityPanel
+            );
+        } else {
+            console.warn("[AdminDashboard] review panel missing, skip review table bindings");
+        }
         BindGovernanceWorkspaceActions(governanceWorkspace, messageBar, function ReloadDashboardData() {
             return LoadDashboardData(
                 statCardList,
@@ -113,14 +122,23 @@
                 reviewState,
                 taskPager,
                 messageBar,
-                governanceWorkspace
+                governanceWorkspace,
+                activityPanel
             );
         });
-        LoadDashboardData(statCardList, reviewTableBody, reviewState, taskPager, messageBar, governanceWorkspace);
+        LoadDashboardData(
+            statCardList,
+            reviewTableBody,
+            reviewState,
+            taskPager,
+            messageBar,
+            governanceWorkspace,
+            activityPanel
+        );
     }
 
     /**
-     * 加载后台数据
+     * 鍔犺浇鍚庡彴鏁版嵁
      */
     async function LoadDashboardData(
         statCardList,
@@ -128,31 +146,35 @@
         reviewState,
         taskPager,
         messageBar,
-        governanceWorkspace
+        governanceWorkspace,
+        activityPanel
     ) {
         try {
-            const [
-                dashboardSummary,
-                marketOverview,
-                teamRecruitmentList,
-                pendingReportList,
-                pendingUserList,
-                pendingTeamApplicationList,
-                pendingMaterialListResult,
-                pendingProductListResult,
-                orderListResult,
-                ruleConfigList,
-                productListResult,
-                adminOrderListResult,
-                auditLogListResult,
-                opsSummary
-            ] = await Promise.all([
+            const requestNameList = [
+                "GetAdminDashboardSummary",
+                "GetMarketOverview",
+                "ListTeamRecruitments",
+                "ListPendingReports",
+                "ListPendingUsers",
+                "ListPendingTeamRecruitmentApplications",
+                "ListPendingTeamRecruitmentsByAdmin",
+                "ListPendingMaterials",
+                "ListPendingProductsByAdmin",
+                "ListOrdersByAdmin",
+                "ListSystemRulesByAdmin",
+                "ListProductsByAdmin",
+                "ListOrdersByAdminForGovernance",
+                "ListAuditLogsByAdmin",
+                "GetAdminOpsSummary"
+            ];
+            const settledResultList = await Promise.allSettled([
                 window.CampusShareApi.GetAdminDashboardSummary(),
                 window.CampusShareApi.GetMarketOverview(),
                 window.CampusShareApi.ListTeamRecruitments({ pageNo: 1, pageSize: 1 }),
                 window.CampusShareApi.ListPendingReports(),
                 window.CampusShareApi.ListPendingUsers(),
                 window.CampusShareApi.ListPendingTeamRecruitmentApplications(),
+                window.CampusShareApi.ListPendingTeamRecruitmentsByAdmin(1, DEFAULT_PENDING_PRODUCT_FETCH_SIZE),
                 window.CampusShareApi.ListPendingMaterials(1, DEFAULT_PENDING_MATERIAL_FETCH_SIZE),
                 window.CampusShareApi.ListPendingProductsByAdmin(1, DEFAULT_PENDING_PRODUCT_FETCH_SIZE),
                 window.CampusShareApi.ListOrdersByAdmin(1, DEFAULT_ORDER_PAGE_SIZE, "ALL"),
@@ -163,14 +185,52 @@
                 window.CampusShareApi.GetAdminOpsSummary()
             ]);
 
-            RenderStats(
-                statCardList,
-                dashboardSummary,
-                marketOverview,
-                teamRecruitmentList,
-                pendingReportList,
-                orderListResult
+            settledResultList.forEach(function LogRejectedRequest(settledResult, index) {
+                if (settledResult.status !== "rejected") {
+                    return;
+                }
+                console.warn(`[AdminDashboard] ${requestNameList[index]} failed`, settledResult.reason);
+            });
+
+            const dashboardSummary = ResolveSettledValue(settledResultList[0], {});
+            const marketOverview = ResolveSettledValue(settledResultList[1], {});
+            const teamRecruitmentList = ResolveSettledValue(settledResultList[2], { totalCount: 0 });
+            const pendingReportList = ResolveSettledValue(settledResultList[3], []);
+            const pendingUserList = ResolveSettledValue(settledResultList[4], []);
+            const pendingTeamApplicationList = ResolveSettledValue(settledResultList[5], []);
+            const pendingTeamRecruitmentListResult = ResolveSettledValue(
+                settledResultList[6],
+                { recruitmentList: [], totalCount: 0 }
             );
+            const pendingMaterialListResult = ResolveSettledValue(
+                settledResultList[7],
+                { materialList: [], totalCount: 0 }
+            );
+            const pendingProductListResult = ResolveSettledValue(
+                settledResultList[8],
+                { productList: [], totalCount: 0 }
+            );
+            const orderListResult = ResolveSettledValue(
+                settledResultList[9],
+                { orderList: [], totalCount: 0, ongoingCount: 0, completedCount: 0 }
+            );
+            const ruleConfigList = ResolveSettledValue(settledResultList[10], []);
+            const productListResult = ResolveSettledValue(settledResultList[11], { productList: [], totalCount: 0 });
+            const adminOrderListResult = ResolveSettledValue(settledResultList[12], { orderList: [], totalCount: 0 });
+            const auditLogListResult = ResolveSettledValue(settledResultList[13], { auditLogList: [], totalCount: 0 });
+            const opsSummary = ResolveSettledValue(settledResultList[14], {});
+
+            if (statCardList && statCardList.length >= 3) {
+                RenderStats(
+                    statCardList,
+                    dashboardSummary,
+                    marketOverview,
+                    teamRecruitmentList,
+                    pendingReportList,
+                    orderListResult
+                );
+            }
+            RenderActivityPanel(activityPanel, dashboardSummary, marketOverview, orderListResult, pendingReportList);
             RenderGovernanceWorkspace(
                 governanceWorkspace,
                 dashboardSummary,
@@ -181,23 +241,33 @@
                 opsSummary
             );
 
-            reviewState.reviewTaskList = BuildReviewTaskList(
-                pendingReportList,
-                pendingUserList,
-                pendingTeamApplicationList,
-                pendingMaterialListResult,
-                pendingProductListResult
-            );
-            reviewState.pageNo = 1;
-            RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
+            if (reviewTableBody && reviewState && taskPager) {
+                reviewState.reviewTaskList = BuildReviewTaskList(
+                    pendingReportList,
+                    pendingUserList,
+                    pendingTeamApplicationList,
+                    pendingTeamRecruitmentListResult,
+                    pendingMaterialListResult,
+                    pendingProductListResult
+                );
+                reviewState.pageNo = 1;
+                RenderReviewTableByState(reviewTableBody, reviewState, taskPager);
+            }
             HideMessage(messageBar);
         } catch (error) {
             ShowError(messageBar, error instanceof Error ? error.message : "后台数据加载失败");
         }
     }
 
+    function ResolveSettledValue(settledResult, fallbackValue) {
+        if (settledResult && settledResult.status === "fulfilled") {
+            return settledResult.value;
+        }
+        return fallbackValue;
+    }
+
     /**
-     * 渲染统计卡片
+     * 娓叉煋缁熻鍗＄墖
      */
     function CreateAdminSettingsPanel(mainElement) {
         if (!mainElement) {
@@ -601,29 +671,215 @@
         }
     }
 
+    function RenderActivityPanel(activityPanel, dashboardSummary, marketOverview, orderListResult, pendingReportList) {
+        if (!activityPanel) {
+            return;
+        }
+
+        const userGrowthRateNode = activityPanel.querySelector("[data-role='activity-user-growth-rate']");
+        const userGrowthBarsNode = activityPanel.querySelector("[data-role='activity-user-growth-bars']");
+        const resourceExchangeTextNode = activityPanel.querySelector("[data-role='activity-resource-exchange-text']");
+        const resourceExchangeProgressNode = activityPanel.querySelector("[data-role='activity-resource-exchange-progress']");
+        const activityNoteNode = activityPanel.querySelector("[data-role='activity-note']");
+
+        const totalUserCount = SafeNumber(dashboardSummary && dashboardSummary.totalUserCount);
+        const sevenDayNewUserCount = SafeNumber(dashboardSummary && dashboardSummary.sevenDayNewUserCount);
+        const todayNewUserCount = SafeNumber(dashboardSummary && dashboardSummary.todayNewUserCount);
+        const userGrowthPercent = totalUserCount > 0
+            ? (sevenDayNewUserCount / totalUserCount) * 100
+            : 0;
+
+        if (userGrowthRateNode) {
+            userGrowthRateNode.textContent = `${userGrowthPercent >= 0 ? "+" : ""}${userGrowthPercent.toFixed(1)}%`;
+        }
+        if (userGrowthBarsNode) {
+            const userTrendSeed = Math.max(1, Math.round(sevenDayNewUserCount / 7));
+            const userTrendList = [0.68, 0.76, 0.84, 0.93, 1.02, 1.1, 1.18].map(function BuildTrend(seed) {
+                return Math.max(1, Math.round(userTrendSeed * seed + todayNewUserCount * 0.08));
+            });
+            const userTrendMax = Math.max.apply(null, userTrendList.concat([1]));
+            userGrowthBarsNode.innerHTML = userTrendList.map(function BuildBar(value, index) {
+                const heightPercent = Math.max(18, Math.round((value / userTrendMax) * 95));
+                const barClass = index === userTrendList.length - 1 ? "bg-primary" : "bg-primary/20";
+                return `<div class="w-full ${barClass} rounded-sm" style="height:${heightPercent}%"></div>`;
+            }).join("");
+        }
+
+        const sevenDayNewOrderCount = SafeNumber(dashboardSummary && dashboardSummary.sevenDayNewOrderCount);
+        const exchangePerDay = Math.round(sevenDayNewOrderCount / 7);
+        if (resourceExchangeTextNode) {
+            resourceExchangeTextNode.textContent = `${FormatNumber(exchangePerDay)} 次操作/天`;
+        }
+
+        const totalOrderCount = SafeNumber(
+            dashboardSummary && dashboardSummary.totalOrderCount != null
+                ? dashboardSummary.totalOrderCount
+                : (orderListResult && orderListResult.totalCount)
+        );
+        const activeOrderCount = SafeNumber(
+            dashboardSummary && dashboardSummary.ongoingOrderCount != null
+                ? dashboardSummary.ongoingOrderCount
+                : (orderListResult && orderListResult.ongoingCount)
+        );
+        if (resourceExchangeProgressNode) {
+            const activityPercent = totalOrderCount > 0
+                ? Math.round((activeOrderCount / totalOrderCount) * 100)
+                : 0;
+            resourceExchangeProgressNode.style.width = `${Math.min(100, Math.max(8, activityPercent))}%`;
+        }
+
+        if (activityNoteNode) {
+            const publishedProductCount = SafeNumber(marketOverview && marketOverview.publishedProductCount);
+            const publishedMaterialCount = SafeNumber(marketOverview && marketOverview.publishedMaterialCount);
+            const pendingReportCount = Array.isArray(pendingReportList) ? pendingReportList.length : 0;
+            activityNoteNode.textContent = `最近7天新增用户 ${FormatNumber(sevenDayNewUserCount)}，新增订单 ${FormatNumber(sevenDayNewOrderCount)}，当前待处理举报 ${FormatNumber(pendingReportCount)}。在架商品 ${FormatNumber(publishedProductCount)}，已发布资料 ${FormatNumber(publishedMaterialCount)}。`;
+        }
+    }
+
     /**
-     * 构建审核任务
+     * 鏋勫缓瀹℃牳浠诲姟
      */
     function BuildReviewTaskList(
         pendingReportList,
         pendingUserList,
         pendingTeamApplicationList,
+        pendingTeamRecruitmentListResult,
         pendingMaterialListResult,
         pendingProductListResult
     ) {
         const reportTaskList = BuildReportReviewTaskList(pendingReportList);
         const userTaskList = BuildUserReviewTaskList(pendingUserList);
         const teamTaskList = BuildTeamApplicationReviewTaskList(pendingTeamApplicationList);
+        const teamRecruitmentTaskList = BuildTeamRecruitmentReviewTaskList(pendingTeamRecruitmentListResult);
         const materialTaskList = BuildMaterialReviewTaskList(pendingMaterialListResult);
         const productTaskList = BuildProductReviewTaskList(pendingProductListResult);
-        return reportTaskList.concat(userTaskList).concat(teamTaskList).concat(materialTaskList).concat(productTaskList)
+        return reportTaskList
+            .concat(userTaskList)
+            .concat(teamTaskList)
+            .concat(teamRecruitmentTaskList)
+            .concat(materialTaskList)
+            .concat(productTaskList)
             .sort(function SortReviewTask(a, b) {
                 return ResolveTimeValue(b.createTime) - ResolveTimeValue(a.createTime);
             });
     }
 
+    function ResolveTaskResourceTitle(taskItem) {
+        if (taskItem.taskType === "REPORT") {
+            return `举报 #${taskItem.taskId} (${taskItem.reason || "未分类"})`;
+        }
+        if (taskItem.taskType === "USER") {
+            return `用户审核 #${taskItem.taskId} (${taskItem.account || "-"})`;
+        }
+        if (taskItem.taskType === "TEAM") {
+            return `组队申请 #${taskItem.taskId} (招募 #${taskItem.recruitmentId || "-"})`;
+        }
+        if (taskItem.taskType === "TEAM_RECRUITMENT") {
+            return `帖子审核 #${taskItem.taskId} (${taskItem.title || "-"})`;
+        }
+        if (taskItem.taskType === "MATERIAL") {
+            return `资料审核 #${taskItem.taskId} (${taskItem.courseName || "-"})`;
+        }
+        return `商品审核 #${taskItem.taskId} (${taskItem.title || "-"})`;
+    }
+
+    function ResolveTaskResourceMeta(taskItem) {
+        if (taskItem.taskType === "REPORT") {
+            return `${taskItem.targetType || "UNKNOWN"} #${taskItem.targetId || "-"}`;
+        }
+        if (taskItem.taskType === "USER") {
+            return `${taskItem.college || "-"} · ${taskItem.grade || "-"}`;
+        }
+        if (taskItem.taskType === "TEAM") {
+            return taskItem.applyRemark || "未填写申请备注";
+        }
+        if (taskItem.taskType === "TEAM_RECRUITMENT") {
+            return `${taskItem.category || "-"} · ${taskItem.recruitmentStatus || "PENDING_REVIEW"}`;
+        }
+        if (taskItem.taskType === "MATERIAL") {
+            return `文件: ${taskItem.fileType || "-"} · ${SafeNumber(taskItem.fileSizeBytes)} bytes`;
+        }
+        return `${taskItem.category || "-"} · ${taskItem.conditionLevel || "-"} · ￥${FormatPrice(taskItem.price)}`;
+    }
+
+    function ResolveTaskContributor(taskItem) {
+        if (taskItem.taskType === "REPORT") {
+            return `举报人ID: ${taskItem.reporterUserId || "-"}`;
+        }
+        if (taskItem.taskType === "USER") {
+            return taskItem.displayName || taskItem.account || `用户#${taskItem.taskId || "-"}`;
+        }
+        if (taskItem.taskType === "TEAM") {
+            return taskItem.applicantDisplayName || `申请人#${taskItem.applicantUserId || "-"}`;
+        }
+        if (taskItem.taskType === "TEAM_RECRUITMENT") {
+            return taskItem.publisherDisplayName || `发布者ID: ${taskItem.publisherUserId || "-"}`;
+        }
+        if (taskItem.taskType === "MATERIAL") {
+            return `上传者ID: ${taskItem.uploaderUserId || "-"}`;
+        }
+        return taskItem.sellerDisplayName || `卖家ID: ${taskItem.sellerUserId || "-"}`;
+    }
+
+    function ResolveTaskStatusText(taskItem) {
+        if (taskItem.taskType === "REPORT") {
+            return "举报待审";
+        }
+        if (taskItem.taskType === "USER") {
+            return "用户待审";
+        }
+        if (taskItem.taskType === "TEAM") {
+            return "申请待审";
+        }
+        if (taskItem.taskType === "TEAM_RECRUITMENT") {
+            return "帖子待审";
+        }
+        if (taskItem.taskType === "MATERIAL") {
+            return "资料待审";
+        }
+        return "商品待审";
+    }
+
+    function ResolveTaskStatusClass(taskItem) {
+        if (taskItem.taskType === "REPORT") {
+            return "bg-secondary-container text-on-secondary-container";
+        }
+        if (taskItem.taskType === "USER") {
+            return "bg-surface-container text-slate-600";
+        }
+        if (taskItem.taskType === "TEAM") {
+            return "bg-primary/10 text-primary";
+        }
+        if (taskItem.taskType === "TEAM_RECRUITMENT") {
+            return "bg-indigo-100 text-indigo-700";
+        }
+        if (taskItem.taskType === "MATERIAL") {
+            return "bg-amber-100 text-amber-700";
+        }
+        return "bg-blue-100 text-blue-700";
+    }
+
+    function ResolveTaskIconName(taskItem) {
+        if (taskItem.taskType === "REPORT") {
+            return "gavel";
+        }
+        if (taskItem.taskType === "USER") {
+            return "badge";
+        }
+        if (taskItem.taskType === "TEAM") {
+            return "groups";
+        }
+        if (taskItem.taskType === "TEAM_RECRUITMENT") {
+            return "forum";
+        }
+        if (taskItem.taskType === "MATERIAL") {
+            return "description";
+        }
+        return "storefront";
+    }
+
     /**
-     * 按状态渲染审核表
+     * 鎸夌姸鎬佹覆鏌撳鏍歌〃
      */
     function RenderReviewTableByState(reviewTableBody, reviewState, taskPager) {
         const filteredTaskList = FilterReviewTasks(reviewState.reviewTaskList, reviewState);
@@ -641,58 +897,26 @@
         }
 
         reviewTableBody.innerHTML = pageTaskList.map(function BuildTaskRow(taskItem) {
-            const resourceTitle = taskItem.taskType === "REPORT"
-                ? `举报 #${taskItem.taskId} (${taskItem.reason})`
-                : (taskItem.taskType === "USER"
-                    ? `用户审核 #${taskItem.taskId} (${taskItem.account})`
-                    : (taskItem.taskType === "TEAM"
-                        ? `组队申请 #${taskItem.taskId} (招募 #${taskItem.recruitmentId})`
-                        : (taskItem.taskType === "MATERIAL"
-                            ? `资料审核 #${taskItem.taskId} (${taskItem.courseName || "-"})`
-                            : `商品审核 #${taskItem.taskId} (${taskItem.title || "-"})`)));
-            const resourceMeta = taskItem.taskType === "REPORT"
-                ? `${taskItem.targetType} #${taskItem.targetId}`
-                : (taskItem.taskType === "USER"
-                    ? `${taskItem.college || "-"} · ${taskItem.grade || "-"}`
-                    : (taskItem.taskType === "TEAM"
-                        ? (taskItem.applyRemark || "未填写申请备注")
-                        : (taskItem.taskType === "MATERIAL"
-                            ? `文件: ${taskItem.fileType || "-"} · ${SafeNumber(taskItem.fileSizeBytes)} bytes`
-                            : `${taskItem.category || "-"} · ${taskItem.conditionLevel || "-"} · ¥${FormatPrice(taskItem.price)}`)));
-            const contributor = taskItem.taskType === "REPORT"
-                ? `举报人ID: ${taskItem.reporterUserId}`
-                : (taskItem.taskType === "USER"
-                    ? (taskItem.displayName || taskItem.account || `用户#${taskItem.taskId}`)
-                    : (taskItem.taskType === "TEAM"
-                        ? (taskItem.applicantDisplayName || `申请人#${taskItem.applicantUserId}`)
-                        : (taskItem.taskType === "MATERIAL"
-                            ? `上传者ID: ${taskItem.uploaderUserId || "-"}`
-                            : (taskItem.sellerDisplayName || `卖家ID: ${taskItem.sellerUserId || "-"}`))));
-            const statusText = taskItem.taskType === "REPORT"
-                ? "举报待审"
-                : (taskItem.taskType === "USER"
-                    ? "用户待审"
-                    : (taskItem.taskType === "TEAM" ? "申请待审" : (taskItem.taskType === "MATERIAL" ? "资料待审" : "商品待审")));
-            const statusClass = taskItem.taskType === "REPORT"
-                ? "bg-secondary-container text-on-secondary-container"
-                : (taskItem.taskType === "USER"
-                    ? "bg-surface-container text-slate-600"
-                    : (taskItem.taskType === "TEAM"
-                        ? "bg-primary/10 text-primary"
-                        : (taskItem.taskType === "MATERIAL" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700")));
-            const iconName = taskItem.taskType === "REPORT"
-                ? "gavel"
-                : (taskItem.taskType === "USER"
-                    ? "badge"
-                    : (taskItem.taskType === "TEAM" ? "groups" : (taskItem.taskType === "MATERIAL" ? "description" : "storefront")));
+            const resourceTitle = ResolveTaskResourceTitle(taskItem);
+            const resourceMeta = ResolveTaskResourceMeta(taskItem);
+            const contributor = ResolveTaskContributor(taskItem);
+            const statusText = ResolveTaskStatusText(taskItem);
+            const statusClass = ResolveTaskStatusClass(taskItem);
+            const iconName = ResolveTaskIconName(taskItem);
             const recruitmentIdValue = taskItem.recruitmentId || "";
             const productIdValue = taskItem.taskType === "PRODUCT" ? taskItem.taskId : "";
             const productDetailPath = `/pages/market_item_detail.html?productId=${encodeURIComponent(String(taskItem.taskId || ""))}`;
+            const recruitmentDetailPath = `/pages/recruitment_board.html?focusRecruitmentId=${encodeURIComponent(String(taskItem.taskId || ""))}`;
             const resourceTitleHtml = taskItem.taskType === "PRODUCT"
                 ? `<a href="${productDetailPath}" target="_blank" class="text-sm font-semibold text-primary hover:underline">${EscapeHtml(resourceTitle)}</a>`
-                : `<p class="text-sm font-semibold text-on-surface">${EscapeHtml(resourceTitle)}</p>`;
+                : (taskItem.taskType === "TEAM_RECRUITMENT"
+                    ? `<a href="${recruitmentDetailPath}" target="_blank" class="text-sm font-semibold text-primary hover:underline">${EscapeHtml(resourceTitle)}</a>`
+                    : `<p class="text-sm font-semibold text-on-surface">${EscapeHtml(resourceTitle)}</p>`);
             const viewProductButton = taskItem.taskType === "PRODUCT"
                 ? `<button data-task-action=\"view-product\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${productIdValue}\" class=\"p-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100\" title=\"查看商品详情\"><span class=\"material-symbols-outlined text-sm\">visibility</span></button>`
+                : "";
+            const viewRecruitmentButton = taskItem.taskType === "TEAM_RECRUITMENT"
+                ? `<button data-task-action=\"view-recruitment\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" class=\"p-1.5 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100\" title=\"查看帖子详情\"><span class=\"material-symbols-outlined text-sm\">visibility</span></button>`
                 : "";
 
             return [
@@ -712,6 +936,7 @@
                 "<td class=\"px-6 py-4 text-right\">",
                 "<div class=\"flex justify-end gap-2\">",
                 viewProductButton,
+                viewRecruitmentButton,
                 `<button data-task-action=\"approve\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" data-recruitment-id=\"${recruitmentIdValue}\" class=\"p-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100\"><span class=\"material-symbols-outlined text-sm\">check</span></button>`,
                 `<button data-task-action=\"reject\" data-task-type=\"${taskItem.taskType}\" data-task-id=\"${taskItem.taskId}\" data-recruitment-id=\"${recruitmentIdValue}\" class=\"p-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100\"><span class=\"material-symbols-outlined text-sm\">close</span></button>`,
                 "</div></td></tr>"
@@ -729,7 +954,7 @@
     }
 
     /**
-     * 过滤任务
+     * 杩囨护浠诲姟
      */
     function FilterReviewTasks(reviewTaskList, reviewState) {
         return reviewTaskList.filter(function FilterTask(taskItem) {
@@ -761,14 +986,18 @@
                 taskItem.conditionLevel || "",
                 taskItem.tradeLocation || "",
                 taskItem.sellerDisplayName || "",
-                String(taskItem.sellerUserId || "")
+                String(taskItem.sellerUserId || ""),
+                taskItem.publisherDisplayName || "",
+                String(taskItem.publisherUserId || ""),
+                taskItem.recruitmentStatus || "",
+                taskItem.contactInfo || ""
             ].join(" ").toLowerCase();
             return searchText.includes(keyword);
         });
     }
 
     /**
-     * 绑定审核操作
+     * 缁戝畾瀹℃牳鎿嶄綔
      */
     function BindReviewTableActions(
         reviewTableBody,
@@ -776,7 +1005,8 @@
         reviewState,
         taskPager,
         messageBar,
-        governanceWorkspace
+        governanceWorkspace,
+        activityPanel
     ) {
         reviewTableBody.addEventListener("click", async function HandleReviewAction(event) {
             const actionButton = event.target.closest("button[data-task-action]");
@@ -792,6 +1022,10 @@
             }
             if (taskAction === "view-product" && taskType === "PRODUCT") {
                 window.open(`/pages/market_item_detail.html?productId=${encodeURIComponent(String(taskId))}`, "_blank");
+                return;
+            }
+            if (taskAction === "view-recruitment" && taskType === "TEAM_RECRUITMENT") {
+                window.open(`/pages/recruitment_board.html?focusRecruitmentId=${encodeURIComponent(String(taskId))}`, "_blank");
                 return;
             }
             const approved = taskAction === "approve";
@@ -832,6 +1066,12 @@
                             "后台快速驳回"
                         );
                     }
+                } else if (taskType === "TEAM_RECRUITMENT") {
+                    await window.CampusShareApi.ReviewTeamRecruitmentByAdmin(
+                        taskId,
+                        approved,
+                        approved ? "后台快速通过" : "后台快速驳回"
+                    );
                 } else if (taskType === "MATERIAL") {
                     await window.CampusShareApi.ReviewMaterial(
                         taskId,
@@ -854,7 +1094,8 @@
                     reviewState,
                     taskPager,
                     messageBar,
-                    governanceWorkspace
+                    governanceWorkspace,
+                    activityPanel
                 );
             } catch (error) {
                 ShowError(messageBar, error instanceof Error ? error.message : "审核操作失败");
@@ -865,7 +1106,7 @@
     }
 
     /**
-     * 创建工具栏
+     * 鍒涘缓宸ュ叿鏍?
      */
     function CreateTaskToolbar(reviewPanel) {
         const panelHeader = reviewPanel.querySelector(".px-6.py-4.border-b");
@@ -879,6 +1120,7 @@
             "<option value=\"REPORT\">举报</option>",
             "<option value=\"USER\">用户审核</option>",
             "<option value=\"TEAM\">组队申请</option>",
+            "<option value=\"TEAM_RECRUITMENT\">帖子审核</option>",
             "<option value=\"MATERIAL\">资料审核</option>",
             "<option value=\"PRODUCT\">商品审核</option>",
             "</select>",
@@ -888,7 +1130,11 @@
             "<button data-task-refresh class=\"px-3 py-1.5 text-xs rounded-md bg-surface-container text-slate-700 font-semibold hover:bg-surface-container-high\">重置</button>",
             "</div>"
         ].join("");
-        panelHeader.insertAdjacentElement("afterend", toolbar);
+        if (panelHeader) {
+            panelHeader.insertAdjacentElement("afterend", toolbar);
+        } else {
+            reviewPanel.prepend(toolbar);
+        }
         if (window.CampusShareApi && typeof window.CampusShareApi.EnhanceSelectElements === "function") {
             window.CampusShareApi.EnhanceSelectElements(toolbar);
         }
@@ -901,9 +1147,12 @@
     }
 
     /**
-     * 绑定工具栏
+     * 缁戝畾宸ュ叿鏍?
      */
     function BindTaskToolbarActions(taskToolbar, reviewState, onChange) {
+        if (!taskToolbar || !taskToolbar.typeFilterSelect || !taskToolbar.keywordInput || !taskToolbar.refreshButton) {
+            return;
+        }
         taskToolbar.typeFilterSelect.addEventListener("change", function HandleTypeChange() {
             reviewState.taskTypeFilter = taskToolbar.typeFilterSelect.value || "ALL";
             reviewState.pageNo = 1;
@@ -933,7 +1182,7 @@
     }
 
     /**
-     * 创建分页栏
+     * 鍒涘缓鍒嗛〉鏍?
      */
     function CreateTaskPager(reviewPanel) {
         const pager = document.createElement("div");
@@ -955,9 +1204,12 @@
     }
 
     /**
-     * 绑定分页栏
+     * 缁戝畾鍒嗛〉鏍?
      */
     function BindTaskPagerActions(taskPager, reviewState, onPageChange) {
+        if (!taskPager || !taskPager.prevButton || !taskPager.nextButton) {
+            return;
+        }
         taskPager.prevButton.addEventListener("click", function HandlePrevPage() {
             if (reviewState.pageNo <= 1) {
                 return;
@@ -972,9 +1224,12 @@
     }
 
     /**
-     * 更新分页信息
+     * 鏇存柊鍒嗛〉淇℃伅
      */
     function UpdateTaskPager(taskPager, pageNo, pageTotal, totalCount, startNo, endNo) {
+        if (!taskPager || !taskPager.pageInfo || !taskPager.prevButton || !taskPager.nextButton) {
+            return;
+        }
         taskPager.pageInfo.textContent = totalCount <= 0
             ? "暂无记录"
             : `显示 ${totalCount} 条中的 ${startNo}-${endNo}，第 ${pageNo}/${pageTotal} 页`;
@@ -985,7 +1240,7 @@
     }
 
     /**
-     * 构建举报任务列表
+     * 鏋勫缓涓炬姤浠诲姟鍒楄〃
      */
     function BuildReportReviewTaskList(pendingReportList) {
         if (!Array.isArray(pendingReportList)) {
@@ -1005,7 +1260,7 @@
     }
 
     /**
-     * 构建用户任务列表
+     * 鏋勫缓鐢ㄦ埛浠诲姟鍒楄〃
      */
     function BuildUserReviewTaskList(pendingUserList) {
         if (!Array.isArray(pendingUserList)) {
@@ -1025,7 +1280,7 @@
     }
 
     /**
-     * 构建组队申请任务列表
+     * 鏋勫缓缁勯槦鐢宠浠诲姟鍒楄〃
      */
     function BuildTeamApplicationReviewTaskList(pendingTeamApplicationList) {
         if (!Array.isArray(pendingTeamApplicationList)) {
@@ -1045,7 +1300,30 @@
     }
 
     /**
-     * 构建资料审核任务列表
+     * 鏋勫缓缁勯槦鍙戝竷瀹℃牳浠诲姟鍒楄〃
+     */
+    function BuildTeamRecruitmentReviewTaskList(pendingTeamRecruitmentListResult) {
+        const recruitmentList = pendingTeamRecruitmentListResult
+            && Array.isArray(pendingTeamRecruitmentListResult.recruitmentList)
+            ? pendingTeamRecruitmentListResult.recruitmentList
+            : [];
+        return recruitmentList.map(function MapRecruitment(recruitmentItem) {
+            return {
+                taskType: "TEAM_RECRUITMENT",
+                taskId: SafeNumber(recruitmentItem.recruitmentId),
+                publisherUserId: SafeNumber(recruitmentItem.publisherUserId),
+                publisherDisplayName: recruitmentItem.publisherDisplayName || "",
+                title: recruitmentItem.title || recruitmentItem.eventName || "",
+                category: recruitmentItem.category || "",
+                contactInfo: recruitmentItem.contactInfo || "",
+                recruitmentStatus: recruitmentItem.recruitmentStatus || "",
+                createTime: recruitmentItem.createTime || null
+            };
+        });
+    }
+
+    /**
+     * 鏋勫缓璧勬枡瀹℃牳浠诲姟鍒楄〃
      */
     function BuildMaterialReviewTaskList(pendingMaterialListResult) {
         const materialList = pendingMaterialListResult && Array.isArray(pendingMaterialListResult.materialList)
@@ -1065,7 +1343,7 @@
     }
 
     /**
-     * 构建商品审核任务列表
+     * 鏋勫缓鍟嗗搧瀹℃牳浠诲姟鍒楄〃
      */
     function BuildProductReviewTaskList(pendingProductListResult) {
         const productList = pendingProductListResult && Array.isArray(pendingProductListResult.productList)
@@ -1088,7 +1366,7 @@
     }
 
     /**
-     * 创建治理工作区
+     * 鍒涘缓娌荤悊宸ヤ綔鍖?
      */
     function CreateGovernanceWorkspace() {
         const mainElement = document.querySelector("main");
@@ -1107,7 +1385,7 @@
             "<button data-governance-action=\"refresh\" class=\"px-3 py-1.5 text-xs rounded-md bg-surface-container text-slate-700 font-semibold hover:bg-surface-container-high\">刷新治理数据</button>",
             "</div>",
             "<div class=\"grid grid-cols-2 md:grid-cols-4 gap-3 text-xs\">",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">待审核用户</p><p data-role=\"summary-user-pending\" class=\"text-lg font-bold text-primary\">0</p></div>",
+            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">待审用户</p><p data-role=\"summary-user-pending\" class=\"text-lg font-bold text-primary\">0</p></div>",
             "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">待处理举报</p><p data-role=\"summary-report-pending\" class=\"text-lg font-bold text-primary\">0</p></div>",
             "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">进行中订单</p><p data-role=\"summary-order-ongoing\" class=\"text-lg font-bold text-primary\">0</p></div>",
             "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">近7天审计</p><p data-role=\"summary-audit-seven\" class=\"text-lg font-bold text-primary\">0</p></div>",
@@ -1195,7 +1473,7 @@
     }
 
     /**
-     * 绑定治理工作区事件
+     * 缁戝畾娌荤悊宸ヤ綔鍖轰簨浠?
      */
     function BindGovernanceWorkspaceActions(governanceWorkspace, messageBar, reloadDashboardDataFunction) {
         if (!governanceWorkspace || !governanceWorkspace.wrapper) {
@@ -1239,7 +1517,7 @@
     }
 
     /**
-     * 渲染治理工作区
+     * 娓叉煋娌荤悊宸ヤ綔鍖?
      */
     function RenderGovernanceWorkspace(
         governanceWorkspace,
@@ -1299,7 +1577,7 @@
     }
 
     /**
-     * 解析规则说明
+     * 瑙ｆ瀽瑙勫垯璇存槑
      */
     function ResolveRuleDescription(ruleItem) {
         const ruleKey = String(ruleItem && ruleItem.ruleKey ? ruleItem.ruleKey : "").trim().toUpperCase();
@@ -1315,7 +1593,7 @@
     }
 
     /**
-     * 渲染规则表
+     * 娓叉煋瑙勫垯琛?
      */
     function RenderRuleTable(ruleTableBody, ruleConfigList) {
         if (!ruleTableBody) {
@@ -1342,7 +1620,7 @@
     }
 
     /**
-     * 渲染商品治理表
+     * 娓叉煋鍟嗗搧娌荤悊琛?
      */
     function RenderProductGovernanceTable(productTableBody, productListResult) {
         if (!productTableBody) {
@@ -1376,7 +1654,7 @@
     }
 
     /**
-     * 渲染订单治理表
+     * 娓叉煋璁㈠崟娌荤悊琛?
      */
     function RenderOrderGovernanceTable(orderTableBody, adminOrderListResult) {
         if (!orderTableBody) {
@@ -1407,7 +1685,7 @@
     }
 
     /**
-     * 渲染审计表
+     * 娓叉煋瀹¤琛?
      */
     function RenderAuditTable(auditTableBody, auditLogListResult) {
         if (!auditTableBody) {
@@ -1432,7 +1710,7 @@
     }
 
     /**
-     * 处理规则更新
+     * 澶勭悊瑙勫垯鏇存柊
      */
     async function HandleRuleUpdateAction(actionButton) {
         const ruleKey = actionButton.getAttribute("data-rule-key") || "";
@@ -1448,7 +1726,7 @@
     }
 
     /**
-     * 处理商品强制下架
+     * 澶勭悊鍟嗗搧寮哄埗涓嬫灦
      */
     async function HandleProductOfflineAction(actionButton) {
         const productId = SafeNumber(actionButton.getAttribute("data-product-id"));
@@ -1462,7 +1740,7 @@
     }
 
     /**
-     * 处理订单强制关闭
+     * 澶勭悊璁㈠崟寮哄埗鍏抽棴
      */
     async function HandleOrderCloseAction(actionButton) {
         const orderId = SafeNumber(actionButton.getAttribute("data-order-id"));
@@ -1477,7 +1755,7 @@
     }
 
     /**
-     * 是否可关闭订单
+     * 鏄惁鍙叧闂鍗?
      */
     function IsOrderClosable(orderStatus) {
         return orderStatus === "PENDING_SELLER_CONFIRM"
@@ -1486,7 +1764,7 @@
     }
 
     /**
-     * 格式化运行态健康文本
+     * 鏍煎紡鍖栬繍琛屾€佸仴搴锋枃鏈?
      */
     function FormatOpsHealthStatus(opsSummary) {
         const overallStatus = String(opsSummary && opsSummary.overallStatus ? opsSummary.overallStatus : "UNKNOWN");
@@ -1496,7 +1774,7 @@
     }
 
     /**
-     * 创建提示栏
+     * 鍒涘缓鎻愮ず鏍?
      */
     function CreateMessageBar(pageHeader) {
         const messageBar = document.createElement("div");
@@ -1507,7 +1785,7 @@
     }
 
     /**
-     * 显示成功提示
+     * 鏄剧ず鎴愬姛鎻愮ず
      */
     function ShowSuccess(messageBar, message) {
         messageBar.style.display = "block";
@@ -1516,7 +1794,7 @@
     }
 
     /**
-     * 显示错误提示
+     * 鏄剧ず閿欒鎻愮ず
      */
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";
@@ -1525,7 +1803,7 @@
     }
 
     /**
-     * 隐藏提示
+     * 闅愯棌鎻愮ず
      */
     function HideMessage(messageBar) {
         messageBar.style.display = "none";
@@ -1533,7 +1811,7 @@
     }
 
     /**
-     * 格式化时间
+     * 鏍煎紡鍖栨椂闂?
      */
     function FormatTime(timeText) {
         if (!timeText) {
@@ -1547,14 +1825,14 @@
     }
 
     /**
-     * 补零
+     * 琛ラ浂
      */
     function PadTime(value) {
         return value < 10 ? `0${value}` : `${value}`;
     }
 
     /**
-     * 时间值
+     * 鏃堕棿鍊?
      */
     function ResolveTimeValue(timeText) {
         if (!timeText) {
@@ -1568,7 +1846,7 @@
     }
 
     /**
-     * 安全数值
+     * 瀹夊叏鏁板€?
      */
     function SafeNumber(value) {
         const numberValue = Number(value || 0);
@@ -1576,14 +1854,14 @@
     }
 
     /**
-     * 数字格式化
+     * 鏁板瓧鏍煎紡鍖?
      */
     function FormatNumber(value) {
         return SafeNumber(value).toLocaleString("zh-CN");
     }
 
     /**
-     * 金额格式化
+     * 閲戦鏍煎紡鍖?
      */
     function FormatPrice(value) {
         const priceValue = Number(value || 0);
@@ -1594,7 +1872,7 @@
     }
 
     /**
-     * 文本转义
+     * 鏂囨湰杞箟
      */
     function EscapeHtml(text) {
         return String(text || "")
@@ -1607,3 +1885,4 @@
 
     document.addEventListener("DOMContentLoaded", BindAdminDashboardPage);
 })();
+

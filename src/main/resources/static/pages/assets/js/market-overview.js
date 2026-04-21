@@ -32,10 +32,13 @@
         const view = {
             pageSection,
             primaryActionButton: document.querySelector("[data-role='overview-primary-action']"),
+            searchInput: document.querySelector("[data-role='overview-search-input']"),
             profileNameNode: document.querySelector("[data-role='overview-profile-name']"),
             profileRoleNode: document.querySelector("[data-role='overview-profile-role']"),
             profileAvatarNode: document.querySelector("[data-role='overview-profile-avatar']"),
             noticeListNode: document.querySelector("[data-role='overview-notice-list']"),
+            favoriteSummaryNode: document.querySelector("[data-role='overview-favorite-summary']"),
+            pointBalanceNode: document.querySelector("[data-role='overview-point-balance']"),
             recommendedSummaryNode: document.querySelector("[data-role='overview-recommended-summary']"),
             productGridNode: document.querySelector("[data-role='overview-product-grid']"),
             materialListNode: document.querySelector("[data-role='overview-material-list']"),
@@ -44,6 +47,7 @@
         view.messageBarNode = BuildMessageBar(pageSection);
 
         await InitializeSessionView(view);
+        BindOverviewSearch(view.searchInput);
         BindRecommendedProductClick(view.productGridNode);
         BindMaterialDownload(view, view.materialListNode);
         BindMaterialFavorite(view, view.materialListNode);
@@ -51,6 +55,7 @@
 
         LoadOverviewData(view);
         LoadNoticeData(view.noticeListNode);
+        LoadSidebarPersonalData(view);
     }
 
     /**
@@ -95,6 +100,26 @@
         view.profileNameNode.textContent = displayName;
         view.profileRoleNode.textContent = roleText;
         view.profileAvatarNode.textContent = ResolveAvatarText(displayName);
+    }
+
+    /**
+     * 绑定主页搜索
+     */
+    function BindOverviewSearch(searchInput) {
+        if (!searchInput) {
+            return;
+        }
+        searchInput.addEventListener("keydown", function HandleSearchKeyDown(event) {
+            if (event.key !== "Enter") {
+                return;
+            }
+            event.preventDefault();
+            const keyword = searchInput.value ? searchInput.value.trim() : "";
+            const targetPath = keyword
+                ? `/pages/market_listing.html?keyword=${encodeURIComponent(keyword)}`
+                : "/pages/market_listing.html";
+            window.location.href = targetPath;
+        });
     }
 
     /**
@@ -295,6 +320,36 @@
             RenderNoticeList(noticeListNode, notificationList);
         } catch (error) {
             noticeListNode.innerHTML = `<p class="text-xs text-red-500 px-2">${EscapeHtml(GetErrorMessage(error, "消息加载失败"))}</p>`;
+        }
+    }
+
+    /**
+     * 加载左侧收藏与积分
+     */
+    async function LoadSidebarPersonalData(view) {
+        if (!view.favoriteSummaryNode || !view.pointBalanceNode) {
+            return;
+        }
+        if (!window.CampusShareApi.GetAuthToken()) {
+            view.favoriteSummaryNode.textContent = "登录后查看";
+            view.pointBalanceNode.textContent = "-";
+            return;
+        }
+        try {
+            const [favoriteProductResult, favoriteMaterialResult, pointLedgerResult] = await Promise.all([
+                window.CampusShareApi.ListMyFavoriteProducts(1, 1),
+                window.CampusShareApi.ListMyFavoriteMaterials(1, 1),
+                window.CampusShareApi.ListPointLedger(1, 1)
+            ]);
+            const favoriteProductCount = SafeNumber(favoriteProductResult && favoriteProductResult.totalCount);
+            const favoriteMaterialCount = SafeNumber(favoriteMaterialResult && favoriteMaterialResult.totalCount);
+            const availablePoints = SafeNumber(pointLedgerResult && pointLedgerResult.availablePoints);
+            view.favoriteSummaryNode.textContent = `商品 ${favoriteProductCount} · 资料 ${favoriteMaterialCount}`;
+            view.pointBalanceNode.textContent = String(availablePoints);
+        } catch (error) {
+            view.favoriteSummaryNode.textContent = "加载失败";
+            view.pointBalanceNode.textContent = "-";
+            ShowError(view.messageBarNode, GetErrorMessage(error, "收藏与积分加载失败"));
         }
     }
 

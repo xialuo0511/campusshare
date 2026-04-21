@@ -10,9 +10,11 @@ public enum ProductStatusEnum {
     PUBLISHED,
     /** 审核驳回 */
     REJECTED,
-    /** 已下架 */
+    /** 用户主动下架 */
     OFFLINE,
-    /** 已锁定 */
+    /** 管理员强制下线 */
+    FORCE_OFFLINE,
+    /** 订单锁定 */
     LOCKED,
     /** 已关闭 */
     CLOSED

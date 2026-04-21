@@ -93,7 +93,7 @@
 <!-- Central Search Bar -->
 <div class="hidden md:flex flex-1 max-w-2xl bg-surface-container rounded-lg items-center px-4 py-2 gap-3 group focus-within:ring-1 ring-primary/20">
 <span class="material-symbols-outlined text-outline">search</span>
-<input class="bg-transparent border-none focus:ring-0 w-full text-sm" placeholder="搜索资源、教材、项目..." type="text"/>
+<input class="bg-transparent border-none focus:ring-0 w-full text-sm" data-role="overview-search-input" placeholder="搜索资源、教材、项目..." type="text"/>
 <div class="h-4 w-px bg-outline-variant/30"></div>
 <button class="flex items-center gap-1 text-slate-600 font-medium whitespace-nowrap">
                         分类
@@ -105,7 +105,7 @@
 <div class="hidden lg:flex items-center gap-6">
 <a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" data-nav-target="/pages/market_overview.html" href="#">交易市场</a>
 <a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-nav-target="/pages/material_listing.html" href="#">学术资源</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-nav-target="/pages/recruitment_board.html" href="#">招募板</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
 </div>
 <div class="flex items-center gap-4">
 <span class="material-symbols-outlined text-slate-600 cursor-pointer scale-95 active:scale-100 duration-150">notifications</span>
@@ -134,11 +134,11 @@
 <span class="material-symbols-outlined">inventory_2</span>
 <span>管理</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 rounded-md transition-all" href="#">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 rounded-md transition-all" data-nav-target="/pages/my_publish.html" href="#">
 <span class="material-symbols-outlined">format_list_bulleted</span>
 <span>我的发布</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 rounded-md transition-all" href="#">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 rounded-md transition-all" data-nav-target="/pages/user_profile.html" href="#">
 <span class="material-symbols-outlined">settings</span>
 <span>设置</span>
 </a>
@@ -151,6 +151,17 @@
 <h3 class="text-xs font-bold text-outline uppercase tracking-widest mb-4 px-2">消息提醒</h3>
 <div class="space-y-4" data-role="overview-notice-list">
 <p class="text-xs text-outline px-2">暂无消息提醒</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-4 space-y-4">
+<h3 class="text-xs font-bold text-outline uppercase tracking-widest px-2">我的数据</h3>
+<div class="bg-white rounded-lg border border-outline-variant/30 px-3 py-2.5">
+<p class="text-[10px] text-outline uppercase tracking-widest mb-1">我的收藏</p>
+<p class="text-sm font-semibold text-on-surface" data-role="overview-favorite-summary">商品 0 · 资料 0</p>
+</div>
+<div class="bg-white rounded-lg border border-outline-variant/30 px-3 py-2.5">
+<p class="text-[10px] text-outline uppercase tracking-widest mb-1">当前积分</p>
+<p class="text-sm font-semibold text-on-surface" data-role="overview-point-balance">0</p>
 </div>
 </div>
 </aside>
@@ -172,7 +183,7 @@
 <ul class="space-y-4">
 <li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" data-nav-target="/pages/market_listing.html" href="#">二手市场 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
 <li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" data-nav-target="/pages/material_listing.html" href="#">学术资源 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
-<li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" data-nav-target="/pages/recruitment_board.html" href="#">组队招募 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
+<li><a class="text-on-primary-container flex justify-between items-center group hover:translate-x-1 transition-transform" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛 <span class="material-symbols-outlined text-sm">arrow_forward</span></a></li>
 </ul>
 </div>
 <button class="bg-white text-primary w-full py-3 rounded-lg font-bold text-sm hover:bg-surface-container transition-colors" data-nav-target="/pages/publish_create.html">开始发布</button>
@@ -197,7 +208,7 @@
 <div class="lg:col-span-2 bg-surface-container-low rounded-xl p-6">
 <div class="flex justify-between items-center mb-6">
 <h2 class="text-xl font-bold text-on-surface">精选资料</h2>
-<button class="text-xs font-bold text-primary flex items-center gap-1 uppercase tracking-widest" data-nav-target="/pages/publish_create.html">
+<button class="text-xs font-bold text-primary flex items-center gap-1 uppercase tracking-widest" data-nav-target="/pages/publish_create.html?type=material">
                             上传文档
                             <span class="material-symbols-outlined text-sm">upload_file</span>
 </button>
@@ -212,7 +223,7 @@
 <div class="space-y-4 flex-1" data-role="overview-recruitment-list">
 <div class="p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-xs opacity-80">暂无招募精选</div>
 </div>
-<button class="mt-6 w-full py-3 bg-on-tertiary-container text-tertiary-container rounded-lg font-bold text-sm" data-nav-target="/pages/recruitment_board.html">浏览所有项目</button>
+<button class="mt-6 w-full py-3 bg-on-tertiary-container text-tertiary-container rounded-lg font-bold text-sm" data-nav-target="/pages/market_listing.html?view=FORUM">浏览所有项目</button>
 </div>
 </div>
 </section>

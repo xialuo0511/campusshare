@@ -58,7 +58,7 @@
             pageSize: DEFAULT_PAGE_SIZE,
             totalCount: 0,
             totalPages: 1,
-            keyword: "",
+            keyword: ResolveInitialKeywordFromUrl(),
             category: "",
             conditionLevel: ResolveConditionText(conditionButtonList.find(IsConditionSelected)),
             tradeLocation: "",
@@ -66,6 +66,9 @@
             maxPrice: "",
             sortType: ResolveSortType(sortSelect)
         };
+        if (searchInput && state.keyword) {
+            searchInput.value = state.keyword;
+        }
 
         BindSearchInput(searchInput, state, function ReloadFromSearch() {
             LoadProductList(state, productGrid, summaryText, pageText, messageBar);
@@ -194,6 +197,15 @@
             return "MARKET";
         }
         return "";
+    }
+
+    /**
+     * 解析 URL 中的 keyword
+     */
+    function ResolveInitialKeywordFromUrl() {
+        const searchParams = new URLSearchParams(window.location.search || "");
+        const keyword = searchParams.get("keyword");
+        return keyword ? keyword.trim() : "";
     }
 
     /**

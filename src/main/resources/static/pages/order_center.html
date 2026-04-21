@@ -127,19 +127,15 @@
 </div>
 </div>
 <nav class="flex-1 space-y-1">
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="local" data-order-nav="DASHBOARD" href="#">
+<a class="flex items-center gap-3 px-3 py-2 bg-[#ffffff] dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm translate-x-1" data-nav-target="/pages/order_center.html" href="#">
 <span class="material-symbols-outlined text-xl">dashboard</span>
-<span class="font-medium text-sm">控制面板</span>
+<span class="font-medium text-sm">订单中心</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="local" data-order-nav="MANAGEMENT" href="#">
-<span class="material-symbols-outlined text-xl">inventory_2</span>
-<span class="font-medium text-sm">管理</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 bg-[#ffffff] dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm translate-x-1" data-nav-target="local" data-order-nav="ORDER_LIST" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="/pages/my_publish.html" href="#">
 <span class="material-symbols-outlined text-xl">format_list_bulleted</span>
-<span class="font-medium text-sm">订单列表</span>
+<span class="font-medium text-sm">我的发布</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="local" data-order-nav="PROFILE" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="/pages/user_profile.html" href="#">
 <span class="material-symbols-outlined text-xl">settings</span>
 <span class="font-medium text-sm">个人设置</span>
 </a>
@@ -158,7 +154,7 @@
 </aside>
 <!-- Main Content Area -->
 <main class="ml-64 flex-1 p-8 bg-surface-container-low min-h-screen">
-<div class="max-w-6xl mx-auto" data-order-panel="ORDER_LIST">
+<div class="max-w-6xl mx-auto">
 <header class="mb-8">
 <h1 class="text-3xl font-extrabold text-on-surface tracking-tight">订单中心</h1>
 <p class="text-slate-500 mt-1">管理您的机构交易和学术资源获取。</p>
@@ -167,79 +163,28 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
 <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">总订单</p>
-<p class="text-3xl font-bold text-primary">128</p>
+<p class="text-3xl font-bold text-primary" data-role="order-summary-total">0</p>
 <div class="mt-2 text-xs text-secondary font-medium">较上月 +12%</div>
 </div>
 <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">进行中交易</p>
-<p class="text-3xl font-bold text-secondary">14</p>
+<p class="text-3xl font-bold text-secondary" data-role="order-summary-ongoing">0</p>
 <div class="mt-2 text-xs text-slate-500 font-medium">8 个需要处理</div>
 </div>
 <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">已完成</p>
-<p class="text-3xl font-bold text-tertiary">104</p>
+<p class="text-3xl font-bold text-tertiary" data-role="order-summary-completed">0</p>
 <div class="mt-2 text-xs text-slate-500 font-medium">成功的交接</div>
 </div>
 <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">处理时间</p>
-<p class="text-3xl font-bold text-on-surface">2.4<span class="text-sm font-normal text-slate-400 ml-1">天</span></p>
+<p class="text-3xl font-bold text-on-surface" data-role="order-summary-point">0</p>
 <div class="mt-2 text-xs text-error font-medium">较目标 -0.4</div>
 </div>
 </div>
 <!-- Active Order Tracking -->
-<section class="bg-surface-container-lowest rounded-xl shadow-sm p-8 mb-8">
-<div class="flex justify-between items-center mb-6">
-<h2 class="text-xl font-bold text-on-surface">订单追踪</h2>
-<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold uppercase tracking-widest">进行中</span>
-</div>
-<div class="flex items-center justify-between relative mb-12">
-<!-- Connecting Line -->
-<div class="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -translate-y-1/2 z-0"></div>
-<div class="absolute top-1/2 left-0 w-2/3 h-0.5 bg-primary -translate-y-1/2 z-0"></div>
-<!-- Steps -->
-<div class="relative z-10 flex flex-col items-center">
-<div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-md">
-<span class="material-symbols-outlined">check</span>
-</div>
-<span class="mt-3 text-xs font-bold text-on-surface">已下单</span>
-<span class="text-[10px] text-slate-400">10月12日, 10:45 AM</span>
-</div>
-<div class="relative z-10 flex flex-col items-center">
-<div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-md">
-<span class="material-symbols-outlined">payments</span>
-</div>
-<span class="mt-3 text-xs font-bold text-on-surface">付款确认</span>
-<span class="text-[10px] text-slate-400">10月12日, 11:30 AM</span>
-</div>
-<div class="relative z-10 flex flex-col items-center">
-<div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-md">
-<span class="material-symbols-outlined">inventory</span>
-</div>
-<span class="mt-3 text-xs font-bold text-on-surface">预约交接</span>
-<span class="text-[10px] text-slate-400">今天, 2:00 PM</span>
-</div>
-<div class="relative z-10 flex flex-col items-center">
-<div class="w-10 h-10 rounded-full bg-surface-container text-slate-300 border-4 border-white flex items-center justify-center">
-<span class="material-symbols-outlined">handshake</span>
-</div>
-<span class="mt-3 text-xs font-bold text-slate-400">已完成</span>
-</div>
-</div>
-<div class="bg-surface-container-low p-5 rounded-lg flex items-center justify-between">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 bg-white rounded-md flex items-center justify-center shadow-sm">
-<span class="material-symbols-outlined text-primary">magnification_small</span>
-</div>
-<div>
-<p class="text-sm font-bold text-on-surface">高精度实验室显微镜 (品牌 A)</p>
-<p class="text-xs text-slate-500">订单号: #CS-99201-AX</p>
-</div>
-</div>
-<div class="flex gap-3">
-<button class="bg-primary text-white text-xs font-bold px-5 py-2 rounded-lg transition-all hover:bg-primary-container">确认交易</button>
-<button class="bg-white text-on-surface border border-outline-variant text-xs font-bold px-5 py-2 rounded-lg hover:bg-surface-container transition-all">查看详情</button>
-</div>
-</div>
+<section class="bg-surface-container-lowest rounded-xl shadow-sm p-8 mb-8" data-role="order-tracking-section">
+<div class="text-center text-sm text-slate-400 py-6">暂无可追踪订单</div>
 </section>
 <!-- Detailed Orders Table -->
 <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
@@ -365,42 +310,6 @@
 </div>
 </div>
 </div>
-<section class="max-w-4xl mx-auto hidden" data-order-panel="PROFILE">
-<div class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 p-8">
-<div class="mb-8">
-<h2 class="text-2xl font-extrabold text-on-surface tracking-tight">个人设置</h2>
-<p class="text-slate-500 mt-1 text-sm">可在此调整昵称、学院和联系方式</p>
-</div>
-<form class="space-y-6" data-order-profile-form>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<label class="block">
-<span class="text-sm font-semibold text-on-surface">昵称</span>
-<input class="mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" data-order-profile-field="displayName" placeholder="请输入昵称" type="text"/>
-</label>
-<label class="block">
-<span class="text-sm font-semibold text-on-surface">邮箱</span>
-<input class="mt-2 w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-2.5 text-sm text-slate-500" data-order-profile-field="contact" placeholder="邮箱地址" type="text" readonly/>
-</label>
-<label class="block">
-<span class="text-sm font-semibold text-on-surface">学号</span>
-<input class="mt-2 w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-2.5 text-sm text-slate-500" data-order-profile-field="account" placeholder="学号" type="text" readonly/>
-</label>
-<label class="block">
-<span class="text-sm font-semibold text-on-surface">学院</span>
-<input class="mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" data-order-profile-field="college" placeholder="请输入学院" type="text"/>
-</label>
-<label class="block">
-<span class="text-sm font-semibold text-on-surface">年级</span>
-<input class="mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" data-order-profile-field="grade" placeholder="请输入年级" type="text"/>
-</label>
-</div>
-<div class="flex items-center gap-3 pt-2">
-<button class="bg-[#005d90] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#0d6fa5] transition-colors" data-order-profile-action="save" type="submit">保存设置</button>
-<button class="px-5 py-2.5 rounded-lg text-sm font-semibold border border-outline-variant/40 text-slate-600 hover:bg-surface-container transition-colors" data-order-profile-action="reset" type="button">重置</button>
-</div>
-</form>
-</div>
-</section>
 </main>
 </div>
 <!-- Footer -->

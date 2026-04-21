@@ -83,6 +83,14 @@
         }
         body { font-family: 'Inter', sans-serif; }
         h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .review-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .review-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(64, 72, 80, 0.25);
+            border-radius: 999px;
+        }
     </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen">
@@ -229,9 +237,108 @@
 </section>
 </div>
 <section class="hidden mt-8" data-admin-section="content-review">
-<div class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden h-[calc(100vh-12rem)] min-h-[760px]">
-<iframe class="w-full h-full border-0 bg-white" data-admin-content-review-frame src="/pages/admin_content_review.html?embedded=1" title="内容审核子界面"></iframe>
+<section class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden" data-review-page-main>
+<header class="px-8 py-6 bg-surface-card border-b border-outline/25 flex items-center justify-between">
+<div>
+<h2 class="text-2xl font-extrabold text-on-surface">内容审核工作台</h2>
+<p class="text-sm text-on-surface-variant mt-1">帖子与商品统一审核入口</p>
 </div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-80 rounded-xl border-none bg-surface-container-low pl-10 pr-4 py-2.5 text-sm ring-1 ring-outline/30 focus:ring-primary" data-review-global-search placeholder="搜索标题、发布者、ID" type="text"/>
+</div>
+</header>
+<section class="px-8 pt-6 pb-4">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4" data-review-stat-grid>
+<article class="bg-surface-card rounded-xl p-5 ring-1 ring-outline/20 shadow-sm">
+<p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">待审核总量</p>
+<h2 class="text-3xl font-extrabold text-primary mt-3">-</h2>
+<p class="text-xs mt-2 text-slate-500">当前筛选</p>
+</article>
+<article class="bg-surface-card rounded-xl p-5 ring-1 ring-outline/20 shadow-sm">
+<p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">本次已处理</p>
+<h2 class="text-3xl font-extrabold text-green-700 mt-3">-</h2>
+<p class="text-xs mt-2 text-slate-500">当前会话</p>
+</article>
+<article class="bg-surface-card rounded-xl p-5 ring-1 ring-outline/20 shadow-sm">
+<p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">平均等待时长</p>
+<h2 class="text-3xl font-extrabold mt-3">-</h2>
+<p class="text-xs mt-2 text-slate-500">队列估算</p>
+</article>
+<article class="bg-surface-card rounded-xl p-5 ring-1 ring-outline/20 shadow-sm">
+<p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">当前队列</p>
+<h2 class="text-3xl font-extrabold mt-3">-</h2>
+<p class="text-xs mt-2 text-slate-500">商品 / 帖子</p>
+</article>
+</div>
+</section>
+<section class="px-8 pb-8 min-h-0">
+<div class="grid grid-cols-12 gap-6 h-[calc(100vh-18rem)] min-h-[700px]" data-review-main-grid>
+<section class="col-span-3 bg-surface-card rounded-xl ring-1 ring-outline/20 shadow-sm overflow-hidden flex flex-col">
+<div class="px-5 py-4 border-b border-outline/20">
+<h3 class="text-lg font-bold">审核队列</h3>
+<div class="flex flex-wrap gap-2 mt-4" data-review-filter-group>
+<button class="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-bold transition-colors" type="button">全部</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">商品</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">帖子</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">高风险</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">最新</button>
+</div>
+</div>
+<div class="px-5 py-4 border-b border-outline/20">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base">search</span>
+<input class="w-full rounded-xl border-none bg-surface-container-low px-10 py-2.5 text-sm ring-1 ring-outline/30 focus:ring-primary" data-review-queue-search placeholder="筛选队列" type="text"/>
+</div>
+</div>
+<div class="review-scrollbar overflow-y-auto flex-1 p-3 space-y-3" data-review-queue-list>
+<div class="p-4 rounded-xl bg-surface-container-low text-sm text-slate-500">正在加载待审核任务...</div>
+</div>
+</section>
+<section class="col-span-6 bg-surface-card rounded-xl ring-1 ring-outline/20 shadow-sm overflow-hidden flex flex-col" data-review-detail-panel>
+<div class="px-6 py-5 border-b border-outline/20" data-review-detail-header>
+<h2 class="text-xl font-bold">请选择左侧任务</h2>
+<p class="text-sm text-slate-500 mt-2">中间栏展示完整审核信息</p>
+</div>
+<div class="review-scrollbar overflow-y-auto flex-1 px-6 py-6 space-y-4" data-review-detail-body>
+<article class="rounded-xl bg-surface-container-low p-5 text-sm text-slate-600">暂无内容</article>
+</div>
+</section>
+<aside class="col-span-3 bg-surface-card rounded-xl ring-1 ring-outline/20 shadow-sm overflow-hidden flex flex-col" data-review-decision-panel>
+<div class="px-5 py-5 border-b border-outline/20">
+<h3 class="text-lg font-bold">审核决策</h3>
+<p class="text-xs text-slate-500 mt-1">通过直接点击“通过”，驳回需填写意见</p>
+</div>
+<div class="review-scrollbar overflow-y-auto flex-1 px-5 py-5 space-y-4">
+<article class="rounded-xl bg-surface-container-low p-4">
+<p class="text-sm font-bold">当前状态</p>
+<span class="inline-flex mt-3 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white ring-1 ring-outline/40" data-review-current-status>待审核</span>
+</article>
+<article class="rounded-xl bg-surface-container-low p-4 space-y-4">
+<div>
+<label class="block text-sm font-bold mb-2" for="reject-template">意见模板</label>
+<select class="w-full rounded-xl border-none bg-white py-3 px-4 text-sm ring-1 ring-outline/30 focus:ring-primary" id="reject-template"></select>
+</div>
+<div>
+<label class="block text-sm font-bold mb-2" for="review-note">审核意见</label>
+<textarea class="w-full min-h-[160px] rounded-xl border-none bg-white py-3 px-4 text-sm leading-6 ring-1 ring-outline/30 focus:ring-primary resize-none" id="review-note" placeholder="驳回时请填写原因"></textarea>
+</div>
+</article>
+</div>
+<div class="px-5 py-5 border-t border-outline/20 bg-surface-container-low">
+<div class="grid grid-cols-2 gap-3 mb-3">
+<button class="px-4 py-3 rounded-xl bg-white font-semibold ring-1 ring-outline/30 hover:bg-surface transition-colors" data-review-prev type="button">上一条</button>
+<button class="px-4 py-3 rounded-xl bg-white font-semibold ring-1 ring-outline/30 hover:bg-surface transition-colors" data-review-next type="button">下一条</button>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="px-4 py-3 rounded-xl bg-red-700 text-white font-bold hover:opacity-95 transition-opacity" data-review-reject type="button">驳回</button>
+<button class="px-4 py-3 rounded-xl bg-primary text-white font-bold hover:opacity-95 transition-opacity" data-review-approve type="button">通过</button>
+</div>
+</div>
+</aside>
+</div>
+</section>
+</section>
 </section>
 </main>
 <!-- Footer Component (Shared Anchor) -->
@@ -250,5 +357,6 @@
 </footer>
 <script src="/pages/assets/js/campusshare-api.js?v=20260420"></script>
 <script src="/pages/assets/js/admin-dashboard.js?v=20260420"></script>
+<script src="/pages/assets/js/admin-content-review.js?v=20260421"></script>
 </body></html>
 

@@ -1,5 +1,5 @@
 /**
- * CampusShare 椤甸潰鎺ュ彛灏佽
+ * CampusShare 页面接口封装
  */
 (function InitCampusShareApi() {
     const AUTH_TOKEN_STORAGE_KEY = "campusshare.authToken";
@@ -50,21 +50,21 @@
     let selectEnhanceObserver = null;
 
     /**
-     * 鐢熸垚璇锋眰ID
+     * 生成请求ID
      */
     function BuildRequestId() {
         return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
     }
 
     /**
-     * 璇诲彇浠ょ墝
+     * 读取令牌
      */
     function GetAuthToken() {
         return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
     }
 
     /**
-     * 淇濆瓨浠ょ墝
+     * 保存令牌
      */
     function SetAuthToken(token) {
         if (!token) {
@@ -74,14 +74,14 @@
     }
 
     /**
-     * 娓呯悊浠ょ墝
+     * 清理令牌
      */
     function ClearAuthToken() {
         window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
     }
 
     /**
-     * 璇诲彇褰撳墠鐢ㄦ埛淇℃伅
+     * 读取当前用户信息
      */
     function GetCurrentUserProfile() {
         const profileText = window.localStorage.getItem(USER_PROFILE_STORAGE_KEY);
@@ -96,7 +96,7 @@
     }
 
     /**
-     * 淇濆瓨褰撳墠鐢ㄦ埛淇℃伅
+     * 保存当前用户信息
      */
     function SetCurrentUserProfile(profile) {
         if (!profile) {
@@ -106,14 +106,14 @@
     }
 
     /**
-     * 娓呯悊褰撳墠鐢ㄦ埛淇℃伅
+     * 清理当前用户信息
      */
     function ClearCurrentUserProfile() {
         window.localStorage.removeItem(USER_PROFILE_STORAGE_KEY);
     }
 
     /**
-     * 淇濆瓨鐧诲綍浼氳瘽淇℃伅
+     * 保存登录会话信息
      */
     function SetSessionFromLogin(loginData) {
         if (!loginData) {
@@ -133,7 +133,7 @@
     }
 
     /**
-     * 娓呯悊鐧诲綍浼氳瘽淇℃伅
+     * 清理登录会话信息
      */
     function ClearSession() {
         ClearAuthToken();
@@ -141,7 +141,7 @@
     }
 
     /**
-     * 鍐欏叆鐧诲綍鎻愮ず
+     * 写入登录提示
      */
     function SetAuthNotice(noticeText) {
         const safeNoticeText = noticeText == null ? "" : String(noticeText).trim();
@@ -151,12 +151,12 @@
         try {
             window.sessionStorage.setItem(AUTH_NOTICE_STORAGE_KEY, safeNoticeText);
         } catch (error) {
-            // 蹇界暐浼氳瘽瀛樺偍寮傚父
+            // 忽略会话存储异常
         }
     }
 
     /**
-     * 璇诲彇骞舵竻鐞嗙櫥褰曟彁绀?
+     * 读取并清理登录提示
      */
     function ConsumeAuthNotice() {
         try {
@@ -169,7 +169,7 @@
     }
 
     /**
-     * 瑙ｆ瀽瀹夊叏椤甸潰璺緞
+     * 解析安全页面路径
      */
     function ResolveSafePagePath(path) {
         if (!path || typeof path !== "string") {
@@ -186,7 +186,7 @@
     }
 
     /**
-     * 鏋勫缓鍏紑鏂囦欢璁块棶鍦板潃
+     * 构建公开文件访问地址
      */
     function BuildPublicFileUrl(fileId) {
         const safeFileId = fileId == null ? "" : String(fileId).trim();
@@ -197,7 +197,7 @@
     }
 
     /**
-     * 褰掍竴鍖栭〉闈㈣矾寰?
+     * 归一化页面路径
      */
     function NormalizePagePath(path) {
         const safePath = ResolveSafePagePath(path);
@@ -212,7 +212,7 @@
     }
 
     /**
-     * 鏄惁涓哄叕寮€椤甸潰
+     * 是否为公开页面
      */
     function IsPublicPagePath(path) {
         const normalizedPath = NormalizePagePath(path);
@@ -223,7 +223,7 @@
     }
 
     /**
-     * 鏄惁闇€瑕佺櫥褰?
+     * 是否需要登录
      */
     function IsAuthRequiredPagePath(path) {
         const normalizedPath = NormalizePagePath(path);
@@ -234,7 +234,7 @@
     }
 
     /**
-     * 褰撳墠椤甸潰璺緞
+     * 当前页面路径
      */
     function ResolveCurrentPagePathWithQuery() {
         const pathname = window.location.pathname || "";
@@ -247,7 +247,7 @@
     }
 
     /**
-     * 鏋勫缓鐧诲綍椤靛湴鍧€
+     * 构建登录页地址
      */
     function BuildAuthPageUrl(redirectPath) {
         const safeRedirectPath = ResolveSafePagePath(redirectPath || "");
@@ -258,7 +258,7 @@
     }
 
     /**
-     * 瑙ｆ瀽URL涓殑閲嶅畾鍚戣矾寰?
+     * 解析URL中的重定向路径
      */
     function ResolveRedirectPathFromQuery() {
         const searchParams = new URLSearchParams(window.location.search || "");
@@ -267,7 +267,7 @@
     }
 
     /**
-     * 瑙ｆ瀽榛樿棣栭〉
+     * 解析默认首页
      */
     function ResolveDefaultHomePathByRole(userRole) {
         if (userRole === ADMINISTRATOR_ROLE) {
@@ -277,7 +277,7 @@
     }
 
     /**
-     * 瑙ｆ瀽鐧诲綍鎴愬姛璺宠浆鍦板潃
+     * 解析登录成功跳转地址
      */
     function ResolveLoginSuccessRedirect(loginData) {
         const redirectPath = ResolveRedirectPathFromQuery();
@@ -292,7 +292,7 @@
     }
 
     /**
-     * 璺宠浆鐧诲綍椤?
+     * 跳转登录页
      */
     function RedirectToAuthPage(redirectPath, noticeText) {
         const targetPath = redirectPath || ResolveCurrentPagePathWithQuery();
@@ -301,7 +301,7 @@
     }
 
     /**
-     * 椤甸潰璺宠浆
+     * 页面跳转
      */
     function NavigateToPage(targetPath) {
         const safePath = ResolveSafePagePath(targetPath);
@@ -326,7 +326,7 @@
         const lowerText = text.toLowerCase();
         if (
             text.includes("管理员")
-            || text.includes("仪表盘")
+            || text.includes("仪表板")
             || text.includes("工作台")
             || lowerText.includes("dashboard")
             || lowerText.includes("admin")
@@ -351,61 +351,46 @@
         ) {
             return PAGE_PATH_MAP.MATERIAL_LISTING;
         }
-        if (
-            text.includes("订单")
-            || text.includes("交易请求")
-            || lowerText.includes("trade request")
-            || lowerText.includes("order")
-        ) {
+        if (text.includes("订单") || text.includes("交易请求") || lowerText.includes("trade requests")) {
             return PAGE_PATH_MAP.ORDER;
         }
-        if (text.includes("我的发布") || lowerText.includes("my listing")) {
+        if (text.includes("我的发布") || lowerText.includes("my listings")) {
             return PAGE_PATH_MAP.MY_PUBLISH;
-        }
-        if (
-            text.includes("校园论坛")
-            || text === "论坛"
-            || lowerText.includes("forum")
-        ) {
-            return PAGE_PATH_MAP.FORUM_SUBVIEW;
-        }
-        if (
-            text.includes("招募板")
-            || text.includes("组队招募")
-            || text.includes("招募")
-            || text.includes("组队")
-            || lowerText.includes("recruitment")
-        ) {
-            return PAGE_PATH_MAP.RECRUITMENT;
         }
         if (
             text === "发布"
             || text === "开始发布"
             || text === "去发布"
-            || text === "发布商品"
-            || text === "上传资料"
-            || text === "发布招募"
             || lowerText === "publish"
-            || lowerText === "upload"
+            || lowerText.includes("upload")
         ) {
             return PAGE_PATH_MAP.PUBLISH;
+        }
+        if (
+            text.includes("校园论坛")
+            || text.includes("论坛")
+            || lowerText.includes("forum")
+        ) {
+            return PAGE_PATH_MAP.FORUM_SUBVIEW;
+        }
+        if (
+            text.includes("招募")
+            || text.includes("组队")
+            || lowerText.includes("recruitment")
+        ) {
+            return PAGE_PATH_MAP.RECRUITMENT;
         }
         if (text.includes("消息") || lowerText.includes("message")) {
             return PAGE_PATH_MAP.NOTIFICATION;
         }
-        if (
-            text.includes("设置")
-            || text.includes("个人设置")
-            || lowerText.includes("setting")
-            || lowerText.includes("profile")
-        ) {
+        if (text.includes("设置") || lowerText.includes("setting")) {
             return PAGE_PATH_MAP.PROFILE;
         }
         return "";
     }
 
     /**
-     * 鏌ユ壘鍥炬爣鑺傜偣
+     * 查找图标节点
      */
     function FindMaterialIconElement(iconName) {
         if (!iconName) {
@@ -422,7 +407,7 @@
     }
 
     /**
-     * 瑙ｆ瀽鍥炬爣瑙﹀彂鑺傜偣
+     * 解析图标触发节点
      */
     function ResolveIconTriggerElement(iconElement) {
         if (!iconElement) {
@@ -435,7 +420,7 @@
     }
 
     /**
-     * 纭繚鑺傜偣鍙偣鍑?
+     * 确保节点可点击
      */
     function EnsureInteractiveElement(triggerElement) {
         if (!triggerElement) {
@@ -465,7 +450,7 @@
     }
 
     /**
-     * 娉ㄥ叆鍏ㄧ珯涓嬫媺妗嗘牱寮?
+     * 注入全站下拉框样式
      */
     function EnsureCustomSelectStyle() {
         if (document.getElementById("campusshare-select-style")) {
@@ -513,7 +498,7 @@
     }
 
     /**
-     * 缁熶竴澧炲己涓嬫媺妗嗘牱寮?
+     * 统一增强下拉框样式
      */
     function EnhanceSelectElements(rootElement) {
         EnsureCustomSelectStyle();
@@ -538,7 +523,7 @@
     }
 
     /**
-     * 鐩戝惉鍔ㄦ€佽妭鐐瑰苟澧炲己涓嬫媺妗?
+     * 监听动态节点并增强下拉框
      */
     function ObserveDynamicSelectElements() {
         if (selectEnhanceObserver || !document.body || typeof MutationObserver === "undefined") {
@@ -568,7 +553,7 @@
     }
 
     /**
-     * 淇閫氱煡瑙﹀彂鑺傜偣鍩虹鏍峰紡
+     * 修正通知触发节点基础样式
      */
     function EnsureNotificationTriggerStyle(triggerElement) {
         if (!triggerElement) {
@@ -624,7 +609,7 @@
     }
 
     /**
-     * 娉ㄥ叆閫氱煡闈㈡澘鏍峰紡
+     * 注入通知面板样式
      */
     function EnsureNotificationPanelStyle() {
         if (document.getElementById(NOTIFICATION_PANEL_STYLE_ID)) {
@@ -782,7 +767,7 @@
     }
 
     /**
-     * 鏋勫缓閫氱煡闈㈡澘鑺傜偣
+     * 构建通知面板节点
      */
     function EnsureNotificationPanelElement() {
         if (notificationPanelElement) {
@@ -815,7 +800,7 @@
     }
 
     /**
-     * 鏇存柊闈㈡澘鎽樿
+     * 更新面板摘要
      */
     function SetNotificationSummary(totalCount, unreadCount) {
         if (!notificationSummaryElement) {
@@ -825,7 +810,7 @@
     }
 
     /**
-     * 鏇存柊閾冮摏瑙掓爣
+     * 更新铃铛角标
      */
     function UpdateNotificationBadge(unreadCount) {
         const notificationIcon = FindMaterialIconElement("notifications");
@@ -849,7 +834,7 @@
     }
 
     /**
-     * 鍏抽棴閫氱煡闈㈡澘
+     * 关闭通知面板
      */
     function CloseNotificationPanel() {
         if (!notificationPanelElement) {
@@ -861,7 +846,7 @@
     }
 
     /**
-     * 鏍煎紡鍖栨椂闂?
+     * 格式化时间
      */
     function FormatNotificationTime(timeText) {
         if (!timeText) {
@@ -880,7 +865,7 @@
     }
 
     /**
-     * 娓叉煋閫氱煡鍒楄〃
+     * 渲染通知列表
      */
     function RenderNotificationList() {
         const limitedNotificationList = (notificationDataList || []).slice(0, NOTIFICATION_MAX_RENDER_COUNT);
@@ -939,7 +924,7 @@
     }
 
     /**
-     * 鎷夊彇閫氱煡鍒楄〃
+     * 拉取通知列表
      */
     async function RefreshNotificationData() {
         const currentSequence = ++notificationRequestSequence;
@@ -973,7 +958,7 @@
     }
 
     /**
-     * 鏍囪鍗曟潯閫氱煡已读
+     * 标记单条通知已读
      */
     async function MarkSingleNotificationRead(notificationId) {
         if (!notificationId) {
@@ -989,12 +974,12 @@
             });
             RenderNotificationList();
         } catch (error) {
-            window.alert(error.message || "鏍囪已读澶辫触");
+            window.alert(error.message || "标记已读失败");
         }
     }
 
     /**
-     * 鍏ㄩ儴鏍囪已读
+     * 全部标记已读
      */
     async function MarkAllNotificationRead() {
         const unreadNotificationList = (notificationDataList || []).filter(function FilterUnread(notificationItem) {
@@ -1025,7 +1010,7 @@
     }
 
     /**
-     * 瀹氫綅閫氱煡闈㈡澘
+     * 定位通知面板
      */
     function PositionNotificationPanel(triggerElement) {
         if (!triggerElement || !notificationPanelElement) {
@@ -1051,7 +1036,7 @@
     }
 
     /**
-     * 鎵撳紑閫氱煡闈㈡澘
+     * 打开通知面板
      */
     async function OpenNotificationPanel(triggerElement) {
         notificationPanelTriggerElement = triggerElement;
@@ -1065,7 +1050,7 @@
     }
 
     /**
-     * 鍒囨崲閫氱煡闈㈡澘
+     * 切换通知面板
      */
     async function ToggleNotificationPanel(triggerElement) {
         if (notificationPanelVisible) {
@@ -1076,7 +1061,7 @@
     }
 
     /**
-     * 鏂囨。鐐瑰嚮鏃跺鐞嗛€氱煡闈㈡澘鍏抽棴
+     * 文档点击时处理通知面板关闭
      */
     function HandleDocumentClickForNotification(event) {
         if (!notificationPanelVisible || !notificationPanelElement) {
@@ -1093,7 +1078,7 @@
     }
 
     /**
-     * 閿洏鍏抽棴閫氱煡闈㈡澘
+     * 键盘关闭通知面板
      */
     function HandleEscapeForNotification(event) {
         if (event.key === "Escape") {
@@ -1102,7 +1087,7 @@
     }
 
     /**
-     * 缁戝畾椤甸潰璺宠浆
+     * 绑定页面跳转
      */
     function BindPageNavigation(element, targetPath) {
         const safePath = ResolveSafePagePath(targetPath);
@@ -1121,7 +1106,7 @@
     }
 
     /**
-     * 澶勭悊浼氳瘽澶辨晥
+     * 处理会话失效
      */
     function HandleUnauthorizedState(messageText, needAuth) {
         ClearSession();
@@ -1144,7 +1129,7 @@
     }
 
     /**
-     * 鎵ц鐧诲嚭骞惰烦杞?
+     * 执行登出并跳转
      */
     async function PerformLogoutAndRedirect() {
         const token = GetAuthToken();
@@ -1152,7 +1137,7 @@
             try {
                 await RequestApi("/api/v1/users/logout", "POST", {}, true);
             } catch (error) {
-                // 鐧诲嚭澶辫触涓嶉樆濉炴湰鍦版竻鐞?
+                // 登出失败不阻塞本地清理
             }
         }
         ClearSession();
@@ -1160,7 +1145,7 @@
     }
 
     /**
-     * 缁戝畾閾炬帴瀵艰埅
+     * 绑定链接导航
      */
     function BindAnchorNavigation() {
         const anchorList = Array.from(document.querySelectorAll("a"));
@@ -1212,7 +1197,7 @@
     }
 
     /**
-     * 缁戝畾鎸夐挳瀵艰埅
+     * 绑定按钮导航
      */
     function BindButtonNavigation() {
         const buttonList = Array.from(document.querySelectorAll("button"));
@@ -1266,7 +1251,7 @@
     }
 
     /**
-     * 缁戝畾鍝佺墝鏍囬瀵艰埅
+     * 绑定品牌标题导航
      */
     function BindBrandNavigation() {
         const brandElementList = Array.from(document.querySelectorAll("a, span, div, h1, h2"));
@@ -1310,7 +1295,7 @@
     }
 
     /**
-     * 椤甸潰璁块棶鎺у埗
+     * 页面访问控制
      */
     function EnsurePageAccessControl() {
         const currentPagePath = ResolveCurrentPagePathWithQuery();
@@ -1326,7 +1311,7 @@
     }
 
     /**
-     * 缁戝畾鍥炬爣瀵艰埅
+     * 绑定图标导航
      */
     function BindIconNavigation() {
         const accountIcon = FindMaterialIconElement("account_circle");
@@ -1368,7 +1353,7 @@
     }
 
     /**
-     * 缁戝畾鍏ㄥ眬澹冲眰瀵艰埅
+     * 绑定全局壳层导航
      */
     function BindGlobalShellNavigation() {
         EnhanceSelectElements(document);
@@ -1392,7 +1377,7 @@
     }
 
     /**
-     * 鍚屾褰撳墠浼氳瘽璧勬枡
+     * 同步当前会话资料
      */
     async function SyncSessionProfile() {
         const token = GetAuthToken();
@@ -1420,7 +1405,7 @@
     }
 
     /**
-     * 纭繚绠＄悊鍛樹細璇濆彲鐢?
+     * 确保管理员会话可用
      */
     async function EnsureAdminSession() {
         const token = GetAuthToken();
@@ -1439,7 +1424,7 @@
     }
 
     /**
-     * 甯﹁秴鏃剁殑璇锋眰
+     * 带超时的请求
      */
     async function FetchWithTimeout(path, requestInit) {
         const abortController = new AbortController();
@@ -1462,7 +1447,7 @@
     }
 
     /**
-     * 缁熶竴璇锋眰鍏ュ彛
+     * 统一请求入口
      */
     async function RequestApi(path, method, payload, needAuth) {
         const headers = {
@@ -1514,7 +1499,7 @@
     }
 
     /**
-     * multipart 璇锋眰鍏ュ彛
+     * multipart 请求入口
      */
     async function RequestMultipartApi(path, method, formData, needAuth) {
         const headers = {
@@ -2046,11 +2031,8 @@
         BindGlobalShellNavigation();
         if (GetAuthToken()) {
             SyncSessionProfile().catch(function IgnoreProfileSyncError() {
-                // 会话失效由页面请求层处理
+                // 会话失效由页面请求层提示
             });
         }
     });
 })();
-
-
-

@@ -1,7 +1,14 @@
-﻿/**
+/**
  * 订单详情页面逻辑
  */
 (function InitOrderDetailPage() {
+    const STEP_ICON_MAP = {
+        1: "check",
+        2: "check",
+        3: "handshake",
+        4: "verified"
+    };
+
     const ORDER_STATUS_TEXT_MAP = {
         PENDING_SELLER_CONFIRM: "待卖家确认",
         PENDING_OFFLINE_TRADE: "待线下交易",
@@ -12,53 +19,101 @@
     };
 
     /**
-     * 绑定页面
+     * 页面入口
      */
     function BindOrderDetailPage() {
         if (!window.CampusShareApi) {
             return;
         }
-
         const mainElement = document.querySelector("main");
         if (!mainElement) {
             return;
         }
-
         const orderId = ResolveOrderId();
-        const actionPanel = mainElement.querySelector("div.bg-surface-container-lowest.rounded-xl.p-8.shadow-sm");
-        const headingNode = mainElement.querySelector("h1.text-3xl");
-        const statusNode = mainElement.querySelector("div.bg-secondary-container");
         const messageBar = BuildMessageBar(mainElement);
-
         if (!orderId) {
             ShowError(messageBar, "缺少订单编号，请从订单中心进入");
             return;
         }
-
         if (!window.CampusShareApi.GetAuthToken()) {
             window.CampusShareApi.RedirectToAuthPage(`/pages/order_detail.html?orderId=${encodeURIComponent(String(orderId))}`);
             return;
         }
 
-        LoadOrderDetail(orderId, actionPanel, headingNode, statusNode, messageBar);
+        const pageRefs = CollectPageRefs(mainElement);
+        LoadOrderDetail(orderId, pageRefs, messageBar);
     }
 
     /**
-     * 加载订单详情
+     * 采集页面锚点
      */
-    async function LoadOrderDetail(orderId, actionPanel, headingNode, statusNode, messageBar) {
+    function CollectPageRefs(mainElement) {
+        return {
+            heading: mainElement.querySelector("[data-role='order-heading']"),
+            statusPill: mainElement.querySelector("[data-role='order-status-pill']"),
+            progressBar: mainElement.querySelector("[data-role='order-timeline-progress']"),
+            actionPrimary: mainElement.querySelector("[data-role='order-action-primary']"),
+            actionSecondary: mainElement.querySelector("[data-role='order-action-secondary']"),
+            actionDanger: mainElement.querySelector("[data-role='order-action-danger']"),
+            productImage: mainElement.querySelector("[data-role='order-product-image']"),
+            productTitle: mainElement.querySelector("[data-role='order-product-title']"),
+            productPrice: mainElement.querySelector("[data-role='order-product-price']"),
+            productCondition: mainElement.querySelector("[data-role='order-product-condition']"),
+            productCategory: mainElement.querySelector("[data-role='order-product-category']"),
+            productDescription: mainElement.querySelector("[data-role='order-product-description']"),
+            buyerName: mainElement.querySelector("[data-role='order-buyer-name']"),
+            buyerSubtitle: mainElement.querySelector("[data-role='order-buyer-subtitle']"),
+            sellerName: mainElement.querySelector("[data-role='order-seller-name']"),
+            sellerSubtitle: mainElement.querySelector("[data-role='order-seller-subtitle']"),
+            tradeLocation: mainElement.querySelector("[data-role='order-trade-location']"),
+            tradeLocationSub: mainElement.querySelector("[data-role='order-trade-location-sub']"),
+            amountMain: mainElement.querySelector("[data-role='order-amount-main']"),
+            amountItem: mainElement.querySelector("[data-role='order-amount-item']"),
+            metaOrderNo: mainElement.querySelector("[data-role='order-meta-order-no']"),
+            metaCreateTime: mainElement.querySelector("[data-role='order-meta-create-time']"),
+            metaUpdateTime: mainElement.querySelector("[data-role='order-meta-update-time']"),
+            metaSellerConfirmTime: mainElement.querySelector("[data-role='order-meta-seller-confirm-time']"),
+            metaBuyerConfirmTime: mainElement.querySelector("[data-role='order-meta-buyer-confirm-time']"),
+            metaStatusText: mainElement.querySelector("[data-role='order-meta-status-text']"),
+            metaCloseReason: mainElement.querySelector("[data-role='order-meta-close-reason']"),
+            stepList: [1, 2, 3, 4].map(function BuildStepRef(index) {
+                return {
+                    circle: mainElement.querySelector(`[data-role='order-step-circle-${index}']`),
+                    icon: mainElement.querySelector(`[data-role='order-step-icon-${index}']`),
+                    label: mainElement.querySelector(`[data-role='order-step-label-${index}']`),
+                    time: mainElement.querySelector(`[data-role='order-step-time-${index}']`)
+                };
+            })
+        };
+    }
+
+    /**
+     * 加载订单
+     */
+    async function LoadOrderDetail(orderId, pageRefs, messageBar) {
         try {
             const detailResult = await window.CampusShareApi.GetOrderDetail(orderId);
             if (!detailResult || !detailResult.orderId) {
                 ShowError(messageBar, "订单不存在或无权限访问");
                 return;
             }
+            let productResult = null;
+            if (detailResult.productId) {
+                try {
+                    productResult = await window.CampusShareApi.GetProductDetail(detailResult.productId);
+                } catch (error) {
+                    productResult = null;
+                    ShowError(messageBar, error instanceof Error ? error.message : "商品信息加载失败");
+                }
+            }
 
-            PatchHeader(detailResult, headingNode, statusNode);
-            PatchSummary(detailResult);
-            PatchProductDetail(detailResult, messageBar);
-            PatchOrderMeta(detailResult);
-            BindActionPanel(detailResult, actionPanel, messageBar);
+            PatchHeader(detailResult, pageRefs);
+            PatchTimeline(detailResult, pageRefs);
+            PatchSummary(detailResult, pageRefs);
+            PatchProductDetail(detailResult, productResult, pageRefs);
+            PatchParticipants(detailResult, productResult, pageRefs);
+            PatchOrderMeta(detailResult, pageRefs);
+            BindActionPanel(detailResult, pageRefs, messageBar);
             HideMessage(messageBar);
         } catch (error) {
             ShowError(messageBar, error instanceof Error ? error.message : "订单加载失败");
@@ -66,115 +121,186 @@
     }
 
     /**
-     * 更新头部
+     * 头部数据
      */
-    function PatchHeader(detailResult, headingNode, statusNode) {
-        if (headingNode) {
-            headingNode.textContent = `订单编号: ${detailResult.orderNo || detailResult.orderId}`;
+    function PatchHeader(detailResult, pageRefs) {
+        const orderNoText = detailResult.orderNo || detailResult.orderId || "-";
+        const statusText = ORDER_STATUS_TEXT_MAP[detailResult.orderStatus] || detailResult.orderStatus || "未知状态";
+        if (pageRefs.heading) {
+            pageRefs.heading.textContent = `订单编号: ${orderNoText}`;
         }
-        if (statusNode) {
-            const statusText = ORDER_STATUS_TEXT_MAP[detailResult.orderStatus] || detailResult.orderStatus || "未知状态";
-            statusNode.textContent = statusText;
+        if (pageRefs.statusPill) {
+            pageRefs.statusPill.textContent = statusText;
+        }
+        if (pageRefs.metaStatusText) {
+            pageRefs.metaStatusText.textContent = statusText;
         }
     }
 
     /**
-     * 更新金额摘要
+     * 时间轴
      */
-    function PatchSummary(detailResult) {
+    function PatchTimeline(detailResult, pageRefs) {
+        const timelineState = ResolveTimelineState(detailResult.orderStatus);
+        if (pageRefs.progressBar) {
+            pageRefs.progressBar.style.width = `${timelineState.progressWidth}%`;
+        }
+        const stepTimeList = [
+            FormatTime(detailResult.createTime),
+            FormatTime(detailResult.sellerConfirmTime),
+            ResolveOfflineTradeTime(detailResult),
+            FormatTime(detailResult.buyerCompleteTime)
+        ];
+
+        pageRefs.stepList.forEach(function RenderStep(stepItem, index) {
+            const stepNumber = index + 1;
+            const stepState = timelineState.stepStateList[index];
+            if (!stepItem) {
+                return;
+            }
+            if (stepItem.time) {
+                stepItem.time.textContent = stepTimeList[index] || "-";
+            }
+            if (!stepItem.circle || !stepItem.icon || !stepItem.label) {
+                return;
+            }
+            if (stepState === "completed") {
+                SetStepCompletedStyle(stepItem);
+                return;
+            }
+            if (stepState === "active") {
+                SetStepActiveStyle(stepItem, stepNumber);
+                return;
+            }
+            SetStepPendingStyle(stepItem, stepNumber);
+        });
+    }
+
+    /**
+     * 金额与地点
+     */
+    function PatchSummary(detailResult, pageRefs) {
         const amountText = `¥ ${FormatAmount(detailResult.orderAmount)}`;
-        const amountNodeList = Array.from(document.querySelectorAll("span.text-2xl.font-bold, span.text-primary.font-bold.text-lg, span.text-on-surface-variant"));
-        amountNodeList.forEach(function PatchAmount(node) {
-            if (!node || !node.textContent) {
-                return;
-            }
-            if (node.textContent.includes("楼") || node.textContent.includes("¥") || node.textContent.includes("$") || node.textContent.includes("3,200")) {
-                node.textContent = amountText;
-            }
-        });
-
-        const locationNodeList = Array.from(document.querySelectorAll("span, p"));
-        locationNodeList.forEach(function PatchLocation(node) {
-            if (!node || !node.textContent) {
-                return;
-            }
-            if (node.textContent.includes("交易地点") || node.textContent.includes("理科楼")) {
-                if (node.tagName.toLowerCase() === "span" && node.textContent.length < 40) {
-                    node.textContent = detailResult.tradeLocation || "待协商";
-                }
-            }
-        });
-    }
-
-    /**
-     * 更新商品信息
-     */
-    async function PatchProductDetail(detailResult, messageBar) {
-        const productTitleNode = document.querySelector("section.bg-surface-container-lowest h3.text-xl");
-        const productPriceNode = document.querySelector("section.bg-surface-container-lowest span.text-2xl");
-
-        if (productPriceNode) {
-            productPriceNode.textContent = `¥ ${FormatAmount(detailResult.orderAmount)}`;
+        if (pageRefs.amountMain) {
+            pageRefs.amountMain.textContent = amountText;
         }
-
-        if (!detailResult.productId) {
-            if (productTitleNode) {
-                productTitleNode.textContent = "商品信息不可用";
-            }
-            return;
+        if (pageRefs.amountItem) {
+            pageRefs.amountItem.textContent = amountText;
         }
-
-        try {
-            const productResult = await window.CampusShareApi.GetProductDetail(detailResult.productId);
-            if (productTitleNode) {
-                productTitleNode.textContent = productResult.title || `商品 #${detailResult.productId}`;
-            }
-            const subInfoNodeList = Array.from(document.querySelectorAll("section.bg-surface-container-lowest div.flex.items-center.text-sm.text-on-surface-variant span"));
-            if (subInfoNodeList.length >= 4) {
-                subInfoNodeList[1].textContent = productResult.conditionLevel || "-";
-                subInfoNodeList[3].textContent = productResult.category || "-";
-            }
-        } catch (error) {
-            if (productTitleNode) {
-                productTitleNode.textContent = `商品 #${detailResult.productId}`;
-            }
-            ShowError(messageBar, error instanceof Error ? error.message : "商品信息加载失败");
+        if (pageRefs.productPrice) {
+            pageRefs.productPrice.textContent = amountText;
+        }
+        if (pageRefs.tradeLocation) {
+            pageRefs.tradeLocation.textContent = detailResult.tradeLocation || "待协商";
+        }
+        if (pageRefs.tradeLocationSub) {
+            pageRefs.tradeLocationSub.textContent = detailResult.tradeLocation
+                ? "请按约定时间到达交易地点"
+                : "请与交易对方沟通具体地点";
         }
     }
 
     /**
-     * 更新订单元信息
+     * 商品信息
      */
-    function PatchOrderMeta(detailResult) {
-        const metaValueList = Array.from(document.querySelectorAll("div.bg-surface-container-high\/50 div.text-xs.font-semibold.text-on-surface"));
-        if (metaValueList.length >= 1) {
-            metaValueList[0].textContent = FormatTime(detailResult.createTime);
+    function PatchProductDetail(detailResult, productResult, pageRefs) {
+        if (!productResult) {
+            if (pageRefs.productTitle) {
+                pageRefs.productTitle.textContent = detailResult.productId
+                    ? `商品 #${detailResult.productId}`
+                    : "商品信息不可用";
+            }
+            return;
         }
-
-        const roleNameNodeList = Array.from(document.querySelectorAll("div.grid.grid-cols-2 div.font-bold.text-on-surface"));
-        if (roleNameNodeList.length >= 2) {
-            roleNameNodeList[0].textContent = BuildUserLabel(detailResult.buyerUserId, "买家");
-            roleNameNodeList[1].textContent = BuildUserLabel(detailResult.sellerUserId, "卖家");
+        if (pageRefs.productTitle) {
+            pageRefs.productTitle.textContent = productResult.title || `商品 #${detailResult.productId || "-"}`;
+        }
+        if (pageRefs.productCondition) {
+            pageRefs.productCondition.textContent = productResult.conditionLevel || "-";
+        }
+        if (pageRefs.productCategory) {
+            pageRefs.productCategory.textContent = productResult.category || "-";
+        }
+        if (pageRefs.productDescription) {
+            pageRefs.productDescription.textContent = productResult.description || "暂无商品描述";
+        }
+        if (pageRefs.productImage) {
+            const imageUrl = ResolveProductImageUrl(productResult.imageFileIds);
+            if (imageUrl) {
+                pageRefs.productImage.src = imageUrl;
+            }
         }
     }
 
     /**
-     * 绑定操作面板
+     * 买卖双方
      */
-    function BindActionPanel(detailResult, actionPanel, messageBar) {
-        if (!actionPanel) {
+    function PatchParticipants(detailResult, productResult, pageRefs) {
+        const profile = window.CampusShareApi.GetCurrentUserProfile() || {};
+        const currentUserId = Number(profile.userId || 0);
+        const currentUserName = profile.displayName || profile.account || "";
+        const sellerNameFromProduct = productResult && productResult.sellerDisplayName ? productResult.sellerDisplayName : "";
+
+        if (pageRefs.buyerName) {
+            if (currentUserId > 0 && currentUserId === Number(detailResult.buyerUserId || 0) && currentUserName) {
+                pageRefs.buyerName.textContent = currentUserName;
+            } else {
+                pageRefs.buyerName.textContent = BuildUserLabel(detailResult.buyerUserId, "买家");
+            }
+        }
+        if (pageRefs.buyerSubtitle) {
+            pageRefs.buyerSubtitle.textContent = `用户ID: ${detailResult.buyerUserId || "-"}`;
+        }
+        if (pageRefs.sellerName) {
+            if (sellerNameFromProduct) {
+                pageRefs.sellerName.textContent = sellerNameFromProduct;
+            } else if (currentUserId > 0 && currentUserId === Number(detailResult.sellerUserId || 0) && currentUserName) {
+                pageRefs.sellerName.textContent = currentUserName;
+            } else {
+                pageRefs.sellerName.textContent = BuildUserLabel(detailResult.sellerUserId, "卖家");
+            }
+        }
+        if (pageRefs.sellerSubtitle) {
+            pageRefs.sellerSubtitle.textContent = `用户ID: ${detailResult.sellerUserId || "-"}`;
+        }
+    }
+
+    /**
+     * 元信息
+     */
+    function PatchOrderMeta(detailResult, pageRefs) {
+        if (pageRefs.metaOrderNo) {
+            pageRefs.metaOrderNo.textContent = detailResult.orderNo || `#${detailResult.orderId || "-"}`;
+        }
+        if (pageRefs.metaCreateTime) {
+            pageRefs.metaCreateTime.textContent = FormatTime(detailResult.createTime);
+        }
+        if (pageRefs.metaUpdateTime) {
+            pageRefs.metaUpdateTime.textContent = FormatTime(detailResult.updateTime);
+        }
+        if (pageRefs.metaSellerConfirmTime) {
+            pageRefs.metaSellerConfirmTime.textContent = FormatTime(detailResult.sellerConfirmTime);
+        }
+        if (pageRefs.metaBuyerConfirmTime) {
+            pageRefs.metaBuyerConfirmTime.textContent = FormatTime(detailResult.buyerCompleteTime);
+        }
+        if (pageRefs.metaCloseReason) {
+            pageRefs.metaCloseReason.textContent = detailResult.closeReason || "-";
+        }
+    }
+
+    /**
+     * 操作面板
+     */
+    function BindActionPanel(detailResult, pageRefs, messageBar) {
+        const primaryButton = pageRefs.actionPrimary;
+        const secondaryButton = pageRefs.actionSecondary;
+        const dangerButton = pageRefs.actionDanger;
+        if (!primaryButton || !secondaryButton || !dangerButton) {
             return;
         }
 
-        const buttonList = Array.from(actionPanel.querySelectorAll("button"));
-        if (buttonList.length < 3) {
-            return;
-        }
-
-        const primaryButton = buttonList[0];
-        const secondaryButton = buttonList[1];
-        const dangerButton = buttonList[2];
-        secondaryButton.addEventListener("click", function HandleContactClick() {
+        BindActionButton(secondaryButton, "联系交易对方", function HandleContactClick() {
             ShowSuccess(messageBar, "请通过站内消息联系交易对方");
         });
 
@@ -215,7 +341,7 @@
         }
 
         if (detailResult.orderStatus === "PENDING_BUYER_CONFIRM" && isBuyer) {
-            BindActionButton(primaryButton, "确认完成", async function HandleCompleteOrder() {
+            BindActionButton(primaryButton, "确认收货", async function HandleCompleteOrder() {
                 await window.CampusShareApi.CompleteOrder(detailResult.orderId);
                 ShowSuccess(messageBar, "订单已完成");
                 ReloadCurrentPage(detailResult.orderId);
@@ -243,16 +369,23 @@
     }
 
     /**
-     * 绑定按钮行为
+     * 绑定按钮
      */
     function BindActionButton(buttonElement, text, onClick, isDanger) {
         if (!buttonElement) {
             return;
         }
         buttonElement.style.display = "flex";
-        buttonElement.textContent = text;
         if (isDanger) {
+            buttonElement.classList.add("text-error");
+        } else {
             buttonElement.classList.remove("text-error");
+        }
+        const textNode = buttonElement.querySelector("[data-role$='-text']");
+        if (textNode) {
+            textNode.textContent = text;
+        } else {
+            buttonElement.textContent = text;
         }
         const nextButtonElement = buttonElement.cloneNode(true);
         buttonElement.parentNode.replaceChild(nextButtonElement, buttonElement);
@@ -267,7 +400,93 @@
     }
 
     /**
-     * 重新加载页面
+     * 当前时间轴阶段
+     */
+    function ResolveTimelineState(orderStatus) {
+        if (orderStatus === "PENDING_SELLER_CONFIRM") {
+            return { progressWidth: 33, stepStateList: ["completed", "active", "pending", "pending"] };
+        }
+        if (orderStatus === "PENDING_OFFLINE_TRADE") {
+            return { progressWidth: 66, stepStateList: ["completed", "completed", "active", "pending"] };
+        }
+        if (orderStatus === "PENDING_BUYER_CONFIRM") {
+            return { progressWidth: 100, stepStateList: ["completed", "completed", "completed", "active"] };
+        }
+        if (orderStatus === "COMPLETED") {
+            return { progressWidth: 100, stepStateList: ["completed", "completed", "completed", "completed"] };
+        }
+        return { progressWidth: 0, stepStateList: ["completed", "pending", "pending", "pending"] };
+    }
+
+    /**
+     * 线下交易时间
+     */
+    function ResolveOfflineTradeTime(detailResult) {
+        if (detailResult.orderStatus === "PENDING_BUYER_CONFIRM" || detailResult.orderStatus === "COMPLETED") {
+            return FormatTime(detailResult.updateTime);
+        }
+        return "-";
+    }
+
+    /**
+     * 已完成样式
+     */
+    function SetStepCompletedStyle(stepItem) {
+        stepItem.circle.className = "w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center";
+        stepItem.icon.textContent = "check";
+        stepItem.label.classList.remove("text-primary", "text-outline-variant");
+        stepItem.label.classList.add("text-on-surface");
+        stepItem.time.classList.remove("text-outline-variant");
+        stepItem.time.classList.add("text-outline");
+    }
+
+    /**
+     * 激活样式
+     */
+    function SetStepActiveStyle(stepItem, stepNumber) {
+        stepItem.circle.className = "w-10 h-10 rounded-full bg-surface-container-lowest border-4 border-primary text-primary flex items-center justify-center";
+        stepItem.icon.textContent = STEP_ICON_MAP[stepNumber] || "schedule";
+        stepItem.label.classList.remove("text-on-surface", "text-outline-variant");
+        stepItem.label.classList.add("text-primary");
+        stepItem.time.classList.remove("text-outline-variant");
+        stepItem.time.classList.add("text-outline");
+    }
+
+    /**
+     * 待处理样式
+     */
+    function SetStepPendingStyle(stepItem, stepNumber) {
+        stepItem.circle.className = "w-10 h-10 rounded-full bg-surface-container-high text-outline-variant flex items-center justify-center";
+        stepItem.icon.textContent = STEP_ICON_MAP[stepNumber] || "schedule";
+        stepItem.label.classList.remove("text-primary", "text-on-surface");
+        stepItem.label.classList.add("text-outline-variant");
+        stepItem.time.classList.add("text-outline-variant");
+    }
+
+    /**
+     * 商品图URL
+     */
+    function ResolveProductImageUrl(imageFileIds) {
+        if (!Array.isArray(imageFileIds) || imageFileIds.length === 0) {
+            return "";
+        }
+        const firstFileId = imageFileIds.find(function FindFileId(item) {
+            return !!item;
+        });
+        if (!firstFileId) {
+            return "";
+        }
+        if (/^https?:\/\//i.test(firstFileId)) {
+            return firstFileId;
+        }
+        if (firstFileId.startsWith("/")) {
+            return firstFileId;
+        }
+        return `/api/v1/files/${encodeURIComponent(firstFileId)}`;
+    }
+
+    /**
+     * 刷新页面
      */
     function ReloadCurrentPage(orderId) {
         window.location.href = `/pages/order_detail.html?orderId=${encodeURIComponent(String(orderId))}`;
@@ -286,7 +505,7 @@
     }
 
     /**
-     * 用户展示名
+     * 用户名展示
      */
     function BuildUserLabel(userId, roleText) {
         if (!userId) {
@@ -328,7 +547,7 @@
     }
 
     /**
-     * 构建消息栏
+     * 消息栏
      */
     function BuildMessageBar(mainElement) {
         const messageBar = document.createElement("div");
@@ -348,7 +567,7 @@
     }
 
     /**
-     * 错误消息
+     * 失败消息
      */
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";
@@ -357,7 +576,7 @@
     }
 
     /**
-     * 隐藏消息
+     * 清空消息
      */
     function HideMessage(messageBar) {
         messageBar.style.display = "none";

@@ -1841,7 +1841,11 @@
             return RequestApi(
                 `/api/v1/admin/users/${userId}/review`,
                 "POST",
-                { approved: !!approved, reviewRemark: reviewRemark || "" },
+                {
+                    userId: Number(userId),
+                    approved: !!approved,
+                    reviewRemark: reviewRemark || ""
+                },
                 true
             );
         },

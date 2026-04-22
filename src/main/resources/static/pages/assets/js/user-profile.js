@@ -141,7 +141,6 @@
             const changeAmount = Number(transactionItem.changeAmount || 0);
             const positive = changeAmount >= 0;
             const amountClass = positive ? "text-emerald-600" : "text-rose-600";
-            const iconName = positive ? "add_circle" : "remove_circle";
             const amountText = positive ? `+${changeAmount}` : `${changeAmount}`;
             const remarkText = transactionItem.transactionRemark || ResolveTransactionTypeText(transactionItem.transactionType);
             return [
@@ -150,7 +149,7 @@
                 `<p class=\"truncate text-sm font-semibold text-slate-800\">${EscapeHtml(remarkText)}</p>`,
                 `<p class=\"mt-1 text-xs text-slate-500\">${EscapeHtml(FormatTime(transactionItem.transactionTime))}</p>`,
                 "</div>",
-                `<div class=\"ml-4 flex items-center gap-2 ${amountClass}\"><span class=\"material-symbols-outlined text-base\">${iconName}</span><span class=\"text-sm font-bold\">${EscapeHtml(amountText)}</span></div>`,
+                `<div class=\"ml-4 flex items-center ${amountClass}\"><span class=\"text-sm font-bold\">${EscapeHtml(amountText)}</span></div>`,
                 "</div>"
             ].join("");
         }).join("");

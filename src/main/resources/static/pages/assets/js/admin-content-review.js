@@ -5,7 +5,7 @@
  * - 学术资料审核
  */
 (function InitAdminContentReviewPage() {
-    const FILTER_VALUE_LIST = ["ALL", "PRODUCT", "TEAM_RECRUITMENT", "MATERIAL", "HIGH_RISK", "RECENT"];
+    const FILTER_VALUE_LIST = ["ALL", "PRODUCT", "TEAM_RECRUITMENT", "MATERIAL", "USER", "HIGH_RISK", "RECENT"];
     const REJECT_TEMPLATE_LIST = [
         { value: "", text: "请选择驳回意见模板" },
         { value: "内容信息不完整，请补充关键字段后重新提交。", text: "信息不完整" },
@@ -59,6 +59,20 @@
             downloadCount: { label: "下载次数", note: "累计下载量" },
             copyrightDeclared: { label: "版权声明", note: "上传者版权勾选状态" },
             createTime: { label: "上传时间", note: "用于时序排序" }
+        },
+        USER: {
+            userId: { label: "用户ID", note: "用户唯一标识" },
+            account: { label: "账号", note: "登录账号" },
+            displayName: { label: "昵称", note: "前台显示名称" },
+            college: { label: "学院", note: "注册资料中的学院信息" },
+            grade: { label: "年级", note: "注册资料中的年级信息" },
+            phone: { label: "手机号", note: "联系方式字段" },
+            email: { label: "邮箱", note: "联系方式字段" },
+            userRole: { label: "角色", note: "当前系统角色" },
+            userStatus: { label: "账号状态", note: "注册审核通过后将更新状态" },
+            pointBalance: { label: "积分余额", note: "账户积分信息" },
+            registerTime: { label: "注册时间", note: "若接口未返回则显示为-" },
+            lastLoginTime: { label: "最近登录", note: "最近一次登录时间" }
         }
     };
 
@@ -262,17 +276,19 @@
 
     async function ReloadTaskQueue(refs, state, messageBar) {
         try {
-            const [productResult, recruitmentResult, materialResult] = await Promise.all([
+            const [productResult, recruitmentResult, materialResult, pendingUserResult] = await Promise.all([
                 window.CampusShareApi.ListPendingProductsByAdmin(1, 300),
                 window.CampusShareApi.ListPendingTeamRecruitmentsByAdmin(1, 300),
-                window.CampusShareApi.ListPendingMaterials(1, 300)
+                window.CampusShareApi.ListPendingMaterials(1, 300),
+                window.CampusShareApi.ListPendingUsers()
             ]);
 
             const pendingProductList = productResult && Array.isArray(productResult.productList) ? productResult.productList : [];
             const pendingRecruitmentList = recruitmentResult && Array.isArray(recruitmentResult.recruitmentList) ? recruitmentResult.recruitmentList : [];
             const pendingMaterialList = materialResult && Array.isArray(materialResult.materialList) ? materialResult.materialList : [];
+            const pendingUserList = Array.isArray(pendingUserResult) ? pendingUserResult : [];
 
-            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList, pendingMaterialList);
+            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList, pendingMaterialList, pendingUserList);
             if (!state.selectedTaskKey && state.taskList.length) {
                 state.selectedTaskKey = BuildTaskKey(state.taskList[0]);
             }
@@ -285,7 +301,7 @@
         }
     }
 
-    function BuildTaskList(productList, recruitmentList, materialList) {
+    function BuildTaskList(productList, recruitmentList, materialList, userList) {
         const productTaskList = (Array.isArray(productList) ? productList : []).map(function MapProduct(item) {
             const productId = SafeNumber(item.productId);
             return {
@@ -326,11 +342,44 @@
             };
         });
 
+        const userTaskList = (Array.isArray(userList) ? userList : []).map(function MapUser(item) {
+            const userId = SafeNumber(item.userId);
+            return {
+                taskType: "USER",
+                taskId: userId,
+                title: item.displayName || item.account || `用户 #${userId}`,
+                ownerText: item.account || `用户ID ${userId}`,
+                metaText: ResolveUserMetaText(item),
+                createTime: item.registerTime || item.createTime || item.lastLoginTime,
+                rawItem: item
+            };
+        });
+
         return productTaskList
-            .concat(recruitmentTaskList, materialTaskList)
+            .concat(recruitmentTaskList, materialTaskList, userTaskList)
             .sort(function SortByTimeDesc(leftItem, rightItem) {
                 return ResolveTimeValue(rightItem.createTime) - ResolveTimeValue(leftItem.createTime);
             });
+    }
+
+    function ResolveUserMetaText(userItem) {
+        const safeItem = userItem || {};
+        const statusText = ResolveUserStatusText(safeItem.userStatus);
+        const contactText = ResolveUserPrimaryContact(safeItem);
+        return `${statusText} · ${contactText}`;
+    }
+
+    function ResolveTaskTypeVisual(taskType) {
+        if (taskType === "PRODUCT") {
+            return { typeText: "商品", iconName: "inventory_2", tagClass: "bg-emerald-50 text-emerald-700" };
+        }
+        if (taskType === "MATERIAL") {
+            return { typeText: "资料", iconName: "description", tagClass: "bg-amber-50 text-amber-700" };
+        }
+        if (taskType === "USER") {
+            return { typeText: "用户", iconName: "person_add", tagClass: "bg-cyan-50 text-cyan-700" };
+        }
+        return { typeText: "帖子", iconName: "forum", tagClass: "bg-indigo-50 text-indigo-700" };
     }
 
     function ApplyInitialFocusFromQuery(state) {
@@ -372,6 +421,7 @@
             if (state.filterType === "PRODUCT" && taskItem.taskType !== "PRODUCT") return false;
             if (state.filterType === "TEAM_RECRUITMENT" && taskItem.taskType !== "TEAM_RECRUITMENT") return false;
             if (state.filterType === "MATERIAL" && taskItem.taskType !== "MATERIAL") return false;
+            if (state.filterType === "USER" && taskItem.taskType !== "USER") return false;
             if (state.filterType === "HIGH_RISK" && !IsHighRiskTask(taskItem)) return false;
             if (state.filterType === "RECENT" && (Date.now() - ResolveTimeValue(taskItem.createTime)) > DAY_MS) return false;
 
@@ -421,7 +471,8 @@
         const queueText = [
             `商品 ${filteredTaskList.filter(item => item.taskType === "PRODUCT").length}`,
             `帖子 ${filteredTaskList.filter(item => item.taskType === "TEAM_RECRUITMENT").length}`,
-            `资料 ${filteredTaskList.filter(item => item.taskType === "MATERIAL").length}`
+            `资料 ${filteredTaskList.filter(item => item.taskType === "MATERIAL").length}`,
+            `用户 ${filteredTaskList.filter(item => item.taskType === "USER").length}`
         ].join(" / ");
 
         refs.statCardList[0].querySelector("h2").textContent = String(totalCount);
@@ -441,6 +492,7 @@
         if (filterType === "PRODUCT") return "商品";
         if (filterType === "TEAM_RECRUITMENT") return "帖子";
         if (filterType === "MATERIAL") return "资料";
+        if (filterType === "USER") return "用户";
         if (filterType === "HIGH_RISK") return "高风险";
         if (filterType === "RECENT") return "最新";
         return "全部";
@@ -457,11 +509,10 @@
         refs.queueListNode.innerHTML = filteredTaskList.map(function BuildTaskCard(taskItem, index) {
             const taskKey = BuildTaskKey(taskItem);
             const isSelected = state.selectedTaskKey === taskKey;
-            const typeText = taskItem.taskType === "PRODUCT" ? "商品" : (taskItem.taskType === "MATERIAL" ? "资料" : "帖子");
-            const iconName = taskItem.taskType === "PRODUCT" ? "inventory_2" : (taskItem.taskType === "MATERIAL" ? "description" : "forum");
-            const typeTagClass = taskItem.taskType === "PRODUCT"
-                ? "bg-emerald-50 text-emerald-700"
-                : (taskItem.taskType === "MATERIAL" ? "bg-amber-50 text-amber-700" : "bg-indigo-50 text-indigo-700");
+            const taskTypeVisual = ResolveTaskTypeVisual(taskItem.taskType);
+            const typeText = taskTypeVisual.typeText;
+            const iconName = taskTypeVisual.iconName;
+            const typeTagClass = taskTypeVisual.tagClass;
             return [
                 `<article data-task-key="${EscapeHtml(taskKey)}" class="rounded-xl p-4 cursor-pointer transition-all ring-1 ${isSelected ? "bg-white ring-primary shadow-sm" : "bg-surface-container-low ring-outline/20 hover:ring-primary/40"}">`,
                 "<div class=\"flex items-start justify-between gap-2\">",
@@ -526,6 +577,8 @@
             detailResult = await window.CampusShareApi.GetProductDetail(taskItem.taskId);
         } else if (taskItem.taskType === "MATERIAL") {
             detailResult = await window.CampusShareApi.GetMaterialDetail(taskItem.taskId);
+        } else if (taskItem.taskType === "USER") {
+            detailResult = taskItem.rawItem || {};
         } else {
             detailResult = await window.CampusShareApi.GetTeamRecruitmentDetail(taskItem.taskId);
         }
@@ -534,11 +587,19 @@
     }
 
     function PatchDetailHeader(headerNode, taskItem, detailItem) {
-        const typeText = taskItem.taskType === "PRODUCT" ? "商品发布" : (taskItem.taskType === "MATERIAL" ? "资料发布" : "组队帖子");
+        const typeText = taskItem.taskType === "PRODUCT"
+            ? "商品发布"
+            : (taskItem.taskType === "MATERIAL"
+                ? "资料发布"
+                : (taskItem.taskType === "USER" ? "用户注册" : "组队帖子"));
         const idText = taskItem.taskType === "PRODUCT"
             ? `商品ID: ${taskItem.taskId}`
-            : (taskItem.taskType === "MATERIAL" ? `资料ID: ${taskItem.taskId}` : `帖子ID: ${taskItem.taskId}`);
-        const createTimeText = FormatTime((detailItem && detailItem.createTime) || taskItem.createTime);
+            : (taskItem.taskType === "MATERIAL"
+                ? `资料ID: ${taskItem.taskId}`
+                : (taskItem.taskType === "USER" ? `用户ID: ${taskItem.taskId}` : `帖子ID: ${taskItem.taskId}`));
+        const createTimeText = FormatTime(
+            (detailItem && (detailItem.createTime || detailItem.registerTime)) || taskItem.createTime
+        );
         headerNode.innerHTML = [
             "<div class=\"flex items-start justify-between gap-6\">",
             "<div>",
@@ -561,6 +622,10 @@
         }
         if (taskItem.taskType === "MATERIAL") {
             bodyNode.innerHTML = BuildMaterialDetailHtml(taskItem, detailItem || {});
+            return;
+        }
+        if (taskItem.taskType === "USER") {
+            bodyNode.innerHTML = BuildUserDetailHtml(taskItem, detailItem || {});
             return;
         }
         bodyNode.innerHTML = BuildRecruitmentDetailHtml(taskItem, detailItem || {});
@@ -644,6 +709,31 @@
             BuildTextSection("标签", tagText || "-"),
             BuildObjectSection("完整字段（详情接口）", detailItem),
             BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || {})
+        ].join("");
+    }
+
+    function BuildUserDetailHtml(taskItem, detailItem) {
+        const registerTime = detailItem.registerTime || detailItem.createTime || taskItem.createTime;
+        const summaryFieldMap = {
+            userId: detailItem.userId,
+            account: detailItem.account,
+            displayName: detailItem.displayName,
+            college: detailItem.college,
+            grade: detailItem.grade,
+            phone: detailItem.phone,
+            email: detailItem.email,
+            userRole: detailItem.userRole,
+            userStatus: detailItem.userStatus,
+            pointBalance: detailItem.pointBalance,
+            registerTime: FormatTime(registerTime),
+            lastLoginTime: FormatTime(detailItem.lastLoginTime)
+        };
+        const contactText = ResolveUserPrimaryContact(detailItem);
+        const statusText = ResolveUserStatusText(detailItem.userStatus);
+        return [
+            BuildFieldGridSection("核心字段（含中文说明）", summaryFieldMap, CORE_FIELD_META.USER),
+            BuildTextSection("注册审核说明", `账号状态：${statusText}\n主联系方式：${contactText}`),
+            BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || detailItem || {})
         ].join("");
     }
 
@@ -1120,6 +1210,12 @@
                     approved,
                     reviewRemark || (approved ? "内容审核通过" : "内容审核驳回")
                 );
+            } else if (selectedTask.taskType === "USER") {
+                await window.CampusShareApi.ReviewUser(
+                    selectedTask.taskId,
+                    approved,
+                    reviewRemark || (approved ? "用户注册审核通过" : "用户注册审核驳回")
+                );
             } else {
                 await window.CampusShareApi.ReviewTeamRecruitmentByAdmin(
                     selectedTask.taskId,
@@ -1202,6 +1298,28 @@
             .forEach(function Toggle(buttonNode) {
                 buttonNode.disabled = !!disabled;
             });
+    }
+
+    function ResolveUserPrimaryContact(userItem) {
+        const safeItem = userItem || {};
+        const phoneText = String(safeItem.phone || "").trim();
+        if (phoneText) {
+            return phoneText;
+        }
+        const emailText = String(safeItem.email || "").trim();
+        if (emailText) {
+            return emailText;
+        }
+        return "-";
+    }
+
+    function ResolveUserStatusText(userStatus) {
+        const statusText = String(userStatus || "").toUpperCase();
+        if (statusText === "PENDING_REVIEW") return "待审核";
+        if (statusText === "ACTIVE") return "已启用";
+        if (statusText === "FROZEN") return "已冻结";
+        if (statusText === "REJECTED") return "已驳回";
+        return statusText || "待审核";
     }
 
     function FormatValue(value) {

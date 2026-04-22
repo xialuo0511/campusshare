@@ -126,6 +126,7 @@
             detailHeaderNode: pageMain.querySelector("[data-review-detail-header]"),
             detailBodyNode: pageMain.querySelector("[data-review-detail-body]"),
             currentStatusNode: pageMain.querySelector("[data-review-current-status]"),
+            decisionPanelNode: pageMain.querySelector("[data-review-decision-panel]"),
             rejectTemplateSelect: document.getElementById("reject-template"),
             reviewNoteInput: document.getElementById("review-note"),
             prevButton: pageMain.querySelector("[data-review-prev]"),
@@ -133,7 +134,8 @@
             approveButton: pageMain.querySelector("[data-review-approve]"),
             rejectButton: pageMain.querySelector("[data-review-reject]"),
             imagePreviewModal: EnsureImagePreviewModal(),
-            decisionConfirmModal: EnsureDecisionConfirmModal()
+            decisionConfirmModal: EnsureDecisionConfirmModal(),
+            decisionHintNode: EnsureDecisionHintNode(pageMain.querySelector("[data-review-decision-panel]"))
         };
     }
 
@@ -275,6 +277,7 @@
                 state.selectedTaskKey = BuildTaskKey(state.taskList[0]);
             }
             HideMessage(messageBar);
+            HideDecisionHint(refs.decisionHintNode);
         } catch (error) {
             ShowError(messageBar, error instanceof Error ? error.message : "加载审核任务失败");
             state.taskList = [];
@@ -483,6 +486,7 @@
             refs.currentStatusNode.textContent = selectedTask ? "待审核" : "未选择任务";
         }
         ToggleActionDisabled(refs, disabled);
+        HideDecisionHint(refs.decisionHintNode);
     }
 
     async function RenderTaskDetail(refs, state) {
@@ -1075,14 +1079,18 @@
     }
 
     async function SubmitDecision(refs, state, messageBar, approved) {
+        HideDecisionHint(refs.decisionHintNode);
+        messageBar = null;
         const selectedTask = GetSelectedTask(state, state.filteredTaskList);
         if (!selectedTask) {
+            ShowDecisionHint(refs.decisionHintNode, "请先选择审核任务", "error");
             ShowError(messageBar, "请先选择审核任务");
             return;
         }
 
         const reviewRemark = String(refs.reviewNoteInput ? refs.reviewNoteInput.value || "" : "").trim();
         if (!approved && !reviewRemark) {
+            ShowDecisionHint(refs.decisionHintNode, "驳回时请填写审核意见", "error");
             ShowError(messageBar, "驳回时请填写审核意见");
             return;
         }
@@ -1125,8 +1133,10 @@
             if (refs.reviewNoteInput) refs.reviewNoteInput.value = "";
             if (refs.rejectTemplateSelect) refs.rejectTemplateSelect.value = "";
             ShowSuccess(messageBar, approved ? "审核已通过" : "审核已驳回");
+            ShowDecisionHint(refs.decisionHintNode, approved ? "审核已通过" : "审核已驳回", "success");
             RenderAll(refs, state);
         } catch (error) {
+            ShowDecisionHint(refs.decisionHintNode, error instanceof Error ? error.message : "审核操作失败", "error");
             ShowError(messageBar, error instanceof Error ? error.message : "审核操作失败");
         } finally {
             ToggleActionDisabled(refs, false);
@@ -1261,6 +1271,50 @@
         const anchorNode = pageMain.children.length > 1 ? pageMain.children[1] : null;
         pageMain.insertBefore(messageBar, anchorNode);
         return messageBar;
+    }
+
+    function EnsureDecisionHintNode(decisionPanelNode) {
+        if (!decisionPanelNode) {
+            return null;
+        }
+        let hintNode = decisionPanelNode.querySelector("[data-review-decision-hint]");
+        if (!hintNode) {
+            hintNode = document.createElement("div");
+            hintNode.setAttribute("data-review-decision-hint", "1");
+            hintNode.className = "hidden mt-4 rounded-xl px-4 py-3 text-sm font-semibold";
+            const panelScrollNode = decisionPanelNode.querySelector(".review-scrollbar");
+            if (panelScrollNode) {
+                panelScrollNode.appendChild(hintNode);
+            } else {
+                decisionPanelNode.appendChild(hintNode);
+            }
+        }
+        return hintNode;
+    }
+
+    function ShowDecisionHint(hintNode, messageText, messageType) {
+        if (!hintNode) {
+            return;
+        }
+        hintNode.classList.remove(
+            "hidden",
+            "bg-red-50", "text-red-700", "ring-1", "ring-red-200",
+            "bg-green-50", "text-green-700", "ring-green-200"
+        );
+        if (messageType === "success") {
+            hintNode.classList.add("bg-green-50", "text-green-700", "ring-1", "ring-green-200");
+        } else {
+            hintNode.classList.add("bg-red-50", "text-red-700", "ring-1", "ring-red-200");
+        }
+        hintNode.textContent = messageText || "";
+    }
+
+    function HideDecisionHint(hintNode) {
+        if (!hintNode) {
+            return;
+        }
+        hintNode.classList.add("hidden");
+        hintNode.textContent = "";
     }
 
     function ShowSuccess(messageBar, messageText) {

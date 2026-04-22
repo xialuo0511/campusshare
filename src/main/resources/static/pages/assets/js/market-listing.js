@@ -346,8 +346,9 @@
             actionButton.disabled = true;
             try {
                 if (action === "material-download") {
-                    await window.CampusShareApi.DownloadMaterial(materialId);
-                    ShowSuccess(materialMessageBar, "下载请求已提交，可在浏览器下载列表查看");
+                    const downloadResult = await window.CampusShareApi.DownloadMaterial(materialId);
+                    await TriggerMaterialFileDownload(downloadResult, materialId);
+                    ShowSuccess(materialMessageBar, "资料下载已开始");
                     await LoadMaterialSubview(materialSubviewList, materialMessageBar);
                     return;
                 }
@@ -361,6 +362,53 @@
                 actionButton.disabled = false;
             }
         });
+    }
+
+    /**
+     * 触发资料文件下载
+     */
+    async function TriggerMaterialFileDownload(downloadResult, materialId) {
+        const fileAccessUrl = downloadResult && downloadResult.fileAccessUrl
+            ? String(downloadResult.fileAccessUrl).trim()
+            : "";
+        if (!fileAccessUrl) {
+            throw new Error("下载地址缺失，请稍后重试");
+        }
+        const token = window.CampusShareApi.GetAuthToken();
+        if (!token) {
+            throw new Error("登录状态已失效，请重新登录");
+        }
+        const fileResponse = await fetch(fileAccessUrl, {
+            method: "GET",
+            headers: {
+                "X-Auth-Token": token
+            }
+        });
+        if (!fileResponse.ok) {
+            throw new Error(`文件下载失败(${fileResponse.status})`);
+        }
+        const fileBlob = await fileResponse.blob();
+        const blobUrl = window.URL.createObjectURL(fileBlob);
+        const linkElement = document.createElement("a");
+        linkElement.href = blobUrl;
+        linkElement.download = ResolveMaterialDownloadFileName(downloadResult, materialId);
+        document.body.appendChild(linkElement);
+        linkElement.click();
+        linkElement.remove();
+        window.setTimeout(function CleanupBlobUrl() {
+            window.URL.revokeObjectURL(blobUrl);
+        }, 1000);
+    }
+
+    /**
+     * 解析下载文件名
+     */
+    function ResolveMaterialDownloadFileName(downloadResult, materialId) {
+        const fileId = downloadResult && downloadResult.fileId ? String(downloadResult.fileId).trim() : "";
+        if (fileId) {
+            return fileId;
+        }
+        return `material-${materialId}.bin`;
     }
 
     /**

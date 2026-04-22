@@ -38,6 +38,7 @@
         const paginationArea = document.querySelector("main div.mt-16.flex.justify-center");
 
         const messageBar = BuildMessageBar(productGrid);
+        const materialMessageBar = BuildMessageBar(materialSubviewList);
         const pageText = BuildPaginationText(paginationArea);
         const subviewState = {
             currentView: "MARKET",
@@ -50,8 +51,10 @@
             marketPanelList,
             materialSubviewList,
             forumSubviewList,
-            subviewState
+            subviewState,
+            materialMessageBar
         );
+        BindMaterialSubviewActions(materialSubviewList, materialMessageBar);
 
         const state = {
             pageNo: DEFAULT_PAGE_NO,
@@ -118,7 +121,8 @@
         marketPanelList,
         materialSubviewList,
         forumSubviewList,
-        subviewState
+        subviewState,
+        materialMessageBar
     ) {
         if (!Array.isArray(marketNavItemList) || marketNavItemList.length === 0) {
             return;
@@ -129,7 +133,7 @@
         SwitchMarketPanel(marketPanelList, initialViewKey);
         UpdateSubviewUrl(initialViewKey);
         if (initialViewKey === "MATERIAL" && !subviewState.materialLoaded) {
-            LoadMaterialSubview(materialSubviewList);
+            LoadMaterialSubview(materialSubviewList, materialMessageBar);
             subviewState.materialLoaded = true;
         }
         if (initialViewKey === "FORUM" && !subviewState.forumLoaded) {
@@ -148,7 +152,7 @@
                 ApplyMarketNavState(marketNavItemList, viewKey);
                 SwitchMarketPanel(marketPanelList, viewKey);
                 if (viewKey === "MATERIAL" && !subviewState.materialLoaded) {
-                    await LoadMaterialSubview(materialSubviewList);
+                    await LoadMaterialSubview(materialSubviewList, materialMessageBar);
                     subviewState.materialLoaded = true;
                 }
                 if (viewKey === "FORUM" && !subviewState.forumLoaded) {
@@ -263,10 +267,11 @@
     /**
      * 学术资源子界面
      */
-    async function LoadMaterialSubview(materialSubviewList) {
+    async function LoadMaterialSubview(materialSubviewList, materialMessageBar) {
         if (!materialSubviewList) {
             return;
         }
+        HideMessage(materialMessageBar);
         materialSubviewList.innerHTML = "<div class=\"col-span-full text-sm text-slate-400 py-8 text-center\">加载中...</div>";
         try {
             const result = await window.CampusShareApi.ListPublishedMaterials({ pageNo: 1, pageSize: 9 });
@@ -275,6 +280,7 @@
                 materialSubviewList.innerHTML = "<div class=\"col-span-full text-sm text-slate-400 py-8 text-center\">暂无公开学术资源</div>";
                 return;
             }
+            const favoriteStateMap = await BuildMaterialFavoriteStateMap(materialList);
             materialSubviewList.innerHTML = materialList.map(function BuildCard(materialItem) {
                 const tagList = Array.isArray(materialItem.tags) ? materialItem.tags.slice(0, 3) : [];
                 const tagHtml = tagList.length
@@ -282,17 +288,128 @@
                         return `<span class=\"px-2 py-1 rounded-full bg-surface-container text-xs text-on-surface-variant\">${EscapeHtml(tagText)}</span>`;
                     }).join("")
                     : "<span class=\"px-2 py-1 rounded-full bg-surface-container text-xs text-on-surface-variant\">无标签</span>";
+                const materialId = Number(materialItem.materialId || 0);
+                const isFavorited = !!favoriteStateMap[materialId];
                 return [
-                    "<article class=\"bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-5\">",
+                    "<article class=\"bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-5 flex flex-col\">",
                     `<div class=\"flex items-start justify-between gap-3 mb-3\"><h3 class=\"text-base font-bold text-on-surface line-clamp-2\">${EscapeHtml(materialItem.courseName || "未命名资料")}</h3><span class=\"text-primary text-sm font-bold\">${EscapeHtml(String(Number(materialItem.downloadCostPoints || 0)))} 积分</span></div>`,
                     `<p class=\"text-sm text-slate-600 line-clamp-2 min-h-[44px]\">${EscapeHtml(materialItem.description || "暂无资料描述")}</p>`,
                     `<div class=\"mt-4 flex flex-wrap gap-2\">${tagHtml}</div>`,
                     `<div class=\"mt-4 text-xs text-slate-500\">格式：${EscapeHtml(materialItem.fileType || "-")} · 下载：${EscapeHtml(String(Number(materialItem.downloadCount || 0)))} 次</div>`,
+                    "<div class=\"mt-4 flex items-center gap-2\">",
+                    `<button type="button" data-action="material-download" data-material-id="${EscapeHtml(String(materialId))}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container">`,
+                    "<span class=\"material-symbols-outlined text-sm\">download</span>",
+                    "<span>下载</span>",
+                    "</button>",
+                    `<button type="button" data-action="material-favorite" data-material-id="${EscapeHtml(String(materialId))}" class="${ResolveMaterialFavoriteButtonClass(isFavorited)}">`,
+                    `<span class="material-symbols-outlined text-sm" data-role="favorite-icon">${isFavorited ? "favorite" : "favorite_border"}</span>`,
+                    `<span data-role="favorite-text">${isFavorited ? "已收藏" : "收藏"}</span>`,
+                    "</button>",
+                    "</div>",
                     "</article>"
                 ].join("");
             }).join("");
         } catch (error) {
             materialSubviewList.innerHTML = `<div class=\"col-span-full text-sm text-red-500 py-8 text-center\">${EscapeHtml(error instanceof Error ? error.message : "学术资源加载失败")}</div>`;
+        }
+    }
+
+    /**
+     * 绑定学术资源操作
+     */
+    function BindMaterialSubviewActions(materialSubviewList, materialMessageBar) {
+        if (!materialSubviewList || materialSubviewList.dataset.materialActionBound === "true") {
+            return;
+        }
+        materialSubviewList.dataset.materialActionBound = "true";
+        materialSubviewList.addEventListener("click", async function HandleMaterialAction(event) {
+            const actionButton = event.target.closest("button[data-action]");
+            if (!actionButton) {
+                return;
+            }
+            const action = actionButton.getAttribute("data-action") || "";
+            if (action !== "material-download" && action !== "material-favorite") {
+                return;
+            }
+            const materialId = Number(actionButton.getAttribute("data-material-id") || 0);
+            if (!materialId) {
+                return;
+            }
+            if (!window.CampusShareApi.GetAuthToken()) {
+                ShowError(materialMessageBar, "请先登录后再进行操作");
+                if (typeof window.CampusShareApi.RedirectToAuthPage === "function") {
+                    window.CampusShareApi.RedirectToAuthPage("/pages/market_listing.html?view=MATERIAL");
+                }
+                return;
+            }
+
+            actionButton.disabled = true;
+            try {
+                if (action === "material-download") {
+                    await window.CampusShareApi.DownloadMaterial(materialId);
+                    ShowSuccess(materialMessageBar, "下载请求已提交，可在浏览器下载列表查看");
+                    await LoadMaterialSubview(materialSubviewList, materialMessageBar);
+                    return;
+                }
+                const favoriteResult = await window.CampusShareApi.ToggleMaterialFavorite(materialId);
+                const favorited = !!(favoriteResult && favoriteResult.favorited);
+                UpdateMaterialFavoriteButton(actionButton, favorited);
+                ShowSuccess(materialMessageBar, favorited ? "收藏成功" : "已取消收藏");
+            } catch (error) {
+                ShowError(materialMessageBar, error instanceof Error ? error.message : "操作失败，请稍后再试");
+            } finally {
+                actionButton.disabled = false;
+            }
+        });
+    }
+
+    /**
+     * 获取学术资源收藏状态
+     */
+    async function BuildMaterialFavoriteStateMap(materialList) {
+        const favoriteStateMap = {};
+        if (!window.CampusShareApi.GetAuthToken() || !Array.isArray(materialList) || materialList.length === 0) {
+            return favoriteStateMap;
+        }
+        await Promise.all(materialList.map(async function ResolveFavoriteState(materialItem) {
+            const materialId = Number(materialItem && materialItem.materialId ? materialItem.materialId : 0);
+            if (!materialId) {
+                return;
+            }
+            try {
+                const favoriteResult = await window.CampusShareApi.GetMaterialFavoriteState(materialId);
+                favoriteStateMap[materialId] = !!(favoriteResult && favoriteResult.favorited);
+            } catch (error) {
+                favoriteStateMap[materialId] = false;
+            }
+        }));
+        return favoriteStateMap;
+    }
+
+    /**
+     * 收藏按钮样式
+     */
+    function ResolveMaterialFavoriteButtonClass(favorited) {
+        return favorited
+            ? "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary-container text-on-secondary-container text-xs font-semibold hover:opacity-90"
+            : "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container text-on-surface-variant text-xs font-semibold hover:bg-surface-container-high";
+    }
+
+    /**
+     * 更新收藏按钮状态
+     */
+    function UpdateMaterialFavoriteButton(actionButton, favorited) {
+        if (!actionButton) {
+            return;
+        }
+        actionButton.className = ResolveMaterialFavoriteButtonClass(favorited);
+        const iconElement = actionButton.querySelector("[data-role='favorite-icon']");
+        const textElement = actionButton.querySelector("[data-role='favorite-text']");
+        if (iconElement) {
+            iconElement.textContent = favorited ? "favorite" : "favorite_border";
+        }
+        if (textElement) {
+            textElement.textContent = favorited ? "已收藏" : "收藏";
         }
     }
 
@@ -727,8 +844,11 @@
      * 构建消息条
      */
     function BuildMessageBar(productGrid) {
+        if (!productGrid || !productGrid.parentElement) {
+            return null;
+        }
         const messageBar = document.createElement("div");
-        messageBar.className = "rounded-lg px-3 py-2 text-sm bg-red-50 text-red-700 border border-red-200 mb-4";
+        messageBar.className = "rounded-lg px-3 py-2 text-sm border mb-4";
         messageBar.style.display = "none";
         productGrid.parentElement.insertBefore(messageBar, productGrid);
         return messageBar;
@@ -941,7 +1061,23 @@
      * 显示错误
      */
     function ShowError(messageBar, message) {
+        if (!messageBar) {
+            return;
+        }
         messageBar.style.display = "block";
+        messageBar.className = "rounded-lg px-3 py-2 text-sm border border-red-200 bg-red-50 text-red-700 mb-4";
+        messageBar.textContent = message;
+    }
+
+    /**
+     * 显示成功
+     */
+    function ShowSuccess(messageBar, message) {
+        if (!messageBar) {
+            return;
+        }
+        messageBar.style.display = "block";
+        messageBar.className = "rounded-lg px-3 py-2 text-sm border border-green-200 bg-green-50 text-green-700 mb-4";
         messageBar.textContent = message;
     }
 
@@ -949,6 +1085,9 @@
      * 隐藏错误
      */
     function HideMessage(messageBar) {
+        if (!messageBar) {
+            return;
+        }
         messageBar.style.display = "none";
         messageBar.textContent = "";
     }

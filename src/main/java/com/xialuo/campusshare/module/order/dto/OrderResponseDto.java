@@ -16,8 +16,10 @@ public class OrderResponseDto {
     private Long productId;
     /** 买家ID */
     private Long buyerUserId;
+    private String buyerDisplayName;
     /** 卖家ID */
     private Long sellerUserId;
+    private String sellerDisplayName;
     /** 状态 */
     private OrderStatusEnum orderStatus;
     /** 金额 */
@@ -93,6 +95,14 @@ public class OrderResponseDto {
         this.buyerUserId = buyerUserId;
     }
 
+    public String GetBuyerDisplayName() {
+        return buyerDisplayName;
+    }
+
+    public void SetBuyerDisplayName(String buyerDisplayName) {
+        this.buyerDisplayName = buyerDisplayName;
+    }
+
     /**
      * 获取卖家ID
      */
@@ -105,6 +115,14 @@ public class OrderResponseDto {
      */
     public void SetSellerUserId(Long sellerUserId) {
         this.sellerUserId = sellerUserId;
+    }
+
+    public String GetSellerDisplayName() {
+        return sellerDisplayName;
+    }
+
+    public void SetSellerDisplayName(String sellerDisplayName) {
+        this.sellerDisplayName = sellerDisplayName;
     }
 
     /**
@@ -233,4 +251,3 @@ public class OrderResponseDto {
         this.updateTime = updateTime;
     }
 }
-

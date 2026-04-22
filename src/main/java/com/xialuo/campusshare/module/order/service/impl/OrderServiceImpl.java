@@ -5,6 +5,7 @@ import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.OrderEntity;
 import com.xialuo.campusshare.entity.ProductEntity;
+import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.OrderStatusEnum;
 import com.xialuo.campusshare.enums.ProductStatusEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
@@ -14,6 +15,7 @@ import com.xialuo.campusshare.module.order.dto.OrderResponseDto;
 import com.xialuo.campusshare.module.order.mapper.OrderMapper;
 import com.xialuo.campusshare.module.order.service.OrderService;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
+import com.xialuo.campusshare.module.user.mapper.UserMapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,10 +35,12 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     /** 商品Mapper */
     private final ProductMapper productMapper;
+    private final UserMapper userMapper;
 
-    public OrderServiceImpl(OrderMapper orderMapper, ProductMapper productMapper) {
+    public OrderServiceImpl(OrderMapper orderMapper, ProductMapper productMapper, UserMapper userMapper) {
         this.orderMapper = orderMapper;
         this.productMapper = productMapper;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -301,7 +305,9 @@ public class OrderServiceImpl implements OrderService {
         responseDto.SetOrderNo(orderEntity.GetOrderNo());
         responseDto.SetProductId(orderEntity.GetProductId());
         responseDto.SetBuyerUserId(orderEntity.GetBuyerUserId());
+        responseDto.SetBuyerDisplayName(ResolveUserDisplayName(orderEntity.GetBuyerUserId()));
         responseDto.SetSellerUserId(orderEntity.GetSellerUserId());
+        responseDto.SetSellerDisplayName(ResolveUserDisplayName(orderEntity.GetSellerUserId()));
         responseDto.SetOrderStatus(orderEntity.GetOrderStatus());
         responseDto.SetOrderAmount(orderEntity.GetOrderAmount());
         responseDto.SetTradeLocation(orderEntity.GetTradeLocation());
@@ -312,6 +318,28 @@ public class OrderServiceImpl implements OrderService {
         responseDto.SetCreateTime(orderEntity.GetCreateTime());
         responseDto.SetUpdateTime(orderEntity.GetUpdateTime());
         return responseDto;
+    }
+
+    /**
+     * 瑙ｆ瀽鐢ㄦ埛鏄电О
+     */
+    private String ResolveUserDisplayName(Long userId) {
+        if (userId == null || userId <= 0) {
+            return "未知用户";
+        }
+        UserEntity userEntity = userMapper.FindUserById(userId);
+        if (userEntity == null) {
+            return "用户#" + userId;
+        }
+        String displayName = userEntity.GetDisplayName() == null ? "" : userEntity.GetDisplayName().trim();
+        if (!displayName.isBlank()) {
+            return displayName;
+        }
+        String account = userEntity.GetAccount() == null ? "" : userEntity.GetAccount().trim();
+        if (!account.isBlank()) {
+            return account;
+        }
+        return "用户#" + userId;
     }
 
     /**

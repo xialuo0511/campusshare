@@ -239,10 +239,14 @@
         const profile = window.CampusShareApi.GetCurrentUserProfile() || {};
         const currentUserId = Number(profile.userId || 0);
         const currentUserName = profile.displayName || profile.account || "";
+        const buyerNameFromOrder = detailResult && detailResult.buyerDisplayName ? String(detailResult.buyerDisplayName).trim() : "";
+        const sellerNameFromOrder = detailResult && detailResult.sellerDisplayName ? String(detailResult.sellerDisplayName).trim() : "";
         const sellerNameFromProduct = productResult && productResult.sellerDisplayName ? productResult.sellerDisplayName : "";
 
         if (pageRefs.buyerName) {
-            if (currentUserId > 0 && currentUserId === Number(detailResult.buyerUserId || 0) && currentUserName) {
+            if (buyerNameFromOrder) {
+                pageRefs.buyerName.textContent = buyerNameFromOrder;
+            } else if (currentUserId > 0 && currentUserId === Number(detailResult.buyerUserId || 0) && currentUserName) {
                 pageRefs.buyerName.textContent = currentUserName;
             } else {
                 pageRefs.buyerName.textContent = BuildUserLabel(detailResult.buyerUserId, "买家");
@@ -252,7 +256,9 @@
             pageRefs.buyerSubtitle.textContent = `用户ID: ${detailResult.buyerUserId || "-"}`;
         }
         if (pageRefs.sellerName) {
-            if (sellerNameFromProduct) {
+            if (sellerNameFromOrder) {
+                pageRefs.sellerName.textContent = sellerNameFromOrder;
+            } else if (sellerNameFromProduct) {
                 pageRefs.sellerName.textContent = sellerNameFromProduct;
             } else if (currentUserId > 0 && currentUserId === Number(detailResult.sellerUserId || 0) && currentUserName) {
                 pageRefs.sellerName.textContent = currentUserName;

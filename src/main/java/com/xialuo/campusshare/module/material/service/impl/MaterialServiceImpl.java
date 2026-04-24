@@ -266,18 +266,15 @@ public class MaterialServiceImpl implements MaterialService {
             throw new BusinessException(BizCodeEnum.MATERIAL_STATUS_INVALID, "资料当前不可下载");
         }
 
-        Integer deductedPoints = 0;
-        if (!currentUserId.equals(materialEntity.GetUploaderUserId())) {
-            deductedPoints = ResolveDownloadCostPoints(materialEntity);
-            if (deductedPoints > 0) {
-                pointLedgerService.RecordDownloadCost(
-                    currentUserId,
-                    deductedPoints,
-                    MATERIAL_BIZ_TYPE,
-                    materialEntity.GetMaterialId(),
+        Integer deductedPoints = ResolveDownloadCostPoints(materialEntity);
+        if (deductedPoints > 0) {
+            pointLedgerService.RecordDownloadCost(
+                currentUserId,
+                deductedPoints,
+                MATERIAL_BIZ_TYPE,
+                materialEntity.GetMaterialId(),
                     "资料下载扣减"
-                );
-            }
+            );
         }
 
         Integer countRows = studyMaterialMapper.IncreaseDownloadCount(materialId, LocalDateTime.now());

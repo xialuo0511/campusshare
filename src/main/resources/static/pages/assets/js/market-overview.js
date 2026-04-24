@@ -194,7 +194,8 @@
             try {
                 const result = await window.CampusShareApi.DownloadMaterial(materialId);
                 await TriggerMaterialFileDownload(result, materialId);
-                ShowSuccess(view.messageBarNode, "资料下载已开始");
+                ShowSuccess(view.messageBarNode, ResolveMaterialDownloadSuccessMessage(result));
+                await LoadSidebarPersonalData(view);
             } catch (error) {
                 ShowError(view.messageBarNode, GetErrorMessage(error, "资料下载失败"));
             } finally {
@@ -248,6 +249,15 @@
             return fileId;
         }
         return `material-${materialId}.bin`;
+    }
+
+    /**
+     * Resolve material download success message.
+     */
+    function ResolveMaterialDownloadSuccessMessage(downloadResult) {
+        const deductedPoints = SafeNumber(downloadResult && downloadResult.deductedPoints);
+        const currentPointBalance = SafeNumber(downloadResult && downloadResult.currentPointBalance);
+        return `资料下载已开始，已扣减 ${deductedPoints} 积分，当前积分 ${currentPointBalance}`;
     }
 
     /**

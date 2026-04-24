@@ -374,8 +374,8 @@ public class MaterialServiceImpl implements MaterialService {
      * 获取下载积分
      */
     private Integer ResolveDownloadCostPoints(StudyMaterialEntity materialEntity) {
-        if (materialEntity.GetDownloadCostPoints() == null || materialEntity.GetDownloadCostPoints() < 0) {
-            return 0;
+        if (materialEntity.GetDownloadCostPoints() == null || materialEntity.GetDownloadCostPoints() <= 0) {
+            return ResolveMaterialDownloadCostPoints();
         }
         return materialEntity.GetDownloadCostPoints();
     }

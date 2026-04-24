@@ -105,8 +105,9 @@
                 }
                 actionButton.disabled = true;
                 try {
-                    await window.CampusShareApi.DownloadMaterial(materialId);
-                    ShowSuccess(messageBar, "下载请求已提交，请在浏览器下载列表查看");
+                    const downloadResult = await window.CampusShareApi.DownloadMaterial(materialId);
+                    await TriggerMaterialFileDownload(downloadResult, materialId);
+                    ShowSuccess(messageBar, "资料下载已开始");
                     LoadMaterialList(state, materialGrid, summaryText, pagerText, messageBar, tagSelect);
                 } catch (error) {
                     ShowError(messageBar, error instanceof Error ? error.message : "资料下载失败");
@@ -117,6 +118,53 @@
         });
 
         LoadMaterialList(state, materialGrid, summaryText, pagerText, messageBar, tagSelect);
+    }
+
+    /**
+     * Trigger material file download.
+     */
+    async function TriggerMaterialFileDownload(downloadResult, materialId) {
+        const fileAccessUrl = downloadResult && downloadResult.fileAccessUrl
+            ? String(downloadResult.fileAccessUrl).trim()
+            : "";
+        if (!fileAccessUrl) {
+            throw new Error("下载地址缺失，请稍后重试");
+        }
+        const token = window.CampusShareApi.GetAuthToken();
+        if (!token) {
+            throw new Error("登录状态已失效，请重新登录");
+        }
+        const fileResponse = await fetch(fileAccessUrl, {
+            method: "GET",
+            headers: {
+                "X-Auth-Token": token
+            }
+        });
+        if (!fileResponse.ok) {
+            throw new Error(`文件下载失败(${fileResponse.status})`);
+        }
+        const fileBlob = await fileResponse.blob();
+        const blobUrl = window.URL.createObjectURL(fileBlob);
+        const linkElement = document.createElement("a");
+        linkElement.href = blobUrl;
+        linkElement.download = ResolveMaterialDownloadFileName(downloadResult, materialId);
+        document.body.appendChild(linkElement);
+        linkElement.click();
+        linkElement.remove();
+        window.setTimeout(function CleanupBlobUrl() {
+            window.URL.revokeObjectURL(blobUrl);
+        }, 1000);
+    }
+
+    /**
+     * Resolve material download file name.
+     */
+    function ResolveMaterialDownloadFileName(downloadResult, materialId) {
+        const fileId = downloadResult && downloadResult.fileId ? String(downloadResult.fileId).trim() : "";
+        if (fileId) {
+            return fileId;
+        }
+        return `material-${materialId}.bin`;
     }
 
     /**

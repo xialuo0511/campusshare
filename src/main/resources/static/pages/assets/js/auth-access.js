@@ -630,11 +630,14 @@
      * 解析登录后跳转路径
      */
     function ResolveRedirectPath(loginResult) {
+        if (window.CampusShareApi && typeof window.CampusShareApi.ResolveLoginSuccessRedirect === "function") {
+            return window.CampusShareApi.ResolveLoginSuccessRedirect(loginResult);
+        }
         const userRole = loginResult && loginResult.userRole ? loginResult.userRole : "";
         if (userRole === "ADMINISTRATOR") {
             return "/pages/admin_dashboard.html";
         }
-        return "/pages/market_overview.html";
+        return "/pages/user_workspace.html";
     }
 
     document.addEventListener("DOMContentLoaded", BindAuthPage);

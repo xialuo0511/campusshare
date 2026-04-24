@@ -16,6 +16,7 @@
 
     const PAGE_PATH_MAP = {
         AUTH: "/pages/auth_access.html",
+        USER_WORKSPACE: "/pages/user_workspace.html",
         OVERVIEW: "/pages/market_overview.html",
         LISTING: "/pages/market_listing.html",
         FORUM_SUBVIEW: "/pages/market_listing.html?view=FORUM",
@@ -32,6 +33,19 @@
         ADMIN_BATCH_REVIEW: "/pages/admin_batch_review.html",
         ERROR_STATUS: "/pages/error_status.html"
     };
+    const USER_WORKSPACE_CHILD_PATH_SET = new Set([
+        PAGE_PATH_MAP.OVERVIEW,
+        PAGE_PATH_MAP.LISTING,
+        PAGE_PATH_MAP.FORUM_SUBVIEW,
+        PAGE_PATH_MAP.MATERIAL_LISTING,
+        PAGE_PATH_MAP.ORDER,
+        PAGE_PATH_MAP.ORDER_DETAIL,
+        PAGE_PATH_MAP.PUBLISH,
+        PAGE_PATH_MAP.RECRUITMENT,
+        PAGE_PATH_MAP.NOTIFICATION,
+        PAGE_PATH_MAP.PROFILE,
+        PAGE_PATH_MAP.MY_PUBLISH
+    ].map(NormalizePagePath));
     const PUBLIC_PAGE_PATH_SET = new Set([
         PAGE_PATH_MAP.AUTH,
         PAGE_PATH_MAP.OVERVIEW,
@@ -249,6 +263,45 @@
     /**
      * 构建登录页地址
      */
+    /**
+     * Whether current page is rendered inside the user workspace.
+     */
+    function IsEmbeddedUserPage() {
+        if (window.self !== window.top) {
+            return true;
+        }
+        const searchParams = new URLSearchParams(window.location.search || "");
+        return searchParams.get("embedded") === "1";
+    }
+
+    /**
+     * Whether a target should open in user workspace at top level.
+     */
+    function ShouldRouteToUserWorkspace(targetPath) {
+        if (IsEmbeddedUserPage()) {
+            return false;
+        }
+        const normalizedPath = NormalizePagePath(targetPath);
+        if (!normalizedPath || normalizedPath === PAGE_PATH_MAP.USER_WORKSPACE) {
+            return false;
+        }
+        if (normalizedPath === PAGE_PATH_MAP.ADMIN || normalizedPath === PAGE_PATH_MAP.AUTH) {
+            return false;
+        }
+        return USER_WORKSPACE_CHILD_PATH_SET.has(normalizedPath);
+    }
+
+    /**
+     * Build workspace URL for a child page.
+     */
+    function BuildUserWorkspacePath(targetPath) {
+        const safePath = ResolveSafePagePath(targetPath);
+        if (!safePath) {
+            return PAGE_PATH_MAP.USER_WORKSPACE;
+        }
+        return `${PAGE_PATH_MAP.USER_WORKSPACE}?target=${encodeURIComponent(safePath)}`;
+    }
+
     function BuildAuthPageUrl(redirectPath) {
         const safeRedirectPath = ResolveSafePagePath(redirectPath || "");
         if (!safeRedirectPath || safeRedirectPath.startsWith(PAGE_PATH_MAP.AUTH)) {
@@ -273,7 +326,7 @@
         if (userRole === ADMINISTRATOR_ROLE) {
             return PAGE_PATH_MAP.ADMIN;
         }
-        return PAGE_PATH_MAP.OVERVIEW;
+        return PAGE_PATH_MAP.USER_WORKSPACE;
     }
 
     /**
@@ -306,6 +359,10 @@
     function NavigateToPage(targetPath) {
         const safePath = ResolveSafePagePath(targetPath);
         if (!safePath) {
+            return;
+        }
+        if (ShouldRouteToUserWorkspace(safePath)) {
+            NavigateToPage(BuildUserWorkspacePath(safePath));
             return;
         }
         if (!GetAuthToken() && IsAuthRequiredPagePath(safePath)) {
@@ -1416,6 +1473,31 @@
     /**
      * 注入统一用户侧栏布局
      */
+    /**
+     * Hide duplicated page shell when rendered inside user workspace.
+     */
+    function EnsureEmbeddedUserPageStyle() {
+        if (!IsEmbeddedUserPage() || document.getElementById("campusshare-embedded-user-page-style")) {
+            return;
+        }
+        const styleElement = document.createElement("style");
+        styleElement.id = "campusshare-embedded-user-page-style";
+        styleElement.textContent = [
+            "html,body{min-height:100%!important;background:#f8fafc!important;}",
+            "html.campusshare-embedded-page body>header{display:none!important;}",
+            "[data-user-topbar],[data-user-sidebar],footer{display:none!important;}",
+            "html.campusshare-embedded-page body>main{display:block!important;width:100%!important;max-width:none!important;min-height:100vh!important;margin:0!important;padding:2rem!important;}",
+            "html.campusshare-embedded-page body>main>aside:first-child{display:none!important;}",
+            "html.campusshare-embedded-page body>main>section{width:100%!important;max-width:none!important;}",
+            "[data-user-shell]{display:block!important;width:100%!important;max-width:none!important;min-height:100vh!important;margin:0!important;}",
+            "[data-user-main]{margin-left:0!important;width:100%!important;max-width:none!important;min-height:100vh!important;}",
+            "body>main{margin-left:0!important;width:100%!important;max-width:none!important;}",
+            "body{overflow-x:hidden!important;}"
+        ].join("");
+        document.head.appendChild(styleElement);
+        document.documentElement.classList.add("campusshare-embedded-page");
+    }
+
     function EnsureUserSidebarStyle() {
         if (document.getElementById("campusshare-user-sidebar-style")) {
             return;
@@ -1475,10 +1557,13 @@
      * 绑定全局壳层导航
      */
     function BindGlobalShellNavigation() {
+        EnsureEmbeddedUserPageStyle();
         EnhanceSelectElements(document);
         ObserveDynamicSelectElements();
         SyncRoleAwareShellItems();
-        EnsureUserSidebarStyle();
+        if (!IsEmbeddedUserPage()) {
+            EnsureUserSidebarStyle();
+        }
         SyncUserSidebarActiveState();
         BindBrandNavigation();
         BindAnchorNavigation();

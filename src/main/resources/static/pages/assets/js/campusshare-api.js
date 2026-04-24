@@ -584,6 +584,7 @@
             }
         }
         normalizedTriggerElement.classList.add("campusshare-notification-trigger");
+        const isUserSidebarTrigger = !!normalizedTriggerElement.closest("[data-user-sidebar]");
         const computedStyle = window.getComputedStyle(normalizedTriggerElement);
         if (computedStyle.position === "static") {
             normalizedTriggerElement.style.position = "relative";
@@ -592,10 +593,19 @@
         normalizedTriggerElement.style.display = "inline-flex";
         normalizedTriggerElement.style.alignItems = "center";
         normalizedTriggerElement.style.justifyContent = "center";
-        normalizedTriggerElement.style.width = "40px";
-        normalizedTriggerElement.style.height = "40px";
-        normalizedTriggerElement.style.borderRadius = "12px";
         normalizedTriggerElement.style.cursor = "pointer";
+        if (isUserSidebarTrigger) {
+            normalizedTriggerElement.style.width = "";
+            normalizedTriggerElement.style.height = "";
+            normalizedTriggerElement.style.borderRadius = "";
+            normalizedTriggerElement.style.padding = "";
+            normalizedTriggerElement.style.border = "";
+            normalizedTriggerElement.style.background = "";
+        } else {
+            normalizedTriggerElement.style.width = "40px";
+            normalizedTriggerElement.style.height = "40px";
+            normalizedTriggerElement.style.borderRadius = "12px";
+        }
         if (createdTriggerShell) {
             normalizedTriggerElement.style.padding = "0";
             normalizedTriggerElement.style.border = "none";
@@ -606,6 +616,30 @@
             triggerIcon.style.pointerEvents = "none";
         }
         return normalizedTriggerElement;
+    }
+
+    function ResolveNotificationBadgeHost(notificationTrigger, notificationIcon) {
+        if (!notificationTrigger) {
+            return null;
+        }
+        const isUserSidebarTrigger = !!notificationTrigger.closest("[data-user-sidebar]");
+        if (!isUserSidebarTrigger || !notificationIcon) {
+            return notificationTrigger;
+        }
+        const parentElement = notificationIcon.parentElement;
+        if (parentElement && parentElement.classList && parentElement.classList.contains("campusshare-notification-icon-shell")) {
+            return parentElement;
+        }
+        const iconShellElement = document.createElement("span");
+        iconShellElement.className = "campusshare-notification-icon-shell";
+        if (parentElement) {
+            parentElement.insertBefore(iconShellElement, notificationIcon);
+            iconShellElement.appendChild(notificationIcon);
+        } else {
+            notificationTrigger.insertBefore(iconShellElement, notificationTrigger.firstChild || null);
+            iconShellElement.appendChild(notificationIcon);
+        }
+        return iconShellElement;
     }
 
     /**
@@ -750,6 +784,19 @@
                 pointer-events: none;
                 border: 1.5px solid #ffffff;
             }
+            .campusshare-notification-icon-shell {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 1.25rem;
+                height: 1.25rem;
+                flex: 0 0 1.25rem;
+            }
+            [data-user-sidebar] .campusshare-notification-icon-shell > .campusshare-notification-badge {
+                top: -6px;
+                right: -8px;
+            }
             .campusshare-notification-trigger {
                 position: relative;
                 line-height: 1;
@@ -818,7 +865,8 @@
         if (!notificationTrigger) {
             return;
         }
-        const badgeElement = notificationTrigger.querySelector(".campusshare-notification-badge");
+        const badgeHost = ResolveNotificationBadgeHost(notificationTrigger, notificationIcon) || notificationTrigger;
+        const badgeElement = badgeHost.querySelector(".campusshare-notification-badge");
         if (!unreadCount || unreadCount <= 0) {
             if (badgeElement) {
                 badgeElement.remove();
@@ -829,7 +877,7 @@
         nextBadgeElement.className = "campusshare-notification-badge";
         nextBadgeElement.textContent = unreadCount >= 10 ? "9+" : String(unreadCount);
         if (!badgeElement) {
-            notificationTrigger.appendChild(nextBadgeElement);
+            badgeHost.appendChild(nextBadgeElement);
         }
     }
 

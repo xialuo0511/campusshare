@@ -1366,12 +1366,61 @@
     }
 
     /**
+     * 注入统一用户侧栏布局
+     */
+    function EnsureUserSidebarStyle() {
+        if (document.getElementById("campusshare-user-sidebar-style")) {
+            return;
+        }
+        const styleElement = document.createElement("style");
+        styleElement.id = "campusshare-user-sidebar-style";
+        styleElement.textContent = [
+            "[data-user-sidebar]{position:fixed!important;left:0!important;top:4rem!important;z-index:40!important;width:16rem!important;height:calc(100vh - 4rem)!important;padding:1.5rem 1rem!important;background:#f8fafc!important;border-right:1px solid #e2e8f0!important;display:flex!important;flex-direction:column!important;box-sizing:border-box!important;}",
+            "[data-user-sidebar] nav{flex:1!important;display:flex!important;flex-direction:column!important;gap:.25rem!important;}",
+            "[data-user-sidebar] nav a,[data-user-sidebar] [data-user-sidebar-footer] a{display:flex!important;align-items:center!important;gap:.75rem!important;border-radius:.5rem!important;padding:.625rem .75rem!important;color:#475569!important;font-size:.875rem!important;font-weight:600!important;line-height:1.25rem!important;text-decoration:none!important;transform:none!important;box-shadow:none!important;}",
+            "[data-user-sidebar] nav a:hover,[data-user-sidebar] [data-user-sidebar-footer] a:hover{background:#eef2f7!important;color:#075985!important;}",
+            "[data-user-sidebar] nav a[aria-current='page']{background:#ffffff!important;color:#075985!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important;font-weight:800!important;}",
+            "[data-user-sidebar] .material-symbols-outlined{font-size:1.25rem!important;}",
+            "[data-user-sidebar] [data-user-sidebar-footer]{margin-top:auto!important;border-top:1px solid #e2e8f0!important;padding-top:1rem!important;display:flex!important;flex-direction:column!important;gap:.25rem!important;}",
+            "[data-user-sidebar] [data-admin-only='true'].hidden{display:none!important;}",
+            "[data-user-main]{margin-left:16rem!important;min-height:calc(100vh - 4rem)!important;}",
+            "@media(max-width:1023px){[data-user-sidebar]{display:none!important;}[data-user-main]{margin-left:0!important;}}"
+        ].join("");
+        document.head.appendChild(styleElement);
+    }
+
+    /**
+     * 同步用户侧栏当前页高亮
+     */
+    function SyncUserSidebarActiveState() {
+        const sidebarElement = document.querySelector("[data-user-sidebar]");
+        if (!sidebarElement) {
+            return;
+        }
+        const currentPath = ResolveCurrentPagePathWithQuery();
+        const currentNormalizedPath = NormalizePagePath(currentPath);
+        const linkList = Array.from(sidebarElement.querySelectorAll("nav a[data-nav-target]"));
+        linkList.forEach(function ToggleUserSidebarLink(linkElement) {
+            const targetPath = linkElement.getAttribute("data-nav-target") || "";
+            const targetNormalizedPath = NormalizePagePath(targetPath);
+            const isCurrent = !!targetNormalizedPath && targetNormalizedPath === currentNormalizedPath;
+            if (isCurrent) {
+                linkElement.setAttribute("aria-current", "page");
+                return;
+            }
+            linkElement.removeAttribute("aria-current");
+        });
+    }
+
+    /**
      * 绑定全局壳层导航
      */
     function BindGlobalShellNavigation() {
         EnhanceSelectElements(document);
         ObserveDynamicSelectElements();
         SyncRoleAwareShellItems();
+        EnsureUserSidebarStyle();
+        SyncUserSidebarActiveState();
         BindBrandNavigation();
         BindAnchorNavigation();
         BindButtonNavigation();

@@ -1163,7 +1163,7 @@
             if (!text) {
                 return;
             }
-            if (text.includes("登出") || text.toLowerCase().includes("logout")) {
+            if (text.includes("登出") || text.includes("退出") || text.toLowerCase().includes("logout")) {
                 anchorElement.href = "javascript:void(0)";
                 if (anchorElement.dataset.logoutNavigationBound === "true") {
                     return;
@@ -1238,7 +1238,7 @@
                     NavigateToPage(PAGE_PATH_MAP.PUBLISH);
                 });
             }
-            if (buttonText.includes("登出") && !buttonElement.hasAttribute("data-action")) {
+            if ((buttonText.includes("登出") || buttonText.includes("退出")) && !buttonElement.hasAttribute("data-action")) {
                 if (buttonElement.dataset.logoutNavigationBound === "true") {
                     return;
                 }
@@ -1353,11 +1353,25 @@
     }
 
     /**
+     * 同步基于角色展示的壳层入口
+     */
+    function SyncRoleAwareShellItems() {
+        const profile = GetCurrentUserProfile();
+        const isAdministrator = profile && profile.userRole === ADMINISTRATOR_ROLE;
+        const adminOnlyElementList = Array.from(document.querySelectorAll("[data-admin-only='true']"));
+        adminOnlyElementList.forEach(function ToggleAdminOnlyElement(element) {
+            element.classList.toggle("hidden", !isAdministrator);
+            element.setAttribute("aria-hidden", isAdministrator ? "false" : "true");
+        });
+    }
+
+    /**
      * 绑定全局壳层导航
      */
     function BindGlobalShellNavigation() {
         EnhanceSelectElements(document);
         ObserveDynamicSelectElements();
+        SyncRoleAwareShellItems();
         BindBrandNavigation();
         BindAnchorNavigation();
         BindButtonNavigation();

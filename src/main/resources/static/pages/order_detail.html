@@ -114,25 +114,33 @@
 </div>
 </div>
 <nav class="space-y-1 flex-1">
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" href="#">
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/market_overview.html" href="#">
+<span class="material-symbols-outlined text-xl">home</span>
+<span class="font-medium text-sm">主页</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/my_publish.html" href="#">
 <span class="material-symbols-outlined text-xl">list_alt</span>
 <span class="font-medium text-sm">我的发布</span>
 </a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg bg-white shadow-sm text-sky-800 font-bold" href="#">
-<span class="material-symbols-outlined text-xl">swap_horiz</span>
-<span class="font-medium text-sm">交易订单</span>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg bg-white shadow-sm text-sky-800 font-bold" data-nav-target="/pages/order_center.html" href="#">
+<span class="material-symbols-outlined text-xl">receipt_long</span>
+<span class="font-medium text-sm">订单中心</span>
 </a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" href="#">
-<span class="material-symbols-outlined text-xl">chat_bubble_outline</span>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/recruitment_board.html" href="#">
+<span class="material-symbols-outlined text-xl">groups</span>
+<span class="font-medium text-sm">组队招募</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/notification_center.html" href="#">
+<span class="material-symbols-outlined text-xl">notifications</span>
 <span class="font-medium text-sm">消息通知</span>
 </a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" href="#">
-<span class="material-symbols-outlined text-xl">bookmark</span>
-<span class="font-medium text-sm">我的收藏</span>
-</a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" href="#">
+<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/user_profile.html" href="#">
 <span class="material-symbols-outlined text-xl">settings</span>
-<span class="font-medium text-sm">账户设置</span>
+<span class="font-medium text-sm">个人设置</span>
+</a>
+<a class="hidden flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#">
+<span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+<span class="font-medium text-sm">管理仪表盘</span>
 </a>
 </nav>
 <div class="border-t border-slate-200 pt-4 space-y-1">

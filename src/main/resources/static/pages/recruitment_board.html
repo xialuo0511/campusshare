@@ -121,28 +121,39 @@
 </div>
 </div>
 <nav class="flex-1 space-y-1">
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" href="#">
-<span class="material-symbols-outlined">dashboard</span>
-<span>仪表盘</span>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" data-nav-target="/pages/market_overview.html" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>主页</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" href="#">
-<span class="material-symbols-outlined">inventory_2</span>
-<span>管理</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 bg-[#ffffff] dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm translate-x-1" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" data-nav-target="/pages/my_publish.html" href="#">
 <span class="material-symbols-outlined">format_list_bulleted</span>
-<span>列表</span>
+<span>我的发布</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" href="#">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" data-nav-target="/pages/order_center.html" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span>订单中心</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-[#ffffff] dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm translate-x-1" data-nav-target="/pages/recruitment_board.html" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span>组队招募</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" data-nav-target="/pages/notification_center.html" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span>消息通知</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" data-nav-target="/pages/user_profile.html" href="#">
 <span class="material-symbols-outlined">settings</span>
-<span>设置</span>
+<span>个人设置</span>
+</a>
+<a class="hidden flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] transition-all rounded-md" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span>管理仪表盘</span>
 </a>
 </nav>
 <div class="mt-auto pt-6 space-y-1 border-t border-outline-variant/20">
-<button class="w-full mb-4 bg-primary text-on-primary py-2.5 rounded-lg font-semibold text-xs active:scale-95 transition-all">升级账户</button>
 <a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] rounded-md" href="#">
 <span class="material-symbols-outlined">help_outline</span>
-<span>帮助</span>
+<span>帮助中心</span>
 </a>
 <a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] rounded-md" href="#">
 <span class="material-symbols-outlined">logout</span>

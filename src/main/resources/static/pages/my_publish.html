@@ -93,7 +93,7 @@
 <a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
 <a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
 <a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/recruitment_board.html" href="#">组队招募</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/notification_center.html" href="#">消息中心</a>
+<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/notification_center.html" href="#">消息通知</a>
 </nav>
 </div>
 <div class="flex items-center gap-4">
@@ -118,25 +118,33 @@
 </div>
 </div>
 <nav class="flex-1 space-y-1">
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white dark:bg-slate-800 text-sky-800 dark:text-sky-300 font-bold transition-all" href="#">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/market_overview.html" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span class="font-['Inter'] text-sm">主页</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white dark:bg-slate-800 text-sky-800 dark:text-sky-300 font-bold transition-all" data-nav-target="/pages/my_publish.html" href="#">
 <span class="material-symbols-outlined text-[20px]">list_alt</span>
 <span class="font-['Inter'] text-sm">我的发布</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
-<span class="material-symbols-outlined text-[20px]">swap_horiz</span>
-<span class="font-['Inter'] text-sm">交易请求</span>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/order_center.html" href="#">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span class="font-['Inter'] text-sm">订单中心</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
-<span class="material-symbols-outlined text-[20px]">chat_bubble_outline</span>
-<span class="font-['Inter'] text-sm">消息中心</span>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/recruitment_board.html" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="font-['Inter'] text-sm">组队招募</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
-<span class="material-symbols-outlined text-[20px]">bookmark</span>
-<span class="font-['Inter'] text-sm">收藏夹</span>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/notification_center.html" href="#">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="font-['Inter'] text-sm">消息通知</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/user_profile.html" href="#">
 <span class="material-symbols-outlined text-[20px]">settings</span>
-<span class="font-['Inter'] text-sm">资料设置</span>
+<span class="font-['Inter'] text-sm">个人设置</span>
+</a>
+<a class="hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#">
+<span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+<span class="font-['Inter'] text-sm">管理仪表盘</span>
 </a>
 </nav>
 <div class="border-t border-slate-200 dark:border-slate-800 pt-6 space-y-1">

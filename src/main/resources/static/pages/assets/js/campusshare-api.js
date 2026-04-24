@@ -641,7 +641,8 @@
             }
         }
         normalizedTriggerElement.classList.add("campusshare-notification-trigger");
-        const isUserSidebarTrigger = !!normalizedTriggerElement.closest("[data-user-sidebar]");
+        const isUserSidebarTrigger = !!normalizedTriggerElement.closest("[data-user-sidebar]")
+            || !!normalizedTriggerElement.closest("[data-workspace-nav]");
         const computedStyle = window.getComputedStyle(normalizedTriggerElement);
         if (computedStyle.position === "static") {
             normalizedTriggerElement.style.position = "relative";
@@ -679,7 +680,8 @@
         if (!notificationTrigger) {
             return null;
         }
-        const isUserSidebarTrigger = !!notificationTrigger.closest("[data-user-sidebar]");
+        const isUserSidebarTrigger = !!notificationTrigger.closest("[data-user-sidebar]")
+            || !!notificationTrigger.closest("[data-workspace-nav]");
         if (!isUserSidebarTrigger || !notificationIcon) {
             return notificationTrigger;
         }
@@ -851,6 +853,10 @@
                 flex: 0 0 1.25rem;
             }
             [data-user-sidebar] .campusshare-notification-icon-shell > .campusshare-notification-badge {
+                top: -6px;
+                right: -8px;
+            }
+            [data-workspace-nav] .campusshare-notification-icon-shell > .campusshare-notification-badge {
                 top: -6px;
                 right: -8px;
             }

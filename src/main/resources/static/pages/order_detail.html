@@ -87,21 +87,17 @@
 </head>
 <body class="bg-surface text-on-surface">
 <!-- Top Navigation Shell -->
-<nav class="w-full top-0 sticky bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-8 h-16 z-50">
-<div class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100 font-headline">CampusShare</div>
-<div class="hidden md:flex items-center space-x-8 font-['Manrope'] font-semibold">
-<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="/pages/market_overview.html">首页广场</a>
-<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="/pages/market_listing.html?view=PRODUCT">校园二手</a>
-<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="/pages/market_listing.html?view=MATERIAL">学术资料</a>
-<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="/pages/market_listing.html?view=FORUM">校园论坛</a>
-<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-2 rounded" href="/pages/recruitment_board.html">组队招募</a>
-</div>
-<div class="flex items-center space-x-4">
-<span class="material-symbols-outlined text-sky-800 cursor-pointer">notifications</span>
-<span class="material-symbols-outlined text-sky-800 cursor-pointer">account_circle</span>
-</div>
+<header class="w-full top-0 sticky bg-slate-50 dark:bg-slate-900" data-user-topbar>
+<div>
+<a class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100" data-nav-target="/pages/market_overview.html" href="#">CampusShare</a>
+<nav>
+<a data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
+<a data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
+<a data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
 </nav>
-<div class="flex min-h-screen">
+</div>
+</header>
+<div class="flex min-h-screen" data-user-shell>
 <!-- Side Navigation Shell -->
 <aside class="h-screen w-64 fixed left-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 px-4 z-40" data-user-sidebar>
 <div class="flex items-center mb-8 px-2 space-x-3">

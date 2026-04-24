@@ -85,27 +85,17 @@
 </head>
 <body class="text-on-surface">
 <!-- TopNavBar -->
-<header class="w-full top-0 sticky z-50 bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-8 h-16 max-w-full">
-<div class="flex items-center gap-8">
-<span class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100">CampusShare</span>
-<nav class="hidden md:flex gap-6 items-center">
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/recruitment_board.html" href="#">组队招募</a>
-<a class="font-['Manrope'] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors duration-150 px-3 py-1 rounded-lg" data-nav-target="/pages/notification_center.html" href="#">消息通知</a>
+<header class="w-full top-0 sticky z-50 bg-slate-50 dark:bg-slate-900" data-user-topbar>
+<div>
+<a class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100" data-nav-target="/pages/market_overview.html" href="#">CampusShare</a>
+<nav>
+<a data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
+<a data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
+<a data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
 </nav>
 </div>
-<div class="flex items-center gap-4">
-<button class="p-2 hover:bg-slate-200/50 rounded-full transition-all active:scale-95">
-<span class="material-symbols-outlined text-slate-600">notifications</span>
-</button>
-<button class="p-2 hover:bg-slate-200/50 rounded-full transition-all active:scale-95">
-<span class="material-symbols-outlined text-slate-600">account_circle</span>
-</button>
-</div>
 </header>
-<div class="flex">
+<div class="flex" data-user-shell>
 <!-- SideNavBar -->
 <aside class="h-screen w-64 fixed left-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 px-4" data-user-sidebar>
 <div class="mb-8 px-2 flex items-center gap-3">

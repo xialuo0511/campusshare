@@ -88,31 +88,69 @@
 </head>
 <body class="bg-surface text-on-surface">
 <!-- TopNavBar -->
-<header class="bg-[#f8f9fa] dark:bg-slate-950 docked full-width top-0 z-50">
-<div class="flex justify-between items-center w-full px-6 py-3 max-w-[1440px] mx-auto">
-<div class="flex items-center gap-8">
-<span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500">CampusShare</span>
-<nav class="hidden md:flex gap-6 font-['Manrope'] text-sm tracking-wide">
+<header class="bg-[#f8f9fa] dark:bg-slate-950" data-user-topbar>
+<div>
+<a class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100" data-nav-target="/pages/market_overview.html" href="#">CampusShare</a>
+<nav>
 <a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" data-market-nav="MARKET" data-nav-target="local" href="#">交易市场</a>
 <a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-market-nav="MATERIAL" data-nav-target="local" href="#">学术资源</a>
 <a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-market-nav="FORUM" data-nav-target="local" href="#">校园论坛</a>
 </nav>
 </div>
-<div class="flex items-center gap-4">
-<div class="relative hidden lg:block">
-<input class="bg-surface-container-low border-none rounded-md px-4 py-2 text-sm w-64 focus:ring-1 focus:ring-primary" placeholder="搜索市场..." type="text"/>
-<span class="material-symbols-outlined absolute right-3 top-2 text-slate-400 text-sm">search</span>
-</div>
-<button class="p-2 text-slate-600 hover:bg-surface-container transition-colors rounded-xl">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-</button>
-<button class="p-2 text-slate-600 hover:bg-surface-container transition-colors rounded-xl">
-<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
-</button>
-<button class="bg-primary text-on-primary px-5 py-2 rounded-lg text-sm font-semibold scale-95 active:scale-100 duration-150" data-nav-target="/pages/publish_create.html">发布</button>
-</div>
-</div>
 </header>
+<div class="flex max-w-[1440px] mx-auto min-h-screen" data-user-shell>
+<aside class="h-screen w-64 fixed left-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 px-4" data-user-sidebar>
+<div class="mb-8 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User Profile Avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD47PwwUZAZrTYLZOwJumHKf5PS3ezr886OIofm-87WL9ydQGScOTk9PjRGQzU4EZdOZ-GR8D3q0Wn5Ieko6Z2mKW0s4c6o2PjWZf7enTeX77ukFDmGo2Y7AySXio0ha73BII4BBxODZhmTVoDK21EbbIXavVRS_8DuPDjE9Z8wscAY3crNV4T8h4bQvHhKIcXNoShSEJbu3Hkdi4kcMzUGWYTz0wn4ODISyY1zIU4oXkf6YGv5lhGSAHtxZjpy06Z_U07VdMV03PM"/>
+</div>
+<div>
+<p class="font-['Inter'] text-sm font-bold text-on-surface">个人中心</p>
+<p class="font-['Inter'] text-[10px] text-slate-500 uppercase tracking-tighter">校园认证用户</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/market_overview.html" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span class="font-['Inter'] text-sm">主页</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/my_publish.html" href="#">
+<span class="material-symbols-outlined text-[20px]">list_alt</span>
+<span class="font-['Inter'] text-sm">我的发布</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/order_center.html" href="#">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span class="font-['Inter'] text-sm">订单中心</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/recruitment_board.html" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="font-['Inter'] text-sm">组队招募</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/notification_center.html" href="#">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="font-['Inter'] text-sm">消息通知</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/user_profile.html" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-['Inter'] text-sm">个人设置</span>
+</a>
+<a class="hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#">
+<span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+<span class="font-['Inter'] text-sm">管理仪表盘</span>
+</a>
+</nav>
+<div class="border-t border-slate-200 dark:border-slate-800 pt-6 space-y-1" data-user-sidebar-footer>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="font-['Inter'] text-sm">帮助中心</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-error hover:bg-error-container/20 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-['Inter'] text-sm">退出登录</span>
+</a>
+</div>
+</aside>
+<main class="flex-1" data-user-main>
 <div class="flex max-w-[1440px] mx-auto min-h-screen" data-market-panel="MARKET">
 <!-- Left Sidebar Filter -->
 <aside class="hidden lg:block w-72 p-6 bg-surface-bright border-r-0">
@@ -488,6 +526,8 @@
 </div>
 </div>
 </section>
+</main>
+</div>
 <!-- Footer -->
 <footer class="bg-[#f8f9fa] dark:bg-slate-950 w-full py-12 px-6 mt-auto border-t border-slate-200 dark:border-slate-800">
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">

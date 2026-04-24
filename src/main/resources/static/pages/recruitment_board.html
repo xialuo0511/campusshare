@@ -89,26 +89,17 @@
 </head>
 <body class="bg-surface text-on-surface antialiased">
 <!-- TopNavBar -->
-<header class="bg-[#f8f9fa] dark:bg-slate-950 flex justify-between items-center w-full px-6 py-3 max-w-[1440px] mx-auto docked full-width top-0 z-50">
-<div class="flex items-center gap-8">
-<span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500">CampusShare</span>
-<nav class="hidden md:flex gap-6 font-['Manrope'] text-sm tracking-wide">
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
-<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" data-nav-target="/pages/recruitment_board.html" href="#">组队招募</a>
+<header class="bg-[#f8f9fa] dark:bg-slate-950" data-user-topbar>
+<div>
+<a class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100" data-nav-target="/pages/market_overview.html" href="#">CampusShare</a>
+<nav>
+<a data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
+<a data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
+<a data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
 </nav>
 </div>
-<div class="flex items-center gap-4">
-<div class="relative hidden lg:block">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
-<input class="pl-10 pr-4 py-1.5 bg-surface-container-lowest border-none rounded-lg text-sm w-64 focus:ring-1 focus:ring-primary" placeholder="搜索招募信息..." type="text"/>
-</div>
-<button class="material-symbols-outlined text-outline p-2 hover:bg-surface-container-high rounded-full transition-colors">notifications</button>
-<button class="material-symbols-outlined text-outline p-2 hover:bg-surface-container-high rounded-full transition-colors">account_circle</button>
-<button class="bg-primary text-on-primary px-5 py-2 rounded-lg text-sm font-semibold hover:bg-primary-container transition-all active:scale-95" data-nav-target="/pages/publish_create.html?type=recruitment">发布</button>
-</div>
 </header>
-<div class="flex min-h-screen max-w-[1440px] mx-auto">
+<div class="flex min-h-screen max-w-[1440px] mx-auto" data-user-shell>
 <!-- SideNavBar -->
 <aside class="h-screen w-64 sticky left-0 top-0 flex flex-col p-4 border-r border-transparent bg-[#f3f4f5] dark:bg-slate-900 font-['Inter'] text-sm" data-user-sidebar>
 <div class="mb-8 px-2">

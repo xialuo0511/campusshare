@@ -77,6 +77,7 @@
                         return notificationItem;
                     });
                     RenderNotificationList(state, listContainer);
+                    RefreshShellNotificationBadge();
                     ShowSuccess(messageBar, "已标记为已读");
                 } catch (error) {
                     ShowError(messageBar, error instanceof Error ? error.message : "操作失败");
@@ -131,9 +132,28 @@
                 return Object.assign({}, notificationItem, { readFlag: true });
             });
             RenderNotificationList(state, listContainer);
+            RefreshShellNotificationBadge();
             ShowSuccess(messageBar, "全部已标记为已读");
         } catch (error) {
             ShowError(messageBar, error instanceof Error ? error.message : "批量处理失败");
+        }
+    }
+
+    function RefreshShellNotificationBadge() {
+        RefreshNotificationBadgeInWindow(window);
+        try {
+            if (window.parent && window.parent !== window) {
+                RefreshNotificationBadgeInWindow(window.parent);
+            }
+        } catch (error) {
+            // Cross-frame access may be blocked outside the same-origin workspace shell.
+        }
+    }
+
+    function RefreshNotificationBadgeInWindow(targetWindow) {
+        const targetApi = targetWindow && targetWindow.CampusShareApi ? targetWindow.CampusShareApi : null;
+        if (targetApi && typeof targetApi.RefreshNotificationBadge === "function") {
+            targetApi.RefreshNotificationBadge();
         }
     }
 

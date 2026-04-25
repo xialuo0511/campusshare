@@ -2027,6 +2027,9 @@
         MarkAllNotificationRead() {
             return RequestApi("/api/v1/notifications/read/all", "POST", {}, true);
         },
+        RefreshNotificationBadge() {
+            return RefreshNotificationData();
+        },
         UpdateMyProfile(payload) {
             const currentProfile = GetCurrentUserProfile();
             if (!currentProfile || !currentProfile.userId) {

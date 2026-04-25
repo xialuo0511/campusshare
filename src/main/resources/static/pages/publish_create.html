@@ -195,8 +195,8 @@
 <div class="w-16 h-16 bg-surface-container-lowest rounded-full flex items-center justify-center mb-4 editorial-shadow group-hover:scale-110 transition-transform">
 <span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
 </div>
-<p class="text-on-surface font-semibold mb-1">拖拽图片或文档</p>
-<p class="text-slate-500 text-xs max-w-xs">支持 JPG, PNG, PDF (最大 25MB)。推荐为教材提供高分辨率图片。</p>
+<p class="text-on-surface font-semibold mb-1" data-role="publish-upload-title">拖拽图片或文档</p>
+<p class="text-slate-500 text-xs max-w-xs" data-role="publish-upload-description">支持 JPG, PNG, PDF (最大 25MB)。推荐为教材提供高分辨率图片。</p>
 <button class="mt-4 text-primary font-bold text-sm underline underline-offset-4" data-role="publish-browse-file" type="button">浏览文件</button>
 </div>
 </div>
@@ -210,7 +210,7 @@
 <div class="space-y-2">
 <label class="text-xs font-label font-semibold uppercase tracking-widest text-slate-500" data-role="publish-price-label">价格 (美元)</label>
 <div class="relative">
-<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold" data-role="publish-price-prefix">$</span>
 <input class="w-full pl-8 pr-4 py-3 bg-surface-container-low border-0 rounded-lg focus:ring-2 focus:ring-primary/20 text-on-surface" data-role="publish-price" placeholder="0.00" type="number"/>
 </div>
 <p class="text-[10px] text-slate-400">输入 0 表示免费/捐赠</p>
@@ -267,6 +267,6 @@
 </div>
 </footer>
 <script src="/pages/assets/js/campusshare-api.js"></script>
-<script src="/pages/assets/js/publish-create.js"></script>
+<script src="/pages/assets/js/publish-create.js?v=20260425-post-upload"></script>
 </body></html>
 

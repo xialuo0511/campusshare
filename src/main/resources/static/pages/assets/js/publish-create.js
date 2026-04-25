@@ -67,6 +67,7 @@
             selectedCondition = ApplyConditionSelection(view.conditionButtonList, "");
         } else {
             view.conditionSection.classList.add("hidden");
+            view.browseFileButton.textContent = "选择附件";
         }
 
         view.conditionButtonList.forEach(function BindConditionButton(button) {
@@ -93,6 +94,10 @@
             await LoadEditDraft();
         } else {
             SetUploadTip(uploadTipText, mode === MODE_RECRUITMENT ? "招募发布无需上传文件" : "尚未上传文件");
+        }
+
+        if (!isEditMode && mode === MODE_RECRUITMENT) {
+            SetUploadTip(uploadTipText, "尚未上传帖子附件");
         }
 
         publishForm.addEventListener("submit", async function HandleSubmit(event) {
@@ -124,6 +129,10 @@
                     SetUploadTip(uploadTipText, mode === MODE_RECRUITMENT ? "招募发布无需上传文件" : "尚未上传文件");
                 }
 
+                if (mode === MODE_RECRUITMENT) {
+                    SetUploadTip(uploadTipText, "尚未上传帖子附件");
+                }
+
                 window.setTimeout(function JumpAfterSubmit() {
                     window.location.href = submitResult.redirectPath;
                 }, 900);
@@ -139,7 +148,7 @@
          * 上传选中文件
          */
         async function UploadSelectedFile(selectedFile) {
-            if (!selectedFile || mode === MODE_RECRUITMENT) {
+            if (!selectedFile) {
                 return;
             }
             const acceptRule = mode === MODE_PRODUCT ? PRODUCT_IMAGE_ACCEPT : MATERIAL_FILE_ACCEPT;
@@ -229,8 +238,11 @@
             titleLabel: publishForm.querySelector("[data-role='publish-title-label']"),
             categoryLabel: publishForm.querySelector("[data-role='publish-category-label']"),
             priceLabel: publishForm.querySelector("[data-role='publish-price-label']"),
+            pricePrefix: publishForm.querySelector("[data-role='publish-price-prefix']"),
             locationLabel: publishForm.querySelector("[data-role='publish-location-label']"),
             descriptionLabel: publishForm.querySelector("[data-role='publish-description-label']"),
+            uploadTitle: publishForm.querySelector("[data-role='publish-upload-title']"),
+            uploadDescription: publishForm.querySelector("[data-role='publish-upload-description']"),
             copyrightText: publishForm.querySelector("[data-role='publish-copyright-text']"),
             conditionSection: publishForm.querySelector("[data-role='publish-condition-section']"),
             copyrightSection: publishForm.querySelector("[data-role='publish-copyright-section']"),
@@ -286,8 +298,11 @@
             view.descriptionLabel.textContent = "技能要求";
             view.submitButton.textContent = "发布招募";
             view.conditionSection.classList.add("hidden");
-            view.uploadPanel.classList.add("hidden");
+            view.browseFileButton.textContent = "选择附件";
+            view.uploadPanel.classList.remove("hidden");
             view.copyrightSection.classList.add("hidden");
+            SetPricePrefixVisible(view, false);
+            SetUploadCopy(view, "上传帖子附件", "支持 JPG、PNG、PDF，上传后会随招募说明保存文件 ID。");
             view.titleInput.placeholder = "例如：算法竞赛组队";
             view.priceInput.placeholder = "请输入人数";
             view.descriptionInput.placeholder = "请输入需要的技能与协作要求";
@@ -330,6 +345,26 @@
     /**
      * 根据模式提交
      */
+    function SetPricePrefixVisible(view, visible) {
+        if (view.pricePrefix) {
+            view.pricePrefix.classList.toggle("hidden", !visible);
+        }
+        if (!view.priceInput) {
+            return;
+        }
+        view.priceInput.classList.toggle("pl-8", visible);
+        view.priceInput.classList.toggle("px-4", !visible);
+    }
+
+    function SetUploadCopy(view, titleText, descriptionText) {
+        if (view.uploadTitle) {
+            view.uploadTitle.textContent = titleText;
+        }
+        if (view.uploadDescription) {
+            view.uploadDescription.textContent = descriptionText;
+        }
+    }
+
     async function SubmitByMode(
         mode,
         isEditMode,
@@ -349,7 +384,7 @@
         }
 
         if (mode === MODE_RECRUITMENT) {
-            const payload = BuildRecruitmentPayload(view);
+            const payload = BuildRecruitmentPayload(view, uploadedFileMeta);
             const result = await window.CampusShareApi.PublishTeamRecruitment(payload);
             return {
                 successText: `发布成功，招募ID：${result.recruitmentId}`,
@@ -451,7 +486,7 @@
     /**
      * 构建招募参数
      */
-    function BuildRecruitmentPayload(view) {
+    function BuildRecruitmentPayload(view, uploadedFileMeta) {
         const eventName = ReadText(view.titleInput);
         const direction = ReadText(view.categorySelect);
         const memberLimitText = ReadText(view.priceInput);
@@ -475,8 +510,19 @@
             direction: direction,
             memberLimit: Math.floor(memberLimit),
             deadline: FormatLocalDateTime(AddDays(new Date(), Number.isNaN(deadlineDays) ? 7 : deadlineDays)),
-            skillRequirement: skillRequirement
+            skillRequirement: BuildRecruitmentSkillRequirement(skillRequirement, uploadedFileMeta)
         };
+    }
+
+    function BuildRecruitmentSkillRequirement(skillRequirement, uploadedFileMeta) {
+        const baseText = String(skillRequirement || "").trim();
+        if (!uploadedFileMeta || !uploadedFileMeta.fileId) {
+            return baseText;
+        }
+        const fileName = uploadedFileMeta.fileName || "附件";
+        const attachmentText = `\n附件：${fileName}（文件ID：${uploadedFileMeta.fileId}）`;
+        const maxBaseLength = Math.max(0, 500 - attachmentText.length);
+        return `${baseText.slice(0, maxBaseLength)}${attachmentText}`;
     }
 
     /**

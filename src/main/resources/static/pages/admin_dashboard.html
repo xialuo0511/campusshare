@@ -99,12 +99,10 @@
 <div class="mb-8 px-2">
 <span class="text-lg font-semibold text-[#005d90]">CampusShare</span>
 <div class="mt-4 flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-surface-container-highest overflow-hidden">
-<img alt="User Profile" class="w-full h-full object-cover" data-alt="Professional portrait of a middle-aged academic administrator with glasses in a bright library setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxz74DOjU9KGMQJ9I3WH3gRJCX6fwUfn48t9h-VxdDL2pyUr1Ub1ufYaq8xeTqHPOqdn792ZD0v0goy3MLMuAK6_kZDXwMwnkurHSYACkhHyKhwdC38yXTYCERsb0RO1ChahNzfeRXMtYpIdr6ahuNsZJsAusbgENh961AuJiSRBhi8uW9ucdaat64oZ1nx5nhBNktVMwu43YRSCimSAIRtX28NVyYX6wMXNkeJjgi4WpHNzTt_Q1J_KH3OEK9vt0kZRerCokVTWs"/>
-</div>
+<div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-800 overflow-hidden flex items-center justify-center text-sm font-bold" data-role="admin-sidebar-avatar">--</div>
 <div>
-<p class="text-sm font-semibold text-on-surface leading-tight">个人中心</p>
-<p class="text-xs text-slate-500">学术管理员</p>
+<p class="text-sm font-semibold text-on-surface leading-tight" data-role="admin-sidebar-name">个人中心</p>
+<p class="text-xs text-slate-500" data-role="admin-sidebar-role">学术管理员</p>
 </div>
 </div>
 </div>
@@ -129,10 +127,6 @@
 <a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="ANALYTICS" data-nav-target="local" href="#">
 <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
 <span class="font-['Inter'] text-sm">数据统计</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="PROFILE" data-nav-target="local" href="#">
-<span class="material-symbols-outlined" data-icon="settings">settings</span>
-<span class="font-['Inter'] text-sm">个人设置</span>
 </a>
 </nav>
 <div class="mt-auto space-y-1">
@@ -162,9 +156,7 @@
 <button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-xl">
 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
 </button>
-<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-xl">
-<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
-</button>
+<button class="h-10 w-10 overflow-hidden flex items-center justify-center text-sm font-bold text-sky-800 bg-sky-100 hover:bg-surface-container transition-colors rounded-xl" data-role="admin-header-avatar" type="button">--</button>
 </div>
 </header>
 <!-- High-Level Stats (Bento Grid Style) -->
@@ -351,8 +343,8 @@
 </div>
 </div>
 </footer>
-<script src="/pages/assets/js/campusshare-api.js?v=20260422"></script>
-<script src="/pages/assets/js/admin-dashboard.js?v=20260422"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260425-avatar-shell"></script>
+<script src="/pages/assets/js/admin-dashboard.js?v=20260425-avatar-shell"></script>
 <script src="/pages/assets/js/admin-content-review.js?v=20260422"></script>
 </body></html>
 

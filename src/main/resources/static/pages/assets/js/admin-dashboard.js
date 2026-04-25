@@ -45,22 +45,18 @@
 
         const messageBar = CreateMessageBar(pageHeader);
         const governanceWorkspace = CreateGovernanceWorkspace();
-        const mainElement = document.querySelector("main[data-admin-main]") || document.querySelector("main");
         const statsSection = document.querySelector("[data-admin-section='stats']");
         const workbenchSection = document.querySelector("[data-admin-section='workbench']");
         const contentReviewSection = document.querySelector("[data-admin-section='content-review']");
         const adminNavItemList = Array.from(document.querySelectorAll("aside [data-admin-nav]"));
-        const settingsPanel = CreateAdminSettingsPanel(mainElement);
         const adminSubviewContext = {
             pageHeader,
             statsSection,
             workbenchSection,
             contentReviewSection,
-            governanceWorkspace,
-            settingsPanel
+            governanceWorkspace
         };
         BindAdminSubviewNavigation(adminNavItemList, adminSubviewContext, messageBar);
-        BindAdminProfileForm(settingsPanel, messageBar);
         if (!window.CampusShareApi) {
             ShowError(messageBar, "后台脚本加载失败，请刷新页面后重试");
             return;
@@ -85,6 +81,7 @@
             }, 900);
             return;
         }
+        await SyncAdminProfileShell();
 
         const reviewState = {
             taskTypeFilter: "ALL",
@@ -266,46 +263,42 @@
         return fallbackValue;
     }
 
-    /**
-     * 娓叉煋缁熻鍗＄墖
-     */
-    function CreateAdminSettingsPanel(mainElement) {
-        if (!mainElement) {
-            return null;
+    async function SyncAdminProfileShell() {
+        if (!window.CampusShareApi) {
+            return;
         }
-        let settingsPanel = mainElement.querySelector("[data-admin-section='profile']");
-        if (settingsPanel) {
-            return settingsPanel;
+        let profile = window.CampusShareApi.GetCurrentUserProfile() || {};
+        if (window.CampusShareApi.SyncSessionProfile) {
+            try {
+                profile = await window.CampusShareApi.SyncSessionProfile() || profile;
+            } catch (error) {
+                profile = window.CampusShareApi.GetCurrentUserProfile() || profile;
+            }
         }
-        settingsPanel = document.createElement("section");
-        settingsPanel.className = "hidden bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 p-8 mb-8";
-        settingsPanel.setAttribute("data-admin-section", "profile");
-        settingsPanel.innerHTML = [
-            "<div class=\"mb-8\">",
-            "<h2 class=\"text-2xl font-bold text-on-surface\">\u4e2a\u4eba\u8bbe\u7f6e</h2>",
-            "<p class=\"text-sm text-slate-500 mt-1\">\u7ba1\u7406\u5458\u8d44\u6599\u4e0e\u8054\u7cfb\u4fe1\u606f</p>",
-            "</div>",
-            "<form data-admin-profile-form class=\"space-y-6\">",
-            "<div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">",
-            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u6635\u79f0</span><input data-admin-profile-field=\"displayName\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u6635\u79f0\" type=\"text\"/></label>",
-            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u90ae\u7bb1</span><input data-admin-profile-field=\"contact\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-2.5 text-sm text-slate-500\" placeholder=\"\u90ae\u7bb1\u5730\u5740\" type=\"text\" readonly/></label>",
-            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u5b66\u53f7</span><input data-admin-profile-field=\"account\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-2.5 text-sm text-slate-500\" placeholder=\"\u5b66\u53f7\" type=\"text\" readonly/></label>",
-            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u5b66\u9662</span><input data-admin-profile-field=\"college\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u5b66\u9662\" type=\"text\"/></label>",
-            "<label class=\"block\"><span class=\"text-sm font-semibold text-on-surface\">\u5e74\u7ea7</span><input data-admin-profile-field=\"grade\" class=\"mt-2 w-full rounded-lg border border-outline-variant/40 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20\" placeholder=\"\u8bf7\u8f93\u5165\u5e74\u7ea7\" type=\"text\"/></label>",
-            "</div>",
-            "<div class=\"flex items-center gap-3\">",
-            "<button type=\"submit\" data-admin-profile-action=\"save\" class=\"px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:opacity-90\">\u4fdd\u5b58\u8bbe\u7f6e</button>",
-            "<button type=\"button\" data-admin-profile-action=\"reset\" class=\"px-5 py-2.5 rounded-lg border border-outline-variant/40 text-sm font-semibold text-slate-600 hover:bg-surface-container\">\u91cd\u7f6e</button>",
-            "</div>",
-            "</form>"
-        ].join("");
-        const statsSection = mainElement.querySelector("[data-admin-section='stats']");
-        if (statsSection) {
-            statsSection.insertAdjacentElement("beforebegin", settingsPanel);
-        } else {
-            mainElement.appendChild(settingsPanel);
+        const displayName = profile.displayName || profile.account || "管理员";
+        const roleText = profile.userRole === "ADMINISTRATOR" ? "学术管理员" : "校园认证用户";
+        const avatarNodeList = [
+            document.querySelector("[data-role='admin-sidebar-avatar']"),
+            document.querySelector("[data-role='admin-header-avatar']")
+        ];
+        avatarNodeList.forEach(function RenderAvatarNode(node) {
+            if (!node) {
+                return;
+            }
+            if (window.CampusShareApi.RenderUserAvatar) {
+                window.CampusShareApi.RenderUserAvatar(node, profile, displayName);
+                return;
+            }
+            node.textContent = displayName.slice(0, 1).toUpperCase();
+        });
+        const nameNode = document.querySelector("[data-role='admin-sidebar-name']");
+        if (nameNode) {
+            nameNode.textContent = displayName;
         }
-        return settingsPanel;
+        const roleNode = document.querySelector("[data-role='admin-sidebar-role']");
+        if (roleNode) {
+            roleNode.textContent = roleText;
+        }
     }
 
     function BindAdminSubviewNavigation(adminNavItemList, context, messageBar) {
@@ -318,9 +311,6 @@
         const initialViewKey = initialNavItem.getAttribute("data-admin-nav") || "DASHBOARD";
         ApplyAdminNavState(adminNavItemList, initialViewKey);
         SwitchAdminSubview(context, initialViewKey);
-        if (initialViewKey === "PROFILE") {
-            LoadAdminProfileFormData(context.settingsPanel, messageBar);
-        }
 
         adminNavItemList.forEach(function BindNavItem(item) {
             item.addEventListener("click", function HandleClick(event) {
@@ -328,9 +318,6 @@
                 const viewKey = item.getAttribute("data-admin-nav") || "DASHBOARD";
                 ApplyAdminNavState(adminNavItemList, viewKey);
                 SwitchAdminSubview(context, viewKey);
-                if (viewKey === "PROFILE") {
-                    LoadAdminProfileFormData(context.settingsPanel, messageBar);
-                }
             });
         });
     }
@@ -372,7 +359,6 @@
         const workbenchSection = context && context.workbenchSection ? context.workbenchSection : null;
         const contentReviewSection = context && context.contentReviewSection ? context.contentReviewSection : null;
         const governanceSection = context && context.governanceWorkspace ? context.governanceWorkspace.wrapper : null;
-        const profileSection = context && context.settingsPanel ? context.settingsPanel : null;
         const titleNode = headerNode ? headerNode.querySelector("h1") : null;
         const subtitleNode = headerNode ? headerNode.querySelector("p") : null;
 
@@ -383,8 +369,7 @@
                 showStats: true,
                 showWorkbench: true,
                 showContentReview: false,
-                showGovernance: true,
-                showProfile: false
+                showGovernance: true
             },
             MANAGEMENT: {
                 title: "\u6cbb\u7406\u7ba1\u7406",
@@ -392,8 +377,7 @@
                 showStats: false,
                 showWorkbench: false,
                 showContentReview: false,
-                showGovernance: true,
-                showProfile: false
+                showGovernance: true
             },
             ORDER_LIST: {
                 title: "\u8ba2\u5355\u5217\u8868",
@@ -401,8 +385,7 @@
                 showStats: false,
                 showWorkbench: false,
                 showContentReview: false,
-                showGovernance: true,
-                showProfile: false
+                showGovernance: true
             },
             CONTENT_REVIEW: {
                 title: "\u5185\u5bb9\u5ba1\u6838",
@@ -410,8 +393,7 @@
                 showStats: false,
                 showWorkbench: false,
                 showContentReview: true,
-                showGovernance: false,
-                showProfile: false
+                showGovernance: false
             },
             ANALYTICS: {
                 title: "\u6570\u636e\u5206\u6790",
@@ -419,17 +401,7 @@
                 showStats: true,
                 showWorkbench: true,
                 showContentReview: false,
-                showGovernance: false,
-                showProfile: false
-            },
-            PROFILE: {
-                title: "\u4e2a\u4eba\u8bbe\u7f6e",
-                subtitle: "\u7ef4\u62a4\u7ba1\u7406\u5458\u4e2a\u4eba\u8d44\u6599",
-                showStats: false,
-                showWorkbench: false,
-                showContentReview: false,
-                showGovernance: false,
-                showProfile: true
+                showGovernance: false
             }
         };
         const viewMeta = viewMetaMap[viewKey] || viewMetaMap.DASHBOARD;
@@ -451,148 +423,6 @@
         if (governanceSection) {
             governanceSection.classList.toggle("hidden", !viewMeta.showGovernance);
         }
-        if (profileSection) {
-            profileSection.classList.toggle("hidden", !viewMeta.showProfile);
-        }
-    }
-
-    function BindAdminProfileForm(settingsPanel, messageBar) {
-        if (!settingsPanel) {
-            return;
-        }
-        const profileForm = settingsPanel.querySelector("[data-admin-profile-form]");
-        if (!profileForm || profileForm.dataset.bound === "true") {
-            return;
-        }
-        profileForm.dataset.bound = "true";
-        profileForm.addEventListener("submit", async function HandleSubmit(event) {
-            event.preventDefault();
-            const displayName = ReadAdminProfileField(profileForm, "displayName");
-            const college = ReadAdminProfileField(profileForm, "college");
-            const grade = ReadAdminProfileField(profileForm, "grade");
-            const contact = ReadAdminProfileField(profileForm, "contact");
-            const account = ReadAdminProfileField(profileForm, "account");
-            if (!displayName) {
-                ShowError(messageBar, "\u6635\u79f0\u4e0d\u80fd\u4e3a\u7a7a");
-                return;
-            }
-
-            const saveButton = profileForm.querySelector("[data-admin-profile-action='save']");
-            if (saveButton) {
-                saveButton.disabled = true;
-            }
-            try {
-                const payload = { displayName };
-                if (college) {
-                    payload.college = college;
-                }
-                if (grade) {
-                    payload.grade = grade;
-                }
-                if (contact) {
-                    payload.contact = contact;
-                }
-                await window.CampusShareApi.UpdateMyProfile(payload);
-                const currentUser = window.CampusShareApi.GetCurrentUserProfile();
-                if (currentUser) {
-                    currentUser.displayName = displayName;
-                    currentUser.college = college;
-                    currentUser.grade = grade;
-                    if (contact) {
-                        currentUser.contact = contact;
-                    }
-                    window.CampusShareApi.SetCurrentUserProfile(currentUser);
-                }
-                WriteAdminProfileSnapshot(profileForm, { displayName, college, grade, contact, account });
-                ShowSuccess(messageBar, "\u4e2a\u4eba\u8bbe\u7f6e\u5df2\u4fdd\u5b58");
-            } catch (error) {
-                ShowError(messageBar, error instanceof Error ? error.message : "\u4e2a\u4eba\u8bbe\u7f6e\u4fdd\u5b58\u5931\u8d25");
-            } finally {
-                if (saveButton) {
-                    saveButton.disabled = false;
-                }
-            }
-        });
-
-        const resetButton = profileForm.querySelector("[data-admin-profile-action='reset']");
-        if (resetButton) {
-            resetButton.addEventListener("click", function HandleReset() {
-                RestoreAdminProfileSnapshot(profileForm);
-            });
-        }
-    }
-
-    async function LoadAdminProfileFormData(settingsPanel, messageBar) {
-        if (!settingsPanel) {
-            return;
-        }
-        const profileForm = settingsPanel.querySelector("[data-admin-profile-form]");
-        if (!profileForm || profileForm.dataset.loading === "true") {
-            return;
-        }
-        profileForm.dataset.loading = "true";
-        try {
-            let profileData = null;
-            try {
-                profileData = await window.CampusShareApi.SyncSessionProfile();
-            } catch (error) {
-                profileData = window.CampusShareApi.GetCurrentUserProfile();
-            }
-            const cachedProfile = window.CampusShareApi.GetCurrentUserProfile() || {};
-            const safeProfile = profileData || cachedProfile;
-            SetAdminProfileField(profileForm, "displayName", safeProfile.displayName || "");
-            SetAdminProfileField(profileForm, "contact", safeProfile.contact || cachedProfile.contact || "");
-            SetAdminProfileField(profileForm, "account", safeProfile.account || cachedProfile.account || "");
-            SetAdminProfileField(profileForm, "college", safeProfile.college || "");
-            SetAdminProfileField(profileForm, "grade", safeProfile.grade || "");
-            WriteAdminProfileSnapshot(profileForm, {
-                displayName: safeProfile.displayName || "",
-                contact: safeProfile.contact || cachedProfile.contact || "",
-                account: safeProfile.account || cachedProfile.account || "",
-                college: safeProfile.college || "",
-                grade: safeProfile.grade || ""
-            });
-        } catch (error) {
-            ShowError(messageBar, error instanceof Error ? error.message : "\u4e2a\u4eba\u8bbe\u7f6e\u52a0\u8f7d\u5931\u8d25");
-        } finally {
-            profileForm.dataset.loading = "false";
-        }
-    }
-
-    function ReadAdminProfileField(profileForm, fieldName) {
-        const fieldNode = profileForm.querySelector(`[data-admin-profile-field='${fieldName}']`);
-        if (!fieldNode) {
-            return "";
-        }
-        return (fieldNode.value || "").trim();
-    }
-
-    function SetAdminProfileField(profileForm, fieldName, value) {
-        const fieldNode = profileForm.querySelector(`[data-admin-profile-field='${fieldName}']`);
-        if (!fieldNode) {
-            return;
-        }
-        fieldNode.value = value == null ? "" : String(value);
-    }
-
-    function WriteAdminProfileSnapshot(profileForm, profileData) {
-        profileForm.dataset.originalProfile = JSON.stringify(profileData || {});
-    }
-
-    function RestoreAdminProfileSnapshot(profileForm) {
-        let snapshot = {};
-        try {
-            snapshot = profileForm.dataset.originalProfile
-                ? JSON.parse(profileForm.dataset.originalProfile)
-                : {};
-        } catch (error) {
-            snapshot = {};
-        }
-        SetAdminProfileField(profileForm, "displayName", snapshot.displayName || "");
-        SetAdminProfileField(profileForm, "contact", snapshot.contact || "");
-        SetAdminProfileField(profileForm, "account", snapshot.account || "");
-        SetAdminProfileField(profileForm, "college", snapshot.college || "");
-        SetAdminProfileField(profileForm, "grade", snapshot.grade || "");
     }
 
     function RenderStats(

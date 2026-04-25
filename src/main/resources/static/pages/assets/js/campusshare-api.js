@@ -116,6 +116,7 @@
             return;
         }
         window.localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+        RenderKnownUserAvatarNodes(profile);
     }
 
     /**
@@ -1534,6 +1535,21 @@
             return;
         }
         element.textContent = ResolveUserInitial(safeProfile, fallbackName);
+    }
+
+    function RenderKnownUserAvatarNodes(profile) {
+        const safeProfile = profile || GetCurrentUserProfile() || {};
+        const fallbackName = safeProfile.displayName || safeProfile.account || "";
+        [
+            "sidebar-avatar",
+            "workspace-avatar",
+            "admin-sidebar-avatar",
+            "admin-header-avatar"
+        ].forEach(function RenderRoleAvatar(roleName) {
+            document.querySelectorAll(`[data-role='${roleName}']`).forEach(function RenderAvatarNode(element) {
+                RenderUserAvatar(element, safeProfile, fallbackName);
+            });
+        });
     }
 
     function EnsureEmbeddedUserPageStyle() {

@@ -61,8 +61,10 @@
             productCondition: mainElement.querySelector("[data-role='order-product-condition']"),
             productCategory: mainElement.querySelector("[data-role='order-product-category']"),
             productDescription: mainElement.querySelector("[data-role='order-product-description']"),
+            buyerAvatar: mainElement.querySelector("[data-role='order-buyer-avatar']"),
             buyerName: mainElement.querySelector("[data-role='order-buyer-name']"),
             buyerSubtitle: mainElement.querySelector("[data-role='order-buyer-subtitle']"),
+            sellerAvatar: mainElement.querySelector("[data-role='order-seller-avatar']"),
             sellerName: mainElement.querySelector("[data-role='order-seller-name']"),
             sellerSubtitle: mainElement.querySelector("[data-role='order-seller-subtitle']"),
             tradeLocation: mainElement.querySelector("[data-role='order-trade-location']"),
@@ -269,6 +271,22 @@
         if (pageRefs.sellerSubtitle) {
             pageRefs.sellerSubtitle.textContent = `用户ID: ${detailResult.sellerUserId || "-"}`;
         }
+        PatchParticipantAvatar(pageRefs.buyerAvatar, detailResult.buyerUserId, pageRefs.buyerName ? pageRefs.buyerName.textContent : "买家", profile);
+        PatchParticipantAvatar(pageRefs.sellerAvatar, detailResult.sellerUserId, pageRefs.sellerName ? pageRefs.sellerName.textContent : "卖家", profile);
+    }
+
+    function PatchParticipantAvatar(avatarNode, participantUserId, displayName, currentProfile) {
+        if (!avatarNode) {
+            return;
+        }
+        const currentUserId = Number(currentProfile && currentProfile.userId ? currentProfile.userId : 0);
+        const isCurrentUser = currentUserId > 0 && currentUserId === Number(participantUserId || 0);
+        const avatarProfile = isCurrentUser ? currentProfile : { displayName };
+        if (window.CampusShareApi.RenderUserAvatar) {
+            window.CampusShareApi.RenderUserAvatar(avatarNode, avatarProfile, displayName);
+            return;
+        }
+        avatarNode.textContent = String(displayName || "用").slice(0, 1).toUpperCase();
     }
 
     /**

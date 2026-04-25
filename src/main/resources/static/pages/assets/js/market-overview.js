@@ -136,8 +136,7 @@
             SyncProfilePanel(view);
             return;
         }
-        const profile = window.CampusShareApi.GetCurrentUserProfile();
-        if (!profile && window.CampusShareApi.SyncSessionProfile) {
+        if (window.CampusShareApi.SyncSessionProfile) {
             try {
                 await window.CampusShareApi.SyncSessionProfile();
             } catch (error) {

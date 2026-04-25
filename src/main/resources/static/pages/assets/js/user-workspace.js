@@ -57,6 +57,9 @@
         if (avatarNode) {
             avatarNode.textContent = displayName.slice(0, 1) || "用";
         }
+        if (avatarNode && window.CampusShareApi.RenderUserAvatar) {
+            window.CampusShareApi.RenderUserAvatar(avatarNode, profile, displayName);
+        }
         const adminButton = document.querySelector("[data-workspace-admin]");
         if (adminButton) {
             const isAdministrator = !!(profile && profile.userRole === ADMINISTRATOR_ROLE);

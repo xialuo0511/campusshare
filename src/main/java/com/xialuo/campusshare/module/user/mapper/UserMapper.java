@@ -42,6 +42,11 @@ public interface UserMapper {
     List<UserEntity> ListPendingReviewUsers();
 
     /**
+     * 查询待审核头像用户
+     */
+    List<UserEntity> ListPendingAvatarReviewUsers();
+
+    /**
      * 分页查询用户
      */
     List<UserEntity> ListUsersByFilterPaged(

@@ -16,6 +16,11 @@
         <result column="user_role" property="userRole"/>
         <result column="user_status" property="userStatus"/>
         <result column="point_balance" property="pointBalance"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="pending_avatar_url" property="pendingAvatarUrl"/>
+        <result column="avatar_review_status" property="avatarReviewStatus"/>
+        <result column="avatar_review_remark" property="avatarReviewRemark"/>
+        <result column="avatar_review_submit_time" property="avatarReviewSubmitTime"/>
         <result column="last_login_time" property="lastLoginTime"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
@@ -34,6 +39,11 @@
         user_role,
         user_status,
         point_balance,
+        avatar_url,
+        pending_avatar_url,
+        avatar_review_status,
+        avatar_review_remark,
+        avatar_review_submit_time,
         last_login_time,
         create_time,
         update_time,
@@ -52,6 +62,11 @@
             user_role,
             user_status,
             point_balance,
+            avatar_url,
+            pending_avatar_url,
+            avatar_review_status,
+            avatar_review_remark,
+            avatar_review_submit_time,
             last_login_time,
             create_time,
             update_time,
@@ -67,6 +82,11 @@
             #{userRole},
             #{userStatus},
             #{pointBalance},
+            #{avatarUrl},
+            #{pendingAvatarUrl},
+            #{avatarReviewStatus},
+            #{avatarReviewRemark},
+            #{avatarReviewSubmitTime},
             #{lastLoginTime},
             #{createTime},
             #{updateTime},
@@ -87,6 +107,11 @@
             user_role = #{userRole},
             user_status = #{userStatus},
             point_balance = #{pointBalance},
+            avatar_url = #{avatarUrl},
+            pending_avatar_url = #{pendingAvatarUrl},
+            avatar_review_status = #{avatarReviewStatus},
+            avatar_review_remark = #{avatarReviewRemark},
+            avatar_review_submit_time = #{avatarReviewSubmitTime},
             last_login_time = #{lastLoginTime},
             update_time = #{updateTime},
             deleted = #{deleted}
@@ -125,6 +150,17 @@
         WHERE user_status = 'PENDING_REVIEW'
           AND deleted = 0
         ORDER BY create_time DESC
+    </select>
+
+    <select id="ListPendingAvatarReviewUsers" resultMap="UserResultMap">
+        SELECT
+            <include refid="UserColumns"/>
+        FROM user_info
+        WHERE avatar_review_status = 'PENDING_REVIEW'
+          AND pending_avatar_url IS NOT NULL
+          AND pending_avatar_url != ''
+          AND deleted = 0
+        ORDER BY avatar_review_submit_time DESC, update_time DESC
     </select>
 
     <select id="ListUsersByFilterPaged" resultMap="UserResultMap">

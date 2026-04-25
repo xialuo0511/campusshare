@@ -276,19 +276,21 @@
 
     async function ReloadTaskQueue(refs, state, messageBar) {
         try {
-            const [productResult, recruitmentResult, materialResult, pendingUserResult] = await Promise.all([
+            const [productResult, recruitmentResult, materialResult, pendingUserResult, pendingAvatarResult] = await Promise.all([
                 window.CampusShareApi.ListPendingProductsByAdmin(1, 300),
                 window.CampusShareApi.ListPendingTeamRecruitmentsByAdmin(1, 300),
                 window.CampusShareApi.ListPendingMaterials(1, 300),
-                window.CampusShareApi.ListPendingUsers()
+                window.CampusShareApi.ListPendingUsers(),
+                window.CampusShareApi.ListPendingAvatarReviews ? window.CampusShareApi.ListPendingAvatarReviews() : []
             ]);
 
             const pendingProductList = productResult && Array.isArray(productResult.productList) ? productResult.productList : [];
             const pendingRecruitmentList = recruitmentResult && Array.isArray(recruitmentResult.recruitmentList) ? recruitmentResult.recruitmentList : [];
             const pendingMaterialList = materialResult && Array.isArray(materialResult.materialList) ? materialResult.materialList : [];
             const pendingUserList = Array.isArray(pendingUserResult) ? pendingUserResult : [];
+            const pendingAvatarList = Array.isArray(pendingAvatarResult) ? pendingAvatarResult : [];
 
-            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList, pendingMaterialList, pendingUserList);
+            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList, pendingMaterialList, pendingUserList, pendingAvatarList);
             if (!state.selectedTaskKey && state.taskList.length) {
                 state.selectedTaskKey = BuildTaskKey(state.taskList[0]);
             }
@@ -301,7 +303,7 @@
         }
     }
 
-    function BuildTaskList(productList, recruitmentList, materialList, userList) {
+    function BuildTaskList(productList, recruitmentList, materialList, userList, avatarList) {
         const productTaskList = (Array.isArray(productList) ? productList : []).map(function MapProduct(item) {
             const productId = SafeNumber(item.productId);
             return {
@@ -355,8 +357,21 @@
             };
         });
 
+        const avatarTaskList = (Array.isArray(avatarList) ? avatarList : []).map(function MapAvatar(item) {
+            const userId = SafeNumber(item.userId);
+            return {
+                taskType: "USER_AVATAR",
+                taskId: userId,
+                title: `${item.displayName || item.account || `用户 #${userId}`} 的头像`,
+                ownerText: item.account || `用户ID ${userId}`,
+                metaText: "头像审核",
+                createTime: item.avatarReviewSubmitTime || item.updateTime || item.lastLoginTime,
+                rawItem: item
+            };
+        });
+
         return productTaskList
-            .concat(recruitmentTaskList, materialTaskList, userTaskList)
+            .concat(recruitmentTaskList, materialTaskList, userTaskList, avatarTaskList)
             .sort(function SortByTimeDesc(leftItem, rightItem) {
                 return ResolveTimeValue(rightItem.createTime) - ResolveTimeValue(leftItem.createTime);
             });
@@ -376,7 +391,7 @@
         if (taskType === "MATERIAL") {
             return { typeText: "资料", iconName: "description", tagClass: "bg-amber-50 text-amber-700" };
         }
-        if (taskType === "USER") {
+        if (taskType === "USER" || taskType === "USER_AVATAR") {
             return { typeText: "用户", iconName: "person_add", tagClass: "bg-cyan-50 text-cyan-700" };
         }
         return { typeText: "帖子", iconName: "forum", tagClass: "bg-indigo-50 text-indigo-700" };
@@ -421,7 +436,7 @@
             if (state.filterType === "PRODUCT" && taskItem.taskType !== "PRODUCT") return false;
             if (state.filterType === "TEAM_RECRUITMENT" && taskItem.taskType !== "TEAM_RECRUITMENT") return false;
             if (state.filterType === "MATERIAL" && taskItem.taskType !== "MATERIAL") return false;
-            if (state.filterType === "USER" && taskItem.taskType !== "USER") return false;
+            if (state.filterType === "USER" && taskItem.taskType !== "USER" && taskItem.taskType !== "USER_AVATAR") return false;
             if (state.filterType === "HIGH_RISK" && !IsHighRiskTask(taskItem)) return false;
             if (state.filterType === "RECENT" && (Date.now() - ResolveTimeValue(taskItem.createTime)) > DAY_MS) return false;
 
@@ -577,7 +592,7 @@
             detailResult = await window.CampusShareApi.GetProductDetail(taskItem.taskId);
         } else if (taskItem.taskType === "MATERIAL") {
             detailResult = await window.CampusShareApi.GetMaterialDetail(taskItem.taskId);
-        } else if (taskItem.taskType === "USER") {
+        } else if (taskItem.taskType === "USER" || taskItem.taskType === "USER_AVATAR") {
             detailResult = taskItem.rawItem || {};
         } else {
             detailResult = await window.CampusShareApi.GetTeamRecruitmentDetail(taskItem.taskId);
@@ -622,6 +637,10 @@
         }
         if (taskItem.taskType === "MATERIAL") {
             bodyNode.innerHTML = BuildMaterialDetailHtml(taskItem, detailItem || {});
+            return;
+        }
+        if (taskItem.taskType === "USER_AVATAR") {
+            bodyNode.innerHTML = BuildUserAvatarDetailHtml(taskItem, detailItem || {});
             return;
         }
         if (taskItem.taskType === "USER") {
@@ -709,6 +728,46 @@
             BuildTextSection("标签", tagText || "-"),
             BuildObjectSection("完整字段（详情接口）", detailItem),
             BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || {})
+        ].join("");
+    }
+
+    function BuildUserAvatarDetailHtml(taskItem, detailItem) {
+        const pendingAvatarUrl = String(detailItem.pendingAvatarUrl || "").trim();
+        const currentAvatarUrl = String(detailItem.avatarUrl || "").trim();
+        const previewHtml = pendingAvatarUrl
+            ? `<img src="${EscapeHtml(pendingAvatarUrl)}" alt="待审核头像" class="h-32 w-32 rounded-2xl object-cover ring-1 ring-outline/30"/>`
+            : "<div class=\"h-32 w-32 rounded-2xl bg-surface-container flex items-center justify-center text-sm text-slate-500\">无待审头像</div>";
+        const currentHtml = currentAvatarUrl
+            ? `<img src="${EscapeHtml(currentAvatarUrl)}" alt="当前头像" class="h-20 w-20 rounded-xl object-cover ring-1 ring-outline/30"/>`
+            : "<div class=\"h-20 w-20 rounded-xl bg-surface-container flex items-center justify-center text-sm text-slate-500\">默认头像</div>";
+        return [
+            "<article class=\"rounded-xl bg-surface-container-low p-5 ring-1 ring-outline/20\">",
+            "<h3 class=\"text-sm font-bold mb-4\">头像审核预览</h3>",
+            "<div class=\"grid gap-5 sm:grid-cols-2\">",
+            "<div>",
+            "<p class=\"mb-3 text-xs font-semibold text-slate-500\">待审核头像</p>",
+            previewHtml,
+            "</div>",
+            "<div>",
+            "<p class=\"mb-3 text-xs font-semibold text-slate-500\">当前展示头像</p>",
+            currentHtml,
+            "</div>",
+            "</div>",
+            "</article>",
+            BuildFieldGridSection("用户信息", {
+                userId: detailItem.userId,
+                account: detailItem.account,
+                displayName: detailItem.displayName,
+                avatarReviewStatus: detailItem.avatarReviewStatus,
+                avatarReviewSubmitTime: FormatTime(detailItem.avatarReviewSubmitTime)
+            }, {
+                userId: { label: "用户ID", note: "用户唯一标识" },
+                account: { label: "账号", note: "登录账号" },
+                displayName: { label: "昵称", note: "前台展示名称" },
+                avatarReviewStatus: { label: "头像审核状态", note: "当前头像提交状态" },
+                avatarReviewSubmitTime: { label: "头像提交时间", note: "用户上传头像的时间" }
+            }),
+            BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || detailItem || {})
         ].join("");
     }
 
@@ -1209,6 +1268,12 @@
                     selectedTask.taskId,
                     approved,
                     reviewRemark || (approved ? "内容审核通过" : "内容审核驳回")
+                );
+            } else if (selectedTask.taskType === "USER_AVATAR") {
+                await window.CampusShareApi.ReviewUserAvatar(
+                    selectedTask.taskId,
+                    approved,
+                    reviewRemark || (approved ? "头像审核通过" : "头像审核驳回")
                 );
             } else if (selectedTask.taskType === "USER") {
                 await window.CampusShareApi.ReviewUser(

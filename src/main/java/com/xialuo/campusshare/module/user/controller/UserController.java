@@ -6,6 +6,7 @@ import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.enums.UserRoleEnum;
+import com.xialuo.campusshare.module.user.dto.UserAvatarUploadRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfileResponseDto;
@@ -127,6 +128,20 @@ public class UserController {
     ) {
         ValidateUserAccess(userId, httpServletRequest);
         UserProfileResponseDto responseDto = userService.UpdateUserProfile(userId, requestDto);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 提交头像审核
+     */
+    @PostMapping("/{userId}/avatar")
+    public ApiResponse<UserProfileResponseDto> SubmitAvatarReview(
+        @PathVariable("userId") Long userId,
+        @RequestBody @Valid UserAvatarUploadRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        ValidateUserAccess(userId, httpServletRequest);
+        UserProfileResponseDto responseDto = userService.SubmitAvatarReview(userId, requestDto);
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 

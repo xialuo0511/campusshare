@@ -4,6 +4,7 @@ import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.filter.RequestIdFilter;
 import com.xialuo.campusshare.common.filter.SessionAuthFilter;
 import com.xialuo.campusshare.module.admin.service.AuditLogService;
+import com.xialuo.campusshare.module.user.dto.UserAvatarReviewRequestDto;
 import com.xialuo.campusshare.module.user.dto.SellerVerificationApplicationResponseDto;
 import com.xialuo.campusshare.module.user.dto.SellerVerificationReviewRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserProfilePageResponseDto;
@@ -56,6 +57,15 @@ public class AdminUserController {
     }
 
     /**
+     * 查询待审核头像用户
+     */
+    @GetMapping("/avatars/pending")
+    public ApiResponse<List<UserProfileResponseDto>> ListPendingAvatarReviews(HttpServletRequest httpServletRequest) {
+        List<UserProfileResponseDto> responseDtoList = userService.ListPendingAvatarReviewUsers();
+        return ApiResponse.Success(responseDtoList, GetRequestId(httpServletRequest));
+    }
+
+    /**
      * 分页查询用户
      */
     @GetMapping
@@ -96,6 +106,28 @@ public class AdminUserController {
             userId,
             "SUCCESS",
             BuildUserReviewAuditDetail(requestDto)
+        );
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
+    }
+
+    /**
+     * 审核用户头像
+     */
+    @PostMapping("/{userId}/avatar/review")
+    public ApiResponse<UserProfileResponseDto> ReviewUserAvatar(
+        @PathVariable("userId") Long userId,
+        @RequestBody @Valid UserAvatarReviewRequestDto requestDto,
+        HttpServletRequest httpServletRequest
+    ) {
+        Long adminUserId = GetCurrentUserId(httpServletRequest);
+        UserProfileResponseDto responseDto = userService.ReviewUserAvatar(userId, requestDto, adminUserId);
+        auditLogService.RecordAuditLog(
+            adminUserId,
+            "USER_AVATAR_REVIEW",
+            "USER",
+            userId,
+            "SUCCESS",
+            BuildUserAvatarReviewAuditDetail(requestDto)
         );
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
@@ -204,6 +236,19 @@ public class AdminUserController {
      * 构建用户审核审计明细
      */
     private String BuildUserReviewAuditDetail(UserReviewRequestDto requestDto) {
+        if (requestDto == null) {
+            return "";
+        }
+        StringBuilder detailBuilder = new StringBuilder();
+        detailBuilder.append("approved=").append(Boolean.TRUE.equals(requestDto.GetApproved()));
+        detailBuilder.append(",reviewRemark=").append(SafeText(requestDto.GetReviewRemark()));
+        return detailBuilder.toString();
+    }
+
+    /**
+     * 构建头像审核审计明细
+     */
+    private String BuildUserAvatarReviewAuditDetail(UserAvatarReviewRequestDto requestDto) {
         if (requestDto == null) {
             return "";
         }

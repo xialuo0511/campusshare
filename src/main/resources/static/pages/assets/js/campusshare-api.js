@@ -141,7 +141,10 @@
             email: loginData.email || loginData.contact || "",
             contact: loginData.contact || loginData.email || "",
             college: loginData.college || "",
-            grade: loginData.grade || ""
+            grade: loginData.grade || "",
+            avatarUrl: loginData.avatarUrl || "",
+            pendingAvatarUrl: loginData.pendingAvatarUrl || "",
+            avatarReviewStatus: loginData.avatarReviewStatus || ""
         });
     }
 
@@ -1495,6 +1498,44 @@
     /**
      * Hide duplicated page shell when rendered inside user workspace.
      */
+    /**
+     * 解析头像首字
+     */
+    function ResolveUserInitial(profile, fallbackName) {
+        const safeProfile = profile || {};
+        const nameText = String(
+            fallbackName
+            || safeProfile.displayName
+            || safeProfile.account
+            || ""
+        ).trim();
+        if (!nameText) {
+            return "U";
+        }
+        return nameText.replace(/\s+/g, "").slice(0, 1).toUpperCase();
+    }
+
+    /**
+     * 渲染用户头像
+     */
+    function RenderUserAvatar(element, profile, fallbackName) {
+        if (!element) {
+            return;
+        }
+        const safeProfile = profile || {};
+        const avatarUrl = String(safeProfile.avatarUrl || "").trim();
+        element.innerHTML = "";
+        if (avatarUrl) {
+            const imageElement = document.createElement("img");
+            imageElement.src = avatarUrl;
+            imageElement.alt = "用户头像";
+            imageElement.className = "h-full w-full object-cover";
+            element.appendChild(imageElement);
+            return;
+        }
+        element.textContent = ResolveUserInitial(safeProfile, fallbackName);
+    }
+
     function EnsureEmbeddedUserPageStyle() {
         if (!IsEmbeddedUserPage() || document.getElementById("campusshare-embedded-user-page-style")) {
             return;
@@ -1625,6 +1666,11 @@
             grade: profileResponse.grade || "",
             userStatus: profileResponse.userStatus || "",
             phone: profileResponse.phone || "",
+            avatarUrl: profileResponse.avatarUrl || "",
+            pendingAvatarUrl: profileResponse.pendingAvatarUrl || "",
+            avatarReviewStatus: profileResponse.avatarReviewStatus || "",
+            avatarReviewRemark: profileResponse.avatarReviewRemark || "",
+            avatarReviewSubmitTime: profileResponse.avatarReviewSubmitTime || null,
             lastLoginTime: profileResponse.lastLoginTime || null
         });
         return profileResponse;
@@ -1780,6 +1826,8 @@
         ClearAuthToken,
         GetCurrentUserProfile,
         SetCurrentUserProfile,
+        RenderUserAvatar,
+        ResolveUserInitial,
         ClearCurrentUserProfile,
         SetSessionFromLogin,
         ClearSession,
@@ -2037,6 +2085,18 @@
             }
             return RequestApi(`/api/v1/users/${currentProfile.userId}/profile`, "PUT", payload || {}, true);
         },
+        SubmitMyAvatar(avatarDataUrl) {
+            const currentProfile = GetCurrentUserProfile();
+            if (!currentProfile || !currentProfile.userId) {
+                return Promise.reject(new Error("请先登录后再操作"));
+            }
+            return RequestApi(
+                `/api/v1/users/${currentProfile.userId}/avatar`,
+                "POST",
+                { avatarDataUrl: avatarDataUrl || "" },
+                true
+            );
+        },
         ApplySellerVerification(payload) {
             return RequestApi("/api/v1/users/seller-verifications", "POST", payload || {}, true);
         },
@@ -2066,6 +2126,9 @@
         ListPendingUsers() {
             return RequestApi("/api/v1/admin/users/pending", "GET", null, true);
         },
+        ListPendingAvatarReviews() {
+            return RequestApi("/api/v1/admin/users/avatars/pending", "GET", null, true);
+        },
         ReviewUser(userId, approved, reviewRemark) {
             return RequestApi(
                 `/api/v1/admin/users/${userId}/review`,
@@ -2075,6 +2138,14 @@
                     approved: !!approved,
                     reviewRemark: reviewRemark || ""
                 },
+                true
+            );
+        },
+        ReviewUserAvatar(userId, approved, reviewRemark) {
+            return RequestApi(
+                `/api/v1/admin/users/${userId}/avatar/review`,
+                "POST",
+                { approved: !!approved, reviewRemark: reviewRemark || "" },
                 true
             );
         },

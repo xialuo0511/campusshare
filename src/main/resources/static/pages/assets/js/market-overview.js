@@ -99,7 +99,11 @@
         const roleText = profile && profile.userRole === "ADMINISTRATOR" ? "管理员" : "普通用户";
         view.profileNameNode.textContent = displayName;
         view.profileRoleNode.textContent = roleText;
-        view.profileAvatarNode.textContent = ResolveAvatarText(displayName);
+        if (window.CampusShareApi.RenderUserAvatar) {
+            window.CampusShareApi.RenderUserAvatar(view.profileAvatarNode, profile, displayName);
+        } else {
+            view.profileAvatarNode.textContent = ResolveAvatarText(displayName);
+        }
     }
 
     /**

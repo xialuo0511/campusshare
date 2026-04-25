@@ -30,6 +30,16 @@ public class UserEntity extends BaseEntity {
     private UserStatusEnum userStatus;
     /** 积分余额 */
     private Integer pointBalance;
+    /** 已审核头像 */
+    private String avatarUrl;
+    /** 待审核头像 */
+    private String pendingAvatarUrl;
+    /** 头像审核状态 */
+    private String avatarReviewStatus;
+    /** 头像审核备注 */
+    private String avatarReviewRemark;
+    /** 头像提交时间 */
+    private LocalDateTime avatarReviewSubmitTime;
     /** 最近登录时间 */
     private LocalDateTime lastLoginTime;
 
@@ -185,6 +195,76 @@ public class UserEntity extends BaseEntity {
      */
     public void SetPointBalance(Integer pointBalance) {
         this.pointBalance = pointBalance;
+    }
+
+    /**
+     * 获取已审核头像
+     */
+    public String GetAvatarUrl() {
+        return avatarUrl;
+    }
+
+    /**
+     * 设置已审核头像
+     */
+    public void SetAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    /**
+     * 获取待审核头像
+     */
+    public String GetPendingAvatarUrl() {
+        return pendingAvatarUrl;
+    }
+
+    /**
+     * 设置待审核头像
+     */
+    public void SetPendingAvatarUrl(String pendingAvatarUrl) {
+        this.pendingAvatarUrl = pendingAvatarUrl;
+    }
+
+    /**
+     * 获取头像审核状态
+     */
+    public String GetAvatarReviewStatus() {
+        return avatarReviewStatus;
+    }
+
+    /**
+     * 设置头像审核状态
+     */
+    public void SetAvatarReviewStatus(String avatarReviewStatus) {
+        this.avatarReviewStatus = avatarReviewStatus;
+    }
+
+    /**
+     * 获取头像审核备注
+     */
+    public String GetAvatarReviewRemark() {
+        return avatarReviewRemark;
+    }
+
+    /**
+     * 设置头像审核备注
+     */
+    public void SetAvatarReviewRemark(String avatarReviewRemark) {
+        this.avatarReviewRemark = avatarReviewRemark;
+    }
+
+    /**
+     * 获取头像提交时间
+     */
+    public LocalDateTime GetAvatarReviewSubmitTime() {
+        return avatarReviewSubmitTime;
+    }
+
+    /**
+     * 设置头像提交时间
+     */
+    public void SetAvatarReviewSubmitTime(LocalDateTime avatarReviewSubmitTime) {
+        this.avatarReviewSubmitTime = avatarReviewSubmitTime;
     }
 
     /**

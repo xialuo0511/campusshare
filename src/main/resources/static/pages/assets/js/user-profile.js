@@ -24,6 +24,7 @@
 
         BindQuickActions();
         BindEditModal();
+        BindAvatarUpload();
         BindSellerVerificationAction();
 
         LoadInitialData();
@@ -106,12 +107,93 @@
 
         const initialsNode = GetElementByRole("avatar-initials");
         if (initialsNode) {
-            initialsNode.textContent = ResolveInitials(displayName);
+            if (window.CampusShareApi.RenderUserAvatar) {
+                window.CampusShareApi.RenderUserAvatar(initialsNode, profile, displayName);
+            } else {
+                initialsNode.textContent = ResolveInitials(displayName);
+            }
         }
+        RenderAvatarReviewState(profile);
 
         if (profile.pointBalance !== undefined && profile.pointBalance !== null) {
             SetText("point-balance", String(profile.pointBalance));
         }
+    }
+
+    /**
+     * 绑定头像上传
+     */
+    function BindAvatarUpload() {
+        const inputNode = GetElementByAction("avatar-upload");
+        if (!inputNode || !window.CampusShareApi.SubmitMyAvatar) {
+            return;
+        }
+        inputNode.addEventListener("change", async function HandleAvatarChange() {
+            const file = inputNode.files && inputNode.files.length ? inputNode.files[0] : null;
+            if (!file) {
+                return;
+            }
+            if (!/^image\/(png|jpeg|webp)$/.test(file.type || "")) {
+                ShowError("仅支持 PNG、JPG、WEBP 头像");
+                inputNode.value = "";
+                return;
+            }
+            if (file.size > 400 * 1024) {
+                ShowError("头像文件不能超过 400KB");
+                inputNode.value = "";
+                return;
+            }
+            try {
+                const avatarDataUrl = await ReadFileAsDataUrl(file);
+                await window.CampusShareApi.SubmitMyAvatar(avatarDataUrl);
+                ShowSuccess("上传头像成功，已进入审核队列，审核完毕会收到通知");
+                await LoadProfileData();
+            } catch (error) {
+                ShowError(error instanceof Error ? error.message : "头像上传失败");
+            } finally {
+                inputNode.value = "";
+            }
+        });
+    }
+
+    /**
+     * 读取文件DataURL
+     */
+    function ReadFileAsDataUrl(file) {
+        return new Promise(function ResolveFile(resolve, reject) {
+            const reader = new FileReader();
+            reader.onload = function HandleLoad() {
+                resolve(String(reader.result || ""));
+            };
+            reader.onerror = function HandleError() {
+                reject(new Error("头像读取失败"));
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    /**
+     * 渲染头像审核状态
+     */
+    function RenderAvatarReviewState(profile) {
+        const hintNode = GetElementByRole("avatar-review-hint");
+        if (!hintNode) {
+            return;
+        }
+        const statusText = String(profile && profile.avatarReviewStatus ? profile.avatarReviewStatus : "").toUpperCase();
+        if (statusText === "PENDING_REVIEW") {
+            hintNode.classList.remove("hidden");
+            hintNode.textContent = "头像已提交审核，审核通过前仍显示当前头像。";
+            return;
+        }
+        if (statusText === "REJECTED") {
+            const remark = profile && profile.avatarReviewRemark ? `：${profile.avatarReviewRemark}` : "";
+            hintNode.classList.remove("hidden");
+            hintNode.textContent = `上次头像审核未通过${remark}`;
+            return;
+        }
+        hintNode.classList.add("hidden");
+        hintNode.textContent = "";
     }
 
     /**

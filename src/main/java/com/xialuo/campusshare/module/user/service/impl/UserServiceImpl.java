@@ -4,8 +4,12 @@ import com.xialuo.campusshare.common.api.PageQuery;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.entity.UserEntity;
+import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.enums.UserStatusEnum;
+import com.xialuo.campusshare.module.notification.service.NotificationService;
+import com.xialuo.campusshare.module.user.dto.UserAvatarReviewRequestDto;
+import com.xialuo.campusshare.module.user.dto.UserAvatarUploadRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginRequestDto;
 import com.xialuo.campusshare.module.user.dto.UserLoginResponseDto;
 import com.xialuo.campusshare.module.user.dto.UserProfilePageResponseDto;
@@ -35,6 +39,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 用户服务实现
@@ -57,6 +62,14 @@ public class UserServiceImpl implements UserService {
     private static final Duration REGISTER_CODE_COOLDOWN = Duration.ofSeconds(60);
     /** 邮件主题 */
     private static final String REGISTER_CODE_MAIL_SUBJECT = "CampusShare 注册验证码";
+    /** 头像审核待处理 */
+    private static final String AVATAR_REVIEW_STATUS_PENDING = "PENDING_REVIEW";
+    /** 头像审核通过 */
+    private static final String AVATAR_REVIEW_STATUS_APPROVED = "APPROVED";
+    /** 头像审核驳回 */
+    private static final String AVATAR_REVIEW_STATUS_REJECTED = "REJECTED";
+    /** 头像最大DataURL长度 */
+    private static final Integer MAX_AVATAR_DATA_URL_LENGTH = 600000;
 
     /** 日志 */
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -69,6 +82,8 @@ public class UserServiceImpl implements UserService {
     private final StringRedisTemplate stringRedisTemplate;
     /** 邮件发送器 */
     private final JavaMailSender javaMailSender;
+    /** 通知服务 */
+    private final NotificationService notificationService;
     /** 邮件发送人 */
     private final String registerCodeMailFrom;
     /** 验证码回退日志开关 */
@@ -78,12 +93,14 @@ public class UserServiceImpl implements UserService {
         UserMapper userMapper,
         StringRedisTemplate stringRedisTemplate,
         ObjectProvider<JavaMailSender> javaMailSenderProvider,
+        NotificationService notificationService,
         @Value("${campusshare.mail.register.from:noreply@campusshare.local}") String registerCodeMailFrom,
         @Value("${campusshare.mail.register.log-code-enabled:true}") Boolean registerCodeLogEnabled
     ) {
         this.userMapper = userMapper;
         this.stringRedisTemplate = stringRedisTemplate;
         this.javaMailSender = javaMailSenderProvider.getIfAvailable();
+        this.notificationService = notificationService;
         this.registerCodeMailFrom = registerCodeMailFrom;
         this.registerCodeLogEnabled = registerCodeLogEnabled;
     }
@@ -246,6 +263,71 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserProfileResponseDto SubmitAvatarReview(Long userId, UserAvatarUploadRequestDto requestDto) {
+        UserEntity userEntity = userMapper.FindUserById(userId);
+        if (userEntity == null) {
+            throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
+        }
+        if (userEntity.GetUserStatus() != UserStatusEnum.ACTIVE) {
+            throw new BusinessException(BizCodeEnum.ACCOUNT_NOT_ACTIVE, "当前状态不允许修改头像");
+        }
+
+        String avatarDataUrl = NormalizeAvatarDataUrl(requestDto.GetAvatarDataUrl());
+        userEntity.SetPendingAvatarUrl(avatarDataUrl);
+        userEntity.SetAvatarReviewStatus(AVATAR_REVIEW_STATUS_PENDING);
+        userEntity.SetAvatarReviewRemark(null);
+        userEntity.SetAvatarReviewSubmitTime(LocalDateTime.now());
+        userEntity.SetUpdateTime(LocalDateTime.now());
+        userMapper.UpdateUser(userEntity);
+
+        notificationService.CreateNotification(
+            userId,
+            NotificationTypeEnum.REVIEW,
+            "上传头像成功",
+            "上传头像成功，已进入审核队列，审核完毕会收到通知。",
+            "USER_AVATAR",
+            userId
+        );
+        return BuildUserProfileResponse(userEntity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserProfileResponseDto ReviewUserAvatar(
+        Long userId,
+        UserAvatarReviewRequestDto requestDto,
+        Long adminUserId
+    ) {
+        UserEntity userEntity = userMapper.FindUserById(userId);
+        if (userEntity == null) {
+            throw new BusinessException(BizCodeEnum.USER_NOT_FOUND, "用户不存在");
+        }
+        if (!AVATAR_REVIEW_STATUS_PENDING.equals(userEntity.GetAvatarReviewStatus())
+            || IsBlank(userEntity.GetPendingAvatarUrl())) {
+            throw new BusinessException(BizCodeEnum.BUSINESS_CONFLICT, "当前用户没有待审核头像");
+        }
+
+        String reviewRemark = requestDto.GetReviewRemark() == null ? "" : requestDto.GetReviewRemark().trim();
+        if (Boolean.TRUE.equals(requestDto.GetApproved())) {
+            userEntity.SetAvatarUrl(userEntity.GetPendingAvatarUrl());
+            userEntity.SetPendingAvatarUrl(null);
+            userEntity.SetAvatarReviewStatus(AVATAR_REVIEW_STATUS_APPROVED);
+            userEntity.SetAvatarReviewRemark(reviewRemark);
+            SendAvatarReviewResultNotification(userEntity.GetUserId(), true, reviewRemark);
+        } else {
+            userEntity.SetPendingAvatarUrl(null);
+            userEntity.SetAvatarReviewStatus(AVATAR_REVIEW_STATUS_REJECTED);
+            userEntity.SetAvatarReviewRemark(reviewRemark);
+            SendAvatarReviewResultNotification(userEntity.GetUserId(), false, reviewRemark);
+        }
+        userEntity.SetUpdateTime(LocalDateTime.now());
+        userMapper.UpdateUser(userEntity);
+
+        return BuildUserProfileResponse(userEntity);
+    }
+
+    @Override
     public UserReviewResponseDto ReviewUser(UserReviewRequestDto requestDto, Long adminUserId) {
         UserEntity userEntity = userMapper.FindUserById(requestDto.GetUserId());
         if (userEntity == null) {
@@ -274,6 +356,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserProfileResponseDto> ListPendingReviewUsers() {
         return userMapper.ListPendingReviewUsers().stream()
+            .map(this::BuildUserProfileResponse)
+            .toList();
+    }
+
+    @Override
+    public List<UserProfileResponseDto> ListPendingAvatarReviewUsers() {
+        return userMapper.ListPendingAvatarReviewUsers().stream()
             .map(this::BuildUserProfileResponse)
             .toList();
     }
@@ -350,6 +439,53 @@ public class UserServiceImpl implements UserService {
         userEntity.SetUpdateTime(LocalDateTime.now());
         userMapper.UpdateUser(userEntity);
         return BuildUserProfileResponse(userEntity);
+    }
+
+    /**
+     * 校验头像DataURL
+     */
+    private String NormalizeAvatarDataUrl(String avatarDataUrl) {
+        String safeDataUrl = avatarDataUrl == null ? "" : avatarDataUrl.trim();
+        if (safeDataUrl.isBlank()) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "头像不能为空");
+        }
+        if (safeDataUrl.length() > MAX_AVATAR_DATA_URL_LENGTH) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "头像文件过大");
+        }
+        String lowerDataUrl = safeDataUrl.toLowerCase(Locale.ROOT);
+        if (!lowerDataUrl.startsWith("data:image/png;base64,")
+            && !lowerDataUrl.startsWith("data:image/jpeg;base64,")
+            && !lowerDataUrl.startsWith("data:image/jpg;base64,")
+            && !lowerDataUrl.startsWith("data:image/webp;base64,")) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "仅支持PNG、JPG、WEBP头像");
+        }
+        return safeDataUrl;
+    }
+
+    /**
+     * 发送头像审核结果通知
+     */
+    private void SendAvatarReviewResultNotification(Long userId, boolean approved, String reviewRemark) {
+        String title = approved ? "头像审核通过" : "头像审核未通过";
+        String safeRemark = reviewRemark == null ? "" : reviewRemark.trim();
+        String content = approved
+            ? "你的头像审核已通过，当前头像已更新。"
+            : ("你的头像审核未通过" + (safeRemark.isBlank() ? "。" : "：" + safeRemark));
+        notificationService.CreateNotification(
+            userId,
+            NotificationTypeEnum.REVIEW,
+            title,
+            content,
+            "USER_AVATAR",
+            userId
+        );
+    }
+
+    /**
+     * 是否空文本
+     */
+    private boolean IsBlank(String text) {
+        return text == null || text.trim().isBlank();
     }
 
     /**
@@ -585,6 +721,11 @@ public class UserServiceImpl implements UserService {
         responseDto.SetUserRole(userEntity.GetUserRole());
         responseDto.SetUserStatus(userEntity.GetUserStatus());
         responseDto.SetPointBalance(userEntity.GetPointBalance());
+        responseDto.SetAvatarUrl(userEntity.GetAvatarUrl());
+        responseDto.SetPendingAvatarUrl(userEntity.GetPendingAvatarUrl());
+        responseDto.SetAvatarReviewStatus(userEntity.GetAvatarReviewStatus());
+        responseDto.SetAvatarReviewRemark(userEntity.GetAvatarReviewRemark());
+        responseDto.SetAvatarReviewSubmitTime(userEntity.GetAvatarReviewSubmitTime());
         responseDto.SetLastLoginTime(userEntity.GetLastLoginTime());
         return responseDto;
     }

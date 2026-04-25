@@ -61,6 +61,19 @@
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
         font-weight: 800;
     }
+    aside button[data-workspace-nav]:not([data-workspace-target="/pages/notification_center.html"]),
+    aside button[data-workspace-admin],
+    aside button[data-workspace-help],
+    aside button[data-workspace-logout] {
+        border-radius: 0.5rem;
+        line-height: 1.25rem;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    aside button[data-workspace-nav]:not([data-workspace-target="/pages/notification_center.html"]):hover,
+    aside button[data-workspace-admin]:hover,
+    aside button[data-workspace-help]:hover {
+        background-color: rgba(148, 163, 184, 0.16);
+    }
     [data-workspace-top-nav][aria-current="page"] {
         color: #075985;
         border-bottom-color: #075985;

@@ -1455,10 +1455,8 @@
 
         const notificationIcon = FindMaterialIconElement("notifications");
         const notificationTrigger = EnsureNotificationTriggerStyle(ResolveIconTriggerElement(notificationIcon));
+        EnsureNotificationPanelStyle();
         const shouldBindNotificationPanel = notificationTrigger && !IsSidebarNotificationTrigger(notificationTrigger);
-        if (shouldBindNotificationPanel) {
-            EnsureNotificationPanelStyle();
-        }
         if (shouldBindNotificationPanel && notificationTrigger.dataset.notificationNavigationBound !== "true") {
             EnsureInteractiveElement(notificationTrigger);
             notificationTrigger.dataset.notificationNavigationBound = "true";

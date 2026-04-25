@@ -342,7 +342,8 @@
         const messageBar = document.createElement("div");
         messageBar.className = "rounded-lg px-3 py-2 text-sm mb-4";
         messageBar.style.display = "none";
-        mainElement.insertBefore(messageBar, listContainer);
+        const containerParent = listContainer.parentElement || mainElement;
+        containerParent.insertBefore(messageBar, listContainer);
         return messageBar;
     }
 

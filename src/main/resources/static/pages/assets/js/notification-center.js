@@ -40,7 +40,11 @@
         }
 
         const messageBar = BuildMessageBar(mainElement, listContainer);
-        listContainer.innerHTML = "<div class=\"bg-surface-container-lowest rounded-xl p-8 text-center text-sm text-slate-500\">正在加载消息...</div>";
+        listContainer.innerHTML = [
+            "<div class=\"rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-8 text-center text-sm text-outline shadow-sm\">",
+            "正在加载消息...",
+            "</div>"
+        ].join("");
         const state = {
             filterType: FILTER_TYPE_ALL,
             notificationList: []
@@ -153,12 +157,12 @@
     function UpdateFilterButtonStyle(filterButtonList, activeIndex) {
         filterButtonList.forEach(function PatchFilterButton(buttonElement, index) {
             if (index === activeIndex) {
-                buttonElement.classList.add("bg-surface-container-lowest", "text-primary", "shadow-sm", "font-semibold");
-                buttonElement.classList.remove("text-on-surface-variant", "font-medium");
+                buttonElement.classList.add("bg-surface-container-lowest", "text-primary", "shadow-sm", "font-bold");
+                buttonElement.classList.remove("text-on-surface-variant");
                 return;
             }
-            buttonElement.classList.remove("bg-surface-container-lowest", "text-primary", "shadow-sm", "font-semibold");
-            buttonElement.classList.add("text-on-surface-variant", "font-medium");
+            buttonElement.classList.remove("bg-surface-container-lowest", "text-primary", "shadow-sm", "font-bold");
+            buttonElement.classList.add("text-on-surface-variant");
         });
     }
 
@@ -166,45 +170,79 @@
      * 渲染通知列表
      */
     function RenderNotificationList(state, listContainer) {
+        UpdateNotificationSummary(state.notificationList);
         const filteredList = FilterNotifications(state.notificationList, state.filterType);
         if (filteredList.length === 0) {
-            listContainer.innerHTML = "<div class=\"bg-surface-container-lowest rounded-xl p-10 text-center text-slate-500\">暂无符合条件的消息</div>";
+            listContainer.innerHTML = [
+                "<div class=\"rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest p-12 text-center shadow-sm\">",
+                "<div class=\"mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-surface-container text-outline\">",
+                "<span class=\"material-symbols-outlined text-3xl\">inbox</span>",
+                "</div>",
+                "<h3 class=\"text-base font-bold text-on-surface\">暂无符合条件的消息</h3>",
+                "<p class=\"mt-1 text-sm text-outline\">切换筛选条件后可查看其他消息状态</p>",
+                "</div>"
+            ].join("");
             return;
         }
         listContainer.innerHTML = filteredList.map(function BuildNotificationItem(notificationItem) {
             const titleText = notificationItem.title || ResolveNotificationTypeText(notificationItem.notificationType);
             const contentText = notificationItem.content || "-";
+            const typeText = ResolveNotificationTypeText(notificationItem.notificationType);
+            const iconName = ResolveNotificationIcon(notificationItem.notificationType);
+            const toneClass = ResolveNotificationToneClass(notificationItem.notificationType);
             const statusClass = notificationItem.readFlag
-                ? "bg-surface-container-high text-on-surface-variant"
-                : "bg-secondary-container text-on-secondary-container";
+                ? "border-outline-variant bg-surface-container text-on-surface-variant"
+                : "border-primary/20 bg-primary/10 text-primary";
             const statusText = notificationItem.readFlag ? "已读" : "未读";
             const navTarget = ResolveNotificationTarget(notificationItem);
             return [
-                `<div class=\"group bg-surface-container-lowest p-6 rounded-xl ${notificationItem.readFlag ? "" : "border-l-4 border-primary"} transition-all hover:bg-white\">`,
-                "<div class=\"flex gap-4\">",
-                `<div class=\"w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary shrink-0\"><span class=\"material-symbols-outlined\">${ResolveNotificationIcon(notificationItem.notificationType)}</span></div>`,
-                "<div class=\"flex-1\">",
-                "<div class=\"flex justify-between items-start mb-1\">",
-                `<h3 class=\"text-lg font-semibold text-on-surface\">${EscapeHtml(titleText)}</h3>`,
-                `<span class=\"text-xs text-on-surface-variant font-medium\">${EscapeHtml(FormatTime(notificationItem.sendTime))}</span>`,
+                `<article class=\"group relative overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md\">`,
+                notificationItem.readFlag ? "" : "<div class=\"absolute inset-y-0 left-0 w-1 bg-primary\"></div>",
+                "<div class=\"flex flex-col gap-4 md:flex-row md:items-start\">",
+                `<div class=\"flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${toneClass}\"><span class=\"material-symbols-outlined text-2xl\">${iconName}</span></div>`,
+                "<div class=\"min-w-0 flex-1\">",
+                "<div class=\"mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between\">",
+                "<div class=\"min-w-0\">",
+                `<div class=\"mb-1 flex flex-wrap items-center gap-2\"><span class=\"rounded-full bg-surface-container px-2.5 py-1 text-[11px] font-bold text-on-surface-variant\">${EscapeHtml(typeText)}</span>${notificationItem.readFlag ? "" : "<span class=\"h-2 w-2 rounded-full bg-primary\"></span>"}</div>`,
+                `<h3 class=\"truncate text-base font-extrabold text-on-surface\">${EscapeHtml(titleText)}</h3>`,
                 "</div>",
-                `<p class=\"text-on-surface-variant text-sm mb-4\">${EscapeHtml(contentText)}</p>`,
-                "<div class=\"flex justify-between items-center gap-2\">",
-                `<span class=\"px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusClass}\">${EscapeHtml(statusText)}</span>`,
-                "<div class=\"flex items-center gap-2\">",
+                `<span class=\"shrink-0 text-xs font-semibold text-outline\">${EscapeHtml(FormatTime(notificationItem.sendTime))}</span>`,
+                "</div>",
+                `<p class=\"mb-4 text-sm leading-6 text-on-surface-variant\">${EscapeHtml(contentText)}</p>`,
+                "<div class=\"flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between\">",
+                `<span class=\"w-fit rounded-full border px-2.5 py-1 text-[11px] font-bold ${statusClass}\">${EscapeHtml(statusText)}</span>`,
+                "<div class=\"flex flex-wrap items-center gap-2\">",
                 notificationItem.readFlag
                     ? ""
-                    : `<button data-action=\"mark-read\" data-id=\"${EscapeHtml(String(notificationItem.notificationId || ""))}\" class=\"text-primary text-sm font-bold hover:underline\">标记已读</button>`,
+                    : `<button data-action=\"mark-read\" data-id=\"${EscapeHtml(String(notificationItem.notificationId || ""))}\" class=\"inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-1.5 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary/5\"><span class=\"material-symbols-outlined text-base\">done</span>标记已读</button>`,
                 navTarget
-                    ? `<button data-action=\"jump\" data-target=\"${EscapeHtml(navTarget)}\" class=\"text-primary text-sm font-bold hover:underline\">查看详情</button>`
+                    ? `<button data-action=\"jump\" data-target=\"${EscapeHtml(navTarget)}\" class=\"inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary transition hover:bg-primary-container\"><span class=\"material-symbols-outlined text-base\">open_in_new</span>查看详情</button>`
                     : "",
                 "</div>",
                 "</div>",
                 "</div>",
                 "</div>",
-                "</div>"
+                "</article>"
             ].join("");
         }).join("");
+    }
+
+    function UpdateNotificationSummary(notificationList) {
+        const totalCount = notificationList.length;
+        const unreadCount = notificationList.filter(function CountUnread(notificationItem) {
+            return !notificationItem.readFlag;
+        }).length;
+        const readCount = totalCount - unreadCount;
+        PatchSummaryText("[data-notification-total]", totalCount);
+        PatchSummaryText("[data-notification-unread]", unreadCount);
+        PatchSummaryText("[data-notification-read]", readCount);
+    }
+
+    function PatchSummaryText(selector, value) {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.textContent = String(value);
+        }
     }
 
     /**
@@ -251,6 +289,25 @@
             return "groups";
         }
         return "notifications";
+    }
+
+    function ResolveNotificationToneClass(notificationType) {
+        if (notificationType === "ORDER") {
+            return "bg-sky-50 text-primary";
+        }
+        if (notificationType === "POINT") {
+            return "bg-amber-50 text-amber-700";
+        }
+        if (notificationType === "REVIEW") {
+            return "bg-indigo-50 text-indigo-700";
+        }
+        if (notificationType === "REPORT") {
+            return "bg-red-50 text-red-700";
+        }
+        if (notificationType === "TEAM") {
+            return "bg-cyan-50 text-cyan-700";
+        }
+        return "bg-surface-container text-primary";
     }
 
     /**

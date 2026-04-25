@@ -2,7 +2,8 @@
  * Unified user workspace shell.
  */
 (function InitUserWorkspacePage() {
-    const DEFAULT_TARGET = "/pages/market_overview.html";
+    const HOME_TARGET = "/pages/market_overview.html";
+    const DEFAULT_TARGET = "/pages/my_publish.html";
     const ADMINISTRATOR_ROLE = "ADMINISTRATOR";
     const TARGET_ATTRIBUTE = "data-workspace-target";
 
@@ -72,14 +73,19 @@
         navigationElementList.forEach(function BindNavigationElement(element) {
             element.addEventListener("click", function HandleNavigationClick(event) {
                 event.preventDefault();
-                NavigateWorkspaceFrame(frameElement, element.getAttribute(TARGET_ATTRIBUTE) || DEFAULT_TARGET);
+                const targetPath = element.getAttribute(TARGET_ATTRIBUTE) || DEFAULT_TARGET;
+                if (NormalizeWorkspaceTarget(targetPath) === HOME_TARGET) {
+                    window.location.href = HOME_TARGET;
+                    return;
+                }
+                NavigateWorkspaceFrame(frameElement, targetPath);
             });
         });
         const brandButton = document.querySelector("[data-workspace-brand]");
         if (brandButton) {
             brandButton.addEventListener("click", function HandleBrandClick(event) {
                 event.preventDefault();
-                NavigateWorkspaceFrame(frameElement, DEFAULT_TARGET);
+                window.location.href = HOME_TARGET;
             });
         }
     }

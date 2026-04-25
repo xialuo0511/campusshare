@@ -34,7 +34,6 @@
         ERROR_STATUS: "/pages/error_status.html"
     };
     const USER_WORKSPACE_CHILD_PATH_SET = new Set([
-        PAGE_PATH_MAP.OVERVIEW,
         PAGE_PATH_MAP.LISTING,
         PAGE_PATH_MAP.FORUM_SUBVIEW,
         PAGE_PATH_MAP.MATERIAL_LISTING,
@@ -326,7 +325,7 @@
         if (userRole === ADMINISTRATOR_ROLE) {
             return PAGE_PATH_MAP.ADMIN;
         }
-        return PAGE_PATH_MAP.USER_WORKSPACE;
+        return PAGE_PATH_MAP.OVERVIEW;
     }
 
     /**

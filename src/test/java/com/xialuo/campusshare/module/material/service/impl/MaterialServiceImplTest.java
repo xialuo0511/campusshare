@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.xialuo.campusshare.common.service.ContentModerationService;
 import com.xialuo.campusshare.entity.StudyMaterialEntity;
 import com.xialuo.campusshare.entity.UserEntity;
+import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.enums.ResourceStatusEnum;
 import com.xialuo.campusshare.module.admin.constant.SystemRuleKeyConstants;
 import com.xialuo.campusshare.module.admin.service.SystemRuleConfigService;
@@ -65,6 +66,14 @@ class MaterialServiceImplTest {
             eq("MATERIAL"),
             eq(10L),
             eq("资料下载扣减")
+        );
+        verify(notificationService, times(1)).CreateNotification(
+            eq(1001L),
+            eq(NotificationTypeEnum.POINT),
+            eq("资料下载成功"),
+            eq("本次下载扣减积分：2；文件ID：material-file.pdf"),
+            eq("MATERIAL"),
+            eq(10L)
         );
         assertEquals(2, responseDto.GetDeductedPoints());
         assertEquals(7, responseDto.GetCurrentPointBalance());

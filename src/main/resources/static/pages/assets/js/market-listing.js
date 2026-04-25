@@ -133,7 +133,9 @@
         SwitchMarketPanel(marketPanelList, initialViewKey);
         UpdateSubviewUrl(initialViewKey);
         if (initialViewKey === "MATERIAL" && !subviewState.materialLoaded) {
-            LoadMaterialSubview(materialSubviewList, materialMessageBar);
+            LoadMaterialSubview(materialSubviewList, materialMessageBar).then(function RenderTargetMaterialAfterLoad() {
+                RenderTargetMaterialCard(materialSubviewList, materialMessageBar);
+            });
             subviewState.materialLoaded = true;
         }
         if (initialViewKey === "FORUM" && !subviewState.forumLoaded) {
@@ -153,6 +155,7 @@
                 SwitchMarketPanel(marketPanelList, viewKey);
                 if (viewKey === "MATERIAL" && !subviewState.materialLoaded) {
                     await LoadMaterialSubview(materialSubviewList, materialMessageBar);
+                    await RenderTargetMaterialCard(materialSubviewList, materialMessageBar);
                     subviewState.materialLoaded = true;
                 }
                 if (viewKey === "FORUM" && !subviewState.forumLoaded) {
@@ -312,6 +315,63 @@
         } catch (error) {
             materialSubviewList.innerHTML = `<div class=\"col-span-full text-sm text-red-500 py-8 text-center\">${EscapeHtml(error instanceof Error ? error.message : "学术资源加载失败")}</div>`;
         }
+    }
+
+    async function RenderTargetMaterialCard(materialSubviewList, materialMessageBar) {
+        const targetMaterialId = ResolveTargetMaterialIdFromUrl();
+        if (!materialSubviewList || !targetMaterialId) {
+            return;
+        }
+        const existedCard = materialSubviewList.querySelector("[data-target-material-card='true']");
+        if (existedCard) {
+            existedCard.remove();
+        }
+        try {
+            const materialDetail = await window.CampusShareApi.GetMaterialDetail(targetMaterialId);
+            materialSubviewList.insertAdjacentHTML("afterbegin", BuildTargetMaterialCard(materialDetail));
+        } catch (error) {
+            ShowError(materialMessageBar, error instanceof Error ? error.message : "资料详情加载失败");
+        }
+    }
+
+    function ResolveTargetMaterialIdFromUrl() {
+        const searchParams = new URLSearchParams(window.location.search || "");
+        const materialId = Number(searchParams.get("materialId") || 0);
+        return materialId > 0 ? materialId : 0;
+    }
+
+    function BuildTargetMaterialCard(materialItem) {
+        const materialId = Number(materialItem && materialItem.materialId ? materialItem.materialId : 0);
+        if (!materialId) {
+            return "";
+        }
+        const fileId = materialItem && materialItem.fileId ? String(materialItem.fileId) : "-";
+        return [
+            "<article data-target-material-card=\"true\" class=\"col-span-full rounded-xl border border-primary/25 bg-white p-5 shadow-sm\">",
+            "<div class=\"flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between\">",
+            "<div class=\"min-w-0\">",
+            "<div class=\"mb-2 flex items-center gap-2 text-primary\">",
+            "<span class=\"material-symbols-outlined text-xl\">description</span>",
+            "<span class=\"text-xs font-bold uppercase tracking-widest\">通知关联资料</span>",
+            "</div>",
+            `<h3 class=\"text-lg font-extrabold text-on-surface\">${EscapeHtml(materialItem.courseName || "未命名资料")}</h3>`,
+            `<p class=\"mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant\">${EscapeHtml(materialItem.description || "暂无资料说明")}</p>`,
+            "<div class=\"mt-4 flex flex-wrap gap-2 text-xs text-on-surface-variant\">",
+            `<span class=\"rounded-full bg-surface-container px-2.5 py-1\">文件ID：${EscapeHtml(fileId)}</span>`,
+            `<span class=\"rounded-full bg-surface-container px-2.5 py-1\">格式：${EscapeHtml(materialItem.fileType || "-")}</span>`,
+            `<span class=\"rounded-full bg-surface-container px-2.5 py-1\">积分：${EscapeHtml(String(Number(materialItem.downloadCostPoints || 0)))}</span>`,
+            `<span class=\"rounded-full bg-surface-container px-2.5 py-1\">下载：${EscapeHtml(String(Number(materialItem.downloadCount || 0)))} 次</span>`,
+            "</div>",
+            "</div>",
+            "<div class=\"flex shrink-0 items-center gap-2\">",
+            `<button type=\"button\" data-action=\"material-download\" data-material-id=\"${EscapeHtml(String(materialId))}\" class=\"inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary hover:bg-primary-container\">`,
+            "<span class=\"material-symbols-outlined text-base\">download</span>",
+            "<span>下载资料</span>",
+            "</button>",
+            "</div>",
+            "</div>",
+            "</article>"
+        ].join("");
     }
 
     /**

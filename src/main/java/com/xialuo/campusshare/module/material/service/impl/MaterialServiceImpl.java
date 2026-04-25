@@ -426,7 +426,7 @@ public class MaterialServiceImpl implements MaterialService {
             currentUserId,
             NotificationTypeEnum.POINT,
             "资料下载成功",
-            "本次下载扣减积分：" + deductedPoints,
+            "本次下载扣减积分：" + deductedPoints + "；文件ID：" + materialEntity.GetFileId(),
             MATERIAL_BIZ_TYPE,
             materialEntity.GetMaterialId()
         );

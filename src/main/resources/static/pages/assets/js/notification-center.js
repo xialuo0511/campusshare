@@ -322,8 +322,11 @@
         if (bizType === "ORDER" && bizId) {
             return `/pages/order_detail.html?orderId=${encodeURIComponent(String(bizId))}`;
         }
+        if (bizType === "MATERIAL" && bizId) {
+            return `/pages/market_listing.html?view=MATERIAL&materialId=${encodeURIComponent(String(bizId))}`;
+        }
         if (bizType === "MATERIAL") {
-            return "/pages/my_publish.html";
+            return "/pages/market_listing.html?view=MATERIAL";
         }
         if (bizType === "SELLER_VERIFICATION" || bizType === "USER") {
             return "/pages/user_profile.html";

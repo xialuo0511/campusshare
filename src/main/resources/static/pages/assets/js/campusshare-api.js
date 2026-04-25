@@ -648,11 +648,11 @@
             normalizedTriggerElement.style.position = "relative";
         }
         normalizedTriggerElement.dataset.notificationTriggerPatched = "true";
-        normalizedTriggerElement.style.display = "inline-flex";
-        normalizedTriggerElement.style.alignItems = "center";
-        normalizedTriggerElement.style.justifyContent = "center";
         normalizedTriggerElement.style.cursor = "pointer";
         if (isUserSidebarTrigger) {
+            normalizedTriggerElement.style.display = "";
+            normalizedTriggerElement.style.alignItems = "";
+            normalizedTriggerElement.style.justifyContent = "";
             normalizedTriggerElement.style.width = "";
             normalizedTriggerElement.style.height = "";
             normalizedTriggerElement.style.borderRadius = "";
@@ -660,6 +660,9 @@
             normalizedTriggerElement.style.border = "";
             normalizedTriggerElement.style.background = "";
         } else {
+            normalizedTriggerElement.style.display = "inline-flex";
+            normalizedTriggerElement.style.alignItems = "center";
+            normalizedTriggerElement.style.justifyContent = "center";
             normalizedTriggerElement.style.width = "40px";
             normalizedTriggerElement.style.height = "40px";
             normalizedTriggerElement.style.borderRadius = "12px";
@@ -865,6 +868,11 @@
                 line-height: 1;
                 border-radius: 9999px;
                 transition: background-color 0.15s ease, color 0.15s ease;
+            }
+            [data-user-sidebar] .campusshare-notification-trigger,
+            [data-workspace-nav].campusshare-notification-trigger {
+                border-radius: 0.5rem;
+                line-height: 1.25rem;
             }
             .campusshare-notification-trigger .material-symbols-outlined {
                 pointer-events: none;

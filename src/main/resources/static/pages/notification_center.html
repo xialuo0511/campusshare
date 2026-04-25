@@ -81,19 +81,19 @@
                     <h1 class="text-3xl font-bold tracking-tight text-on-surface">消息中心</h1>
                     <p class="mt-1 text-on-surface-variant">查看订单通知、审核结果、积分变动和系统提醒</p>
                 </div>
-                <button class="flex items-center gap-2 rounded-lg bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-surface-bright" type="button">
+                <button class="flex items-center gap-2 rounded-lg bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-surface-bright" type="button" data-notification-mark-all>
                     <span class="material-symbols-outlined text-lg" data-icon="done_all">done_all</span>
                     全部标记为已读
                 </button>
             </div>
 
             <div class="mb-6 flex items-center space-x-1 w-fit rounded-xl bg-surface-container p-1">
-                <button class="rounded-lg bg-surface-container-lowest px-6 py-2 text-sm font-semibold text-primary shadow-sm" type="button">全部消息</button>
-                <button class="px-6 py-2 text-sm font-medium text-on-surface-variant hover:text-primary" type="button">未读</button>
-                <button class="px-6 py-2 text-sm font-medium text-on-surface-variant hover:text-primary" type="button">已读</button>
+                <button class="rounded-lg bg-surface-container-lowest px-6 py-2 text-sm font-semibold text-primary shadow-sm" type="button" data-notification-filter="ALL">全部消息</button>
+                <button class="px-6 py-2 text-sm font-medium text-on-surface-variant hover:text-primary" type="button" data-notification-filter="UNREAD">未读</button>
+                <button class="px-6 py-2 text-sm font-medium text-on-surface-variant hover:text-primary" type="button" data-notification-filter="READ">已读</button>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-4" data-notification-list>
                 <div class="rounded-xl bg-surface-container-lowest p-8 text-center text-sm text-slate-500">正在加载消息...</div>
             </div>
         </div>
@@ -107,7 +107,7 @@
     </div>
 </footer>
 
-<script src="/pages/assets/js/campusshare-api.js"></script>
-<script src="/pages/assets/js/notification-center.js"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260425"></script>
+<script src="/pages/assets/js/notification-center.js?v=20260425"></script>
 </body>
 </html>

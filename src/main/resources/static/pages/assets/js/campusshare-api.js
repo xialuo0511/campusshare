@@ -682,8 +682,7 @@
         if (!notificationTrigger) {
             return null;
         }
-        const isUserSidebarTrigger = !!notificationTrigger.closest("[data-user-sidebar]")
-            || !!notificationTrigger.closest("[data-workspace-nav]");
+        const isUserSidebarTrigger = IsSidebarNotificationTrigger(notificationTrigger);
         if (!isUserSidebarTrigger || !notificationIcon) {
             return notificationTrigger;
         }
@@ -701,6 +700,12 @@
             iconShellElement.appendChild(notificationIcon);
         }
         return iconShellElement;
+    }
+
+    function IsSidebarNotificationTrigger(notificationTrigger) {
+        return !!notificationTrigger
+            && (!!notificationTrigger.closest("[data-user-sidebar]")
+                || !!notificationTrigger.closest("[data-workspace-nav]"));
     }
 
     /**
@@ -1450,8 +1455,11 @@
 
         const notificationIcon = FindMaterialIconElement("notifications");
         const notificationTrigger = EnsureNotificationTriggerStyle(ResolveIconTriggerElement(notificationIcon));
-        EnsureNotificationPanelStyle();
-        if (notificationTrigger && notificationTrigger.dataset.notificationNavigationBound !== "true") {
+        const shouldBindNotificationPanel = notificationTrigger && !IsSidebarNotificationTrigger(notificationTrigger);
+        if (shouldBindNotificationPanel) {
+            EnsureNotificationPanelStyle();
+        }
+        if (shouldBindNotificationPanel && notificationTrigger.dataset.notificationNavigationBound !== "true") {
             EnsureInteractiveElement(notificationTrigger);
             notificationTrigger.dataset.notificationNavigationBound = "true";
             notificationTrigger.addEventListener("click", function HandleNotificationClick(event) {

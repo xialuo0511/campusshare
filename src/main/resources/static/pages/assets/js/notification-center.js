@@ -11,7 +11,8 @@
         REVIEW: "审核通知",
         ORDER: "订单通知",
         POINT: "积分通知",
-        REPORT: "举报通知"
+        REPORT: "举报通知",
+        TEAM: "组队通知"
     };
 
     /**
@@ -31,9 +32,9 @@
             return;
         }
 
-        const listContainer = mainElement.querySelector("div.space-y-4");
-        const filterButtonList = Array.from(mainElement.querySelectorAll("div.flex.items-center.space-x-1 > button"));
-        const markAllButton = mainElement.querySelector("button:has(span[data-icon='done_all'])") || mainElement.querySelector("button.flex.items-center.gap-2");
+        const listContainer = mainElement.querySelector("[data-notification-list]");
+        const filterButtonList = Array.from(mainElement.querySelectorAll("[data-notification-filter]"));
+        const markAllButton = mainElement.querySelector("[data-notification-mark-all]");
         if (!listContainer || filterButtonList.length < 3) {
             return;
         }
@@ -136,9 +137,8 @@
      * 绑定筛选按钮
      */
     function BindFilterButtons(filterButtonList, state, onFilterChanged) {
-        const filterTypeList = [FILTER_TYPE_ALL, FILTER_TYPE_UNREAD, FILTER_TYPE_READ];
         filterButtonList.forEach(function BindFilterButton(buttonElement, index) {
-            const filterType = filterTypeList[index] || FILTER_TYPE_ALL;
+            const filterType = buttonElement.getAttribute("data-notification-filter") || FILTER_TYPE_ALL;
             buttonElement.addEventListener("click", function HandleFilterClick() {
                 state.filterType = filterType;
                 UpdateFilterButtonStyle(filterButtonList, index);
@@ -246,6 +246,9 @@
         }
         if (notificationType === "REPORT") {
             return "warning";
+        }
+        if (notificationType === "TEAM") {
+            return "groups";
         }
         return "notifications";
     }

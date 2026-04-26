@@ -755,6 +755,26 @@
                 font-weight: 700;
                 color: #0f172a;
             }
+            .campusshare-notification-actions {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .campusshare-notification-center-link {
+                border: none;
+                background: #2563eb;
+                color: #ffffff;
+                font-size: 12px;
+                font-weight: 700;
+                cursor: pointer;
+                padding: 5px 10px;
+                border-radius: 8px;
+                transition: background-color 0.15s ease, transform 0.15s ease;
+            }
+            .campusshare-notification-center-link:hover {
+                background: #1d4ed8;
+                transform: translateY(-1px);
+            }
             .campusshare-notification-mark-all {
                 border: none;
                 background: transparent;
@@ -918,6 +938,25 @@
         notificationSummaryElement = notificationPanelElement.querySelector("[data-role='notification-summary']");
         notificationListElement = notificationPanelElement.querySelector("[data-role='notification-list']");
         notificationMarkAllReadButton = notificationPanelElement.querySelector("[data-action='mark-all-read']");
+        const notificationHeaderElement = notificationPanelElement.querySelector(".campusshare-notification-header");
+        const notificationCenterButton = document.createElement("button");
+        const notificationActionsElement = document.createElement("div");
+        notificationCenterButton.type = "button";
+        notificationCenterButton.className = "campusshare-notification-center-link";
+        notificationCenterButton.textContent = "消息中心";
+        notificationActionsElement.className = "campusshare-notification-actions";
+        notificationActionsElement.appendChild(notificationCenterButton);
+        if (notificationMarkAllReadButton) {
+            notificationActionsElement.appendChild(notificationMarkAllReadButton);
+        }
+        if (notificationHeaderElement) {
+            notificationHeaderElement.appendChild(notificationActionsElement);
+        }
+        notificationCenterButton.addEventListener("click", function HandleOpenNotificationCenter(event) {
+            event.preventDefault();
+            HideNotificationPanel();
+            NavigateToPage(PAGE_PATH_MAP.NOTIFICATION);
+        });
         notificationMarkAllReadButton.addEventListener("click", function HandleMarkAllRead(event) {
             event.preventDefault();
             MarkAllNotificationRead();

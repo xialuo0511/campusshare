@@ -143,7 +143,7 @@
      * 时间轴
      */
     function PatchTimeline(detailResult, pageRefs) {
-        const timelineState = ResolveTimelineState(detailResult.orderStatus);
+        const timelineState = ResolveTimelineState(detailResult);
         if (pageRefs.progressBar) {
             pageRefs.progressBar.style.width = `${timelineState.progressWidth}%`;
         }
@@ -426,7 +426,8 @@
     /**
      * 当前时间轴阶段
      */
-    function ResolveTimelineState(orderStatus) {
+    function ResolveTimelineState(detailResult) {
+        const orderStatus = detailResult && detailResult.orderStatus ? detailResult.orderStatus : "";
         if (orderStatus === "PENDING_SELLER_CONFIRM") {
             return { progressWidth: 33, stepStateList: ["completed", "active", "pending", "pending"] };
         }
@@ -439,7 +440,20 @@
         if (orderStatus === "COMPLETED") {
             return { progressWidth: 100, stepStateList: ["completed", "completed", "completed", "completed"] };
         }
+        if (orderStatus === "CLOSED" || orderStatus === "CANCELED") {
+            return ResolveTerminalTimelineState(detailResult);
+        }
         return { progressWidth: 0, stepStateList: ["completed", "pending", "pending", "pending"] };
+    }
+
+    function ResolveTerminalTimelineState(detailResult) {
+        if (detailResult && detailResult.buyerCompleteTime) {
+            return { progressWidth: 100, stepStateList: ["completed", "completed", "completed", "completed"] };
+        }
+        if (detailResult && detailResult.sellerConfirmTime) {
+            return { progressWidth: 66, stepStateList: ["completed", "completed", "active", "pending"] };
+        }
+        return { progressWidth: 33, stepStateList: ["completed", "active", "pending", "pending"] };
     }
 
     /**

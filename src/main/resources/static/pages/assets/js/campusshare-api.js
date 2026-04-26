@@ -952,22 +952,27 @@
         if (notificationHeaderElement) {
             notificationHeaderElement.appendChild(notificationActionsElement);
         }
-        notificationCenterButton.addEventListener("click", function HandleOpenNotificationCenter(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            HideNotificationPanel();
-            const notificationCenterPath = BuildUserWorkspacePath(PAGE_PATH_MAP.NOTIFICATION);
-            if (!GetAuthToken()) {
-                RedirectToAuthPage(notificationCenterPath);
-                return;
-            }
-            window.location.href = notificationCenterPath;
-        });
+        notificationCenterButton.addEventListener("pointerdown", OpenNotificationCenterFromPanel);
+        notificationCenterButton.addEventListener("click", OpenNotificationCenterFromPanel);
         notificationMarkAllReadButton.addEventListener("click", function HandleMarkAllRead(event) {
             event.preventDefault();
             MarkAllNotificationRead();
         });
         return notificationPanelElement;
+    }
+
+    function OpenNotificationCenterFromPanel(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        HideNotificationPanel();
+        const notificationCenterPath = BuildUserWorkspacePath(PAGE_PATH_MAP.NOTIFICATION);
+        if (!GetAuthToken()) {
+            RedirectToAuthPage(notificationCenterPath);
+            return;
+        }
+        window.location.assign(notificationCenterPath);
     }
 
     /**

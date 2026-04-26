@@ -51,6 +51,10 @@
         return {
             heading: mainElement.querySelector("[data-role='order-heading']"),
             statusPill: mainElement.querySelector("[data-role='order-status-pill']"),
+            terminalBanner: mainElement.querySelector("[data-role='order-terminal-banner']"),
+            terminalIcon: mainElement.querySelector("[data-role='order-terminal-icon']"),
+            terminalTitle: mainElement.querySelector("[data-role='order-terminal-title']"),
+            terminalDescription: mainElement.querySelector("[data-role='order-terminal-description']"),
             progressBar: mainElement.querySelector("[data-role='order-timeline-progress']"),
             actionPrimary: mainElement.querySelector("[data-role='order-action-primary']"),
             actionSecondary: mainElement.querySelector("[data-role='order-action-secondary']"),
@@ -110,6 +114,7 @@
             }
 
             PatchHeader(detailResult, pageRefs);
+            PatchTerminalBanner(detailResult, pageRefs);
             PatchTimeline(detailResult, pageRefs);
             PatchSummary(detailResult, pageRefs);
             PatchProductDetail(detailResult, productResult, pageRefs);
@@ -133,9 +138,43 @@
         }
         if (pageRefs.statusPill) {
             pageRefs.statusPill.textContent = statusText;
+            PatchStatusPillStyle(pageRefs.statusPill, detailResult.orderStatus);
         }
         if (pageRefs.metaStatusText) {
             pageRefs.metaStatusText.textContent = statusText;
+        }
+    }
+
+    function PatchStatusPillStyle(statusPill, orderStatus) {
+        if (IsTerminalOrderStatus(orderStatus)) {
+            statusPill.className = "bg-red-100 text-red-700 ring-1 ring-red-200 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide";
+            return;
+        }
+        statusPill.className = "bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide";
+    }
+
+    function PatchTerminalBanner(detailResult, pageRefs) {
+        const orderStatus = detailResult && detailResult.orderStatus ? detailResult.orderStatus : "";
+        if (!pageRefs.terminalBanner) {
+            return;
+        }
+        if (!IsTerminalOrderStatus(orderStatus)) {
+            pageRefs.terminalBanner.classList.add("hidden");
+            return;
+        }
+
+        pageRefs.terminalBanner.classList.remove("hidden");
+        if (pageRefs.terminalIcon) {
+            pageRefs.terminalIcon.textContent = orderStatus === "CANCELED" ? "cancel" : "block";
+        }
+        if (pageRefs.terminalTitle) {
+            pageRefs.terminalTitle.textContent = ORDER_STATUS_TEXT_MAP[orderStatus] || "订单已终止";
+        }
+        if (pageRefs.terminalDescription) {
+            const closeReason = detailResult.closeReason ? `原因：${detailResult.closeReason}` : "该订单已终止，后续不会继续推进。";
+            const closeTime = detailResult.closeTime || detailResult.updateTime;
+            const timeText = closeTime ? `处理时间：${FormatTime(closeTime)}` : "";
+            pageRefs.terminalDescription.textContent = [closeReason, timeText].filter(Boolean).join(" · ");
         }
     }
 
@@ -146,6 +185,7 @@
         const timelineState = ResolveTimelineState(detailResult);
         if (pageRefs.progressBar) {
             pageRefs.progressBar.style.width = `${timelineState.progressWidth}%`;
+            pageRefs.progressBar.className = `h-full ${IsTerminalOrderStatus(detailResult.orderStatus) ? "bg-red-500" : "bg-primary"}`;
         }
         const stepTimeList = [
             FormatTime(detailResult.createTime),
@@ -172,6 +212,10 @@
             }
             if (stepState === "active") {
                 SetStepActiveStyle(stepItem, stepNumber);
+                return;
+            }
+            if (stepState === "terminal") {
+                SetStepTerminalStyle(stepItem);
                 return;
             }
             SetStepPendingStyle(stepItem, stepNumber);
@@ -451,9 +495,13 @@
             return { progressWidth: 100, stepStateList: ["completed", "completed", "completed", "completed"] };
         }
         if (detailResult && detailResult.sellerConfirmTime) {
-            return { progressWidth: 66, stepStateList: ["completed", "completed", "active", "pending"] };
+            return { progressWidth: 66, stepStateList: ["completed", "completed", "terminal", "pending"] };
         }
-        return { progressWidth: 33, stepStateList: ["completed", "active", "pending", "pending"] };
+        return { progressWidth: 33, stepStateList: ["completed", "terminal", "pending", "pending"] };
+    }
+
+    function IsTerminalOrderStatus(orderStatus) {
+        return orderStatus === "CLOSED" || orderStatus === "CANCELED";
     }
 
     /**
@@ -486,6 +534,15 @@
         stepItem.icon.textContent = STEP_ICON_MAP[stepNumber] || "schedule";
         stepItem.label.classList.remove("text-on-surface", "text-outline-variant");
         stepItem.label.classList.add("text-primary");
+        stepItem.time.classList.remove("text-outline-variant");
+        stepItem.time.classList.add("text-outline");
+    }
+
+    function SetStepTerminalStyle(stepItem) {
+        stepItem.circle.className = "w-10 h-10 rounded-full bg-red-50 border-4 border-red-500 text-red-600 flex items-center justify-center";
+        stepItem.icon.textContent = "block";
+        stepItem.label.classList.remove("text-on-surface", "text-primary", "text-outline-variant");
+        stepItem.label.classList.add("text-red-600");
         stepItem.time.classList.remove("text-outline-variant");
         stepItem.time.classList.add("text-outline");
     }

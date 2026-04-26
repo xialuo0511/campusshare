@@ -162,7 +162,18 @@
 <h1 class="text-3xl font-bold text-on-surface tracking-tight" data-role="order-heading">订单编号: -</h1>
 <div class="bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide" data-role="order-status-pill">
                             待加载
-                        </div>
+</div>
+</div>
+</div>
+<div class="hidden mb-8 rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-800 shadow-sm" data-role="order-terminal-banner">
+<div class="flex items-start gap-3">
+<div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-700">
+<span class="material-symbols-outlined text-xl" data-role="order-terminal-icon">block</span>
+</div>
+<div class="min-w-0">
+<div class="text-sm font-bold" data-role="order-terminal-title">订单已关闭</div>
+<div class="mt-1 text-xs leading-5 text-red-700/80" data-role="order-terminal-description">该订单已终止，后续不会继续推进。</div>
+</div>
 </div>
 </div>
 <!-- Transaction Timeline -->
@@ -434,6 +445,6 @@
 </div>
 </div>
 <script src="/pages/assets/js/campusshare-api.js?v=20260425-avatar-shell"></script>
-<script src="/pages/assets/js/order-detail.js?v=20260426-terminal-timeline"></script>
+<script src="/pages/assets/js/order-detail.js?v=20260426-terminal-banner"></script>
 </body></html>
 

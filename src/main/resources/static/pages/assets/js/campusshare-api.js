@@ -939,10 +939,10 @@
         notificationListElement = notificationPanelElement.querySelector("[data-role='notification-list']");
         notificationMarkAllReadButton = notificationPanelElement.querySelector("[data-action='mark-all-read']");
         const notificationHeaderElement = notificationPanelElement.querySelector(".campusshare-notification-header");
-        const notificationCenterButton = document.createElement("button");
+        const notificationCenterButton = document.createElement("a");
         const notificationActionsElement = document.createElement("div");
-        notificationCenterButton.type = "button";
         notificationCenterButton.className = "campusshare-notification-center-link";
+        notificationCenterButton.href = BuildUserWorkspacePath(PAGE_PATH_MAP.NOTIFICATION);
         notificationCenterButton.textContent = "消息中心";
         notificationActionsElement.className = "campusshare-notification-actions";
         notificationActionsElement.appendChild(notificationCenterButton);
@@ -952,7 +952,6 @@
         if (notificationHeaderElement) {
             notificationHeaderElement.appendChild(notificationActionsElement);
         }
-        notificationCenterButton.addEventListener("pointerdown", OpenNotificationCenterFromPanel);
         notificationCenterButton.addEventListener("click", OpenNotificationCenterFromPanel);
         notificationMarkAllReadButton.addEventListener("click", function HandleMarkAllRead(event) {
             event.preventDefault();
@@ -963,16 +962,16 @@
 
     function OpenNotificationCenterFromPanel(event) {
         if (event) {
-            event.preventDefault();
             event.stopPropagation();
         }
         HideNotificationPanel();
         const notificationCenterPath = BuildUserWorkspacePath(PAGE_PATH_MAP.NOTIFICATION);
         if (!GetAuthToken()) {
+            if (event) {
+                event.preventDefault();
+            }
             RedirectToAuthPage(notificationCenterPath);
-            return;
         }
-        window.location.assign(notificationCenterPath);
     }
 
     /**

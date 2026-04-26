@@ -954,8 +954,14 @@
         }
         notificationCenterButton.addEventListener("click", function HandleOpenNotificationCenter(event) {
             event.preventDefault();
+            event.stopPropagation();
             HideNotificationPanel();
-            NavigateToPage(PAGE_PATH_MAP.NOTIFICATION);
+            const notificationCenterPath = BuildUserWorkspacePath(PAGE_PATH_MAP.NOTIFICATION);
+            if (!GetAuthToken()) {
+                RedirectToAuthPage(notificationCenterPath);
+                return;
+            }
+            window.location.href = notificationCenterPath;
         });
         notificationMarkAllReadButton.addEventListener("click", function HandleMarkAllRead(event) {
             event.preventDefault();

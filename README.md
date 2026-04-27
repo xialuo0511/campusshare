@@ -135,6 +135,7 @@ mvn spring-boot:run
    - `MAIL_PASSWORD`
    - `MAIL_SMTP_AUTH`
    - `MAIL_SMTP_STARTTLS_ENABLE`
+   - `MAIL_SMTP_SSL_ENABLE`
 7. 注册验证码邮件：
    - `REGISTER_CODE_MAIL_FROM`
    - `REGISTER_CODE_LOG_ENABLED`（生产建议 `false`）
@@ -185,8 +186,11 @@ copy .env.example .env
    - 必须修改 `MYSQL_ROOT_PASSWORD`，不要使用示例密码。
    - 首次部署如需自动建表，可临时设置 `SPRING_SQL_INIT_MODE=always`；完成初始化后建议改回 `never`。
    - `MATERIAL_STORAGE_ROOT` 是资料附件持久化目录，Docker Compose 已挂载为 `material_files` 卷，容器重建后文件仍应保留。
+   - QQ 邮箱发信推荐使用 `MAIL_HOST=smtp.qq.com`、`MAIL_PORT=465`、`MAIL_SMTP_SSL_ENABLE=true`、`MAIL_SMTP_STARTTLS_ENABLE=false`。
+   - `MAIL_USERNAME`、`MAIL_DISPATCH_FROM`、`REGISTER_CODE_MAIL_FROM` 应填写同一个完整 QQ 邮箱地址。
+   - `MAIL_PASSWORD` 填 QQ 邮箱生成的 SMTP 授权码，不是 QQ 登录密码。
    - 未配置 SMTP 时，关键业务通知以站内信为最低闭环，保持 `MAIL_DISPATCH_ENABLED=false`、`MAIL_DISPATCH_SCHEDULER_ENABLED=false`。
-   - 需要邮件真实投递时补齐 `MAIL_*` 配置，并显式开启 `MAIL_DISPATCH_ENABLED=true`、`MAIL_DISPATCH_SCHEDULER_ENABLED=true`。
+   - 需要站内通知同步邮件真实投递时补齐 `MAIL_*` 配置，并显式开启 `MAIL_DISPATCH_ENABLED=true`、`MAIL_DISPATCH_SCHEDULER_ENABLED=true`。
 3. 启动：
 
 ```bash

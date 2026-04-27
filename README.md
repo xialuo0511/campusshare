@@ -185,7 +185,8 @@ copy .env.example .env
    - 必须修改 `MYSQL_ROOT_PASSWORD`，不要使用示例密码。
    - 首次部署如需自动建表，可临时设置 `SPRING_SQL_INIT_MODE=always`；完成初始化后建议改回 `never`。
    - `MATERIAL_STORAGE_ROOT` 是资料附件持久化目录，Docker Compose 已挂载为 `material_files` 卷，容器重建后文件仍应保留。
-   - 未配置 SMTP 时，关键业务通知以站内信为最低闭环；需要邮件真实投递时补齐 `MAIL_*` 配置。
+   - 未配置 SMTP 时，关键业务通知以站内信为最低闭环，保持 `MAIL_DISPATCH_ENABLED=false`、`MAIL_DISPATCH_SCHEDULER_ENABLED=false`。
+   - 需要邮件真实投递时补齐 `MAIL_*` 配置，并显式开启 `MAIL_DISPATCH_ENABLED=true`、`MAIL_DISPATCH_SCHEDULER_ENABLED=true`。
 3. 启动：
 
 ```bash

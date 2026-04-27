@@ -1,13 +1,20 @@
 package com.xialuo.campusshare.module.material.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.xialuo.campusshare.common.exception.BusinessException;
+import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.service.ContentModerationService;
 import com.xialuo.campusshare.entity.StudyMaterialEntity;
 import com.xialuo.campusshare.entity.UserEntity;
@@ -78,6 +85,60 @@ class MaterialServiceImplTest {
         assertEquals(2, responseDto.GetDeductedPoints());
         assertEquals(7, responseDto.GetCurrentPointBalance());
         assertEquals(4, responseDto.GetDownloadCount());
+    }
+
+    @Test
+    void DownloadMaterialShouldNotIncreaseCountWhenPointDeductionFails() {
+        StudyMaterialMapper studyMaterialMapper = mock(StudyMaterialMapper.class);
+        UserMapper userMapper = mock(UserMapper.class);
+        NotificationService notificationService = mock(NotificationService.class);
+        PointLedgerService pointLedgerService = mock(PointLedgerService.class);
+        SystemRuleConfigService systemRuleConfigService = mock(SystemRuleConfigService.class);
+        ContentModerationService contentModerationService = mock(ContentModerationService.class);
+        MaterialServiceImpl service = new MaterialServiceImpl(
+            studyMaterialMapper,
+            userMapper,
+            notificationService,
+            pointLedgerService,
+            systemRuleConfigService,
+            contentModerationService
+        );
+
+        StudyMaterialEntity materialEntity = BuildPublishedMaterial(10L, 1001L, 3, 3);
+        when(studyMaterialMapper.FindMaterialById(10L)).thenReturn(materialEntity);
+        doThrow(new BusinessException(BizCodeEnum.POINT_BALANCE_INSUFFICIENT, "point not enough"))
+            .when(pointLedgerService)
+            .RecordDownloadCost(eq(2002L), eq(3), eq("MATERIAL"), eq(10L), anyString());
+
+        assertThrows(BusinessException.class, () -> service.DownloadMaterial(10L, 2002L));
+        verify(studyMaterialMapper, never()).IncreaseDownloadCount(anyLong(), any());
+        verify(notificationService, never()).CreateNotification(anyLong(), any(), anyString(), anyString(), anyString(), anyLong());
+    }
+
+    @Test
+    void DownloadMaterialShouldRejectUnpublishedMaterial() {
+        StudyMaterialMapper studyMaterialMapper = mock(StudyMaterialMapper.class);
+        UserMapper userMapper = mock(UserMapper.class);
+        NotificationService notificationService = mock(NotificationService.class);
+        PointLedgerService pointLedgerService = mock(PointLedgerService.class);
+        SystemRuleConfigService systemRuleConfigService = mock(SystemRuleConfigService.class);
+        ContentModerationService contentModerationService = mock(ContentModerationService.class);
+        MaterialServiceImpl service = new MaterialServiceImpl(
+            studyMaterialMapper,
+            userMapper,
+            notificationService,
+            pointLedgerService,
+            systemRuleConfigService,
+            contentModerationService
+        );
+
+        StudyMaterialEntity materialEntity = BuildPublishedMaterial(10L, 1001L, 3, 3);
+        materialEntity.SetMaterialStatus(ResourceStatusEnum.PENDING_REVIEW);
+        when(studyMaterialMapper.FindMaterialById(10L)).thenReturn(materialEntity);
+
+        assertThrows(BusinessException.class, () -> service.DownloadMaterial(10L, 2002L));
+        verify(pointLedgerService, never()).RecordDownloadCost(anyLong(), any(), anyString(), anyLong(), anyString());
+        verify(studyMaterialMapper, never()).IncreaseDownloadCount(anyLong(), any());
     }
 
     private StudyMaterialEntity BuildPublishedMaterial(

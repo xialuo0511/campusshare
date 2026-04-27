@@ -56,9 +56,13 @@ services:
       MAIL_SMTP_STARTTLS_ENABLE: ${MAIL_SMTP_STARTTLS_ENABLE}
       REGISTER_CODE_MAIL_FROM: ${REGISTER_CODE_MAIL_FROM}
       REGISTER_CODE_LOG_ENABLED: ${REGISTER_CODE_LOG_ENABLED}
+      MATERIAL_STORAGE_ROOT: ${MATERIAL_STORAGE_ROOT}
     ports:
       - "${APP_PORT}:8080"
+    volumes:
+      - material_files:${MATERIAL_STORAGE_ROOT}
 
 volumes:
   mysql_data:
   redis_data:
+  material_files:

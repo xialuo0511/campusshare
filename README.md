@@ -181,7 +181,11 @@ cd deploy
 copy .env.example .env
 ```
 
-2. 根据实际环境修改 `.env`（至少修改数据库密码）
+2. 根据实际环境修改 `.env`：
+   - 必须修改 `MYSQL_ROOT_PASSWORD`，不要使用示例密码。
+   - 首次部署如需自动建表，可临时设置 `SPRING_SQL_INIT_MODE=always`；完成初始化后建议改回 `never`。
+   - `MATERIAL_STORAGE_ROOT` 是资料附件持久化目录，Docker Compose 已挂载为 `material_files` 卷，容器重建后文件仍应保留。
+   - 未配置 SMTP 时，关键业务通知以站内信为最低闭环；需要邮件真实投递时补齐 `MAIL_*` 配置。
 3. 启动：
 
 ```bash

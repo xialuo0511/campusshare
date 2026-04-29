@@ -152,7 +152,13 @@
 <main class="ml-64 flex-1 min-h-screen bg-surface p-8" data-user-main>
 <!-- Header & Stats Overview -->
 <div class="mb-10">
-<h1 class="text-3xl font-bold font-headline text-on-surface mb-6">我的发布内容管理</h1>
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+<h1 class="text-3xl font-bold font-headline text-on-surface">我的发布内容管理</h1>
+<button type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition-colors hover:bg-primary-container" data-nav-target="/pages/publish_create.html">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>发布</span>
+</button>
+</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 <div class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-primary">
 <div class="flex justify-between items-start">
@@ -323,7 +329,7 @@
 <a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors" href="#">联系支持</a>
 </div>
 </footer>
-<script src="/pages/assets/js/campusshare-api.js"></script>
-<script src="/pages/assets/js/my-publish.js"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260429-workspace-actions"></script>
+<script src="/pages/assets/js/my-publish.js?v=20260429-workspace-actions"></script>
 </body></html>
 

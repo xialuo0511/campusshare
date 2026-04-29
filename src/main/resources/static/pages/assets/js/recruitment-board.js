@@ -32,7 +32,8 @@
             return;
         }
 
-        const publishButton = document.querySelector("header button.bg-primary.text-on-primary");
+        const publishButton = document.querySelector("[data-role='recruitment-publish-button']")
+            || document.querySelector("header button.bg-primary.text-on-primary");
         const searchInput = document.querySelector("header input[placeholder*='搜索招募信息']");
         const filterBar = heroSection.querySelector(".mt-8.flex.flex-wrap.items-center.gap-3");
         const messageBar = CreateMessageBar(heroSection);

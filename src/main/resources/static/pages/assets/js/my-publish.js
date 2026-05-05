@@ -107,13 +107,8 @@
                     await window.CampusShareApi.OfflineMaterial(itemId, "用户手动下架");
                     ShowSuccess(messageBar, "资料已下架");
                 } else if (action === "view-material") {
-                    const detailResult = await window.CampusShareApi.GetMaterialDetail(itemId);
-                    if (detailResult && detailResult.fileId && window.CampusShareApi.BuildPublicFileUrl) {
-                        const fileUrl = window.CampusShareApi.BuildPublicFileUrl(detailResult.fileId);
-                        if (fileUrl) {
-                            window.open(fileUrl, "_blank");
-                        }
-                    }
+                    const downloadResult = await window.CampusShareApi.DownloadMaterial(itemId);
+                    await TriggerMaterialFileDownload(downloadResult, itemId);
                     return;
                 } else if (action === "go-publish") {
                     window.location.href = "/pages/publish_create.html";
@@ -329,6 +324,47 @@
                 "</div>"
             ].join("");
         }).join("");
+    }
+
+    async function TriggerMaterialFileDownload(downloadResult, materialId) {
+        const fileAccessUrl = downloadResult && downloadResult.fileAccessUrl
+            ? String(downloadResult.fileAccessUrl).trim()
+            : "";
+        if (!fileAccessUrl) {
+            throw new Error("下载地址缺失，请稍后重试");
+        }
+        const token = window.CampusShareApi.GetAuthToken ? window.CampusShareApi.GetAuthToken() : "";
+        if (!token) {
+            throw new Error("登录状态已失效，请重新登录");
+        }
+        const fileResponse = await fetch(fileAccessUrl, {
+            method: "GET",
+            headers: {
+                "X-Auth-Token": token
+            }
+        });
+        if (!fileResponse.ok) {
+            throw new Error(`文件下载失败(${fileResponse.status})`);
+        }
+        const fileBlob = await fileResponse.blob();
+        const blobUrl = window.URL.createObjectURL(fileBlob);
+        const linkElement = document.createElement("a");
+        linkElement.href = blobUrl;
+        linkElement.download = ResolveMaterialFileName(downloadResult, materialId);
+        document.body.appendChild(linkElement);
+        linkElement.click();
+        linkElement.remove();
+        window.setTimeout(function CleanupBlobUrl() {
+            window.URL.revokeObjectURL(blobUrl);
+        }, 1000);
+    }
+
+    function ResolveMaterialFileName(downloadResult, materialId) {
+        const fileId = downloadResult && downloadResult.fileId ? String(downloadResult.fileId).trim() : "";
+        if (fileId) {
+            return fileId;
+        }
+        return `material-${materialId || "file"}`;
     }
 
     /**

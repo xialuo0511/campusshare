@@ -3,6 +3,7 @@
  */
 (function InitCampusShareApi() {
     const AUTH_TOKEN_STORAGE_KEY = "campusshare.authToken";
+    const AUTH_TOKEN_LEGACY_STORAGE_KEY = "campusshare.authToken";
     const USER_PROFILE_STORAGE_KEY = "campusshare.currentUser";
     const AUTH_NOTICE_STORAGE_KEY = "campusshare.authNotice";
     const REQUEST_ID_HEADER = "X-Request-Id";
@@ -73,7 +74,16 @@
      * 读取令牌
      */
     function GetAuthToken() {
-        return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
+        const sessionToken = window.sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
+        if (sessionToken) {
+            return sessionToken;
+        }
+        const legacyToken = window.localStorage.getItem(AUTH_TOKEN_LEGACY_STORAGE_KEY) || "";
+        if (legacyToken) {
+            window.sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, legacyToken);
+            window.localStorage.removeItem(AUTH_TOKEN_LEGACY_STORAGE_KEY);
+        }
+        return legacyToken;
     }
 
     /**
@@ -83,14 +93,16 @@
         if (!token) {
             return;
         }
-        window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+        window.sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+        window.localStorage.removeItem(AUTH_TOKEN_LEGACY_STORAGE_KEY);
     }
 
     /**
      * 清理令牌
      */
     function ClearAuthToken() {
-        window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+        window.sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+        window.localStorage.removeItem(AUTH_TOKEN_LEGACY_STORAGE_KEY);
     }
 
     /**

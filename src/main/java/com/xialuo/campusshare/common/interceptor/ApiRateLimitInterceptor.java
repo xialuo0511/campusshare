@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -34,9 +35,14 @@ public class ApiRateLimitInterceptor implements HandlerInterceptor {
 
     /** Redis模板 */
     private final StringRedisTemplate stringRedisTemplate;
+    private final boolean trustForwardedHeaders;
 
-    public ApiRateLimitInterceptor(StringRedisTemplate stringRedisTemplate) {
+    public ApiRateLimitInterceptor(
+        StringRedisTemplate stringRedisTemplate,
+        @Value("${campusshare.security.trust-forwarded-headers:false}") boolean trustForwardedHeaders
+    ) {
         this.stringRedisTemplate = stringRedisTemplate;
+        this.trustForwardedHeaders = trustForwardedHeaders;
     }
 
     @Override
@@ -71,7 +77,7 @@ public class ApiRateLimitInterceptor implements HandlerInterceptor {
         } catch (BusinessException businessException) {
             throw businessException;
         } catch (Exception exception) {
-            return true;
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "请求限流服务暂不可用，请稍后重试");
         }
         return true;
     }
@@ -88,7 +94,7 @@ public class ApiRateLimitInterceptor implements HandlerInterceptor {
      * 解析客户端IP
      */
     private String ResolveClientIp(HttpServletRequest request) {
-        String forwardedForValue = request.getHeader(FORWARDED_FOR_HEADER);
+        String forwardedForValue = trustForwardedHeaders ? request.getHeader(FORWARDED_FOR_HEADER) : null;
         if (forwardedForValue != null && !forwardedForValue.isBlank()) {
             String[] ipList = forwardedForValue.split(",");
             if (ipList.length > 0 && ipList[0] != null && !ipList[0].trim().isBlank()) {
@@ -117,4 +123,3 @@ public class ApiRateLimitInterceptor implements HandlerInterceptor {
         String message
     ) {}
 }
-

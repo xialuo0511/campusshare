@@ -18,8 +18,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.UUID;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,17 +41,22 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v1/materials")
 public class MaterialController {
+    private static final String MATERIAL_DOWNLOAD_TICKET_PREFIX = "campusshare:material:download-ticket:";
+    private static final Duration MATERIAL_DOWNLOAD_TICKET_TTL = Duration.ofMinutes(5);
     /** 资料服务 */
     private final MaterialService materialService;
     /** 文件存储服务 */
     private final MaterialFileStorageService materialFileStorageService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     public MaterialController(
         MaterialService materialService,
-        MaterialFileStorageService materialFileStorageService
+        MaterialFileStorageService materialFileStorageService,
+        StringRedisTemplate stringRedisTemplate
     ) {
         this.materialService = materialService;
         this.materialFileStorageService = materialFileStorageService;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     /**
@@ -164,6 +172,7 @@ public class MaterialController {
     ) {
         Long currentUserId = GetCurrentUserId(httpServletRequest);
         MaterialDownloadResponseDto responseDto = materialService.DownloadMaterial(materialId, currentUserId);
+        responseDto.SetFileAccessUrl(BuildTicketedFileAccessUrl(responseDto, currentUserId));
         return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
@@ -174,6 +183,7 @@ public class MaterialController {
     public ResponseEntity<Resource> GetMaterialFile(
         @PathVariable("materialId") Long materialId,
         @PathVariable("fileId") String fileId,
+        @RequestParam(value = "ticket", required = false) String ticket,
         HttpServletRequest httpServletRequest
     ) {
         Long currentUserId = GetCurrentUserId(httpServletRequest);
@@ -187,6 +197,8 @@ public class MaterialController {
             throw new BusinessException(BizCodeEnum.RESOURCE_NOT_FOUND, "文件不存在");
         }
 
+        ValidateMaterialDownloadTicket(ticket, currentUserId, currentUserRole, materialResponseDto);
+
         Path filePath = materialFileStorageService.GetMaterialFilePath(fileId);
         FileSystemResource fileResource = new FileSystemResource(filePath);
         HttpHeaders headers = new HttpHeaders();
@@ -196,6 +208,57 @@ public class MaterialController {
             .headers(headers)
             .contentLength(ResolveContentLength(materialResponseDto, fileResource))
             .body(fileResource);
+    }
+
+    /**
+     * 构建短期下载票据地址
+     */
+    private String BuildTicketedFileAccessUrl(MaterialDownloadResponseDto responseDto, Long currentUserId) {
+        String ticket = UUID.randomUUID().toString().replace("-", "");
+        String ticketValue = BuildTicketValue(currentUserId, responseDto.GetMaterialId(), responseDto.GetFileId());
+        try {
+            stringRedisTemplate.opsForValue().set(
+                MATERIAL_DOWNLOAD_TICKET_PREFIX + ticket,
+                ticketValue,
+                MATERIAL_DOWNLOAD_TICKET_TTL
+            );
+        } catch (Exception exception) {
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "下载票据生成失败，请稍后重试");
+        }
+        return responseDto.GetFileAccessUrl() + "?ticket=" + ticket;
+    }
+
+    private void ValidateMaterialDownloadTicket(
+        String ticket,
+        Long currentUserId,
+        UserRoleEnum currentUserRole,
+        MaterialResponseDto materialResponseDto
+    ) {
+        if (currentUserRole == UserRoleEnum.ADMINISTRATOR) {
+            return;
+        }
+        String safeTicket = ticket == null ? "" : ticket.trim();
+        if (safeTicket.isBlank()) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "请先完成资料下载授权");
+        }
+        String ticketValue;
+        try {
+            ticketValue = stringRedisTemplate.opsForValue().get(MATERIAL_DOWNLOAD_TICKET_PREFIX + safeTicket);
+        } catch (Exception exception) {
+            throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "下载票据校验失败，请稍后重试");
+        }
+        String expectedTicketValue = BuildTicketValue(
+            currentUserId,
+            materialResponseDto.GetMaterialId(),
+            materialResponseDto.GetFileId()
+        );
+        if (!expectedTicketValue.equals(ticketValue)) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "资料下载授权已过期或无效");
+        }
+    }
+
+    private String BuildTicketValue(Long userId, Long materialId, String fileId) {
+        return userId + ":" + materialId + ":" + fileId;
     }
 
     /**

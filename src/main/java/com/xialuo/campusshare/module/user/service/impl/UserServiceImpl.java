@@ -3,6 +3,7 @@ package com.xialuo.campusshare.module.user.service.impl;
 import com.xialuo.campusshare.common.api.PageQuery;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
+import com.xialuo.campusshare.common.util.SessionTokenUtil;
 import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.NotificationTypeEnum;
 import com.xialuo.campusshare.enums.UserRoleEnum;
@@ -88,6 +89,7 @@ public class UserServiceImpl implements UserService {
     private final String registerCodeMailFrom;
     /** 验证码回退日志开关 */
     private final Boolean registerCodeLogEnabled;
+    private final String sessionSigningSecret;
 
     public UserServiceImpl(
         UserMapper userMapper,
@@ -95,7 +97,8 @@ public class UserServiceImpl implements UserService {
         ObjectProvider<JavaMailSender> javaMailSenderProvider,
         NotificationService notificationService,
         @Value("${campusshare.mail.register.from:noreply@campusshare.local}") String registerCodeMailFrom,
-        @Value("${campusshare.mail.register.log-code-enabled:true}") Boolean registerCodeLogEnabled
+        @Value("${campusshare.mail.register.log-code-enabled:true}") Boolean registerCodeLogEnabled,
+        @Value("${campusshare.session.signing-secret:dev-session-signing-secret-change-me}") String sessionSigningSecret
     ) {
         this.userMapper = userMapper;
         this.stringRedisTemplate = stringRedisTemplate;
@@ -103,6 +106,7 @@ public class UserServiceImpl implements UserService {
         this.notificationService = notificationService;
         this.registerCodeMailFrom = registerCodeMailFrom;
         this.registerCodeLogEnabled = registerCodeLogEnabled;
+        this.sessionSigningSecret = sessionSigningSecret;
     }
 
     @Override
@@ -201,6 +205,9 @@ public class UserServiceImpl implements UserService {
         }
 
         userEntity.SetLastLoginTime(LocalDateTime.now());
+        if (PasswordUtil.NeedsRehash(userEntity.GetPasswordHash())) {
+            userEntity.SetPasswordHash(PasswordUtil.HashPassword(requestDto.GetPassword()));
+        }
         userEntity.SetUpdateTime(LocalDateTime.now());
         try {
             userMapper.UpdateUser(userEntity);
@@ -685,7 +692,11 @@ public class UserServiceImpl implements UserService {
     private void SaveUserSession(String token, Long userId) {
         try {
             String sessionKey = USER_SESSION_PREFIX + token;
-            stringRedisTemplate.opsForValue().set(sessionKey, userId.toString(), USER_SESSION_TTL);
+            stringRedisTemplate.opsForValue().set(
+                sessionKey,
+                SessionTokenUtil.BuildSessionValue(token, userId, sessionSigningSecret),
+                USER_SESSION_TTL
+            );
         } catch (Exception exception) {
             LOGGER.error("写入用户会话失败: userId={}", userId, exception);
             throw new BusinessException(BizCodeEnum.SYSTEM_ERROR, "会话服务不可用，请启动Redis后重试");

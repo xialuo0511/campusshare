@@ -3,6 +3,7 @@ package com.xialuo.campusshare.common.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xialuo.campusshare.common.api.ApiResponse;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
+import com.xialuo.campusshare.common.util.SessionTokenUtil;
 import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.enums.UserStatusEnum;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -52,11 +54,18 @@ public class SessionAuthFilter extends OncePerRequestFilter {
     private final UserMapper userMapper;
     /** JSON工具 */
     private final ObjectMapper objectMapper;
+    private final String sessionSigningSecret;
 
-    public SessionAuthFilter(StringRedisTemplate stringRedisTemplate, UserMapper userMapper, ObjectMapper objectMapper) {
+    public SessionAuthFilter(
+        StringRedisTemplate stringRedisTemplate,
+        UserMapper userMapper,
+        ObjectMapper objectMapper,
+        @Value("${campusshare.session.signing-secret:dev-session-signing-secret-change-me}") String sessionSigningSecret
+    ) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.userMapper = userMapper;
         this.objectMapper = objectMapper;
+        this.sessionSigningSecret = sessionSigningSecret;
     }
 
     @Override
@@ -150,19 +159,14 @@ public class SessionAuthFilter extends OncePerRequestFilter {
      */
     private UserEntity ResolveUserByToken(String token) {
         String sessionKey = USER_SESSION_PREFIX + token;
-        String userIdText;
+        String sessionValue;
         try {
-            userIdText = stringRedisTemplate.opsForValue().get(sessionKey);
+            sessionValue = stringRedisTemplate.opsForValue().get(sessionKey);
         } catch (Exception exception) {
             return null;
         }
-        if (userIdText == null || userIdText.isBlank()) {
-            return null;
-        }
-        Long userId;
-        try {
-            userId = Long.parseLong(userIdText);
-        } catch (NumberFormatException exception) {
+        Long userId = SessionTokenUtil.ResolveUserId(token, sessionValue, sessionSigningSecret);
+        if (userId == null) {
             return null;
         }
         UserEntity userEntity = userMapper.FindUserById(userId);

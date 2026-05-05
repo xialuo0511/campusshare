@@ -3,6 +3,7 @@ package com.xialuo.campusshare.module.material.controller;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.module.material.service.MaterialFileStorageService;
+import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -27,9 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class FileController {
     /** 文件存储服务 */
     private final MaterialFileStorageService materialFileStorageService;
+    private final ProductMapper productMapper;
 
-    public FileController(MaterialFileStorageService materialFileStorageService) {
+    public FileController(MaterialFileStorageService materialFileStorageService, ProductMapper productMapper) {
         this.materialFileStorageService = materialFileStorageService;
+        this.productMapper = productMapper;
     }
 
     /**
@@ -37,6 +40,7 @@ public class FileController {
      */
     @GetMapping("/{fileId:.+}")
     public ResponseEntity<Resource> GetFile(@PathVariable("fileId") String fileId) {
+        ValidatePublicProductImage(fileId);
         Path filePath = materialFileStorageService.GetMaterialFilePath(fileId);
         FileSystemResource fileResource = new FileSystemResource(filePath);
         HttpHeaders headers = new HttpHeaders();
@@ -47,6 +51,25 @@ public class FileController {
             .headers(headers)
             .contentLength(ResolveContentLength(fileResource))
             .body(fileResource);
+    }
+
+    private void ValidatePublicProductImage(String fileId) {
+        String normalizedFileId = fileId == null ? "" : fileId.trim();
+        if (!IsImageFile(normalizedFileId)) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "文件不允许公开访问");
+        }
+        Long referenceCount = productMapper.CountPublishedProductImageByFileId(normalizedFileId);
+        if (referenceCount == null || referenceCount <= 0L) {
+            throw new BusinessException(BizCodeEnum.FORBIDDEN, "文件不允许公开访问");
+        }
+    }
+
+    private boolean IsImageFile(String fileId) {
+        String normalizedFileId = fileId == null ? "" : fileId.trim().toLowerCase(Locale.ROOT);
+        return normalizedFileId.endsWith(".png")
+            || normalizedFileId.endsWith(".jpg")
+            || normalizedFileId.endsWith(".jpeg")
+            || normalizedFileId.endsWith(".webp");
     }
 
     /**
@@ -77,4 +100,3 @@ public class FileController {
         }
     }
 }
-

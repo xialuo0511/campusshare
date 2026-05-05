@@ -128,7 +128,7 @@ public class GlobalExceptionHandler {
             BuildExceptionMessage(exception),
             exception
         );
-        return ApiResponse.Failure(BizCodeEnum.SYSTEM_ERROR, exception.getMessage(), GetRequestId(request));
+        return ApiResponse.Failure(BizCodeEnum.SYSTEM_ERROR, "系统繁忙，请稍后重试", requestId);
     }
 
     /**

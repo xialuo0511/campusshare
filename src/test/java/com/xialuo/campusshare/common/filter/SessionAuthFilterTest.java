@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xialuo.campusshare.entity.UserEntity;
 import com.xialuo.campusshare.enums.UserRoleEnum;
 import com.xialuo.campusshare.enums.UserStatusEnum;
+import com.xialuo.campusshare.common.util.SessionTokenUtil;
 import com.xialuo.campusshare.module.user.mapper.UserMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ class SessionAuthFilterTest {
     private static final String MEMBER_TOKEN = "token-member";
     /** 管理员令牌 */
     private static final String ADMIN_TOKEN = "token-admin";
+    /** 娴嬭瘯浼氳瘽绛惧悕瀵嗛挜 */
+    private static final String SESSION_SIGNING_SECRET = "test-session-secret";
 
     /**
      * 受保护接口缺少令牌应返回未登录
@@ -92,6 +95,33 @@ class SessionAuthFilterTest {
         Assertions.assertEquals(200, response.getStatus());
     }
 
+    @Test
+    void RawRedisSessionValueShouldFail() throws Exception {
+        StringRedisTemplate stringRedisTemplate = mock(StringRedisTemplate.class);
+        UserMapper userMapper = mock(UserMapper.class);
+        @SuppressWarnings("unchecked")
+        ValueOperations<String, String> valueOperations = mock(ValueOperations.class);
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("campusshare:user:session:" + MEMBER_TOKEN)).thenReturn("2");
+
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+        SessionAuthFilter sessionAuthFilter = new SessionAuthFilter(
+            stringRedisTemplate,
+            userMapper,
+            objectMapper,
+            SESSION_SIGNING_SECRET
+        );
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/products/my");
+        request.addHeader(SessionAuthFilter.AUTH_TOKEN_HEADER, MEMBER_TOKEN);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockFilterChain filterChain = new MockFilterChain();
+
+        sessionAuthFilter.doFilter(request, response, filterChain);
+
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertNull(filterChain.getRequest());
+    }
+
     /**
      * 构建过滤器
      */
@@ -103,16 +133,18 @@ class SessionAuthFilterTest {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
 
         if (includeMemberSession) {
-            when(valueOperations.get("campusshare:user:session:" + MEMBER_TOKEN)).thenReturn("2");
+            when(valueOperations.get("campusshare:user:session:" + MEMBER_TOKEN))
+                .thenReturn(SessionTokenUtil.BuildSessionValue(MEMBER_TOKEN, 2L, SESSION_SIGNING_SECRET));
             when(userMapper.FindUserById(2L)).thenReturn(BuildUser(2L, UserRoleEnum.STUDENT));
         }
         if (includeAdminSession) {
-            when(valueOperations.get("campusshare:user:session:" + ADMIN_TOKEN)).thenReturn("1");
+            when(valueOperations.get("campusshare:user:session:" + ADMIN_TOKEN))
+                .thenReturn(SessionTokenUtil.BuildSessionValue(ADMIN_TOKEN, 1L, SESSION_SIGNING_SECRET));
             when(userMapper.FindUserById(1L)).thenReturn(BuildUser(1L, UserRoleEnum.ADMINISTRATOR));
         }
 
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-        return new SessionAuthFilter(stringRedisTemplate, userMapper, objectMapper);
+        return new SessionAuthFilter(stringRedisTemplate, userMapper, objectMapper, SESSION_SIGNING_SECRET);
     }
 
     /**

@@ -188,6 +188,15 @@
         </if>
     </select>
 
+    <select id="CountPublishedProductImageByFileId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM product_info
+        WHERE deleted = 0
+          AND on_shelf = 1
+          AND product_status = 'PUBLISHED'
+          AND FIND_IN_SET(#{fileId}, image_file_ids) &gt; 0
+    </select>
+
     <select id="ListProductsForAdmin" resultMap="ProductResultMap">
         SELECT
             <include refid="ProductColumns"/>

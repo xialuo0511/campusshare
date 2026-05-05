@@ -170,8 +170,8 @@ mvn spring-boot:run
 
 ## 文件访问
 
-1. 公开文件访问接口：`GET /api/v1/files/{fileId}`
-2. 适用于商品图片预览与通用静态文件直链展示
+1. 公开文件访问接口：`GET /api/v1/files/{fileId}`，只用于已发布商品引用的图片预览。
+2. 资料附件必须先调用 `POST /api/v1/materials/{materialId}/download` 完成授权/积分结算，再使用返回的短期票据 URL 下载。
 
 ## Docker 部署（推荐预上线联调）
 
@@ -184,6 +184,9 @@ copy .env.example .env
 
 2. 根据实际环境修改 `.env`：
    - 必须修改 `MYSQL_ROOT_PASSWORD`，不要使用示例密码。
+   - 必须修改 `REDIS_PASSWORD`，Docker Compose 会强制 Redis 启用认证且不映射到宿主机端口。
+   - 必须修改 `SESSION_SIGNING_SECRET`，生产环境不能使用示例值或默认开发密钥。
+   - 只有在可信反向代理已经覆盖并清洗转发头时，才设置 `TRUST_FORWARDED_HEADERS=true`。
    - 首次部署如需自动建表，可临时设置 `SPRING_SQL_INIT_MODE=always`；完成初始化后建议改回 `never`。
    - `MATERIAL_STORAGE_ROOT` 是资料附件持久化目录，Docker Compose 已挂载为 `material_files` 卷，容器重建后文件仍应保留。
    - QQ 邮箱发信推荐使用 `MAIL_HOST=smtp.qq.com`、`MAIL_PORT=465`、`MAIL_SMTP_SSL_ENABLE=true`、`MAIL_SMTP_STARTTLS_ENABLE=false`。

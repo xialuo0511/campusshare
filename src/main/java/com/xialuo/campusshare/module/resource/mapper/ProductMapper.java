@@ -61,6 +61,11 @@ public interface ProductMapper {
     );
 
     /**
+     * 缁熻宸插彂甯冨晢鍝佸浘鐗囧紩鐢?
+     */
+    Long CountPublishedProductImageByFileId(@Param("fileId") String fileId);
+
+    /**
      * 管理后台分页查询商品
      */
     List<ProductEntity> ListProductsForAdmin(

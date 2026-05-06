@@ -383,7 +383,7 @@ mvn -q test
 3. 业务异常使用 `BusinessException` 和 `BizCodeEnum`。
 4. MyBatis 查询使用 `#{}` 参数绑定，避免字符串拼接 SQL。
 5. 新增业务逻辑优先补充聚焦测试。
-6. 提交信息格式：`fix:xxx`。
+6. 提交信息格式使用英文前缀，例如 `fix:xxx`、`update:xxx`、`docs:xxx`、`test:xxx`。
 
 ## 上线前检查
 

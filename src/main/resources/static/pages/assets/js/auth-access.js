@@ -1,5 +1,5 @@
-/**
- * 登录注册页面逻辑
+﻿/**
+ * 鐧诲綍娉ㄥ唽椤甸潰閫昏緫
  */
 (function InitAuthAccessPage() {
     const AUTH_MODE_LOGIN = "login";
@@ -9,7 +9,7 @@
     const STUDENT_ACCOUNT_PATTERN = /^\d{11}$/;
 
     /**
-     * 绑定页面行为
+     * 缁戝畾椤甸潰琛屼负
      */
     function BindAuthPage() {
         const authForm = document.querySelector("main form");
@@ -109,26 +109,26 @@
             HideMessage(messageBar);
             ClearFieldErrorStyles(authForm);
             if (!campusShareApi) {
-                ShowError(messageBar, "页面初始化失败，请刷新后重试");
+                ShowError(messageBar, "椤甸潰鍒濆鍖栧け璐ワ紝璇峰埛鏂板悗閲嶈瘯");
                 return;
             }
             if (!emailInput.value.trim()) {
-                ShowError(messageBar, "请先输入邮箱");
+                ShowError(messageBar, "璇峰厛杈撳叆閭");
                 MarkFieldError(emailGroup, emailInput);
                 return;
             }
             if (!accountInput.value.trim()) {
-                ShowError(messageBar, "请先输入学号");
+                ShowError(messageBar, "璇峰厛杈撳叆瀛﹀彿");
                 MarkFieldError(accountGroup, accountInput);
                 return;
             }
             if (!IsValidStudentAccount(accountInput.value.trim())) {
-                ShowError(messageBar, "学号必须为11位数字");
+                ShowError(messageBar, "瀛﹀彿蹇呴』涓?1浣嶆暟瀛?);
                 MarkFieldError(accountGroup, accountInput);
                 return;
             }
             if (!IsValidEmail(emailInput.value.trim())) {
-                ShowError(messageBar, "邮箱格式不正确");
+                ShowError(messageBar, "閭鏍煎紡涓嶆纭?);
                 MarkFieldError(emailGroup, emailInput);
                 return;
             }
@@ -138,11 +138,11 @@
                     email: emailInput.value.trim(),
                     account: accountInput.value.trim()
                 });
-                ShowSuccess(messageBar, sendResult.tip || "验证码已发送");
+                ShowSuccess(messageBar, sendResult.tip || "楠岃瘉鐮佸凡鍙戦€?);
                 StartCountdown(sendCodeButton, 60);
             } catch (error) {
                 sendCodeButton.disabled = false;
-                ShowError(messageBar, error instanceof Error ? error.message : "验证码发送失败");
+                ShowError(messageBar, error instanceof Error ? error.message : "楠岃瘉鐮佸彂閫佸け璐?);
             }
         });
 
@@ -151,7 +151,7 @@
             HideMessage(messageBar);
             ClearFieldErrorStyles(authForm);
             if (!campusShareApi) {
-                ShowError(messageBar, "页面初始化失败，请刷新后重试");
+                ShowError(messageBar, "椤甸潰鍒濆鍖栧け璐ワ紝璇峰埛鏂板悗閲嶈瘯");
                 return;
             }
             const validResult = ValidateBeforeSubmit(
@@ -182,7 +182,7 @@
                         password: passwordInput.value || ""
                     });
                     campusShareApi.SetSessionFromLogin(loginResult);
-                    ShowSuccess(messageBar, `登录成功，欢迎你 ${loginResult.displayName}`);
+                    ShowSuccess(messageBar, `鐧诲綍鎴愬姛锛屾杩庝綘 ${loginResult.displayName}`);
                     window.setTimeout(function RedirectToOrderCenter() {
                         window.location.href = ResolveRedirectPath(loginResult);
                     }, 800);
@@ -198,10 +198,10 @@
                     college: collegeSelect ? collegeSelect.value : "",
                     grade: gradeSelect ? gradeSelect.value : ""
                 });
-                ShowSuccess(messageBar, registerResult.tip || "注册成功");
+                ShowSuccess(messageBar, registerResult.tip || "娉ㄥ唽鎴愬姛");
                 authForm.reset();
             } catch (error) {
-                ShowError(messageBar, error instanceof Error ? error.message : "提交失败，请稍后重试");
+                ShowError(messageBar, error instanceof Error ? error.message : "鎻愪氦澶辫触锛岃绋嶅悗閲嶈瘯");
             } finally {
                 submitButton.disabled = false;
                 submitButton.classList.remove("opacity-70");
@@ -218,7 +218,7 @@
     }
 
     /**
-     * 配置页面标签
+     * 閰嶇疆椤甸潰鏍囩
      */
     function SetupLabels(
         authForm,
@@ -232,38 +232,37 @@
     ) {
         const labelList = authForm.querySelectorAll("label");
         if (labelList[0]) {
-            labelList[0].textContent = "学号";
+            labelList[0].textContent = "瀛﹀彿";
         }
         if (labelList[1]) {
-            labelList[1].textContent = "密码";
+            labelList[1].textContent = "瀵嗙爜";
         }
         if (labelList[2]) {
-            labelList[2].textContent = "用户名";
+            labelList[2].textContent = "鐢ㄦ埛鍚?;
         }
         if (labelList[3]) {
-            labelList[3].textContent = "学院(可选)";
+            labelList[3].textContent = "瀛﹂櫌(鍙€?";
         }
         if (labelList[4]) {
-            labelList[4].textContent = "年级(可选)";
+            labelList[4].textContent = "骞寸骇(鍙€?";
         }
         if (labelList[5]) {
-            labelList[5].textContent = "邮箱";
+            labelList[5].textContent = "閭";
         }
 
-        accountInput.placeholder = "请输入11位学号";
+        accountInput.placeholder = "璇疯緭鍏?1浣嶅鍙?;
         accountInput.maxLength = 11;
         accountInput.inputMode = "numeric";
-        passwordInput.placeholder = "请输入密码";
-        userNameInput.placeholder = "请输入用户名";
-        emailInput.placeholder = "请输入邮箱";
-        verificationCodeInput.placeholder = "请输入6位验证码";
-        submitButton.textContent = "注册";
-        sendCodeButton.textContent = "发送验证码";
+        passwordInput.placeholder = "璇疯緭鍏ュ瘑鐮?;
+        userNameInput.placeholder = "璇疯緭鍏ョ敤鎴峰悕";
+        emailInput.placeholder = "璇疯緭鍏ラ偖绠?;
+        verificationCodeInput.placeholder = "璇疯緭鍏?浣嶉獙璇佺爜";
+        submitButton.textContent = "娉ㄥ唽";
+        sendCodeButton.textContent = "鍙戦€侀獙璇佺爜";
     }
 
     /**
-     * 创建消息条
-     */
+     * 鍒涘缓娑堟伅鏉?     */
     function BuildMessageBar(authForm) {
         const messageBar = document.createElement("div");
         messageBar.className = "rounded-lg px-3 py-2 text-sm bg-surface-container-low text-on-surface-variant";
@@ -273,16 +272,16 @@
     }
 
     /**
-     * 创建验证码输入行
+     * 鍒涘缓楠岃瘉鐮佽緭鍏ヨ
      */
     function BuildVerifyCodeRow(emailInput, authForm) {
         const verifyCodeRow = document.createElement("div");
         verifyCodeRow.className = "space-y-1 md:col-span-2";
         verifyCodeRow.innerHTML = [
-            "<label class=\"text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1\">邮箱验证码</label>",
+            "<label class=\"text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1\">閭楠岃瘉鐮?/label>",
             "<div class=\"flex items-center gap-2\">",
             "<input class=\"flex-1 px-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm\" type=\"text\" maxlength=\"6\"/>",
-            "<button type=\"button\" class=\"px-3 py-2.5 text-xs font-semibold rounded-lg border border-outline-variant/50 hover:bg-surface-container\">发送验证码</button>",
+            "<button type=\"button\" class=\"px-3 py-2.5 text-xs font-semibold rounded-lg border border-outline-variant/50 hover:bg-surface-container\">鍙戦€侀獙璇佺爜</button>",
             "</div>"
         ].join("");
         const emailGroup = emailInput.closest(".space-y-1");
@@ -291,7 +290,7 @@
     }
 
     /**
-     * 构建注册字段容器
+     * 鏋勫缓娉ㄥ唽瀛楁瀹瑰櫒
      */
     function BuildRegisterFieldsContainer(
         userNameInput,
@@ -328,7 +327,7 @@
     }
 
     /**
-     * 绑定密码显示切换
+     * 缁戝畾瀵嗙爜鏄剧ず鍒囨崲
      */
     function BindPasswordToggle(passwordInput, passwordToggleButton, passwordToggleIcon) {
         if (!passwordInput || !passwordToggleButton || !passwordToggleIcon) {
@@ -338,7 +337,7 @@
         function SyncPasswordToggleState() {
             const hiddenMode = passwordInput.type === "password";
             passwordToggleIcon.textContent = hiddenMode ? "visibility_off" : "visibility";
-            passwordToggleButton.setAttribute("aria-label", hiddenMode ? "显示密码" : "隐藏密码");
+            passwordToggleButton.setAttribute("aria-label", hiddenMode ? "鏄剧ず瀵嗙爜" : "闅愯棌瀵嗙爜");
         }
 
         SyncPasswordToggleState();
@@ -362,18 +361,18 @@
             loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200";
             registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200";
             SetRegisterContainerVisible(registerFieldsContainer, false, withAnimation);
-            submitButton.textContent = "登录";
+            submitButton.textContent = "鐧诲綍";
             return;
         }
 
         loginButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200";
         registerButton.className = "flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200";
         SetRegisterContainerVisible(registerFieldsContainer, true, withAnimation);
-        submitButton.textContent = "注册";
+        submitButton.textContent = "娉ㄥ唽";
     }
 
     /**
-     * 设置注册容器显隐
+     * 璁剧疆娉ㄥ唽瀹瑰櫒鏄鹃殣
      */
     function SetRegisterContainerVisible(registerFieldsContainer, visible, withAnimation) {
         if (!registerFieldsContainer) {
@@ -443,7 +442,7 @@
     }
 
     /**
-     * 注册字段即时显隐
+     * 娉ㄥ唽瀛楁鍗虫椂鏄鹃殣
      */
     function ApplyRegisterContainerState(fieldGroup, visible) {
         fieldGroup.style.height = visible ? "auto" : "0px";
@@ -454,7 +453,7 @@
     }
 
     /**
-     * 停止注册区块显隐动画
+     * 鍋滄娉ㄥ唽鍖哄潡鏄鹃殣鍔ㄧ敾
      */
     function StopRegisterContainerAnimation(registerFieldsContainer) {
         if (!registerFieldsContainer.__visibilityAnimation) {
@@ -470,8 +469,7 @@
     }
 
     /**
-     * 提交前校验
-     */
+     * 鎻愪氦鍓嶆牎楠?     */
     function ValidateBeforeSubmit(currentMode, fieldContext, messageBar) {
         const accountValue = ReadValue(fieldContext.accountInput);
         const passwordValue = ReadValue(fieldContext.passwordInput);
@@ -480,22 +478,22 @@
         const verificationCodeValue = ReadValue(fieldContext.verificationCodeInput);
 
         if (!accountValue) {
-            ShowError(messageBar, "学号不能为空");
+            ShowError(messageBar, "瀛﹀彿涓嶈兘涓虹┖");
             MarkFieldError(fieldContext.accountGroup, fieldContext.accountInput);
             return false;
         }
         if (!IsValidStudentAccount(accountValue)) {
-            ShowError(messageBar, "学号必须为11位数字");
+            ShowError(messageBar, "瀛﹀彿蹇呴』涓?1浣嶆暟瀛?);
             MarkFieldError(fieldContext.accountGroup, fieldContext.accountInput);
             return false;
         }
         if (!passwordValue) {
-            ShowError(messageBar, "密码不能为空");
+            ShowError(messageBar, "瀵嗙爜涓嶈兘涓虹┖");
             MarkFieldError(fieldContext.passwordGroup, fieldContext.passwordInput);
             return false;
         }
         if (passwordValue.length < 8) {
-            ShowError(messageBar, "密码长度至少8位");
+            ShowError(messageBar, "瀵嗙爜闀垮害鑷冲皯8浣?);
             MarkFieldError(fieldContext.passwordGroup, fieldContext.passwordInput);
             return false;
         }
@@ -505,27 +503,27 @@
         }
 
         if (!displayNameValue) {
-            ShowError(messageBar, "用户名不能为空");
+            ShowError(messageBar, "鐢ㄦ埛鍚嶄笉鑳戒负绌?);
             MarkFieldError(fieldContext.userNameGroup, fieldContext.userNameInput);
             return false;
         }
         if (!emailValue) {
-            ShowError(messageBar, "邮箱不能为空");
+            ShowError(messageBar, "閭涓嶈兘涓虹┖");
             MarkFieldError(fieldContext.emailGroup, fieldContext.emailInput);
             return false;
         }
         if (!verificationCodeValue) {
-            ShowError(messageBar, "验证码不能为空");
+            ShowError(messageBar, "楠岃瘉鐮佷笉鑳戒负绌?);
             MarkFieldError(fieldContext.verificationCodeGroup, fieldContext.verificationCodeInput);
             return false;
         }
         if (!IsValidEmail(emailValue)) {
-            ShowError(messageBar, "邮箱格式不正确");
+            ShowError(messageBar, "閭鏍煎紡涓嶆纭?);
             MarkFieldError(fieldContext.emailGroup, fieldContext.emailInput);
             return false;
         }
         if (verificationCodeValue.length !== 6) {
-            ShowError(messageBar, "验证码长度必须为6位");
+            ShowError(messageBar, "楠岃瘉鐮侀暱搴﹀繀椤讳负6浣?);
             MarkFieldError(fieldContext.verificationCodeGroup, fieldContext.verificationCodeInput);
             return false;
         }
@@ -533,28 +531,27 @@
     }
 
     /**
-     * 读取输入值
-     */
+     * 璇诲彇杈撳叆鍊?     */
     function ReadValue(inputElement) {
         return inputElement && inputElement.value ? inputElement.value.trim() : "";
     }
 
     /**
-     * 邮箱格式
+     * 閭鏍煎紡
      */
     function IsValidEmail(emailText) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailText);
     }
 
     /**
-     * 学号格式
+     * 瀛﹀彿鏍煎紡
      */
     function IsValidStudentAccount(accountText) {
         return STUDENT_ACCOUNT_PATTERN.test((accountText || "").trim());
     }
 
     /**
-     * 标记字段错误
+     * 鏍囪瀛楁閿欒
      */
     function MarkFieldError(fieldGroup, fieldInput) {
         if (fieldGroup) {
@@ -572,7 +569,7 @@
     }
 
     /**
-     * 清理字段错误样式
+     * 娓呯悊瀛楁閿欒鏍峰紡
      */
     function ClearFieldErrorStyles(authForm) {
         const fieldList = authForm.querySelectorAll("input,select");
@@ -582,26 +579,25 @@
     }
 
     /**
-     * 验证码倒计时
-     */
+     * 楠岃瘉鐮佸€掕鏃?     */
     function StartCountdown(sendCodeButton, seconds) {
         let leftSeconds = seconds;
         sendCodeButton.disabled = true;
-        sendCodeButton.textContent = `${leftSeconds}s后重试`;
+        sendCodeButton.textContent = `${leftSeconds}s鍚庨噸璇昤;
         const timer = window.setInterval(function TickCountdown() {
             leftSeconds -= 1;
             if (leftSeconds <= 0) {
                 window.clearInterval(timer);
                 sendCodeButton.disabled = false;
-                sendCodeButton.textContent = "发送验证码";
+                sendCodeButton.textContent = "鍙戦€侀獙璇佺爜";
                 return;
             }
-            sendCodeButton.textContent = `${leftSeconds}s后重试`;
+            sendCodeButton.textContent = `${leftSeconds}s鍚庨噸璇昤;
         }, 1000);
     }
 
     /**
-     * 显示成功信息
+     * 鏄剧ず鎴愬姛淇℃伅
      */
     function ShowSuccess(messageBar, message) {
         messageBar.style.display = "block";
@@ -610,7 +606,7 @@
     }
 
     /**
-     * 显示错误信息
+     * 鏄剧ず閿欒淇℃伅
      */
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";
@@ -619,7 +615,7 @@
     }
 
     /**
-     * 隐藏提示信息
+     * 闅愯棌鎻愮ず淇℃伅
      */
     function HideMessage(messageBar) {
         messageBar.style.display = "none";
@@ -627,8 +623,7 @@
     }
 
     /**
-     * 解析登录后跳转路径
-     */
+     * 瑙ｆ瀽鐧诲綍鍚庤烦杞矾寰?     */
     function ResolveRedirectPath(loginResult) {
         if (window.CampusShareApi && typeof window.CampusShareApi.ResolveLoginSuccessRedirect === "function") {
             return window.CampusShareApi.ResolveLoginSuccessRedirect(loginResult);
@@ -642,3 +637,4 @@
 
     document.addEventListener("DOMContentLoaded", BindAuthPage);
 })();
+

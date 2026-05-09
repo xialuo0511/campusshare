@@ -1,12 +1,12 @@
-/**
- * 学术资源列表页面逻辑
+﻿/**
+ * 瀛︽湳璧勬簮鍒楄〃椤甸潰閫昏緫
  */
 (function InitMaterialListingPage() {
     const DEFAULT_PAGE_NO = 1;
     const DEFAULT_PAGE_SIZE = 12;
 
     /**
-     * 页面绑定
+     * 椤甸潰缁戝畾
      */
     function BindMaterialListingPage() {
         if (!window.CampusShareApi) {
@@ -89,15 +89,15 @@
             if (action === "detail") {
                 try {
                     const detailResult = await window.CampusShareApi.GetMaterialDetail(materialId);
-                    window.alert(detailResult.description || "暂无资料说明");
+                    window.alert(detailResult.description || "鏆傛棤璧勬枡璇存槑");
                 } catch (error) {
-                    ShowError(messageBar, error instanceof Error ? error.message : "资料详情加载失败");
+                    ShowError(messageBar, error instanceof Error ? error.message : "璧勬枡璇︽儏鍔犺浇澶辫触");
                 }
                 return;
             }
             if (action === "download") {
                 if (!window.CampusShareApi.GetAuthToken()) {
-                    ShowError(messageBar, "请先登录后再下载资料");
+                    ShowError(messageBar, "璇峰厛鐧诲綍鍚庡啀涓嬭浇璧勬枡");
                     if (window.CampusShareApi.RedirectToAuthPage) {
                         window.CampusShareApi.RedirectToAuthPage("/pages/market_listing.html?view=MATERIAL");
                     }
@@ -110,7 +110,7 @@
                     ShowSuccess(messageBar, ResolveMaterialDownloadSuccessMessage(downloadResult));
                     LoadMaterialList(state, materialGrid, summaryText, pagerText, messageBar, tagSelect);
                 } catch (error) {
-                    ShowError(messageBar, error instanceof Error ? error.message : "资料下载失败");
+                    ShowError(messageBar, error instanceof Error ? error.message : "璧勬枡涓嬭浇澶辫触");
                 } finally {
                     actionButton.disabled = false;
                 }
@@ -128,11 +128,11 @@
             ? String(downloadResult.fileAccessUrl).trim()
             : "";
         if (!fileAccessUrl) {
-            throw new Error("下载地址缺失，请稍后重试");
+            throw new Error("涓嬭浇鍦板潃缂哄け锛岃绋嶅悗閲嶈瘯");
         }
         const token = window.CampusShareApi.GetAuthToken();
         if (!token) {
-            throw new Error("登录状态已失效，请重新登录");
+            throw new Error("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍");
         }
         const fileResponse = await fetch(fileAccessUrl, {
             method: "GET",
@@ -141,7 +141,7 @@
             }
         });
         if (!fileResponse.ok) {
-            throw new Error(`文件下载失败(${fileResponse.status})`);
+            throw new Error(`鏂囦欢涓嬭浇澶辫触(${fileResponse.status})`);
         }
         const fileBlob = await fileResponse.blob();
         const blobUrl = window.URL.createObjectURL(fileBlob);
@@ -173,11 +173,11 @@
     function ResolveMaterialDownloadSuccessMessage(downloadResult) {
         const deductedPoints = Number(downloadResult && downloadResult.deductedPoints ? downloadResult.deductedPoints : 0);
         const currentPointBalance = Number(downloadResult && downloadResult.currentPointBalance ? downloadResult.currentPointBalance : 0);
-        return `资料下载已开始，已扣减 ${deductedPoints} 积分，当前积分 ${currentPointBalance}`;
+        return `璧勬枡涓嬭浇宸插紑濮嬶紝宸叉墸鍑?${deductedPoints} 绉垎锛屽綋鍓嶇Н鍒?${currentPointBalance}`;
     }
 
     /**
-     * 拉取资料列表
+     * 鎷夊彇璧勬枡鍒楄〃
      */
     async function LoadMaterialList(state, materialGrid, summaryText, pagerText, messageBar, tagSelect) {
         try {
@@ -206,16 +206,16 @@
             HideMessage(messageBar);
         } catch (error) {
             RenderMaterialGrid(materialGrid, []);
-            ShowError(messageBar, error instanceof Error ? error.message : "学术资源加载失败");
+            ShowError(messageBar, error instanceof Error ? error.message : "瀛︽湳璧勬簮鍔犺浇澶辫触");
         }
     }
 
     /**
-     * 渲染列表
+     * 娓叉煋鍒楄〃
      */
     function RenderMaterialGrid(materialGrid, materialList) {
         if (!Array.isArray(materialList) || materialList.length === 0) {
-            materialGrid.innerHTML = "<div class=\"col-span-full py-16 text-center text-sm text-slate-400\">暂无符合条件的学术资源</div>";
+            materialGrid.innerHTML = "<div class=\"col-span-full py-16 text-center text-sm text-slate-400\">鏆傛棤绗﹀悎鏉′欢鐨勫鏈祫婧?/div>";
             return;
         }
         materialGrid.innerHTML = materialList.map(function BuildMaterialCard(materialItem) {
@@ -224,19 +224,19 @@
                 ? tagList.slice(0, 4).map(function BuildTag(tagText) {
                     return `<span class="px-2 py-1 rounded-full bg-surface-container text-[10px] text-on-surface-variant">${EscapeHtml(tagText)}</span>`;
                 }).join("")
-                : "<span class=\"px-2 py-1 rounded-full bg-surface-container text-[10px] text-on-surface-variant\">无标签</span>";
+                : "<span class=\"px-2 py-1 rounded-full bg-surface-container text-[10px] text-on-surface-variant\">鏃犳爣绛?/span>";
             return [
                 "<article class=\"bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-5 flex flex-col gap-4\">",
-                `<h3 class="text-base font-bold text-on-surface line-clamp-2">${EscapeHtml(materialItem.courseName || "未命名资料")}</h3>`,
-                `<p class="text-sm text-on-surface-variant line-clamp-3 min-h-[60px]">${EscapeHtml(materialItem.description || "暂无资料说明")}</p>`,
+                `<h3 class="text-base font-bold text-on-surface line-clamp-2">${EscapeHtml(materialItem.courseName || "鏈懡鍚嶈祫鏂?)}</h3>`,
+                `<p class="text-sm text-on-surface-variant line-clamp-3 min-h-[60px]">${EscapeHtml(materialItem.description || "鏆傛棤璧勬枡璇存槑")}</p>`,
                 `<div class="flex flex-wrap gap-2">${tagHtml}</div>`,
                 "<div class=\"text-xs text-slate-500 space-y-1\">",
-                `<p>格式：${EscapeHtml(materialItem.fileType || "-")} · 大小：${EscapeHtml(FormatFileSize(materialItem.fileSizeBytes))}</p>`,
-                `<p>下载：${EscapeHtml(String(Number(materialItem.downloadCount || 0)))} 次 · 积分：${EscapeHtml(String(Number(materialItem.downloadCostPoints || 0)))} 分</p>`,
+                `<p>鏍煎紡锛?{EscapeHtml(materialItem.fileType || "-")} 路 澶у皬锛?{EscapeHtml(FormatFileSize(materialItem.fileSizeBytes))}</p>`,
+                `<p>涓嬭浇锛?{EscapeHtml(String(Number(materialItem.downloadCount || 0)))} 娆?路 绉垎锛?{EscapeHtml(String(Number(materialItem.downloadCostPoints || 0)))} 鍒?/p>`,
                 "</div>",
                 "<div class=\"pt-2 flex items-center gap-2\">",
-                `<button type="button" data-action="detail" data-material-id="${EscapeHtml(String(materialItem.materialId || 0))}" class="px-3 py-2 rounded-lg bg-surface-container text-on-surface text-sm font-semibold hover:bg-surface-container-high">查看详情</button>`,
-                `<button type="button" data-action="download" data-material-id="${EscapeHtml(String(materialItem.materialId || 0))}" class="px-3 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold hover:bg-primary-container">下载资料</button>`,
+                `<button type="button" data-action="detail" data-material-id="${EscapeHtml(String(materialItem.materialId || 0))}" class="px-3 py-2 rounded-lg bg-surface-container text-on-surface text-sm font-semibold hover:bg-surface-container-high">鏌ョ湅璇︽儏</button>`,
+                `<button type="button" data-action="download" data-material-id="${EscapeHtml(String(materialItem.materialId || 0))}" class="px-3 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold hover:bg-primary-container">涓嬭浇璧勬枡</button>`,
                 "</div>",
                 "</article>"
             ].join("");
@@ -244,7 +244,7 @@
     }
 
     /**
-     * 同步标签筛选项
+     * 鍚屾鏍囩绛涢€夐」
      */
     function SyncTagOptions(tagSelect, materialList, selectedTag) {
         const currentOptionList = Array.from(tagSelect.options || []).map(function MapOption(optionElement) {
@@ -266,7 +266,7 @@
             tagSelect.value = selectedTag || "";
             return;
         }
-        tagSelect.innerHTML = "<option value=\"\">全部标签</option>";
+        tagSelect.innerHTML = "<option value=\"\">鍏ㄩ儴鏍囩</option>";
         tagList.forEach(function AppendTagOption(tagText) {
             const optionElement = document.createElement("option");
             optionElement.value = tagText;
@@ -277,8 +277,7 @@
     }
 
     /**
-     * 更新分页按钮状态
-     */
+     * 鏇存柊鍒嗛〉鎸夐挳鐘舵€?     */
     function UpdatePagerButtonState(pageNo, totalPages) {
         const prevButton = document.querySelector("button[data-page-action='prev']");
         const nextButton = document.querySelector("button[data-page-action='next']");
@@ -295,22 +294,21 @@
     }
 
     /**
-     * 渲染摘要
+     * 娓叉煋鎽樿
      */
     function RenderSummary(summaryText, totalCount) {
-        summaryText.textContent = `显示 ${Number(totalCount || 0)} 份公开资料`;
+        summaryText.textContent = `鏄剧ず ${Number(totalCount || 0)} 浠藉叕寮€璧勬枡`;
     }
 
     /**
-     * 渲染页码文案
+     * 娓叉煋椤电爜鏂囨
      */
     function RenderPagerText(pagerText, pageNo, totalPages) {
-        pagerText.textContent = `第 ${pageNo} / ${totalPages} 页`;
+        pagerText.textContent = `绗?${pageNo} / ${totalPages} 椤礰;
     }
 
     /**
-     * 构建消息条
-     */
+     * 鏋勫缓娑堟伅鏉?     */
     function BuildMessageBar(materialGrid) {
         const messageBar = document.createElement("div");
         messageBar.className = "rounded-lg px-3 py-2 text-sm border mb-4";
@@ -320,8 +318,7 @@
     }
 
     /**
-     * 格式化文件大小
-     */
+     * 鏍煎紡鍖栨枃浠跺ぇ灏?     */
     function FormatFileSize(fileSizeBytes) {
         const sizeNumber = Number(fileSizeBytes || 0);
         if (Number.isNaN(sizeNumber) || sizeNumber <= 0) {
@@ -337,7 +334,7 @@
     }
 
     /**
-     * HTML转义
+     * HTML杞箟
      */
     function EscapeHtml(text) {
         return String(text)
@@ -349,7 +346,7 @@
     }
 
     /**
-     * 错误提示
+     * 閿欒鎻愮ず
      */
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";
@@ -358,7 +355,7 @@
     }
 
     /**
-     * 成功提示
+     * 鎴愬姛鎻愮ず
      */
     function ShowSuccess(messageBar, message) {
         messageBar.style.display = "block";
@@ -367,7 +364,7 @@
     }
 
     /**
-     * 隐藏提示
+     * 闅愯棌鎻愮ず
      */
     function HideMessage(messageBar) {
         messageBar.style.display = "none";
@@ -376,3 +373,4 @@
 
     document.addEventListener("DOMContentLoaded", BindMaterialListingPage);
 })();
+

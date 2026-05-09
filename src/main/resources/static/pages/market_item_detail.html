@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html class="light" lang="zh-CN"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>CampusShare | 商品详情</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<title>CampusShare | 鍟嗗搧璇︽儏</title>
+<script src="/pages/assets/vendor/tailwindcss.js"></script>
+<link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
+<link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -83,7 +83,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; color: #191c1d; }
         h1, h2, h3 { font-family: 'Manrope', sans-serif; }
     </style>
-<link href="/pages/assets/css/campusshare-modern.css?v=20260509-2" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css?v=20260509-3" rel="stylesheet"/>
 </head>
 <body class="bg-surface text-on-surface">
 <!-- TopNavBar -->
@@ -92,17 +92,17 @@
 <div class="flex items-center gap-8">
 <span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500 font-headline">CampusShare</span>
 <div class="hidden md:flex gap-6 items-center">
-<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1 font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
+<a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1 font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/market_listing.html" href="#">浜ゆ槗甯傚満</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">瀛︽湳璧勬簮</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors font-['Manrope'] text-sm tracking-wide" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">鏍″洯璁哄潧</a>
 </div>
 </div>
 <div class="flex items-center gap-4">
 <div class="relative hidden sm:block">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
-<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-primary" placeholder="搜索校园资源..." type="text"/>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-primary" placeholder="鎼滅储鏍″洯璧勬簮..." type="text"/>
 </div>
-<button class="bg-primary text-on-primary px-5 py-2 rounded-lg font-bold text-sm scale-95 active:scale-100 duration-150" data-nav-target="/pages/publish_create.html">发布</button>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-lg font-bold text-sm scale-95 active:scale-100 duration-150" data-nav-target="/pages/publish_create.html">鍙戝竷</button>
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined p-2 text-slate-600 cursor-pointer">notifications</span>
 <span class="material-symbols-outlined p-2 text-slate-600 cursor-pointer">account_circle</span>
@@ -113,9 +113,9 @@
 <main class="max-w-[1440px] mx-auto px-6 py-8">
 <!-- Breadcrumb -->
 <nav class="flex items-center gap-2 text-label-md text-outline mb-6">
-<a class="hover:text-primary" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
+<a class="hover:text-primary" data-nav-target="/pages/market_listing.html" href="#">浜ゆ槗甯傚満</a>
 <span class="material-symbols-outlined text-sm">chevron_right</span>
-<a class="hover:text-primary" data-nav-target="/pages/market_listing.html" href="#">商品详情</a>
+<a class="hover:text-primary" data-nav-target="/pages/market_listing.html" href="#">鍟嗗搧璇︽儏</a>
 <span class="material-symbols-outlined text-sm">chevron_right</span>
 <span class="text-on-surface font-medium">Research Station Z-100</span>
 </nav>
@@ -123,7 +123,7 @@
 <!-- Left Side: Gallery -->
 <div class="lg:col-span-7 flex flex-col gap-4">
 <div class="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-container shadow-sm group">
-<img class="w-full h-full object-cover" data-alt="high-end professional computer workstation with triple monitor setup in a clean brightly lit university lab setting" data-role="gallery-main-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3yhnXPUnPHie4dHyvipdakw-fjM0hlLlUDSaIlSP8Hja6drUE2b8NtlpYos3OkAjPcwgAGo4x-y-pHnz0B1V2jqcSeLqaiAVBQjv_9XPOfkID15-lUYyuTLGXMAPZFmeWbfj0mjiK-2mAiSesNx_nRsCmbVcHoN34gVT0R38s2mlNgDNbOFJ9rY1GRGm37POA4HuJmVO1ycLuh4CeEkdzvFtrciEJsu7BtkkVjWL1ehaiQXYqSu1JfhnyhodsixwAvG0HCGnU2SY"/>
+<img class="w-full h-full object-cover" data-alt="high-end professional computer workstation with triple monitor setup in a clean brightly lit university lab setting" data-role="gallery-main-image" src="/pages/assets/img/campusshare-placeholder.svg"/>
 <button class="absolute left-4 top-1/2 -translate-y-1/2 bg-surface-container-lowest/80 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
 <span class="material-symbols-outlined">chevron_left</span>
 </button>
@@ -138,45 +138,45 @@
 <section class="flex flex-col gap-4">
 <div class="flex justify-between items-start">
 <div class="flex flex-col gap-1">
-<span class="text-xs uppercase tracking-widest text-secondary font-bold">分类</span>
-<h1 class="text-3xl font-extrabold text-on-surface leading-tight">商品标题</h1>
+<span class="text-xs uppercase tracking-widest text-secondary font-bold">鍒嗙被</span>
+<h1 class="text-3xl font-extrabold text-on-surface leading-tight">鍟嗗搧鏍囬</h1>
 </div>
 <button class="p-2 rounded-full hover:bg-surface-container-high transition-colors text-outline">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">favorite</span>
 </button>
 </div>
 <div class="flex items-center gap-4">
-<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter">状态</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter">鐘舵€?/span>
 <div class="flex items-center gap-1 text-on-surface-variant text-sm">
 <span class="material-symbols-outlined text-sm">location_on</span>
-<span>线下约定地点</span>
+<span>绾夸笅绾﹀畾鍦扮偣</span>
 </div>
 </div>
 <div class="py-6 border-y border-surface-container">
 <div class="flex items-baseline gap-2">
-<span class="text-4xl font-extrabold text-primary">¥0.00</span>
-<span class="text-outline text-sm line-through">¥0.00</span>
+<span class="text-4xl font-extrabold text-primary">楼0.00</span>
+<span class="text-outline text-sm line-through">楼0.00</span>
 </div>
-<p class="text-sm text-outline mt-1 italic">以实际交易为准</p>
+<p class="text-sm text-outline mt-1 italic">浠ュ疄闄呬氦鏄撲负鍑?/p>
 </div>
 <div class="flex flex-col gap-3">
 <button class="w-full bg-primary text-on-primary py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary-container transition-colors shadow-sm">
 <span class="material-symbols-outlined">shopping_cart</span>
-                            下单
+                            涓嬪崟
                         </button>
 <div class="grid grid-cols-2 gap-3">
 <button class="flex items-center justify-center gap-2 py-3 border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary/5 transition-colors">
 <span class="material-symbols-outlined">chat</span>
-                                联系卖家
+                                鑱旂郴鍗栧
                             </button>
 <button class="flex items-center justify-center gap-2 py-3 bg-surface-container-low text-on-surface-variant rounded-xl font-bold hover:bg-surface-container-high transition-colors" data-action="share-product">
 <span class="material-symbols-outlined">share</span>
-                                分享商品
+                                鍒嗕韩鍟嗗搧
                             </button>
 </div>
 <button class="w-full flex items-center justify-center gap-2 py-3 border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors" data-action="report-product">
 <span class="material-symbols-outlined">report</span>
-                            举报商品
+                            涓炬姤鍟嗗搧
                         </button>
 </div>
 </section>
@@ -184,29 +184,29 @@
 <section class="bg-surface-container-lowest p-6 rounded-xl border border-transparent shadow-sm" data-section="seller-credit">
 <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">verified_user</span>
-                        用户信誉
+                        鐢ㄦ埛淇¤獕
                     </h3>
 <div class="flex items-center gap-4 mb-4">
 <div class="w-14 h-14 rounded-full bg-tertiary-fixed-dim overflow-hidden">
-<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnd8o3yzQlUIc1R73thVF9deZHYXHZlQPhdBFkwa44PBPeTUiazoOR5k8ra9rlhrfoD6tPjnJKKkzR92PC04ytk_Oe6VL0IW1MxWGnpb2YbfjVxVg-MJe0856VKV3q8ypKi-hcG3DWMxaeHWmqunUg0c8ViNy6-IwlLFgM2Zx2vQihedA8IQ1xftT79DogLfELEGtQlv-n2ElRt3-z_6f4_HmOu98p83ymTIw-kL9Qoa6ctI7eCv8NHmSEpobz5BWgz28Yxn200YE" alt="seller"/>
+<img class="w-full h-full object-cover" src="/pages/assets/img/campusshare-placeholder.svg" alt="seller"/>
 </div>
 <div class="flex flex-col">
-<span class="font-bold text-on-surface">未知用户</span>
-<span class="text-xs text-outline">暂无信誉数据</span>
+<span class="font-bold text-on-surface">鏈煡鐢ㄦ埛</span>
+<span class="text-xs text-outline">鏆傛棤淇¤獕鏁版嵁</span>
 </div>
 </div>
 <div class="grid grid-cols-3 gap-4 border-t border-surface-container pt-4">
 <div class="flex flex-col items-center">
 <span class="text-xl font-bold text-primary">--</span>
-<span class="text-[10px] uppercase text-outline font-bold">评分</span>
+<span class="text-[10px] uppercase text-outline font-bold">璇勫垎</span>
 </div>
 <div class="flex flex-col items-center">
 <span class="text-xl font-bold text-primary">0</span>
-<span class="text-[10px] uppercase text-outline font-bold">评价数</span>
+<span class="text-[10px] uppercase text-outline font-bold">璇勪环鏁?/span>
 </div>
 <div class="flex flex-col items-center">
 <span class="text-xl font-bold text-primary">--</span>
-<span class="text-[10px] uppercase text-outline font-bold">好评率</span>
+<span class="text-[10px] uppercase text-outline font-bold">濂借瘎鐜?/span>
 </div>
 </div>
 </section>
@@ -214,21 +214,21 @@
 </div>
 <!-- Tabs Section -->
 <div class="mt-16 border-b border-surface-container flex gap-12" data-role="detail-tab-list">
-<button class="pb-4 border-b-2 border-primary font-bold text-primary" data-tab-button="" data-tab-target="description">描述</button>
-<button class="pb-4 text-outline font-medium hover:text-on-surface transition-colors" data-tab-button="" data-tab-target="review">评价 (0)</button>
-<button class="pb-4 text-outline font-medium hover:text-on-surface transition-colors" data-tab-button="" data-tab-target="policy">政策</button>
+<button class="pb-4 border-b-2 border-primary font-bold text-primary" data-tab-button="" data-tab-target="description">鎻忚堪</button>
+<button class="pb-4 text-outline font-medium hover:text-on-surface transition-colors" data-tab-button="" data-tab-target="review">璇勪环 (0)</button>
+<button class="pb-4 text-outline font-medium hover:text-on-surface transition-colors" data-tab-button="" data-tab-target="policy">鏀跨瓥</button>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-8">
 <!-- Detailed Description -->
 <div class="lg:col-span-2 flex flex-col gap-8">
 <article class="prose prose-slate max-w-none" data-tab-panel="description">
-<p class="text-on-surface-variant leading-relaxed text-body-lg whitespace-pre-wrap" data-role="product-description">暂无商品描述</p>
+<p class="text-on-surface-variant leading-relaxed text-body-lg whitespace-pre-wrap" data-role="product-description">鏆傛棤鍟嗗搧鎻忚堪</p>
 </article>
 <!-- Reviews -->
 <section class="mt-12 hidden" data-tab-panel="review">
 <div class="flex justify-between items-center mb-6">
-<h2 class="text-2xl font-bold">社区反馈</h2>
-<button class="text-primary font-bold text-sm">撰写评价</button>
+<h2 class="text-2xl font-bold">绀惧尯鍙嶉</h2>
+<button class="text-primary font-bold text-sm">鎾板啓璇勪环</button>
 </div>
 <div class="flex flex-col gap-6"></div>
 </section>
@@ -236,33 +236,33 @@
 <!-- Trade Location Sidebar -->
 <div class="flex flex-col gap-8 hidden" data-tab-panel="policy">
 <section class="bg-surface-container-low p-6 rounded-xl">
-<h3 class="text-lg font-bold mb-4">线下交易地点</h3>
+<h3 class="text-lg font-bold mb-4">绾夸笅浜ゆ槗鍦扮偣</h3>
 <div class="aspect-video bg-surface-container rounded-lg mb-4 overflow-hidden relative">
-<img class="w-full h-full object-cover" data-alt="simplified digital map showing campus layout with a pin on the technical library" data-location="Chicago" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaaikyImjCzqYp_MtenWnXMG-QqFjYOdHA-uTw0R0SerkWc_JtB3Kc5v9BCRWoNy5DPKgSaWgoo2KNVX4JYQunfCHU5XQen2Ij_DufBdmje-dD_PDlCSMN7zkY1aRacNXJlcQQhLacRAeoCFugTFqms8xqqOWVEbilZ5qXHpSbiPmhmoO_-vFV45jcqMkDWO-gE5e9vCNEMjtC6Nr3chbtCue2jmDaREBk3X9e0YGI809Hfk0bo5LJwwHHxzDZQ3LusIxCgy4OcUs"/>
+<img class="w-full h-full object-cover" data-alt="simplified digital map showing campus layout with a pin on the technical library" data-location="Chicago" src="/pages/assets/img/campusshare-placeholder.svg"/>
 <div class="absolute inset-0 bg-primary/10 flex items-center justify-center">
 <span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
 </div>
 </div>
-<p class="text-xs text-on-surface-variant mb-4">建议在学校指定的公共区域完成线下交易，并当面验货后再确认订单。</p>
+<p class="text-xs text-on-surface-variant mb-4">寤鸿鍦ㄥ鏍℃寚瀹氱殑鍏叡鍖哄煙瀹屾垚绾夸笅浜ゆ槗锛屽苟褰撻潰楠岃揣鍚庡啀纭璁㈠崟銆?/p>
 <div class="flex items-center gap-2 p-3 bg-surface-container-lowest rounded-lg border border-outline-variant/20">
 <span class="material-symbols-outlined text-secondary">info</span>
-<span class="text-xs font-medium">安全交易提示</span>
+<span class="text-xs font-medium">瀹夊叏浜ゆ槗鎻愮ず</span>
 </div>
 </section>
 <section class="border border-surface-container p-6 rounded-xl">
-<h3 class="text-lg font-bold mb-4">平台政策</h3>
+<h3 class="text-lg font-bold mb-4">骞冲彴鏀跨瓥</h3>
 <ul class="flex flex-col gap-3">
 <li class="flex items-start gap-3 text-sm">
 <span class="material-symbols-outlined text-outline text-lg">verified</span>
-<span>商品发布需通过平台审核后才能公开展示。</span>
+<span>鍟嗗搧鍙戝竷闇€閫氳繃骞冲彴瀹℃牳鍚庢墠鑳藉叕寮€灞曠ず銆?/span>
 </li>
 <li class="flex items-start gap-3 text-sm">
 <span class="material-symbols-outlined text-outline text-lg">assignment_return</span>
-<span>若交易双方协商一致，可在订单详情中发起售后处理。</span>
+<span>鑻ヤ氦鏄撳弻鏂瑰崗鍟嗕竴鑷达紝鍙湪璁㈠崟璇︽儏涓彂璧峰敭鍚庡鐞嗐€?/span>
 </li>
 <li class="flex items-start gap-3 text-sm">
 <span class="material-symbols-outlined text-outline text-lg">payments</span>
-<span>请勿脱离平台私下转账，避免交易风险。</span>
+<span>璇峰嬁鑴辩骞冲彴绉佷笅杞处锛岄伩鍏嶄氦鏄撻闄┿€?/span>
 </li>
 </ul>
 </section>
@@ -274,20 +274,22 @@
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
 <div class="flex flex-col items-center md:items-start gap-2">
 <span class="font-['Manrope'] font-bold text-slate-900 dark:text-slate-100 text-lg">CampusShare</span>
-<p class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest text-center md:text-left">© 2026 CampusShare</p>
+<p class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest text-center md:text-left">漏 2026 CampusShare</p>
 </div>
 <div class="flex flex-wrap justify-center gap-6">
-<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">隐私政策</a>
-<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">服务条款</a>
-<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">平台规范</a>
-<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">支持</a>
-<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">联系我们</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">闅愮鏀跨瓥</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">鏈嶅姟鏉℃</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">骞冲彴瑙勮寖</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">鏀寔</a>
+<a class="text-slate-500 dark:text-slate-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-[#005d90] transition-colors" href="#">鑱旂郴鎴戜滑</a>
 </div>
 </div>
 </footer>
 <script src="/pages/assets/js/campusshare-api.js"></script>
 <script src="/pages/assets/js/market-detail.js"></script>
 </body></html>
+
+
 
 
 

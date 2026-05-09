@@ -1,14 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CampusShare - 消息中心</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <title>CampusShare - 娑堟伅涓績</title>
+    <script src="/pages/assets/vendor/tailwindcss.js"></script>
+    <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet" />
+    <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -50,16 +48,16 @@
             vertical-align: middle;
         }
     </style>
-<link href="/pages/assets/css/campusshare-modern.css?v=20260509-2" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css?v=20260509-3" rel="stylesheet"/>
 </head>
 <body class="min-h-screen bg-surface text-on-surface">
 <header class="sticky top-0 z-50 border-b border-slate-200 bg-slate-50" data-user-topbar>
     <div>
         <a href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html" class="text-xl font-bold tracking-tight text-sky-900">CampusShare</a>
         <nav>
-            <a href="/pages/market_listing.html" data-nav-target="/pages/market_listing.html">交易市场</a>
-            <a href="/pages/market_listing.html?view=MATERIAL" data-nav-target="/pages/market_listing.html?view=MATERIAL">学术资源</a>
-            <a href="/pages/market_listing.html?view=FORUM" data-nav-target="/pages/market_listing.html?view=FORUM">校园论坛</a>
+            <a href="/pages/market_listing.html" data-nav-target="/pages/market_listing.html">浜ゆ槗甯傚満</a>
+            <a href="/pages/market_listing.html?view=MATERIAL" data-nav-target="/pages/market_listing.html?view=MATERIAL">瀛︽湳璧勬簮</a>
+            <a href="/pages/market_listing.html?view=FORUM" data-nav-target="/pages/market_listing.html?view=FORUM">鏍″洯璁哄潧</a>
         </nav>
     </div>
 </header>
@@ -71,37 +69,35 @@
                 <span class="material-symbols-outlined text-lg">person</span>
             </div>
             <div>
-                <p class="text-sm font-bold text-on-surface">个人中心</p>
-                <p class="text-[10px] text-slate-500">校园认证用户</p>
+                <p class="text-sm font-bold text-on-surface">涓汉涓績</p>
+                <p class="text-[10px] text-slate-500">鏍″洯璁よ瘉鐢ㄦ埛</p>
             </div>
         </div>
         <nav class="space-y-1">
             <a href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">home</span>主页
+                <span class="material-symbols-outlined">home</span>涓婚〉
             </a>
             <a href="/pages/my_publish.html" data-nav-target="/pages/my_publish.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">list_alt</span>我的发布
+                <span class="material-symbols-outlined">list_alt</span>鎴戠殑鍙戝竷
             </a>
             <a href="/pages/order_center.html" data-nav-target="/pages/order_center.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">receipt_long</span>订单中心
+                <span class="material-symbols-outlined">receipt_long</span>璁㈠崟涓績
             </a>
             <a href="/pages/recruitment_board.html" data-nav-target="/pages/recruitment_board.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">groups</span>组队招募
+                <span class="material-symbols-outlined">groups</span>缁勯槦鎷涘嫙
             </a>
             <a href="/pages/notification_center.html" data-nav-target="/pages/notification_center.html" class="flex items-center gap-3 rounded-lg bg-white px-3 py-2 font-bold text-sky-800">
-                <span class="material-symbols-outlined">notifications</span>消息通知
+                <span class="material-symbols-outlined">notifications</span>娑堟伅閫氱煡
             </a>
             <a href="/pages/user_profile.html" data-nav-target="/pages/user_profile.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">settings</span>个人设置
+                <span class="material-symbols-outlined">settings</span>涓汉璁剧疆
             </a>
             <a href="/pages/admin_dashboard.html" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" class="hidden flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">admin_panel_settings</span>管理仪表盘
-            </a>
+                <span class="material-symbols-outlined">admin_panel_settings</span>绠＄悊浠〃鐩?            </a>
         </nav>
         <div class="mt-6 border-t border-slate-200 pt-6" data-user-sidebar-footer>
             <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-500 hover:bg-slate-100">
-                <span class="material-symbols-outlined">logout</span>退出登录
-            </a>
+                <span class="material-symbols-outlined">logout</span>閫€鍑虹櫥褰?            </a>
         </div>
     </aside>
 
@@ -115,26 +111,25 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold uppercase tracking-[0.18em] text-outline">Notification Center</p>
-                            <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-on-surface">消息中心</h1>
-                            <p class="mt-1 text-sm text-on-surface-variant">集中处理订单、审核、积分和组队相关提醒</p>
+                            <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-on-surface">娑堟伅涓績</h1>
+                            <p class="mt-1 text-sm text-on-surface-variant">闆嗕腑澶勭悊璁㈠崟銆佸鏍搞€佺Н鍒嗗拰缁勯槦鐩稿叧鎻愰啋</p>
                         </div>
                     </div>
                     <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-on-primary shadow-sm transition hover:bg-primary-container disabled:cursor-not-allowed disabled:bg-slate-300" type="button" data-notification-mark-all>
                         <span class="material-symbols-outlined text-lg" data-icon="done_all">done_all</span>
-                        全部标记为已读
-                    </button>
+                        鍏ㄩ儴鏍囪涓哄凡璇?                    </button>
                 </div>
                 <div class="grid grid-cols-1 border-t border-outline-variant/40 md:grid-cols-3">
                     <div class="px-6 py-4">
-                        <p class="text-xs font-bold uppercase tracking-widest text-outline">全部消息</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-outline">鍏ㄩ儴娑堟伅</p>
                         <p class="mt-1 text-2xl font-extrabold text-on-surface" data-notification-total>0</p>
                     </div>
                     <div class="border-y border-outline-variant/40 px-6 py-4 md:border-x md:border-y-0">
-                        <p class="text-xs font-bold uppercase tracking-widest text-outline">未读消息</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-outline">鏈娑堟伅</p>
                         <p class="mt-1 text-2xl font-extrabold text-primary" data-notification-unread>0</p>
                     </div>
                     <div class="px-6 py-4">
-                        <p class="text-xs font-bold uppercase tracking-widest text-outline">已读消息</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-outline">宸茶娑堟伅</p>
                         <p class="mt-1 text-2xl font-extrabold text-on-surface-variant" data-notification-read>0</p>
                     </div>
                 </div>
@@ -142,18 +137,18 @@
 
             <div class="mb-5 flex flex-col gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex w-full items-center rounded-lg bg-surface-container p-1 sm:w-auto">
-                    <button class="flex-1 rounded-lg bg-surface-container-lowest px-5 py-2 text-sm font-bold text-primary shadow-sm sm:flex-none" type="button" data-notification-filter="ALL">全部消息</button>
-                    <button class="flex-1 rounded-lg px-5 py-2 text-sm font-semibold text-on-surface-variant transition hover:text-primary sm:flex-none" type="button" data-notification-filter="UNREAD">未读</button>
-                    <button class="flex-1 rounded-lg px-5 py-2 text-sm font-semibold text-on-surface-variant transition hover:text-primary sm:flex-none" type="button" data-notification-filter="READ">已读</button>
+                    <button class="flex-1 rounded-lg bg-surface-container-lowest px-5 py-2 text-sm font-bold text-primary shadow-sm sm:flex-none" type="button" data-notification-filter="ALL">鍏ㄩ儴娑堟伅</button>
+                    <button class="flex-1 rounded-lg px-5 py-2 text-sm font-semibold text-on-surface-variant transition hover:text-primary sm:flex-none" type="button" data-notification-filter="UNREAD">鏈</button>
+                    <button class="flex-1 rounded-lg px-5 py-2 text-sm font-semibold text-on-surface-variant transition hover:text-primary sm:flex-none" type="button" data-notification-filter="READ">宸茶</button>
                 </div>
                 <div class="flex items-center gap-2 text-xs font-medium text-outline">
                     <span class="material-symbols-outlined text-base">update</span>
-                    <span>按发送时间倒序排列</span>
+                    <span>鎸夊彂閫佹椂闂村€掑簭鎺掑垪</span>
                 </div>
             </div>
 
             <div class="space-y-4" data-notification-list>
-                <div class="rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-8 text-center text-sm text-outline shadow-sm">正在加载消息...</div>
+                <div class="rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-8 text-center text-sm text-outline shadow-sm">姝ｅ湪鍔犺浇娑堟伅...</div>
             </div>
         </div>
     </main>
@@ -162,7 +157,7 @@
 <footer class="border-t border-slate-200 bg-slate-50 py-10">
     <div class="ml-64 flex flex-col items-center justify-between gap-4 px-12 md:flex-row">
         <div class="font-bold text-sky-900">CampusShare</div>
-        <div class="text-xs tracking-wider text-slate-500">© 2026 CampusShare</div>
+        <div class="text-xs tracking-wider text-slate-500">漏 2026 CampusShare</div>
     </div>
 </footer>
 
@@ -170,3 +165,5 @@
 <script src="/pages/assets/js/notification-center.js?v=20260425-badge-sync"></script>
 </body>
 </html>
+
+

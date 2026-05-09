@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unified user workspace shell.
  */
 (function InitUserWorkspacePage() {
@@ -47,15 +47,15 @@
         const displayNameNode = document.querySelector("[data-role='workspace-display-name']");
         const roleNode = document.querySelector("[data-role='workspace-role']");
         const avatarNode = document.querySelector("[data-role='workspace-avatar']");
-        const displayName = profile && profile.displayName ? String(profile.displayName) : "个人中心";
+        const displayName = profile && profile.displayName ? String(profile.displayName) : "涓汉涓績";
         if (displayNameNode) {
             displayNameNode.textContent = displayName;
         }
         if (roleNode) {
-            roleNode.textContent = profile && profile.userRole === ADMINISTRATOR_ROLE ? "管理员" : "校园认证用户";
+            roleNode.textContent = profile && profile.userRole === ADMINISTRATOR_ROLE ? "绠＄悊鍛? : "鏍″洯璁よ瘉鐢ㄦ埛";
         }
         if (avatarNode) {
-            avatarNode.textContent = displayName.slice(0, 1) || "用";
+            avatarNode.textContent = displayName.slice(0, 1) || "鐢?;
         }
         if (avatarNode && window.CampusShareApi.RenderUserAvatar) {
             window.CampusShareApi.RenderUserAvatar(avatarNode, profile, displayName);
@@ -257,3 +257,4 @@
 
     document.addEventListener("DOMContentLoaded", BindUserWorkspacePage);
 })();
+

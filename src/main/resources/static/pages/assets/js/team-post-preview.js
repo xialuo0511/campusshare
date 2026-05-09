@@ -1,14 +1,14 @@
-/**
- * 帖子预览页逻辑（用于审核场景）
+﻿/**
+ * 甯栧瓙棰勮椤甸€昏緫锛堢敤浜庡鏍稿満鏅級
  */
 (function InitTeamPostPreviewPage() {
     const STATUS_TEXT_MAP = {
-        PENDING_REVIEW: "待审核",
-        RECRUITING: "招募中",
-        FULL: "已满员",
-        CLOSED: "已关闭",
-        EXPIRED: "已过期",
-        REJECTED: "已驳回"
+        PENDING_REVIEW: "寰呭鏍?,
+        RECRUITING: "鎷涘嫙涓?,
+        FULL: "宸叉弧鍛?,
+        CLOSED: "宸插叧闂?,
+        EXPIRED: "宸茶繃鏈?,
+        REJECTED: "宸查┏鍥?
     };
 
     document.addEventListener("DOMContentLoaded", async function HandleReady() {
@@ -16,18 +16,18 @@
         RenderPreviewId(recruitmentId);
         UpdateOpenBoardLink(recruitmentId);
         if (recruitmentId <= 0) {
-            RenderErrorState("缺少 recruitmentId 参数");
+            RenderErrorState("缂哄皯 recruitmentId 鍙傛暟");
             return;
         }
         if (!window.CampusShareApi || typeof window.CampusShareApi.GetTeamRecruitmentDetail !== "function") {
-            RenderErrorState("API 初始化失败");
+            RenderErrorState("API 鍒濆鍖栧け璐?);
             return;
         }
         try {
             const detail = await window.CampusShareApi.GetTeamRecruitmentDetail(recruitmentId);
             RenderDetail(detail || {});
         } catch (error) {
-            RenderErrorState(error instanceof Error ? error.message : "帖子详情加载失败");
+            RenderErrorState(error instanceof Error ? error.message : "甯栧瓙璇︽儏鍔犺浇澶辫触");
         }
     });
 
@@ -55,7 +55,7 @@
     }
 
     function RenderDetail(detail) {
-        SetText("[data-role='event-name']", detail.eventName || "未命名帖子");
+        SetText("[data-role='event-name']", detail.eventName || "鏈懡鍚嶅笘瀛?);
         SetText("[data-role='status-text']", ResolveStatusText(detail.recruitmentStatus));
         SetText("[data-role='direction']", detail.direction || "-");
         SetText("[data-role='publisher-name']", ResolvePublisherName(detail));
@@ -63,14 +63,14 @@
         SetText("[data-role='member-limit']", String(SafeNumber(detail.memberLimit)));
         SetText("[data-role='application-count']", String(SafeNumber(detail.applicationCount)));
         SetText("[data-role='deadline']", FormatTime(detail.deadline));
-        SetText("[data-role='skill-requirement']", detail.skillRequirement || "暂无技能要求");
+        SetText("[data-role='skill-requirement']", detail.skillRequirement || "鏆傛棤鎶€鑳借姹?);
         SetText("[data-role='raw-json']", JSON.stringify(detail || {}, null, 2));
     }
 
     function RenderErrorState(message) {
-        SetText("[data-role='event-name']", "加载失败");
-        SetText("[data-role='status-text']", "异常");
-        SetText("[data-role='skill-requirement']", message || "帖子详情加载失败");
+        SetText("[data-role='event-name']", "鍔犺浇澶辫触");
+        SetText("[data-role='status-text']", "寮傚父");
+        SetText("[data-role='skill-requirement']", message || "甯栧瓙璇︽儏鍔犺浇澶辫触");
         SetText("[data-role='raw-json']", "{}");
     }
 
@@ -96,7 +96,7 @@
             }
         }
         const publisherUserId = SafeNumber(detail.publisherUserId);
-        return publisherUserId > 0 ? `用户#${publisherUserId}` : "-";
+        return publisherUserId > 0 ? `鐢ㄦ埛#${publisherUserId}` : "-";
     }
 
     function SetText(selector, value) {
@@ -126,3 +126,4 @@
         return Number.isNaN(numberValue) ? 0 : numberValue;
     }
 })();
+

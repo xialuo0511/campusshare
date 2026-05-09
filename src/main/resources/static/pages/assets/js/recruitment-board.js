@@ -910,3 +910,4 @@
 
     document.addEventListener("DOMContentLoaded", BindRecruitmentBoardPage);
 })();
+

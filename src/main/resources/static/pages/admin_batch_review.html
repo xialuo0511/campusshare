@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="zh"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
+<link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<script src="/pages/assets/vendor/tailwindcss.js"></script>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -84,7 +84,7 @@
         body { font-family: 'Inter', sans-serif; }
         h1, h2, h3 { font-family: 'Manrope', sans-serif; }
     </style>
-<link href="/pages/assets/css/campusshare-modern.css?v=20260509-2" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css?v=20260509-3" rel="stylesheet"/>
 </head>
 <body class="bg-surface text-on-surface">
 <!-- TopNavBar -->
@@ -111,31 +111,31 @@
 <aside class="h-screen w-64 fixed left-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 px-4 z-40">
 <div class="mb-8 px-2">
 <div class="flex items-center gap-3 mb-4">
-<img class="w-10 h-10 rounded-full bg-surface-container-high object-cover" data-alt="professional portrait of a university administrator in a clean office setting, soft natural lighting, high resolution" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlkVz3UqFFSMlXc7iMwJ6kU2MjPE0dTBySQaJ29NUlUsBQ-fVfppKUc3Hw8rk_0kTtQvyQ87mHVqjXQWQ7W7H-qsmHAwTBQ7IUzl6mc3hIz_2NDOGoe9HRLtIG91Duy2IOPtUSKV2RkUPQffNFniXTP50H0J_Tkl3o295PsZR0E2B8lbV-DcRClgf9o2UVs0BoxkrZTz7YJONzi-HgmwLBpOfxCrYThnYetvtJ3WQvKicHM3DYfPZpHPLAfPxDuj3bNRkyyD5M_Lc"/>
+<img class="w-10 h-10 rounded-full bg-surface-container-high object-cover" data-alt="professional portrait of a university administrator in a clean office setting, soft natural lighting, high resolution" src="/pages/assets/img/campusshare-placeholder.svg"/>
 <div>
-<div class="font-headline font-bold text-sm text-on-surface">管理中心</div>
-<div class="text-[10px] text-slate-500 uppercase tracking-wider">学术管理员</div>
+<div class="font-headline font-bold text-sm text-on-surface">绠＄悊涓績</div>
+<div class="text-[10px] text-slate-500 uppercase tracking-wider">瀛︽湳绠＄悊鍛?/div>
 </div>
 </div>
 </div>
 <nav class="flex-1 space-y-1 font-['Inter'] text-sm font-medium">
 <a class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/admin_dashboard.html" href="/pages/admin_dashboard.html">
 <span class="material-symbols-outlined">dashboard</span>
-<span>仪表盘</span>
+<span>浠〃鐩?/span>
 </a>
 <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-white dark:bg-slate-800 text-sky-800 dark:text-sky-300 font-bold transition-all" data-nav-target="/pages/admin_content_review.html" href="/pages/admin_content_review.html">
 <span class="material-symbols-outlined">fact_check</span>
-<span>审核工作台</span>
+<span>瀹℃牳宸ヤ綔鍙?/span>
 </a>
 <a class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" data-nav-target="/pages/market_overview.html" href="/pages/market_overview.html">
 <span class="material-symbols-outlined">home</span>
-<span>返回主页</span>
+<span>杩斿洖涓婚〉</span>
 </a>
 </nav>
 <div class="mt-auto space-y-1 border-t border-slate-200 dark:border-slate-800 pt-4">
 <a class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all" href="#">
 <span class="material-symbols-outlined">logout</span>
-<span>退出登录</span>
+<span>閫€鍑虹櫥褰?/span>
 </a>
 </div>
 </aside>
@@ -144,15 +144,14 @@
 <!-- Header Section -->
 <div class="mb-8 flex justify-between items-end">
 <div>
-<h1 class="text-3xl font-bold text-on-surface mb-2 font-headline">管理员审批工作台</h1>
-<p class="text-on-surface-variant font-body">批量处理校园资源审核、举报与团队申请。</p>
+<h1 class="text-3xl font-bold text-on-surface mb-2 font-headline">绠＄悊鍛樺鎵瑰伐浣滃彴</h1>
+<p class="text-on-surface-variant font-body">鎵归噺澶勭悊鏍″洯璧勬簮瀹℃牳銆佷妇鎶ヤ笌鍥㈤槦鐢宠銆?/p>
 </div>
 <div class="flex gap-3">
 <button class="bg-surface-container-lowest text-on-surface px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all hover:bg-surface-container-high">
-<span class="material-symbols-outlined text-sm">filter_list</span> 筛选条件
-                    </button>
+<span class="material-symbols-outlined text-sm">filter_list</span> 绛涢€夋潯浠?                    </button>
 <button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-all hover:bg-primary-container">
-<span class="material-symbols-outlined text-sm">refresh</span> 刷新数据
+<span class="material-symbols-outlined text-sm">refresh</span> 鍒锋柊鏁版嵁
                     </button>
 </div>
 </div>
@@ -165,31 +164,31 @@
 <!-- Bento Grid Stats (Contextual Info) -->
 <div class="grid grid-cols-4 gap-4 mb-8">
 <div class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between">
-<span class="text-xs text-on-surface-variant font-label uppercase tracking-widest">待处理总数</span>
+<span class="text-xs text-on-surface-variant font-label uppercase tracking-widest">寰呭鐞嗘€绘暟</span>
 <div class="flex items-baseline gap-2 mt-2">
 <span class="text-2xl font-bold text-on-surface">128</span>
 <span class="text-[10px] text-error font-bold">+12%</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between">
-<span class="text-xs text-on-surface-variant font-label uppercase tracking-widest">平均处理耗时</span>
+<span class="text-xs text-on-surface-variant font-label uppercase tracking-widest">骞冲潎澶勭悊鑰楁椂</span>
 <div class="flex items-baseline gap-2 mt-2">
 <span class="text-2xl font-bold text-on-surface">4.2h</span>
 <span class="text-[10px] text-secondary font-bold">-0.5h</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between">
-<span class="text-xs text-on-surface-variant font-label uppercase tracking-widest">今日已通过</span>
+<span class="text-xs text-on-surface-variant font-label uppercase tracking-widest">浠婃棩宸查€氳繃</span>
 <div class="flex items-baseline gap-2 mt-2">
 <span class="text-2xl font-bold text-on-surface">45</span>
 <span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest p-5 rounded-xl border-l-4 border-error">
-<span class="text-xs text-error font-bold font-label uppercase tracking-widest">紧急响应</span>
+<span class="text-xs text-error font-bold font-label uppercase tracking-widest">绱ф€ュ搷搴?/span>
 <div class="flex items-baseline gap-2 mt-2">
 <span class="text-2xl font-bold text-on-surface">03</span>
-<span class="text-[10px] text-on-surface-variant font-medium">需立即处理</span>
+<span class="text-[10px] text-on-surface-variant font-medium">闇€绔嬪嵆澶勭悊</span>
 </div>
 </div>
 </div>
@@ -199,11 +198,11 @@
 <thead>
 <tr class="bg-surface-container-high/50 text-on-surface-variant text-xs font-label uppercase tracking-widest">
 <th class="px-6 py-4 w-12"><input class="rounded-sm border-outline-variant focus:ring-primary text-primary" type="checkbox"/></th>
-<th class="px-6 py-4 font-semibold">申请人 / 资源名称 <span class="material-symbols-outlined text-[14px]">arrow_drop_down</span></th>
-<th class="px-6 py-4 font-semibold">分类</th>
-<th class="px-6 py-4 font-semibold">提交时间</th>
-<th class="px-6 py-4 font-semibold">状态</th>
-<th class="px-6 py-4 font-semibold">操作</th>
+<th class="px-6 py-4 font-semibold">鐢宠浜?/ 璧勬簮鍚嶇О <span class="material-symbols-outlined text-[14px]">arrow_drop_down</span></th>
+<th class="px-6 py-4 font-semibold">鍒嗙被</th>
+<th class="px-6 py-4 font-semibold">鎻愪氦鏃堕棿</th>
+<th class="px-6 py-4 font-semibold">鐘舵€?/th>
+<th class="px-6 py-4 font-semibold">鎿嶄綔</th>
 </tr>
 </thead>
 <tbody class="text-sm divide-y divide-surface-container-low font-body">
@@ -216,8 +215,8 @@
 <span class="material-symbols-outlined text-sm">science</span>
 </div>
 <div>
-<div class="font-semibold text-on-surface">高性能显微镜共享</div>
-<div class="text-xs text-on-surface-variant">生物学院 - 王教授</div>
+<div class="font-semibold text-on-surface">楂樻€ц兘鏄惧井闀滃叡浜?/div>
+<div class="text-xs text-on-surface-variant">鐢熺墿瀛﹂櫌 - 鐜嬫暀鎺?/div>
 </div>
 </div>
 </td>
@@ -229,7 +228,7 @@
                                 </span>
 </td>
 <td class="px-6 py-4">
-<button class="text-primary hover:underline font-medium">详情</button>
+<button class="text-primary hover:underline font-medium">璇︽儏</button>
 </td>
 </tr>
 <!-- Row 2 (Urgent) -->
@@ -241,8 +240,8 @@
 <span class="material-symbols-outlined text-sm">report_problem</span>
 </div>
 <div>
-<div class="font-semibold text-on-surface">匿名举报：实验器材损坏未报</div>
-<div class="text-xs text-on-surface-variant">中心实验室 B301</div>
+<div class="font-semibold text-on-surface">鍖垮悕涓炬姤锛氬疄楠屽櫒鏉愭崯鍧忔湭鎶?/div>
+<div class="text-xs text-on-surface-variant">涓績瀹為獙瀹?B301</div>
 </div>
 </div>
 </td>
@@ -254,7 +253,7 @@
                                 </span>
 </td>
 <td class="px-6 py-4">
-<button class="text-primary hover:underline font-medium">详情</button>
+<button class="text-primary hover:underline font-medium">璇︽儏</button>
 </td>
 </tr>
 <!-- Row 3 -->
@@ -266,8 +265,8 @@
 <span class="material-symbols-outlined text-sm">groups</span>
 </div>
 <div>
-<div class="font-semibold text-on-surface">研究生助教申请</div>
-<div class="text-xs text-on-surface-variant">张三 (学号: 20210082)</div>
+<div class="font-semibold text-on-surface">鐮旂┒鐢熷姪鏁欑敵璇?/div>
+<div class="text-xs text-on-surface-variant">寮犱笁 (瀛﹀彿: 20210082)</div>
 </div>
 </div>
 </td>
@@ -279,7 +278,7 @@
                                 </span>
 </td>
 <td class="px-6 py-4">
-<button class="text-primary hover:underline font-medium">详情</button>
+<button class="text-primary hover:underline font-medium">璇︽儏</button>
 </td>
 </tr>
 <!-- Row 4 -->
@@ -291,8 +290,8 @@
 <span class="material-symbols-outlined text-sm">menu_book</span>
 </div>
 <div>
-<div class="font-semibold text-on-surface">高级算法教材捐赠</div>
-<div class="text-xs text-on-surface-variant">计算机科学系 - 匿名用户</div>
+<div class="font-semibold text-on-surface">楂樼骇绠楁硶鏁欐潗鎹愯禒</div>
+<div class="text-xs text-on-surface-variant">璁＄畻鏈虹瀛︾郴 - 鍖垮悕鐢ㄦ埛</div>
 </div>
 </div>
 </td>
@@ -304,7 +303,7 @@
                                 </span>
 </td>
 <td class="px-6 py-4">
-<button class="text-primary hover:underline font-medium">详情</button>
+<button class="text-primary hover:underline font-medium">璇︽儏</button>
 </td>
 </tr>
 </tbody>
@@ -312,8 +311,8 @@
 <!-- Bulk Action Floating Toolbar -->
 <div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-8 animate-in slide-in-from-bottom-4">
 <div class="flex items-center gap-3 border-r border-outline-variant/30 pr-8">
-<span class="text-sm font-bold">已选择 3 项</span>
-<button class="text-primary-fixed-dim text-xs font-semibold hover:underline">取消全选</button>
+<span class="text-sm font-bold">宸查€夋嫨 3 椤?/span>
+<button class="text-primary-fixed-dim text-xs font-semibold hover:underline">鍙栨秷鍏ㄩ€?/button>
 </div>
 <div class="flex gap-4">
 <button class="flex items-center gap-2 px-4 py-2 bg-primary rounded-lg text-sm font-bold hover:bg-primary-container transition-all">
@@ -331,52 +330,51 @@
 <!-- Detail Panel (Right Sidebar Peek) -->
 <div class="fixed top-16 right-0 w-96 h-[calc(100vh-64px)] bg-surface-container-lowest border-l border-outline-variant/10 shadow-2xl p-6 z-30 transform translate-x-0 transition-transform">
 <div class="flex justify-between items-center mb-6">
-<h3 class="font-headline font-bold text-xl">申请详情</h3>
+<h3 class="font-headline font-bold text-xl">鐢宠璇︽儏</h3>
 <button class="p-2 rounded-full hover:bg-surface-container-high transition-colors">
 <span class="material-symbols-outlined">close</span>
 </button>
 </div>
 <div class="space-y-6">
 <div>
-<span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">申请预览</span>
+<span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">鐢宠棰勮</span>
 <div class="mt-2 relative rounded-xl overflow-hidden aspect-video">
-<img class="w-full h-full object-cover" data-alt="close up of scientific laboratory equipment with glowing indicators in a sterile environment, soft blue lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVzmPEEH15-y70ZmF23bheKe6Sb0Qo2Cyx3lFIsZHmcLQcqD_GJkjWWUcQQfNjGg24KZVP9meMq316I2DfohQYSaebSGkdroosfcEL2bW0o11NT_ASZEgojN_U_KWRdrGPmMh_kP2EbPQ90b3tc8R66Jj2hI_O74HH3MK0npaWZglOAR4Qae3RCiiR1LWAxhZmdrvxw2ilm86g483mN5rYB28sZZv4Rl15R8uHWIs5CNUMrw-oyJbruOkGsZ91VPfB8M6Kt444zvg"/>
+<img class="w-full h-full object-cover" data-alt="close up of scientific laboratory equipment with glowing indicators in a sterile environment, soft blue lighting" src="/pages/assets/img/campusshare-placeholder.svg"/>
 </div>
 </div>
 <div class="space-y-4">
 <div class="flex justify-between border-b border-surface-container pb-2">
-<span class="text-sm text-on-surface-variant">项目名称</span>
-<span class="text-sm font-semibold">高性能显微镜共享</span>
+<span class="text-sm text-on-surface-variant">椤圭洰鍚嶇О</span>
+<span class="text-sm font-semibold">楂樻€ц兘鏄惧井闀滃叡浜?/span>
 </div>
 <div class="flex justify-between border-b border-surface-container pb-2">
-<span class="text-sm text-on-surface-variant">发布者</span>
-<span class="text-sm font-semibold">王建国 教授</span>
+<span class="text-sm text-on-surface-variant">鍙戝竷鑰?/span>
+<span class="text-sm font-semibold">鐜嬪缓鍥?鏁欐巿</span>
 </div>
 <div class="flex justify-between border-b border-surface-container pb-2">
-<span class="text-sm text-on-surface-variant">资源价值</span>
-<span class="text-sm font-semibold text-secondary">¥ 12,000 / 周</span>
+<span class="text-sm text-on-surface-variant">璧勬簮浠峰€?/span>
+<span class="text-sm font-semibold text-secondary">楼 12,000 / 鍛?/span>
 </div>
 <div class="space-y-2">
-<span class="text-sm text-on-surface-variant">描述</span>
+<span class="text-sm text-on-surface-variant">鎻忚堪</span>
 <p class="text-sm text-on-surface leading-relaxed">
-                                用于生物制药及微观结构研究，设备状态良好，仅限本校具备三级生物实验室资质的团队预约使用。
-                            </p>
+                                鐢ㄤ簬鐢熺墿鍒惰嵂鍙婂井瑙傜粨鏋勭爺绌讹紝璁惧鐘舵€佽壇濂斤紝浠呴檺鏈牎鍏峰涓夌骇鐢熺墿瀹為獙瀹よ祫璐ㄧ殑鍥㈤槦棰勭害浣跨敤銆?                            </p>
 </div>
 </div>
 <div class="pt-6 border-t border-surface-container space-y-3">
 <div class="bg-surface-container-low p-4 rounded-lg">
 <div class="flex items-center gap-2 mb-2">
 <span class="material-symbols-outlined text-sm text-secondary">history</span>
-<span class="text-xs font-bold text-on-surface-variant uppercase">审核历史</span>
+<span class="text-xs font-bold text-on-surface-variant uppercase">瀹℃牳鍘嗗彶</span>
 </div>
 <div class="text-[11px] text-on-surface-variant">
-                                2024-05-20 09:15 - 用户提交申请<br/>
-                                2024-05-20 10:30 - 系统初审通过
+                                2024-05-20 09:15 - 鐢ㄦ埛鎻愪氦鐢宠<br/>
+                                2024-05-20 10:30 - 绯荤粺鍒濆閫氳繃
                             </div>
 </div>
 <div class="flex gap-2">
-<button class="flex-1 py-3 bg-primary text-on-primary rounded-lg font-bold text-sm">通过申请</button>
-<button class="px-4 py-3 bg-error-container text-on-error-container rounded-lg font-bold text-sm">驳回</button>
+<button class="flex-1 py-3 bg-primary text-on-primary rounded-lg font-bold text-sm">閫氳繃鐢宠</button>
+<button class="px-4 py-3 bg-error-container text-on-error-container rounded-lg font-bold text-sm">椹冲洖</button>
 </div>
 </div>
 </div>
@@ -387,7 +385,7 @@
 <footer class="w-full py-12 ml-64 flex flex-col md:flex-row justify-between items-center px-12 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
 <div class="font-bold text-sky-900 dark:text-sky-100 font-headline uppercase mb-4 md:mb-0 tracking-widest">CampusShare</div>
 <div class="text-slate-500 dark:text-slate-500 font-['Inter'] text-xs uppercase tracking-wider text-center md:text-left mb-4 md:mb-0">
-            © 2026 CampusShare
+            漏 2026 CampusShare
         </div>
 <div class="flex gap-6 font-['Inter'] text-xs uppercase tracking-wider">
 <a class="text-slate-500 hover:text-sky-900 dark:hover:text-sky-100 transition-colors" href="#">Terms of Service</a>
@@ -399,4 +397,6 @@
 <script src="/pages/assets/js/campusshare-api.js"></script>
 <script src="/pages/assets/js/admin-batch-review.js"></script>
 </body></html>
+
+
 

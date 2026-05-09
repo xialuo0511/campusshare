@@ -1,5 +1,5 @@
-/**
- * 订单详情页面逻辑
+﻿/**
+ * 璁㈠崟璇︽儏椤甸潰閫昏緫
  */
 (function InitOrderDetailPage() {
     const STEP_ICON_MAP = {
@@ -10,16 +10,16 @@
     };
 
     const ORDER_STATUS_TEXT_MAP = {
-        PENDING_SELLER_CONFIRM: "待卖家确认",
-        PENDING_OFFLINE_TRADE: "待线下交易",
-        PENDING_BUYER_CONFIRM: "待买家确认",
-        COMPLETED: "已完成",
-        CANCELED: "已取消",
-        CLOSED: "已关闭"
+        PENDING_SELLER_CONFIRM: "寰呭崠瀹剁‘璁?,
+        PENDING_OFFLINE_TRADE: "寰呯嚎涓嬩氦鏄?,
+        PENDING_BUYER_CONFIRM: "寰呬拱瀹剁‘璁?,
+        COMPLETED: "宸插畬鎴?,
+        CANCELED: "宸插彇娑?,
+        CLOSED: "宸插叧闂?
     };
 
     /**
-     * 页面入口
+     * 椤甸潰鍏ュ彛
      */
     function BindOrderDetailPage() {
         if (!window.CampusShareApi) {
@@ -32,7 +32,7 @@
         const orderId = ResolveOrderId();
         const messageBar = BuildMessageBar(mainElement);
         if (!orderId) {
-            ShowError(messageBar, "缺少订单编号，请从订单中心进入");
+            ShowError(messageBar, "缂哄皯璁㈠崟缂栧彿锛岃浠庤鍗曚腑蹇冭繘鍏?);
             return;
         }
         if (!window.CampusShareApi.GetAuthToken()) {
@@ -45,7 +45,7 @@
     }
 
     /**
-     * 采集页面锚点
+     * 閲囬泦椤甸潰閿氱偣
      */
     function CollectPageRefs(mainElement) {
         return {
@@ -94,13 +94,13 @@
     }
 
     /**
-     * 加载订单
+     * 鍔犺浇璁㈠崟
      */
     async function LoadOrderDetail(orderId, pageRefs, messageBar) {
         try {
             const detailResult = await window.CampusShareApi.GetOrderDetail(orderId);
             if (!detailResult || !detailResult.orderId) {
-                ShowError(messageBar, "订单不存在或无权限访问");
+                ShowError(messageBar, "璁㈠崟涓嶅瓨鍦ㄦ垨鏃犳潈闄愯闂?);
                 return;
             }
             let productResult = null;
@@ -109,7 +109,7 @@
                     productResult = await window.CampusShareApi.GetProductDetail(detailResult.productId);
                 } catch (error) {
                     productResult = null;
-                    ShowError(messageBar, error instanceof Error ? error.message : "商品信息加载失败");
+                    ShowError(messageBar, error instanceof Error ? error.message : "鍟嗗搧淇℃伅鍔犺浇澶辫触");
                 }
             }
 
@@ -123,18 +123,18 @@
             BindActionPanel(detailResult, pageRefs, messageBar);
             HideMessage(messageBar);
         } catch (error) {
-            ShowError(messageBar, error instanceof Error ? error.message : "订单加载失败");
+            ShowError(messageBar, error instanceof Error ? error.message : "璁㈠崟鍔犺浇澶辫触");
         }
     }
 
     /**
-     * 头部数据
+     * 澶撮儴鏁版嵁
      */
     function PatchHeader(detailResult, pageRefs) {
         const orderNoText = detailResult.orderNo || detailResult.orderId || "-";
-        const statusText = ORDER_STATUS_TEXT_MAP[detailResult.orderStatus] || detailResult.orderStatus || "未知状态";
+        const statusText = ORDER_STATUS_TEXT_MAP[detailResult.orderStatus] || detailResult.orderStatus || "鏈煡鐘舵€?;
         if (pageRefs.heading) {
-            pageRefs.heading.textContent = `订单编号: ${orderNoText}`;
+            pageRefs.heading.textContent = `璁㈠崟缂栧彿: ${orderNoText}`;
         }
         if (pageRefs.statusPill) {
             pageRefs.statusPill.textContent = statusText;
@@ -168,19 +168,18 @@
             pageRefs.terminalIcon.textContent = orderStatus === "CANCELED" ? "cancel" : "block";
         }
         if (pageRefs.terminalTitle) {
-            pageRefs.terminalTitle.textContent = ORDER_STATUS_TEXT_MAP[orderStatus] || "订单已终止";
+            pageRefs.terminalTitle.textContent = ORDER_STATUS_TEXT_MAP[orderStatus] || "璁㈠崟宸茬粓姝?;
         }
         if (pageRefs.terminalDescription) {
-            const closeReason = detailResult.closeReason ? `原因：${detailResult.closeReason}` : "该订单已终止，后续不会继续推进。";
+            const closeReason = detailResult.closeReason ? `鍘熷洜锛?{detailResult.closeReason}` : "璇ヨ鍗曞凡缁堟锛屽悗缁笉浼氱户缁帹杩涖€?;
             const closeTime = detailResult.closeTime || detailResult.updateTime;
-            const timeText = closeTime ? `处理时间：${FormatTime(closeTime)}` : "";
-            pageRefs.terminalDescription.textContent = [closeReason, timeText].filter(Boolean).join(" · ");
+            const timeText = closeTime ? `澶勭悊鏃堕棿锛?{FormatTime(closeTime)}` : "";
+            pageRefs.terminalDescription.textContent = [closeReason, timeText].filter(Boolean).join(" 路 ");
         }
     }
 
     /**
-     * 时间轴
-     */
+     * 鏃堕棿杞?     */
     function PatchTimeline(detailResult, pageRefs) {
         const timelineState = ResolveTimelineState(detailResult);
         if (pageRefs.progressBar) {
@@ -223,10 +222,9 @@
     }
 
     /**
-     * 金额与地点
-     */
+     * 閲戦涓庡湴鐐?     */
     function PatchSummary(detailResult, pageRefs) {
-        const amountText = `¥ ${FormatAmount(detailResult.orderAmount)}`;
+        const amountText = `楼 ${FormatAmount(detailResult.orderAmount)}`;
         if (pageRefs.amountMain) {
             pageRefs.amountMain.textContent = amountText;
         }
@@ -237,29 +235,29 @@
             pageRefs.productPrice.textContent = amountText;
         }
         if (pageRefs.tradeLocation) {
-            pageRefs.tradeLocation.textContent = detailResult.tradeLocation || "待协商";
+            pageRefs.tradeLocation.textContent = detailResult.tradeLocation || "寰呭崗鍟?;
         }
         if (pageRefs.tradeLocationSub) {
             pageRefs.tradeLocationSub.textContent = detailResult.tradeLocation
-                ? "请按约定时间到达交易地点"
-                : "请与交易对方沟通具体地点";
+                ? "璇锋寜绾﹀畾鏃堕棿鍒拌揪浜ゆ槗鍦扮偣"
+                : "璇蜂笌浜ゆ槗瀵规柟娌熼€氬叿浣撳湴鐐?;
         }
     }
 
     /**
-     * 商品信息
+     * 鍟嗗搧淇℃伅
      */
     function PatchProductDetail(detailResult, productResult, pageRefs) {
         if (!productResult) {
             if (pageRefs.productTitle) {
                 pageRefs.productTitle.textContent = detailResult.productId
-                    ? `商品 #${detailResult.productId}`
-                    : "商品信息不可用";
+                    ? `鍟嗗搧 #${detailResult.productId}`
+                    : "鍟嗗搧淇℃伅涓嶅彲鐢?;
             }
             return;
         }
         if (pageRefs.productTitle) {
-            pageRefs.productTitle.textContent = productResult.title || `商品 #${detailResult.productId || "-"}`;
+            pageRefs.productTitle.textContent = productResult.title || `鍟嗗搧 #${detailResult.productId || "-"}`;
         }
         if (pageRefs.productCondition) {
             pageRefs.productCondition.textContent = productResult.conditionLevel || "-";
@@ -268,7 +266,7 @@
             pageRefs.productCategory.textContent = productResult.category || "-";
         }
         if (pageRefs.productDescription) {
-            pageRefs.productDescription.textContent = productResult.description || "暂无商品描述";
+            pageRefs.productDescription.textContent = productResult.description || "鏆傛棤鍟嗗搧鎻忚堪";
         }
         if (pageRefs.productImage) {
             const imageUrl = ResolveProductImageUrl(productResult.imageFileIds);
@@ -279,7 +277,7 @@
     }
 
     /**
-     * 买卖双方
+     * 涔板崠鍙屾柟
      */
     function PatchParticipants(detailResult, productResult, pageRefs) {
         const profile = window.CampusShareApi.GetCurrentUserProfile() || {};
@@ -295,11 +293,11 @@
             } else if (currentUserId > 0 && currentUserId === Number(detailResult.buyerUserId || 0) && currentUserName) {
                 pageRefs.buyerName.textContent = currentUserName;
             } else {
-                pageRefs.buyerName.textContent = BuildUserLabel(detailResult.buyerUserId, "买家");
+                pageRefs.buyerName.textContent = BuildUserLabel(detailResult.buyerUserId, "涔板");
             }
         }
         if (pageRefs.buyerSubtitle) {
-            pageRefs.buyerSubtitle.textContent = `用户ID: ${detailResult.buyerUserId || "-"}`;
+            pageRefs.buyerSubtitle.textContent = `鐢ㄦ埛ID: ${detailResult.buyerUserId || "-"}`;
         }
         if (pageRefs.sellerName) {
             if (sellerNameFromOrder) {
@@ -309,14 +307,14 @@
             } else if (currentUserId > 0 && currentUserId === Number(detailResult.sellerUserId || 0) && currentUserName) {
                 pageRefs.sellerName.textContent = currentUserName;
             } else {
-                pageRefs.sellerName.textContent = BuildUserLabel(detailResult.sellerUserId, "卖家");
+                pageRefs.sellerName.textContent = BuildUserLabel(detailResult.sellerUserId, "鍗栧");
             }
         }
         if (pageRefs.sellerSubtitle) {
-            pageRefs.sellerSubtitle.textContent = `用户ID: ${detailResult.sellerUserId || "-"}`;
+            pageRefs.sellerSubtitle.textContent = `鐢ㄦ埛ID: ${detailResult.sellerUserId || "-"}`;
         }
-        PatchParticipantAvatar(pageRefs.buyerAvatar, detailResult.buyerUserId, pageRefs.buyerName ? pageRefs.buyerName.textContent : "买家", profile);
-        PatchParticipantAvatar(pageRefs.sellerAvatar, detailResult.sellerUserId, pageRefs.sellerName ? pageRefs.sellerName.textContent : "卖家", profile);
+        PatchParticipantAvatar(pageRefs.buyerAvatar, detailResult.buyerUserId, pageRefs.buyerName ? pageRefs.buyerName.textContent : "涔板", profile);
+        PatchParticipantAvatar(pageRefs.sellerAvatar, detailResult.sellerUserId, pageRefs.sellerName ? pageRefs.sellerName.textContent : "鍗栧", profile);
     }
 
     function PatchParticipantAvatar(avatarNode, participantUserId, displayName, currentProfile) {
@@ -330,12 +328,11 @@
             window.CampusShareApi.RenderUserAvatar(avatarNode, avatarProfile, displayName);
             return;
         }
-        avatarNode.textContent = String(displayName || "用").slice(0, 1).toUpperCase();
+        avatarNode.textContent = String(displayName || "鐢?).slice(0, 1).toUpperCase();
     }
 
     /**
-     * 元信息
-     */
+     * 鍏冧俊鎭?     */
     function PatchOrderMeta(detailResult, pageRefs) {
         if (pageRefs.metaOrderNo) {
             pageRefs.metaOrderNo.textContent = detailResult.orderNo || `#${detailResult.orderId || "-"}`;
@@ -358,7 +355,7 @@
     }
 
     /**
-     * 操作面板
+     * 鎿嶄綔闈㈡澘
      */
     function BindActionPanel(detailResult, pageRefs, messageBar) {
         const primaryButton = pageRefs.actionPrimary;
@@ -368,8 +365,8 @@
             return;
         }
 
-        BindActionButton(secondaryButton, "联系交易对方", function HandleContactClick() {
-            ShowSuccess(messageBar, "请通过站内消息联系交易对方");
+        BindActionButton(secondaryButton, "鑱旂郴浜ゆ槗瀵规柟", function HandleContactClick() {
+            ShowSuccess(messageBar, "璇烽€氳繃绔欏唴娑堟伅鑱旂郴浜ゆ槗瀵规柟");
         });
 
         const profile = window.CampusShareApi.GetCurrentUserProfile() || {};
@@ -381,63 +378,63 @@
         dangerButton.style.display = "none";
 
         if (detailResult.orderStatus === "PENDING_SELLER_CONFIRM" && isSeller) {
-            BindActionButton(primaryButton, "确认订单", async function HandleConfirmOrder() {
+            BindActionButton(primaryButton, "纭璁㈠崟", async function HandleConfirmOrder() {
                 await window.CampusShareApi.ConfirmOrder(detailResult.orderId);
-                ShowSuccess(messageBar, "订单已确认");
+                ShowSuccess(messageBar, "璁㈠崟宸茬‘璁?);
                 ReloadCurrentPage(detailResult.orderId);
             });
-            BindActionButton(dangerButton, "取消订单", async function HandleCancelOrder() {
+            BindActionButton(dangerButton, "鍙栨秷璁㈠崟", async function HandleCancelOrder() {
                 await window.CampusShareApi.CancelOrder(detailResult.orderId);
-                ShowSuccess(messageBar, "订单已取消");
+                ShowSuccess(messageBar, "璁㈠崟宸插彇娑?);
                 ReloadCurrentPage(detailResult.orderId);
             }, true);
             return;
         }
 
         if (detailResult.orderStatus === "PENDING_OFFLINE_TRADE" && isSeller) {
-            BindActionButton(primaryButton, "线下已交付", async function HandleHandoverOrder() {
+            BindActionButton(primaryButton, "绾夸笅宸蹭氦浠?, async function HandleHandoverOrder() {
                 await window.CampusShareApi.HandoverOrder(detailResult.orderId);
-                ShowSuccess(messageBar, "订单已转入待买家确认");
+                ShowSuccess(messageBar, "璁㈠崟宸茶浆鍏ュ緟涔板纭");
                 ReloadCurrentPage(detailResult.orderId);
             });
-            BindActionButton(dangerButton, "关闭订单", async function HandleCloseOrder() {
-                await window.CampusShareApi.CloseOrder(detailResult.orderId, "卖家手动关闭");
-                ShowSuccess(messageBar, "订单已关闭");
+            BindActionButton(dangerButton, "鍏抽棴璁㈠崟", async function HandleCloseOrder() {
+                await window.CampusShareApi.CloseOrder(detailResult.orderId, "鍗栧鎵嬪姩鍏抽棴");
+                ShowSuccess(messageBar, "璁㈠崟宸插叧闂?);
                 ReloadCurrentPage(detailResult.orderId);
             }, true);
             return;
         }
 
         if (detailResult.orderStatus === "PENDING_BUYER_CONFIRM" && isBuyer) {
-            BindActionButton(primaryButton, "确认收货", async function HandleCompleteOrder() {
+            BindActionButton(primaryButton, "纭鏀惰揣", async function HandleCompleteOrder() {
                 await window.CampusShareApi.CompleteOrder(detailResult.orderId);
-                ShowSuccess(messageBar, "订单已完成");
+                ShowSuccess(messageBar, "璁㈠崟宸插畬鎴?);
                 ReloadCurrentPage(detailResult.orderId);
             });
-            BindActionButton(dangerButton, "取消订单", async function HandleCancelOrder() {
+            BindActionButton(dangerButton, "鍙栨秷璁㈠崟", async function HandleCancelOrder() {
                 await window.CampusShareApi.CancelOrder(detailResult.orderId);
-                ShowSuccess(messageBar, "订单已取消");
+                ShowSuccess(messageBar, "璁㈠崟宸插彇娑?);
                 ReloadCurrentPage(detailResult.orderId);
             }, true);
             return;
         }
 
         if ((detailResult.orderStatus === "PENDING_SELLER_CONFIRM" || detailResult.orderStatus === "PENDING_OFFLINE_TRADE") && isSeller) {
-            BindActionButton(dangerButton, "关闭订单", async function HandleCloseOrder() {
-                await window.CampusShareApi.CloseOrder(detailResult.orderId, "卖家手动关闭");
-                ShowSuccess(messageBar, "订单已关闭");
+            BindActionButton(dangerButton, "鍏抽棴璁㈠崟", async function HandleCloseOrder() {
+                await window.CampusShareApi.CloseOrder(detailResult.orderId, "鍗栧鎵嬪姩鍏抽棴");
+                ShowSuccess(messageBar, "璁㈠崟宸插叧闂?);
                 ReloadCurrentPage(detailResult.orderId);
             }, true);
             return;
         }
 
-        BindActionButton(primaryButton, "返回订单中心", function HandleBackToCenter() {
+        BindActionButton(primaryButton, "杩斿洖璁㈠崟涓績", function HandleBackToCenter() {
             window.location.href = "/pages/order_center.html";
         });
     }
 
     /**
-     * 绑定按钮
+     * 缁戝畾鎸夐挳
      */
     function BindActionButton(buttonElement, text, onClick, isDanger) {
         if (!buttonElement) {
@@ -468,8 +465,7 @@
     }
 
     /**
-     * 当前时间轴阶段
-     */
+     * 褰撳墠鏃堕棿杞撮樁娈?     */
     function ResolveTimelineState(detailResult) {
         const orderStatus = detailResult && detailResult.orderStatus ? detailResult.orderStatus : "";
         if (orderStatus === "PENDING_SELLER_CONFIRM") {
@@ -505,7 +501,7 @@
     }
 
     /**
-     * 线下交易时间
+     * 绾夸笅浜ゆ槗鏃堕棿
      */
     function ResolveOfflineTradeTime(detailResult) {
         if (detailResult.orderStatus === "PENDING_BUYER_CONFIRM" || detailResult.orderStatus === "COMPLETED") {
@@ -515,8 +511,7 @@
     }
 
     /**
-     * 已完成样式
-     */
+     * 宸插畬鎴愭牱寮?     */
     function SetStepCompletedStyle(stepItem) {
         stepItem.circle.className = "w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center";
         stepItem.icon.textContent = "check";
@@ -527,8 +522,7 @@
     }
 
     /**
-     * 激活样式
-     */
+     * 婵€娲绘牱寮?     */
     function SetStepActiveStyle(stepItem, stepNumber) {
         stepItem.circle.className = "w-10 h-10 rounded-full bg-surface-container-lowest border-4 border-primary text-primary flex items-center justify-center";
         stepItem.icon.textContent = STEP_ICON_MAP[stepNumber] || "schedule";
@@ -548,8 +542,7 @@
     }
 
     /**
-     * 待处理样式
-     */
+     * 寰呭鐞嗘牱寮?     */
     function SetStepPendingStyle(stepItem, stepNumber) {
         stepItem.circle.className = "w-10 h-10 rounded-full bg-surface-container-high text-outline-variant flex items-center justify-center";
         stepItem.icon.textContent = STEP_ICON_MAP[stepNumber] || "schedule";
@@ -559,7 +552,7 @@
     }
 
     /**
-     * 商品图URL
+     * 鍟嗗搧鍥綰RL
      */
     function ResolveProductImageUrl(imageFileIds) {
         if (!Array.isArray(imageFileIds) || imageFileIds.length === 0) {
@@ -581,14 +574,14 @@
     }
 
     /**
-     * 刷新页面
+     * 鍒锋柊椤甸潰
      */
     function ReloadCurrentPage(orderId) {
         window.location.href = `/pages/order_detail.html?orderId=${encodeURIComponent(String(orderId))}`;
     }
 
     /**
-     * 订单ID
+     * 璁㈠崟ID
      */
     function ResolveOrderId() {
         const searchParams = new URLSearchParams(window.location.search || "");
@@ -600,18 +593,16 @@
     }
 
     /**
-     * 用户名展示
-     */
+     * 鐢ㄦ埛鍚嶅睍绀?     */
     function BuildUserLabel(userId, roleText) {
         if (!userId) {
-            return `${roleText}信息缺失`;
+            return `${roleText}淇℃伅缂哄け`;
         }
         return `${roleText} #${userId}`;
     }
 
     /**
-     * 金额格式化
-     */
+     * 閲戦鏍煎紡鍖?     */
     function FormatAmount(orderAmount) {
         const numberValue = Number(orderAmount || 0);
         if (Number.isNaN(numberValue)) {
@@ -621,8 +612,7 @@
     }
 
     /**
-     * 时间格式化
-     */
+     * 鏃堕棿鏍煎紡鍖?     */
     function FormatTime(timeText) {
         if (!timeText) {
             return "-";
@@ -635,15 +625,14 @@
     }
 
     /**
-     * 时间补零
+     * 鏃堕棿琛ラ浂
      */
     function PadTime(value) {
         return value < 10 ? `0${value}` : `${value}`;
     }
 
     /**
-     * 消息栏
-     */
+     * 娑堟伅鏍?     */
     function BuildMessageBar(mainElement) {
         const messageBar = document.createElement("div");
         messageBar.className = "rounded-lg px-3 py-2 text-sm mb-4";
@@ -653,7 +642,7 @@
     }
 
     /**
-     * 成功消息
+     * 鎴愬姛娑堟伅
      */
     function ShowSuccess(messageBar, message) {
         messageBar.style.display = "block";
@@ -662,7 +651,7 @@
     }
 
     /**
-     * 失败消息
+     * 澶辫触娑堟伅
      */
     function ShowError(messageBar, message) {
         messageBar.style.display = "block";
@@ -671,7 +660,7 @@
     }
 
     /**
-     * 清空消息
+     * 娓呯┖娑堟伅
      */
     function HideMessage(messageBar) {
         messageBar.style.display = "none";
@@ -680,3 +669,4 @@
 
     document.addEventListener("DOMContentLoaded", BindOrderDetailPage);
 })();
+

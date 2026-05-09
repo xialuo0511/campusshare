@@ -1,13 +1,13 @@
 :root {
     --cs-primary: #005d90;
     --cs-primary-strong: #004b74;
-    --cs-primary-soft: #e8f4ff;
-    --cs-surface: #f6f8fb;
+    --cs-primary-soft: #eef6fb;
+    --cs-surface: #f5f5f7;
     --cs-card: #ffffff;
     --cs-muted: #64748b;
-    --cs-line: rgba(120, 133, 150, 0.22);
-    --cs-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.05);
-    --cs-shadow-md: 0 18px 46px rgba(15, 23, 42, 0.10);
+    --cs-line: rgba(120, 133, 150, 0.16);
+    --cs-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.03), 0 10px 30px rgba(15, 23, 42, 0.045);
+    --cs-shadow-md: 0 22px 52px rgba(15, 23, 42, 0.09);
     --cs-radius-sm: 8px;
     --cs-radius-md: 10px;
     --cs-radius-lg: 12px;
@@ -19,9 +19,7 @@ html {
 }
 
 body {
-    background:
-        linear-gradient(180deg, rgba(232, 244, 255, 0.62) 0, rgba(246, 248, 251, 0) 280px),
-        var(--cs-surface) !important;
+    background: var(--cs-surface) !important;
     color: #172033;
     text-wrap: pretty;
 }
@@ -53,7 +51,7 @@ header[data-user-topbar],
 nav.docked,
 body > nav {
     border-bottom: 1px solid var(--cs-line);
-    background: rgba(248, 250, 252, 0.92) !important;
+    background: rgba(255, 255, 255, 0.86) !important;
     backdrop-filter: blur(14px);
 }
 
@@ -66,7 +64,7 @@ body > nav > div {
 [data-review-shell-sidebar],
 body > aside,
 aside.fixed {
-    background: rgba(248, 250, 252, 0.96) !important;
+    background: rgba(255, 255, 255, 0.88) !important;
     border-right: 1px solid var(--cs-line) !important;
 }
 
@@ -117,6 +115,18 @@ main > aside.sticky {
 
 [data-workspace-main] iframe {
     background: transparent !important;
+}
+
+body:has([data-workspace-sidebar]) {
+    background: #f5f5f7 !important;
+}
+
+[data-workspace-topbar] {
+    background: rgba(255, 255, 255, 0.88) !important;
+}
+
+[data-workspace-main] {
+    background: #f5f5f7 !important;
 }
 
 [data-user-sidebar] a,
@@ -207,6 +217,130 @@ select:focus,
 textarea:focus {
     border-color: rgba(0, 93, 144, 0.42) !important;
     box-shadow: 0 0 0 4px rgba(0, 93, 144, 0.10) !important;
+}
+
+header input[data-role="overview-search-input"],
+header input[data-role="overview-search-input"]:hover,
+header input[data-role="overview-search-input"]:focus {
+    border-color: transparent !important;
+    box-shadow: none !important;
+    outline: 0 !important;
+}
+
+header .focus-within\:ring-1:focus-within {
+    box-shadow: 0 0 0 2px rgba(0, 93, 144, 0.18) !important;
+}
+
+body[data-page="market-overview"] {
+    background: #f5f5f7 !important;
+}
+
+body[data-page="market-overview"] header.docked {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.88) !important;
+}
+
+body[data-page="market-overview"] header.docked nav {
+    max-width: 1320px !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+}
+
+body[data-page="market-overview"] main {
+    max-width: 1320px !important;
+    gap: 2.5rem !important;
+    padding-top: 2rem !important;
+}
+
+body[data-page="market-overview"] main > aside {
+    gap: 1.25rem !important;
+}
+
+body[data-page="market-overview"] main > aside > div,
+body[data-page="market-overview"] [data-role="overview-material-list"] > *,
+body[data-page="market-overview"] [data-role="overview-product-grid"] > *,
+body[data-page="market-overview"] section.flex-1 > div.grid:nth-of-type(3) > div {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(120, 133, 150, 0.12);
+    box-shadow: var(--cs-shadow-sm);
+}
+
+body[data-page="market-overview"] section.flex-1 > div.grid:first-child {
+    grid-template-columns: minmax(0, 1.8fr) 340px !important;
+    gap: 1.5rem !important;
+    margin-bottom: 2.75rem !important;
+}
+
+[data-overview-hero] {
+    height: 300px !important;
+    border: 1px solid rgba(120, 133, 150, 0.14);
+    background: #ffffff;
+    box-shadow: var(--cs-shadow-sm);
+}
+
+[data-overview-hero] img {
+    opacity: 0.96;
+    filter: saturate(0.92);
+}
+
+[data-overview-hero] .absolute.inset-0 {
+    justify-content: center !important;
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.76) 42%, rgba(255, 255, 255, 0.14) 78%) !important;
+    padding: 2.25rem !important;
+}
+
+[data-overview-hero] span {
+    background: rgba(0, 93, 144, 0.08) !important;
+    color: var(--cs-primary) !important;
+    backdrop-filter: none !important;
+}
+
+[data-overview-hero] h1 {
+    max-width: 560px;
+    color: #111827 !important;
+    font-size: clamp(2.1rem, 3vw, 3.15rem) !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0;
+}
+
+[data-overview-hero] p {
+    max-width: 520px !important;
+    color: #526071 !important;
+    font-size: 0.96rem !important;
+    line-height: 1.7 !important;
+}
+
+body[data-page="market-overview"] section.flex-1 > div.grid:first-child > .bg-primary {
+    background: #ffffff !important;
+    border: 1px solid rgba(120, 133, 150, 0.14);
+    box-shadow: var(--cs-shadow-sm);
+}
+
+body[data-page="market-overview"] section.flex-1 > div.grid:first-child > .bg-primary h2 {
+    color: #111827 !important;
+}
+
+body[data-page="market-overview"] section.flex-1 > div.grid:first-child > .bg-primary a {
+    color: #334155 !important;
+}
+
+body[data-page="market-overview"] section.flex-1 > div.grid:first-child > .bg-primary button {
+    background: var(--cs-primary) !important;
+    color: #ffffff !important;
+}
+
+body[data-page="market-overview"] .bg-tertiary-container {
+    background: #ffffff !important;
+    color: #172033 !important;
+    border: 1px solid rgba(120, 133, 150, 0.14);
+    box-shadow: var(--cs-shadow-sm);
+}
+
+body[data-page="market-overview"] .bg-tertiary-container button {
+    background: #f5f5f7 !important;
+    color: var(--cs-primary) !important;
 }
 
 [data-role="overview-product-grid"] > *,
@@ -326,6 +460,33 @@ tbody tr {
 [data-role="product-count"],
 [data-role="material-count"] {
     letter-spacing: 0;
+}
+
+main.ml-64.p-8 > header.flex.justify-between {
+    align-items: center !important;
+    gap: 1.5rem !important;
+    margin: 0 0 2rem !important;
+    padding: 1rem 1.15rem 1rem 1.25rem !important;
+    border: 1px solid rgba(120, 133, 150, 0.14);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: var(--cs-shadow-sm);
+}
+
+main.ml-64.p-8 > header.flex.justify-between h1 {
+    font-size: clamp(1.7rem, 2.3vw, 2.35rem) !important;
+    letter-spacing: 0;
+    line-height: 1.08;
+}
+
+main.ml-64.p-8 > header.flex.justify-between p {
+    margin-top: 0.25rem;
+    color: var(--cs-muted) !important;
+}
+
+main.ml-64.p-8 > header.flex.justify-between .bg-surface-container {
+    background: #f5f5f7 !important;
+    border: 1px solid rgba(120, 133, 150, 0.16);
 }
 
 table {

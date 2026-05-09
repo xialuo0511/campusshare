@@ -592,7 +592,7 @@
                 return fileUrl;
             }
         }
-        return "https://picsum.photos/seed/campusshare/320/320";
+        return "/pages/assets/img/campusshare-placeholder.svg";
     }
 
     /**
@@ -734,3 +734,4 @@
 
     document.addEventListener("DOMContentLoaded", BindMyPublishPage);
 })();
+

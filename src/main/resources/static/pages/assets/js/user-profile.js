@@ -663,3 +663,4 @@
 
     document.addEventListener("DOMContentLoaded", BindUserProfilePage);
 })();
+

@@ -111,13 +111,6 @@
                 window.CampusShareApi.LogoutAndRedirect();
             });
         }
-        const helpButton = document.querySelector("[data-workspace-help]");
-        if (helpButton) {
-            helpButton.addEventListener("click", function HandleHelpClick(event) {
-                event.preventDefault();
-                NavigateWorkspaceFrame(frameElement, "/pages/notification_center.html");
-            });
-        }
     }
 
     /**

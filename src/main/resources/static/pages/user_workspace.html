@@ -63,15 +63,13 @@
     }
     aside button[data-workspace-nav]:not([data-workspace-target="/pages/notification_center.html"]),
     aside button[data-workspace-admin],
-    aside button[data-workspace-help],
     aside button[data-workspace-logout] {
         border-radius: 0.5rem;
         line-height: 1.25rem;
         transition: background-color 0.15s ease, color 0.15s ease;
     }
     aside button[data-workspace-nav]:not([data-workspace-target="/pages/notification_center.html"]):hover,
-    aside button[data-workspace-admin]:hover,
-    aside button[data-workspace-help]:hover {
+    aside button[data-workspace-admin]:hover {
         background-color: rgba(148, 163, 184, 0.16);
     }
     [data-workspace-top-nav][aria-current="page"] {
@@ -79,10 +77,10 @@
         border-bottom-color: #075985;
     }
 </style>
-<link href="/pages/assets/css/campusshare-modern.css?v=20260509" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css?v=20260509-2" rel="stylesheet"/>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900">
-<header class="fixed left-0 right-0 top-0 z-50 h-16 border-b border-slate-200 bg-slate-50">
+<header class="fixed left-0 right-0 top-0 z-50 h-16 border-b border-slate-200 bg-slate-50" data-workspace-topbar>
     <div class="flex h-16 items-center justify-between px-8">
         <button type="button" class="text-xl font-bold tracking-tight text-sky-900" data-workspace-brand>CampusShare</button>
         <nav class="flex items-center gap-6 font-['Manrope'] text-sm font-bold">
@@ -93,7 +91,7 @@
     </div>
 </header>
 
-<aside class="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-64 flex-col border-r border-slate-200 bg-slate-50 px-4 py-6">
+<aside class="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-64 flex-col border-r border-slate-200 bg-slate-50 px-4 py-6" data-workspace-sidebar>
     <div class="mb-8 flex items-center gap-3 px-2">
         <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sky-100 text-sm font-bold text-sky-800" data-role="workspace-avatar">--</div>
         <div class="min-w-0">
@@ -125,16 +123,13 @@
         </button>
     </nav>
     <div class="mt-auto flex flex-col gap-1 border-t border-slate-200 pt-4">
-        <button type="button" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-sky-800" data-workspace-help>
-            <span class="material-symbols-outlined">help_outline</span><span>帮助中心</span>
-        </button>
         <button type="button" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50" data-workspace-logout>
             <span class="material-symbols-outlined">logout</span><span>退出登录</span>
         </button>
     </div>
 </aside>
 
-<main class="ml-64 pt-16">
+<main class="ml-64 pt-16" data-workspace-main>
     <iframe class="block h-[calc(100vh-4rem)] w-full border-0 bg-slate-50" data-workspace-frame title="CampusShare 子界面"></iframe>
 </main>
 

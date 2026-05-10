@@ -65,14 +65,14 @@
         }
         const hasLoginSession = !!window.CampusShareApi.GetAuthToken();
         if (hasLoginSession) {
-            actionButton.textContent = "鍙戝竷";
+            actionButton.textContent = "发布";
             actionButton.setAttribute("data-nav-target", "/pages/publish_create.html");
             return;
         }
         const authPath = window.CampusShareApi.BuildAuthPageUrl
             ? window.CampusShareApi.BuildAuthPageUrl("/pages/market_overview.html")
             : "/pages/auth_access.html";
-        actionButton.textContent = "鐧诲綍";
+        actionButton.textContent = "登录";
         actionButton.setAttribute("data-nav-target", authPath);
     }
 
@@ -184,7 +184,7 @@
                 return;
             }
             if (!window.CampusShareApi.GetAuthToken()) {
-                ShowError(view.messageBarNode, "璇峰厛鐧诲綍鍚庡啀涓嬭浇璧勬枡");
+                ShowError(view.messageBarNode, "请先登录后再下载资料");
                 window.setTimeout(function RedirectLoginForDownload() {
                     window.CampusShareApi.RedirectToAuthPage("/pages/market_overview.html");
                 }, 600);
@@ -197,7 +197,7 @@
                 ShowSuccess(view.messageBarNode, ResolveMaterialDownloadSuccessMessage(result));
                 await LoadSidebarPersonalData(view);
             } catch (error) {
-                ShowError(view.messageBarNode, GetErrorMessage(error, "璧勬枡涓嬭浇澶辫触"));
+                ShowError(view.messageBarNode, GetErrorMessage(error, "资料下载失败"));
             } finally {
                 buttonNode.disabled = false;
             }
@@ -212,11 +212,11 @@
             ? String(downloadResult.fileAccessUrl).trim()
             : "";
         if (!fileAccessUrl) {
-            throw new Error("涓嬭浇鍦板潃缂哄け锛岃绋嶅悗閲嶈瘯");
+            throw new Error("下载地址缺失，请稍后重试");
         }
         const token = window.CampusShareApi.GetAuthToken();
         if (!token) {
-            throw new Error("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍");
+            throw new Error("登录状态已失效，请重新登录");
         }
         const fileResponse = await fetch(fileAccessUrl, {
             method: "GET",
@@ -225,7 +225,7 @@
             }
         });
         if (!fileResponse.ok) {
-            throw new Error(`鏂囦欢涓嬭浇澶辫触(${fileResponse.status})`);
+            throw new Error(`文件下载失败(${fileResponse.status})`);
         }
         const fileBlob = await fileResponse.blob();
         const blobUrl = window.URL.createObjectURL(fileBlob);
@@ -257,7 +257,7 @@
     function ResolveMaterialDownloadSuccessMessage(downloadResult) {
         const deductedPoints = SafeNumber(downloadResult && downloadResult.deductedPoints);
         const currentPointBalance = SafeNumber(downloadResult && downloadResult.currentPointBalance);
-        return `璧勬枡涓嬭浇宸插紑濮嬶紝宸叉墸鍑?${deductedPoints} 绉垎锛屽綋鍓嶇Н鍒?${currentPointBalance}`;
+        return `资料下载已开始，已扣除 ${deductedPoints} 积分，当前积分 ${currentPointBalance}`;
     }
 
     /**
@@ -277,7 +277,7 @@
                 return;
             }
             if (!window.CampusShareApi.GetAuthToken()) {
-                ShowError(view.messageBarNode, "璇峰厛鐧诲綍鍚庡啀鏀惰棌璧勬枡");
+                ShowError(view.messageBarNode, "请先登录后再收藏资料");
                 window.setTimeout(function RedirectLoginForFavorite() {
                     window.CampusShareApi.RedirectToAuthPage("/pages/market_overview.html");
                 }, 600);
@@ -289,7 +289,7 @@
                 ApplyMaterialFavoriteButton(buttonNode, !!(favoriteResult && favoriteResult.favorited));
                 ShowSuccess(view.messageBarNode, favoriteResult && favoriteResult.favorited ? "已收藏资料" : "已取消收藏");
             } catch (error) {
-                ShowError(view.messageBarNode, GetErrorMessage(error, "璧勬枡鏀惰棌鎿嶄綔澶辫触"));
+                ShowError(view.messageBarNode, GetErrorMessage(error, "资料收藏操作失败"));
             } finally {
                 buttonNode.disabled = false;
             }
@@ -300,16 +300,16 @@
      * 娓叉煋鍒濆鍔犺浇鎬?     */
     function RenderLoadingState(view) {
         if (view.noticeListNode) {
-            view.noticeListNode.innerHTML = "<p class=\"text-xs text-outline px-2\">鍔犺浇涓?..</p>";
+            view.noticeListNode.innerHTML = "<p class=\"text-xs text-outline px-2\">加载中...</p>";
         }
         if (view.productGridNode) {
-            view.productGridNode.innerHTML = "<div class=\"col-span-full text-center text-sm text-outline py-10\">鍔犺浇涓?..</div>";
+            view.productGridNode.innerHTML = "<div class=\"col-span-full text-center text-sm text-outline py-10\">加载中...</div>";
         }
         if (view.materialListNode) {
-            view.materialListNode.innerHTML = "<div class=\"text-center text-sm text-outline py-6\">鍔犺浇涓?..</div>";
+            view.materialListNode.innerHTML = "<div class=\"text-center text-sm text-outline py-6\">加载中...</div>";
         }
         if (view.recruitmentListNode) {
-            view.recruitmentListNode.innerHTML = "<div class=\"p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-xs opacity-80\">鍔犺浇涓?..</div>";
+            view.recruitmentListNode.innerHTML = "<div class=\"p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-xs opacity-80\">加载中...</div>";
         }
     }
 
@@ -352,9 +352,9 @@
             RenderFeaturedMaterials(view.materialListNode, []);
             RenderRecruitmentHighlights(view.recruitmentListNode, []);
             if (view.recommendedSummaryNode) {
-                view.recommendedSummaryNode.textContent = "鏆傛棤鎺ㄨ崘浜ゆ槗";
+                view.recommendedSummaryNode.textContent = "暂无推荐交易";
             }
-            ShowError(view.messageBarNode, GetErrorMessage(error, "棣栭〉鏁版嵁鍔犺浇澶辫触"));
+            ShowError(view.messageBarNode, GetErrorMessage(error, "首页数据加载失败"));
         }
     }
 
@@ -366,14 +366,14 @@
             return;
         }
         if (!window.CampusShareApi.GetAuthToken()) {
-            noticeListNode.innerHTML = "<p class=\"text-xs text-outline px-2\">鐧诲綍鍚庡彲鏌ョ湅娑堟伅鎻愰啋</p>";
+            noticeListNode.innerHTML = "<p class=\"text-xs text-outline px-2\">登录后可查看消息提醒</p>";
             return;
         }
         try {
             const notificationList = await window.CampusShareApi.ListMyNotifications();
             RenderNoticeList(noticeListNode, notificationList);
         } catch (error) {
-            noticeListNode.innerHTML = `<p class="text-xs text-red-500 px-2">${EscapeHtml(GetErrorMessage(error, "娑堟伅鍔犺浇澶辫触"))}</p>`;
+            noticeListNode.innerHTML = `<p class="text-xs text-red-500 px-2">${EscapeHtml(GetErrorMessage(error, "消息加载失败"))}</p>`;
         }
     }
 
@@ -397,10 +397,10 @@
             const favoriteProductCount = SafeNumber(favoriteProductResult && favoriteProductResult.totalCount);
             const favoriteMaterialCount = SafeNumber(favoriteMaterialResult && favoriteMaterialResult.totalCount);
             const availablePoints = SafeNumber(pointLedgerResult && pointLedgerResult.availablePoints);
-            view.favoriteSummaryNode.textContent = `鍟嗗搧 ${favoriteProductCount} 路 璧勬枡 ${favoriteMaterialCount}`;
+            view.favoriteSummaryNode.textContent = `商品 ${favoriteProductCount} · 资料 ${favoriteMaterialCount}`;
             view.pointBalanceNode.textContent = String(availablePoints);
         } catch (error) {
-            view.favoriteSummaryNode.textContent = "鍔犺浇澶辫触";
+            view.favoriteSummaryNode.textContent = "加载失败";
             view.pointBalanceNode.textContent = "-";
             ShowError(view.messageBarNode, GetErrorMessage(error, "收藏与积分加载失败"));
         }
@@ -412,7 +412,7 @@
     function RenderNoticeList(noticeListNode, notificationList) {
         const safeList = Array.isArray(notificationList) ? notificationList.slice(0, 3) : [];
         if (!safeList.length) {
-            noticeListNode.innerHTML = "<p class=\"text-xs text-outline px-2\">鏆傛棤娑堟伅鎻愰啋</p>";
+            noticeListNode.innerHTML = "<p class=\"text-xs text-outline px-2\">暂无消息提醒</p>";
             return;
         }
         noticeListNode.innerHTML = safeList.map(function BuildNoticeItem(item) {
@@ -421,7 +421,7 @@
                 "<div class=\"flex gap-3 px-2\">",
                 `<div class="w-2 h-2 rounded-full ${unreadClass} mt-1.5 shrink-0"></div>`,
                 "<div class=\"min-w-0\">",
-                `<p class="text-xs font-semibold truncate">${EscapeHtml(item.title || "绯荤粺閫氱煡")}</p>`,
+                `<p class="text-xs font-semibold truncate">${EscapeHtml(item.title || "系统通知")}</p>`,
                 `<p class="text-[10px] text-outline">${EscapeHtml(FormatRelativeTime(item.sendTime))}</p>`,
                 "</div>",
                 "</div>"
@@ -438,25 +438,25 @@
         }
         const safeList = Array.isArray(productList) ? productList : [];
         if (!safeList.length) {
-            productGridNode.innerHTML = "<div class=\"col-span-full text-center text-sm text-outline py-10\">鏆傛棤鎺ㄨ崘浜ゆ槗</div>";
+            productGridNode.innerHTML = "<div class=\"col-span-full text-center text-sm text-outline py-10\">暂无推荐交易</div>";
             return;
         }
         productGridNode.innerHTML = safeList.map(function BuildProductCard(item, index) {
             return [
                 `<div class="bg-surface-container-lowest rounded-xl p-3 border-transparent hover:bg-surface-container-low transition-all cursor-pointer group" data-product-id="${EscapeHtml(String(item.productId || ""))}">`,
                 "<div class=\"aspect-square rounded-lg overflow-hidden mb-3 bg-surface-container\">",
-                `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="${ResolveProductImage(item, index)}" alt="鎺ㄨ崘鍟嗗搧"/>`,
+                `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="${ResolveProductImage(item, index)}" alt="推荐商品"/>`,
                 "</div>",
                 "<div class=\"flex flex-col gap-1\">",
                 "<div class=\"flex justify-between items-start\">",
                 `<h3 class="text-sm font-semibold truncate flex-1">${EscapeHtml(item.title || "-")}</h3>`,
-                `<span class="text-primary font-bold ml-2">楼${EscapeHtml(FormatAmount(item.price))}</span>`,
+                `<span class="text-primary font-bold ml-2">¥${EscapeHtml(FormatAmount(item.price))}</span>`,
                 "</div>",
                 "<div class=\"flex items-center gap-2 mb-2\">",
                 `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${ResolveConditionClass(item.conditionLevel)}">${EscapeHtml(item.conditionLevel || "-")}</span>`,
                 `<span class="text-[10px] text-outline flex items-center gap-0.5"><span class="material-symbols-outlined text-[10px]">location_on</span>${EscapeHtml(item.tradeLocation || "-")}</span>`,
                 "</div>",
-                `<p class="text-[10px] text-outline truncate">鍙戝竷鑰咃細${EscapeHtml(item.sellerDisplayName || "鍖垮悕鐢ㄦ埛")} 路 ${EscapeHtml(FormatRelativeTime(item.createTime))}</p>`,
+                `<p class="text-[10px] text-outline truncate">发布者：${EscapeHtml(item.sellerDisplayName || "匿名用户")} · ${EscapeHtml(FormatRelativeTime(item.createTime))}</p>`,
                 "</div>",
                 "</div>"
             ].join("");
@@ -471,7 +471,7 @@
         }
         const safeList = Array.isArray(materialList) ? materialList : [];
         if (!safeList.length) {
-            materialListNode.innerHTML = "<div class=\"text-center text-sm text-outline py-6\">鏆傛棤绮鹃€夎祫鏂?/div>";
+            materialListNode.innerHTML = "<div class=\"text-center text-sm text-outline py-6\">暂无精选资料</div>";
             return;
         }
         materialListNode.innerHTML = safeList.map(function BuildMaterialCard(item) {
@@ -483,12 +483,12 @@
                 "</div>",
                 "<div class=\"min-w-0\">",
                 `<h4 class="text-sm font-semibold truncate">${EscapeHtml(item.courseName || "-")}</h4>`,
-                `<p class="text-[10px] text-outline truncate">鐢?${EscapeHtml(item.uploaderDisplayName || "鍖垮悕鐢ㄦ埛")} 鍒嗕韩 路 ${EscapeHtml(FormatFileSize(item.fileSizeBytes))} 路 ${EscapeHtml(String(SafeNumber(item.downloadCount)))} 娆′笅杞?/p>`,
+                `<p class="text-[10px] text-outline truncate">由 ${EscapeHtml(item.uploaderDisplayName || "匿名用户")} 分享 · ${EscapeHtml(FormatFileSize(item.fileSizeBytes))} · ${EscapeHtml(String(SafeNumber(item.downloadCount)))} 次下载</p>`,
                 "</div>",
                 "</div>",
                 "<div class=\"flex items-center gap-2\">",
-                `<button type="button" data-material-id="${EscapeHtml(String(item.materialId || ""))}" class="material-symbols-outlined text-outline hover:text-primary transition-colors" title="涓嬭浇">download</button>`,
-                `<button type="button" data-material-favorite-id="${EscapeHtml(String(item.materialId || ""))}" class="material-symbols-outlined text-outline hover:text-primary transition-colors" title="鏀惰棌">favorite</button>`,
+                `<button type="button" data-material-id="${EscapeHtml(String(item.materialId || ""))}" class="material-symbols-outlined text-outline hover:text-primary transition-colors" title="下载">download</button>`,
+                `<button type="button" data-material-favorite-id="${EscapeHtml(String(item.materialId || ""))}" class="material-symbols-outlined text-outline hover:text-primary transition-colors" title="收藏">favorite</button>`,
                 "</div>",
                 "</div>"
             ].join("");
@@ -544,7 +544,7 @@
         }
         buttonNode.classList.remove("text-primary");
         buttonNode.style.fontVariationSettings = "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
-        buttonNode.setAttribute("title", "鏀惰棌");
+        buttonNode.setAttribute("title", "收藏");
     }
 
     /**

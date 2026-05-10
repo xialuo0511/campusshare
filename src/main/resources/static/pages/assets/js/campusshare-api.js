@@ -397,62 +397,62 @@
         }
         const lowerText = text.toLowerCase();
         if (
-            text.includes("绠＄悊")
-            || text.includes("浠〃")
-            || text.includes("宸ヤ綔")
+            text.includes("管理")
+            || text.includes("仪表")
+            || text.includes("工作")
             || lowerText.includes("dashboard")
             || lowerText.includes("admin")
         ) {
             return PAGE_PATH_MAP.ADMIN;
         }
         if (
-            text.includes("浜ゆ槗甯傚満")
-            || text === "甯傚満"
-            || text.includes("棣栭〉")
+            text.includes("交易市场")
+            || text === "市场"
+            || text.includes("首页")
             || lowerText.includes("marketplace")
             || lowerText.includes("home")
         ) {
             return PAGE_PATH_MAP.OVERVIEW;
         }
         if (
-            text.includes("瀛︽湳璧勬簮")
-            || text.includes("瀛︿範璧勬枡")
-            || text.includes("璧勬簮涓績")
+            text.includes("学术资源")
+            || text.includes("学习资料")
+            || text.includes("资源中心")
             || lowerText.includes("resource")
             || lowerText.includes("material")
         ) {
             return PAGE_PATH_MAP.MATERIAL_LISTING;
         }
-        if (text.includes("璁㈠崟") || text.includes("浜ゆ槗璇锋眰") || lowerText.includes("trade requests")) {
+        if (text.includes("订单") || text.includes("交易请求") || lowerText.includes("trade requests")) {
             return PAGE_PATH_MAP.ORDER;
         }
-        if (text.includes("鎴戠殑鍙戝竷") || lowerText.includes("my listings")) {
+        if (text.includes("我的发布") || lowerText.includes("my listings")) {
             return PAGE_PATH_MAP.MY_PUBLISH;
         }
         if (
-            text === "鍙戝竷"
-            || text === "寮€濮嬪彂甯"
-            || text === "鍘诲彂甯"
+            text === "发布"
+            || text === "开始发布"
+            || text === "去发布"
             || lowerText === "publish"
             || lowerText.includes("upload")
         ) {
             return PAGE_PATH_MAP.PUBLISH;
         }
         if (
-            text.includes("鏍″洯璁哄潧")
-            || text.includes("璁哄潧")
+            text.includes("校园论坛")
+            || text.includes("论坛")
             || lowerText.includes("forum")
         ) {
             return PAGE_PATH_MAP.FORUM_SUBVIEW;
         }
         if (
-            text.includes("鎷涘嫙")
-            || text.includes("缁勯槦")
+            text.includes("招募")
+            || text.includes("组队")
             || lowerText.includes("recruitment")
         ) {
             return PAGE_PATH_MAP.RECRUITMENT;
         }
-        if (text.includes("娑堟伅") || lowerText.includes("message")) {
+        if (text.includes("消息") || lowerText.includes("message")) {
             return PAGE_PATH_MAP.NOTIFICATION;
         }
         if (text.includes("璁剧疆") || lowerText.includes("setting")) {
@@ -646,7 +646,7 @@
                 } else if (parentElement) {
                     const triggerShellElement = document.createElement("button");
                     triggerShellElement.type = "button";
-                    triggerShellElement.setAttribute("aria-label", "娑堟伅閫氱煡");
+                    triggerShellElement.setAttribute("aria-label", "消息通知");
                     triggerShellElement.dataset.notificationTriggerShell = "true";
                     parentElement.insertBefore(triggerShellElement, iconElement);
                     triggerShellElement.appendChild(iconElement);
@@ -938,12 +938,12 @@
         notificationPanelElement.setAttribute("aria-hidden", "true");
         notificationPanelElement.innerHTML = `
             <div class="campusshare-notification-header">
-                <span class="campusshare-notification-title">娑堟伅閫氱煡</span>
-                <button type="button" class="campusshare-notification-mark-all" data-action="mark-all-read">鍏ㄩ儴宸茶</button>
+                <span class="campusshare-notification-title">消息通知</span>
+                <button type="button" class="campusshare-notification-mark-all" data-action="mark-all-read">全部已读</button>
             </div>
-            <div class="campusshare-notification-summary" data-role="notification-summary">姝ｅ湪鍔犺浇...</div>
+            <div class="campusshare-notification-summary" data-role="notification-summary">正在加载...</div>
             <div class="campusshare-notification-list" data-role="notification-list">
-                <div class="campusshare-notification-empty">鏆傛棤閫氱煡</div>
+                <div class="campusshare-notification-empty">暂无通知</div>
             </div>
         `;
         document.body.appendChild(notificationPanelElement);
@@ -955,7 +955,7 @@
         const notificationActionsElement = document.createElement("div");
         notificationCenterButton.className = "campusshare-notification-center-link";
         notificationCenterButton.href = BuildUserWorkspacePath(PAGE_PATH_MAP.NOTIFICATION);
-        notificationCenterButton.textContent = "娑堟伅涓績";
+        notificationCenterButton.textContent = "消息中心";
         notificationActionsElement.className = "campusshare-notification-actions";
         notificationActionsElement.appendChild(notificationCenterButton);
         if (notificationMarkAllReadButton) {
@@ -1072,7 +1072,7 @@
         if (!limitedNotificationList.length) {
             const emptyElement = document.createElement("div");
             emptyElement.className = "campusshare-notification-empty";
-            emptyElement.textContent = "鏆傛棤閫氱煡";
+            emptyElement.textContent = "暂无通知";
             notificationListElement.appendChild(emptyElement);
             return;
         }
@@ -1081,7 +1081,7 @@
             itemElement.className = `campusshare-notification-item${notificationItem.readFlag ? "" : " is-unread"}`;
             const titleElement = document.createElement("span");
             titleElement.className = "campusshare-notification-item-title";
-            titleElement.textContent = notificationItem.title || "绯荤粺閫氱煡";
+            titleElement.textContent = notificationItem.title || "系统通知";
 
             const contentElement = document.createElement("div");
             contentElement.className = "campusshare-notification-item-content";
@@ -1097,7 +1097,7 @@
             const readButton = document.createElement("button");
             readButton.type = "button";
             readButton.className = "campusshare-notification-item-action";
-            readButton.textContent = notificationItem.readFlag ? "宸茶" : "鏍囪宸茶";
+            readButton.textContent = notificationItem.readFlag ? "已读" : "标记已读";
             readButton.disabled = !!notificationItem.readFlag;
             readButton.addEventListener("click", function HandleReadNotification() {
                 MarkSingleNotificationRead(notificationItem.notificationId);
@@ -1117,7 +1117,7 @@
     async function RefreshNotificationData() {
         const currentSequence = ++notificationRequestSequence;
         if (notificationSummaryElement) {
-            notificationSummaryElement.textContent = "姝ｅ湪鍔犺浇...";
+            notificationSummaryElement.textContent = "正在加载...";
         }
         try {
             const notificationList = await RequestApi("/api/v1/notifications", "GET", null, true);
@@ -1135,12 +1135,12 @@
                 notificationListElement.innerHTML = "";
                 const failElement = document.createElement("div");
                 failElement.className = "campusshare-notification-empty";
-                failElement.textContent = error.message || "閫氱煡鍔犺浇澶辫触";
+                failElement.textContent = error.message || "通知加载失败";
                 notificationListElement.appendChild(failElement);
             }
             UpdateNotificationBadge(0);
             if (notificationSummaryElement) {
-                notificationSummaryElement.textContent = "閫氱煡鍔犺浇澶辫触";
+                notificationSummaryElement.textContent = "通知加载失败";
             }
         }
     }
@@ -1162,7 +1162,7 @@
             });
             RenderNotificationList();
         } catch (error) {
-            window.alert(error.message || "鏍囪宸茶澶辫触");
+            window.alert(error.message || "标记已读失败");
         }
     }
 
@@ -1178,7 +1178,7 @@
         }
         if (notificationMarkAllReadButton) {
             notificationMarkAllReadButton.disabled = true;
-            notificationMarkAllReadButton.textContent = "澶勭悊涓?..";
+            notificationMarkAllReadButton.textContent = "处理中...";
         }
         try {
             await RequestApi("/api/v1/notifications/read/all", "POST", {}, true);
@@ -1310,7 +1310,7 @@
             return;
         }
         authRedirecting = true;
-        const noticeText = (messageText || "").trim() || "鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍";
+        const noticeText = (messageText || "").trim() || "登录状态已失效，请重新登录";
         window.setTimeout(function RedirectAfterUnauthorized() {
             RedirectToAuthPage(currentPathWithQuery, noticeText);
         }, 80);
@@ -1351,7 +1351,7 @@
             if (!text) {
                 return;
             }
-            if (text.includes("鐧诲嚭") || text.includes("閫€鍑") || text.toLowerCase().includes("logout")) {
+            if (text.includes("登出") || text.includes("退出") || text.toLowerCase().includes("logout")) {
                 anchorElement.href = "javascript:void(0)";
                 if (anchorElement.dataset.logoutNavigationBound === "true") {
                     return;
@@ -1363,7 +1363,7 @@
                 });
                 return;
             }
-            if (text.includes("鐧诲綍") || text.includes("娉ㄥ唽")) {
+            if (text.includes("登录") || text.includes("注册")) {
                 anchorElement.href = PAGE_PATH_MAP.AUTH;
                 return;
             }
@@ -1406,7 +1406,7 @@
             if (!buttonText) {
                 return;
             }
-            if (buttonText.includes("鎴戠殑鍙戝竷")
+            if (buttonText.includes("我的发布")
                 && !dataTargetPath
                 && !buttonElement.closest("form")
                 && !buttonElement.hasAttribute("data-action")
@@ -1416,7 +1416,7 @@
                     NavigateToPage(PAGE_PATH_MAP.MY_PUBLISH);
                 });
             }
-            if ((buttonText === "鍙戝竷" || buttonText === "寮€濮嬪彂甯" || buttonText === "鍘诲彂甯")
+            if ((buttonText === "发布" || buttonText === "开始发布" || buttonText === "去发布")
                 && !dataTargetPath
                 && !buttonElement.closest("form")
                 && !buttonElement.hasAttribute("data-action")
@@ -1426,7 +1426,7 @@
                     NavigateToPage(PAGE_PATH_MAP.PUBLISH);
                 });
             }
-            if ((buttonText.includes("鐧诲嚭") || buttonText.includes("閫€鍑")) && !buttonElement.hasAttribute("data-action")) {
+            if ((buttonText.includes("登出") || buttonText.includes("退出")) && !buttonElement.hasAttribute("data-action")) {
                 if (buttonElement.dataset.logoutNavigationBound === "true") {
                     return;
                 }
@@ -1589,7 +1589,7 @@
         if (avatarUrl) {
             const imageElement = document.createElement("img");
             imageElement.src = avatarUrl;
-            imageElement.alt = "鐢ㄦ埛澶村儚";
+            imageElement.alt = "用户头像";
             imageElement.className = "h-full w-full object-cover";
             element.appendChild(imageElement);
             return;
@@ -1804,8 +1804,8 @@
         const token = GetAuthToken();
         if (needAuth) {
             if (!token) {
-                HandleUnauthorizedState("璇峰厛鐧诲綍鍚庡啀鎿嶄綔", true);
-                throw new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔");
+                HandleUnauthorizedState("请先登录后再操作", true);
+                throw new Error("请先登录后再操作");
             }
         }
         if (token) {
@@ -1823,13 +1823,13 @@
         try {
             responseBody = responseText ? JSON.parse(responseText) : null;
         } catch (error) {
-            throw new Error("鎺ュ彛杩斿洖鏍煎紡寮傚父");
+            throw new Error("接口返回格式异常");
         }
 
         if (!response.ok) {
             if (needAuth && (response.status === 401 || response.status === 403)) {
-                HandleUnauthorizedState("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍", true);
-                throw new Error("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍");
+                HandleUnauthorizedState("登录状态已失效，请重新登录", true);
+                throw new Error("登录状态已失效，请重新登录");
             }
             throw new Error(`璇锋眰澶辫触(${response.status})`);
         }
@@ -1855,8 +1855,8 @@
         const token = GetAuthToken();
         if (needAuth) {
             if (!token) {
-                HandleUnauthorizedState("璇峰厛鐧诲綍鍚庡啀鎿嶄綔", true);
-                throw new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔");
+                HandleUnauthorizedState("请先登录后再操作", true);
+                throw new Error("请先登录后再操作");
             }
         }
         if (token) {
@@ -1874,12 +1874,12 @@
         try {
             responseBody = responseText ? JSON.parse(responseText) : null;
         } catch (error) {
-            throw new Error("鎺ュ彛杩斿洖鏍煎紡寮傚父");
+            throw new Error("接口返回格式异常");
         }
         if (!response.ok) {
             if (needAuth && (response.status === 401 || response.status === 403)) {
-                HandleUnauthorizedState("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍", true);
-                throw new Error("鐧诲綍鐘舵€佸凡澶辨晥锛岃閲嶆柊鐧诲綍");
+                HandleUnauthorizedState("登录状态已失效，请重新登录", true);
+                throw new Error("登录状态已失效，请重新登录");
             }
             throw new Error(`璇锋眰澶辫触(${response.status})`);
         }
@@ -2156,14 +2156,14 @@
         UpdateMyProfile(payload) {
             const currentProfile = GetCurrentUserProfile();
             if (!currentProfile || !currentProfile.userId) {
-                return Promise.reject(new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔"));
+                return Promise.reject(new Error("请先登录后再操作"));
             }
             return RequestApi(`/api/v1/users/${currentProfile.userId}/profile`, "PUT", payload || {}, true);
         },
         SubmitMyAvatar(avatarDataUrl) {
             const currentProfile = GetCurrentUserProfile();
             if (!currentProfile || !currentProfile.userId) {
-                return Promise.reject(new Error("璇峰厛鐧诲綍鍚庡啀鎿嶄綔"));
+                return Promise.reject(new Error("请先登录后再操作"));
             }
             return RequestApi(
                 `/api/v1/users/${currentProfile.userId}/avatar`,

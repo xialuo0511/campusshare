@@ -14,6 +14,109 @@
     const NOTIFICATION_PANEL_ID = "campusshare-notification-panel";
     const NOTIFICATION_PANEL_STYLE_ID = "campusshare-notification-panel-style";
     const NOTIFICATION_MAX_RENDER_COUNT = 20;
+    const MOJIBAKE_TEXT_REPLACEMENT_LIST = [
+        ["浜ゆ槗甯傚満", "交易市场"],
+        ["瀛︽湳璧勬簮", "学术资源"],
+        ["鏍″洯璁哄潧", "校园论坛"],
+        ["涓汉涓績", "个人中心"],
+        ["鏍″洯璁よ瘉鐢ㄦ埛", "校园认证用户"],
+        ["瀛︽湳绠＄悊鍛?", "学术管理员"],
+        ["瀛︽湳棣嗗憳", "学术管理员"],
+        ["涓婚〉", "主页"],
+        ["鎴戠殑鍙戝竷", "我的发布"],
+        ["璁㈠崟涓績", "订单中心"],
+        ["缁勯槦鎷涘嫙", "组队招募"],
+        ["娑堟伅閫氱煡", "消息通知"],
+        ["涓汉璁剧疆", "个人设置"],
+        ["绠＄悊浠〃鐩?", "管理仪表盘"],
+        ["浠〃鐩?", "仪表盘"],
+        ["瀹℃牳宸ヤ綔鍙?", "审核工作台"],
+        ["鐢ㄦ埛涓庤鍒?", "用户与规则"],
+        ["璁㈠崟绠＄悊", "订单管理"],
+        ["鏁版嵁缁熻", "数据统计"],
+        ["杩斿洖涓婚〉", "返回主页"],
+        ["閫€鍑虹櫥褰?", "退出登录"],
+        ["鏈烘瀯姒傝", "机构概览"],
+        ["瀹炴椂骞冲彴娲诲姩鍜岀鐞嗗伐浣滃彴銆?", "实时平台活动和管理工作台。"],
+        ["鎼滅储璧勬簮...", "搜索资源..."],
+        ["鎬绘椿璺冨彂甯?", "总活跃发布"],
+        ["寰呭鐞嗕妇鎶?", "待处理举报"],
+        ["鏈€杩戣鍗?", "最近订单"],
+        ["骞冲彴娲诲姩", "平台活动"],
+        ["鐢ㄦ埛澧為暱", "用户增长"],
+        ["璧勬簮浜ゆ崲", "资源交换"],
+        ["鍔犺浇涓?", "加载中"],
+        ["鍐呭瀹℃牳宸ヤ綔鍙?", "内容审核工作台"],
+        ["鍐呭瀹℃牳涓績", "内容审核中心"],
+        ["鍐呭审核工作台", "内容审核工作台"],
+        ["帖子銆佸晢鍝佷笌资料缁熶竴瀹℃牳鍏ュ彛", "帖子、商品与资料统一审核入口"],
+        ["甯栧瓙銆佸晢鍝併€佽祫鏂欎笌鐢ㄦ埛缁熶竴瀹℃牳鍏ュ彛", "帖子、商品、资料与用户统一审核入口"],
+        ["甯栧瓙銆佸晢鍝佷笌璧勬枡缁熶竴瀹℃牳鍏ュ彛", "帖子、商品与资料统一审核入口"],
+        ["鎼滅储鏍囬銆佸彂甯冭€呫€両D", "搜索标题、发布者、ID"],
+        ["寰呭鏍告€婚噺", "待审核总量"],
+        ["褰撳墠绛涢€?", "当前筛选"],
+        ["鏈宸插鐞?", "本次已处理"],
+        ["骞冲潎绛夊緟鏃堕暱", "平均等待时长"],
+        ["褰撳墠闃熷垪", "当前队列"],
+        ["瀹℃牳闃熷垪", "审核队列"],
+        ["鍏ㄩ儴", "全部"],
+        ["鍟嗗搧", "商品"],
+        ["甯栧瓙", "帖子"],
+        ["璧勬枡", "资料"],
+        ["鐢ㄦ埛", "用户"],
+        ["楂橀闄?", "高风险"],
+        ["鏈€鏂?", "最新"],
+        ["绛涢€夐槦鍒?", "筛选队列"],
+        ["姝ｅ湪鍔犺浇寰呭鏍镐换鍔?..", "正在加载待审核任务..."],
+        ["璇烽€夋嫨宸︿晶浠诲姟", "请选择左侧任务"],
+        ["涓棿鏍忓睍绀哄畬鏁村鏍镐俊鎭?", "中间栏展示完整审核信息"],
+        ["涓棿鏍忎細灞曠ず鍙敤浜庡鏍哥殑瀹屾暣淇℃伅銆", "中间栏会展示可用于审核的完整信息。"],
+        ["鏆傛棤鍐呭", "暂无内容"],
+        ["瀹℃牳鍐崇瓥", "审核决策"],
+        ["褰撳墠鐘舵€?", "当前状态"],
+        ["寰呭鏍?", "待审核"],
+        ["鎰忚妯℃澘", "意见模板"],
+        ["瀹℃牳鎰忚", "审核意见"],
+        ["椹冲洖", "驳回"],
+        ["閫氳繃", "通过"],
+        ["涓婁竴鏉?", "上一条"],
+        ["涓嬩竴鏉?", "下一条"],
+        ["闅愮鏀跨瓥", "隐私政策"],
+        ["鏈嶅姟鏉℃", "服务条款"],
+        ["鎶€鏈敮鎸?", "技术支持"],
+        ["娑堟伅涓績", "消息中心"],
+        ["闆嗕腑澶勭悊璁㈠崟銆佸鏍搞€佺Н鍒嗗拰缁勯槦鐩稿叧鎻愰啋", "集中处理订单、审核、积分和组队相关提醒"],
+        ["鍏ㄩ儴鏍囪涓哄凡璇?", "全部标记为已读"],
+        ["鍏ㄩ儴娑堟伅", "全部消息"],
+        ["鏈娑堟伅", "未读消息"],
+        ["宸茶娑堟伅", "已读消息"],
+        ["鏈", "未读"],
+        ["宸茶", "已读"],
+        ["鎸夊彂閫佹椂闂村€掑簭鎺掑垪", "按发送时间倒序排列"],
+        ["姝ｅ湪鍔犺浇娑堟伅...", "正在加载消息..."],
+        ["绠＄悊鎮ㄧ殑鏈烘瀯浜ゆ槗鍜屽鏈祫婧愯幏鍙栥€?", "管理您的校园交易和学术资源获取。"],
+        ["鎬昏鍗?", "总订单"],
+        ["杩涜涓氦鏄?", "进行中交易"],
+        ["宸插畬鎴?", "已完成"],
+        ["澶勭悊鏃堕棿", "处理时间"],
+        ["鏆傛棤鍙拷韪鍗?", "暂无可追踪订单"],
+        ["鍘嗗彶璁㈠崟", "历史订单"],
+        ["寰呭鐞?", "待处理"],
+        ["璁㈠崟鍙?", "订单号"],
+        ["鍟嗗搧/璧勬簮", "商品/资源"],
+        ["鍗栧/涔板", "卖家/买家"],
+        ["鏈€鍚庢洿鏂?", "最后更新"],
+        ["浠锋牸", "价格"],
+        ["鐘舵€?", "状态"],
+        ["璁㈠崟", "订单"],
+        ["鍙戝竷", "发布"],
+        ["鍟嗗搧鏍囬", "商品标题"],
+        ["璧勬枡鏍囬", "资料标题"],
+        ["涓婁紶瀛︽湳璧勬枡", "上传学术资料"],
+        ["鍙戝竷缁勯槦鎷涘嫙", "发布组队招募"],
+        ["鎷涘嫙", "招募"],
+        ["漏 2026 CampusShare", "© 2026 CampusShare"]
+    ];
 
     const PAGE_PATH_MAP = {
         AUTH: "/pages/auth_access.html",
@@ -103,6 +206,82 @@
     function ClearAuthToken() {
         window.sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
         window.localStorage.removeItem(AUTH_TOKEN_LEGACY_STORAGE_KEY);
+    }
+
+    function NormalizeMojibakeText(text) {
+        if (!text || typeof text !== "string") {
+            return text;
+        }
+        let normalizedText = text;
+        MOJIBAKE_TEXT_REPLACEMENT_LIST.forEach(function ReplaceMojibakeText(replacementEntry) {
+            normalizedText = normalizedText.split(replacementEntry[0]).join(replacementEntry[1]);
+        });
+        normalizedText = normalizedText
+            .replace(/\?\/(?:span|p|button|a|h1|h2|h3|div|th|td|option)>/g, "")
+            .replace(/\/(?:span|p|button|a|h1|h2|h3|div|th|td|option)>/g, "")
+            .replace(/\s+$/g, "");
+        return normalizedText;
+    }
+
+    function NormalizeMojibakeNode(rootNode) {
+        if (!rootNode || !document.createTreeWalker) {
+            return;
+        }
+        const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_TEXT);
+        const textNodeList = [];
+        while (walker.nextNode()) {
+            textNodeList.push(walker.currentNode);
+        }
+        textNodeList.forEach(function PatchTextNode(textNode) {
+            const normalizedText = NormalizeMojibakeText(textNode.nodeValue);
+            if (normalizedText !== textNode.nodeValue) {
+                textNode.nodeValue = normalizedText;
+            }
+        });
+        if (rootNode.querySelectorAll) {
+            rootNode.querySelectorAll("[placeholder], [title], [aria-label]").forEach(function PatchTextAttribute(element) {
+                ["placeholder", "title", "aria-label"].forEach(function PatchAttribute(attributeName) {
+                    const attributeValue = element.getAttribute(attributeName);
+                    const normalizedValue = NormalizeMojibakeText(attributeValue);
+                    if (normalizedValue !== attributeValue) {
+                        element.setAttribute(attributeName, normalizedValue);
+                    }
+                });
+            });
+        }
+        document.title = NormalizeMojibakeText(document.title);
+    }
+
+    function InstallMojibakeNormalizer() {
+        NormalizeMojibakeNode(document.body || document.documentElement);
+        if (!window.MutationObserver || window.__campusshareMojibakeObserverInstalled) {
+            return;
+        }
+        window.__campusshareMojibakeObserverInstalled = true;
+        const observer = new MutationObserver(function HandleMojibakeMutation(mutationList) {
+            mutationList.forEach(function NormalizeMutation(mutation) {
+                if (mutation.type === "characterData") {
+                    const normalizedText = NormalizeMojibakeText(mutation.target.nodeValue);
+                    if (normalizedText !== mutation.target.nodeValue) {
+                        mutation.target.nodeValue = normalizedText;
+                    }
+                    return;
+                }
+                mutation.addedNodes.forEach(function NormalizeAddedNode(addedNode) {
+                    if (addedNode.nodeType === Node.TEXT_NODE) {
+                        const normalizedText = NormalizeMojibakeText(addedNode.nodeValue);
+                        if (normalizedText !== addedNode.nodeValue) {
+                            addedNode.nodeValue = normalizedText;
+                        }
+                        return;
+                    }
+                    if (addedNode.nodeType === Node.ELEMENT_NODE) {
+                        NormalizeMojibakeNode(addedNode);
+                    }
+                });
+            });
+        });
+        observer.observe(document.body || document.documentElement, { childList: true, characterData: true, subtree: true });
     }
 
     /**
@@ -2408,6 +2587,7 @@
             return;
         }
         BindGlobalShellNavigation();
+        InstallMojibakeNormalizer();
         if (GetAuthToken()) {
             SyncSessionProfile().catch(function IgnoreProfileSyncError() {
                 // 浼氳瘽澶辨晥鐢遍〉闈㈣姹傚眰鎻愮ず

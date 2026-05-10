@@ -118,7 +118,7 @@ main > aside.sticky {
 }
 
 body:has([data-workspace-sidebar]) {
-    background: #f5f5f7 !important;
+    background: #f8f9fa !important;
 }
 
 [data-workspace-topbar] {
@@ -126,7 +126,11 @@ body:has([data-workspace-sidebar]) {
 }
 
 [data-workspace-main] {
-    background: #f5f5f7 !important;
+    background: #f8f9fa !important;
+}
+
+[data-workspace-main] iframe {
+    background: #f8f9fa !important;
 }
 
 [data-user-sidebar] a,

@@ -10,10 +10,10 @@
         "/pages/assets/img/campusshare-placeholder.svg"
     ];
     const RECRUITMENT_STATUS_TEXT_MAP = {
-        RECRUITING: "鎷涘嫙涓?,
-        FULL: "宸叉弧鍛?,
-        CLOSED: "宸插叧闂?,
-        EXPIRED: "宸茶繃鏈?
+        RECRUITING: "招募中",
+        FULL: "已满员",
+        CLOSED: "已关闭",
+        EXPIRED: "已过期"
     };
 
     /**
@@ -86,15 +86,15 @@
             return;
         }
         if (!hasLoginSession) {
-            view.profileNameNode.textContent = "鏈櫥褰曠敤鎴?;
+            view.profileNameNode.textContent = "未登录用户";
             view.profileRoleNode.textContent = "娓稿妯″紡";
-            view.profileAvatarNode.textContent = "鏈?;
+            view.profileAvatarNode.textContent = "未";
             return;
         }
         const displayName = profile && (profile.displayName || profile.account)
             ? (profile.displayName || profile.account)
-            : "宸茬櫥褰曠敤鎴?;
-        const roleText = profile && profile.userRole === "ADMINISTRATOR" ? "绠＄悊鍛? : "鏅€氱敤鎴?;
+            : "已登录用户";
+        const roleText = profile && profile.userRole === "ADMINISTRATOR" ? "管理员" : "普通用户";
         view.profileNameNode.textContent = displayName;
         view.profileRoleNode.textContent = roleText;
         if (window.CampusShareApi.RenderUserAvatar) {
@@ -287,7 +287,7 @@
             try {
                 const favoriteResult = await window.CampusShareApi.ToggleMaterialFavorite(materialId);
                 ApplyMaterialFavoriteButton(buttonNode, !!(favoriteResult && favoriteResult.favorited));
-                ShowSuccess(view.messageBarNode, favoriteResult && favoriteResult.favorited ? "宸叉敹钘忚祫鏂? : "宸插彇娑堟敹钘?);
+                ShowSuccess(view.messageBarNode, favoriteResult && favoriteResult.favorited ? "已收藏资料" : "已取消收藏");
             } catch (error) {
                 ShowError(view.messageBarNode, GetErrorMessage(error, "璧勬枡鏀惰棌鎿嶄綔澶辫触"));
             } finally {
@@ -344,7 +344,7 @@
             await RefreshMaterialFavoriteState(view, view.materialListNode);
 
             if (view.recommendedSummaryNode) {
-                view.recommendedSummaryNode.textContent = `褰撳墠鍦ㄦ灦鍟嗗搧 ${SafeNumber(overviewResult.publishedProductCount)} 浠讹紝璧勬枡 ${SafeNumber(overviewResult.publishedMaterialCount)} 浠絗;
+                view.recommendedSummaryNode.textContent = `当前在架商品 ${SafeNumber(overviewResult.publishedProductCount)} 件，资料 ${SafeNumber(overviewResult.publishedMaterialCount)} 份`;
             }
             HideMessage(view.messageBarNode);
         } catch (error) {
@@ -384,7 +384,7 @@
             return;
         }
         if (!window.CampusShareApi.GetAuthToken()) {
-            view.favoriteSummaryNode.textContent = "鐧诲綍鍚庢煡鐪?;
+            view.favoriteSummaryNode.textContent = "登录后查看";
             view.pointBalanceNode.textContent = "-";
             return;
         }
@@ -402,7 +402,7 @@
         } catch (error) {
             view.favoriteSummaryNode.textContent = "鍔犺浇澶辫触";
             view.pointBalanceNode.textContent = "-";
-            ShowError(view.messageBarNode, GetErrorMessage(error, "鏀惰棌涓庣Н鍒嗗姞杞藉け璐?));
+            ShowError(view.messageBarNode, GetErrorMessage(error, "收藏与积分加载失败"));
         }
     }
 
@@ -523,7 +523,7 @@
             } catch (error) {
                 ApplyMaterialFavoriteButton(buttonNode, false);
                 if (view && view.messageBarNode) {
-                    ShowError(view.messageBarNode, GetErrorMessage(error, "鏀惰棌鐘舵€佸悓姝ュけ璐?));
+                    ShowError(view.messageBarNode, GetErrorMessage(error, "收藏状态同步失败"));
                 }
             }
         }));
@@ -539,7 +539,7 @@
         if (favorited) {
             buttonNode.classList.add("text-primary");
             buttonNode.style.fontVariationSettings = "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24";
-            buttonNode.setAttribute("title", "宸叉敹钘?);
+            buttonNode.setAttribute("title", "已收藏");
             return;
         }
         buttonNode.classList.remove("text-primary");
@@ -557,7 +557,7 @@
             ? recruitmentList.slice(0, RECRUITMENT_HIGHLIGHT_SIZE)
             : [];
         if (!safeList.length) {
-            recruitmentListNode.innerHTML = "<div class=\"p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-xs opacity-80\">鏆傛棤鎷涘嫙绮鹃€?/div>";
+            recruitmentListNode.innerHTML = "<div class=\"p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-xs opacity-80\">暂无招募精选</div>";
             return;
         }
         recruitmentListNode.innerHTML = safeList.map(function BuildRecruitmentCard(item, index) {
@@ -573,10 +573,10 @@
                 "<div class=\"p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20\">",
                 "<div class=\"flex items-center gap-2 mb-2\">",
                 `<span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${tagClass}">${EscapeHtml(directionText)}</span>`,
-                `<span class="text-[10px] opacity-70">${EscapeHtml(statusText)} 路 鍓╀綑 ${EscapeHtml(String(remainingSeats))} 涓悕棰?/span>`,
+                `<span class="text-[10px] opacity-70">${EscapeHtml(statusText)} · 剩余 ${EscapeHtml(String(remainingSeats))} 个名额</span>`,
                 "</div>",
-                `<h4 class="text-sm font-bold mb-1">${EscapeHtml(item.eventName || "鏈懡鍚嶆嫑鍕?)}</h4>`,
-                `<p class="text-xs opacity-80 line-clamp-2">${EscapeHtml(item.skillRequirement || "鏆傛棤鎶€鑳借姹?)}</p>`,
+                `<h4 class="text-sm font-bold mb-1">${EscapeHtml(item.eventName || "未命名招募")}</h4>`,
+                `<p class="text-xs opacity-80 line-clamp-2">${EscapeHtml(item.skillRequirement || "暂无技能要求")}</p>`,
                 "</div>"
             ].join("");
         }).join("");
@@ -661,7 +661,7 @@
      */
     function ResolveConditionClass(conditionLevel) {
         const text = (conditionLevel || "").trim();
-        if (text.includes("鏂?)) {
+        if (text.includes("新")) {
             return "bg-secondary-container text-on-secondary-container";
         }
         return "bg-surface-container-highest text-on-surface-variant";
@@ -710,7 +710,7 @@
     /**
      * 鎷涘嫙鐘舵€佹枃妗?     */
     function ResolveRecruitmentStatusText(recruitmentStatus) {
-        return RECRUITMENT_STATUS_TEXT_MAP[recruitmentStatus] || "鐘舵€佹湭鐭?;
+        return RECRUITMENT_STATUS_TEXT_MAP[recruitmentStatus] || "状态未知";
     }
 
     /**
@@ -748,15 +748,15 @@
         }
         const diffMinutes = Math.floor((Date.now() - timeValue) / (1000 * 60));
         if (diffMinutes < 1) {
-            return "鍒氬垰";
+            return "刚刚";
         }
         if (diffMinutes < 60) {
-            return `${diffMinutes} 鍒嗛挓鍓峘;
+            return `${diffMinutes} 分钟前`;
         }
         if (diffMinutes < 24 * 60) {
-            return `${Math.floor(diffMinutes / 60)} 灏忔椂鍓峘;
+            return `${Math.floor(diffMinutes / 60)} 小时前`;
         }
-        return `${Math.floor(diffMinutes / (24 * 60))} 澶╁墠`;
+        return `${Math.floor(diffMinutes / (24 * 60))} 天前`;
     }
 
     /**

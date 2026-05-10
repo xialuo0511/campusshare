@@ -397,9 +397,9 @@
         }
         const lowerText = text.toLowerCase();
         if (
-            text.includes("绠＄悊鍛?)
-            || text.includes("浠〃鏉?)
-            || text.includes("宸ヤ綔鍙?)
+            text.includes("绠＄悊")
+            || text.includes("浠〃")
+            || text.includes("宸ヤ綔")
             || lowerText.includes("dashboard")
             || lowerText.includes("admin")
         ) {
@@ -431,8 +431,8 @@
         }
         if (
             text === "鍙戝竷"
-            || text === "寮€濮嬪彂甯?
-            || text === "鍘诲彂甯?
+            || text === "寮€濮嬪彂甯"
+            || text === "鍘诲彂甯"
             || lowerText === "publish"
             || lowerText.includes("upload")
         ) {
@@ -993,7 +993,7 @@
         if (!notificationSummaryElement) {
             return;
         }
-        notificationSummaryElement.textContent = `鍏?${totalCount} 鏉★紝鏈 ${unreadCount} 鏉;
+        notificationSummaryElement.textContent = `共 ${totalCount} 条，未读 ${unreadCount} 条`;
     }
 
     /**
@@ -1351,7 +1351,7 @@
             if (!text) {
                 return;
             }
-            if (text.includes("鐧诲嚭") || text.includes("閫€鍑?) || text.toLowerCase().includes("logout")) {
+            if (text.includes("鐧诲嚭") || text.includes("閫€鍑") || text.toLowerCase().includes("logout")) {
                 anchorElement.href = "javascript:void(0)";
                 if (anchorElement.dataset.logoutNavigationBound === "true") {
                     return;
@@ -1416,7 +1416,7 @@
                     NavigateToPage(PAGE_PATH_MAP.MY_PUBLISH);
                 });
             }
-            if ((buttonText === "鍙戝竷" || buttonText === "寮€濮嬪彂甯? || buttonText === "鍘诲彂甯?)
+            if ((buttonText === "鍙戝竷" || buttonText === "寮€濮嬪彂甯" || buttonText === "鍘诲彂甯")
                 && !dataTargetPath
                 && !buttonElement.closest("form")
                 && !buttonElement.hasAttribute("data-action")
@@ -1426,7 +1426,7 @@
                     NavigateToPage(PAGE_PATH_MAP.PUBLISH);
                 });
             }
-            if ((buttonText.includes("鐧诲嚭") || buttonText.includes("閫€鍑?)) && !buttonElement.hasAttribute("data-action")) {
+            if ((buttonText.includes("鐧诲嚭") || buttonText.includes("閫€鍑")) && !buttonElement.hasAttribute("data-action")) {
                 if (buttonElement.dataset.logoutNavigationBound === "true") {
                     return;
                 }
@@ -1787,7 +1787,7 @@
             if (error && error.name === "AbortError") {
                 throw new Error("璇锋眰瓒呮椂锛岃绋嶅悗閲嶈瘯");
             }
-            throw new Error("缃戠粶寮傚父锛岃妫€鏌ョ綉缁滆繛鎺?);
+            throw new Error("网络异常，请检查网络连接");
         } finally {
             window.clearTimeout(timeoutId);
         }

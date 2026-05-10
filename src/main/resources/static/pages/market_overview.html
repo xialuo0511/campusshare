@@ -88,21 +88,21 @@
 <body class="bg-surface text-on-surface" data-page="market-overview">
 <!-- TopNavBar -->
 <header class="bg-[#f8f9fa] dark:bg-slate-950 docked full-width top-0 z-50 sticky">
-<nav class="flex justify-between items-center w-full px-6 py-3 max-w-[1440px] mx-auto font-['Manrope'] text-sm tracking-wide">
-<div class="flex items-center gap-8 flex-1">
-<span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500">CampusShare</span>
+<nav class="flex items-center w-full px-6 py-3 max-w-[1440px] mx-auto font-['Manrope'] text-sm tracking-wide gap-8">
+<div class="flex items-center gap-6 flex-1 min-w-0">
+<span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500 shrink-0">CampusShare</span>
 <!-- Central Search Bar -->
-<div class="hidden md:flex flex-1 max-w-2xl bg-surface-container rounded-lg items-center px-4 py-2 gap-3 group focus-within:ring-1 ring-primary/20">
+<div class="hidden md:flex flex-1 min-w-0 max-w-[34rem] xl:max-w-[38rem] bg-surface-container rounded-lg items-center px-4 py-2 gap-3 group focus-within:ring-1 ring-primary/20">
 <span class="material-symbols-outlined text-outline">search</span>
 <input class="bg-transparent border-none focus:ring-0 w-full text-sm" data-role="overview-search-input" placeholder="搜索资源、教材、项目..." type="text"/>
 <div class="h-4 w-px bg-outline-variant/30"></div>
-<button class="flex items-center gap-1 text-slate-600 font-medium whitespace-nowrap">
+<button class="flex items-center gap-1 text-slate-600 font-medium whitespace-nowrap" data-nav-target="/pages/market_listing.html" type="button">
                         分类
                         <span class="material-symbols-outlined text-lg">expand_more</span>
 </button>
 </div>
 </div>
-<div class="flex items-center gap-6">
+<div class="flex items-center gap-6 shrink-0">
 <div class="hidden lg:flex items-center gap-6">
 <a class="text-[#005d90] dark:text-sky-400 font-bold border-b-2 border-[#005d90] pb-1" data-nav-target="/pages/market_overview.html" href="#">交易市场</a>
 <a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] dark:hover:text-sky-300 transition-colors" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
@@ -181,7 +181,7 @@
 <div class="md:col-span-2 relative h-64 rounded-xl overflow-hidden group cursor-pointer" data-overview-hero>
 <img class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="CampusShare abstract campus workspace" src="/pages/assets/img/campus-hero.svg"/>
 <div class="absolute inset-0 bg-gradient-to-r from-[#001d32]/90 to-transparent flex flex-col justify-end p-8">
-<span class="text-primary-fixed bg-primary/40 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase w-fit mb-3">校园可信流转</span>
+<span class="text-primary-fixed bg-primary/40 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase w-fit mb-3">校园交易平台</span>
 <h1 class="text-white text-4xl font-extrabold mb-2 leading-tight">更轻松地完成校园交易与资料共享</h1>
 <p class="text-primary-fixed-dim max-w-md text-sm">把二手商品、学习资料和组队信息收在一个清晰、可追踪的工作台里。</p>
 </div>

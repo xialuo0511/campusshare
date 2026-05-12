@@ -106,7 +106,11 @@
     }
 
     async function LoadNotifications(api, view) {
-        if (!view.noticeListNode || !api.GetAuthToken || !api.GetAuthToken()) {
+        if (!view.noticeListNode) {
+            return;
+        }
+        if (!api.GetAuthToken || !api.GetAuthToken()) {
+            view.noticeListNode.innerHTML = "<p class=\"text-[12px] text-slate-400 leading-relaxed\">登录后查看消息</p>";
             return;
         }
         try {
@@ -116,15 +120,47 @@
             const result = await api.ListNotifications({ pageNo: 1, pageSize: 3 });
             const records = result.records || result.list || [];
             if (!records.length) {
-                view.noticeListNode.innerHTML = "<p class=\"text-xs text-slate-500\">暂无消息提醒</p>";
+                view.noticeListNode.innerHTML = "<p class=\"text-[12px] text-slate-400 leading-relaxed\">暂无新消息</p>";
                 return;
             }
             view.noticeListNode.innerHTML = records.slice(0, 3).map(function BuildNotice(item) {
-                return `<article class="rounded-xl bg-white p-3 text-xs text-slate-600">${EscapeHtml(item.title || item.content || "新消息")}</article>`;
+                var unreadDot = item.readFlag ? "" : "<span class=\"inline-block w-1.5 h-1.5 rounded-full bg-[#005d90] shrink-0 mt-[5px]\"></span>";
+                var title = EscapeHtml(item.title || item.content || "新消息");
+                var time = item.createTime ? FormatRelativeTime(item.createTime) : "";
+                var timeHtml = time ? " <span class=\"text-slate-300\">·</span> <span class=\"text-[11px] text-slate-400\">" + EscapeHtml(time) + "</span>" : "";
+                return "<div class=\"flex items-start gap-2 py-1.5\">" + unreadDot + "<div class=\"min-w-0\"><p class=\"text-[12px] text-slate-600 leading-snug truncate\">" + title + timeHtml + "</p></div></div>";
             }).join("");
         } catch (error) {
-            view.noticeListNode.innerHTML = "<p class=\"text-xs text-red-500\">消息加载失败</p>";
+            view.noticeListNode.innerHTML = "<p class=\"text-[12px] text-red-400\">消息加载失败</p>";
         }
+    }
+
+    function FormatRelativeTime(timeText) {
+        if (!timeText) {
+            return "";
+        }
+        var now = Date.now();
+        var date = new Date(timeText);
+        if (Number.isNaN(date.getTime())) {
+            return "";
+        }
+        var diffMs = now - date.getTime();
+        var diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) {
+            return "刚刚";
+        }
+        if (diffMin < 60) {
+            return diffMin + "分钟前";
+        }
+        var diffHours = Math.floor(diffMin / 60);
+        if (diffHours < 24) {
+            return diffHours + "小时前";
+        }
+        var diffDays = Math.floor(diffHours / 24);
+        if (diffDays < 7) {
+            return diffDays + "天前";
+        }
+        return date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
     }
 
     async function LoadCards(api, view) {

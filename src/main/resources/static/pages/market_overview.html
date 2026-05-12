@@ -79,6 +79,8 @@
         line-height: 1;
         font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
     }
+
+    /* ── Glass System ── */
     .apple-glass {
         border: 1px solid var(--cs-line);
         background: var(--cs-card);
@@ -94,105 +96,6 @@
         color: var(--cs-primary);
         background: rgba(0,93,144,0.08);
     }
-    .overview-sidebar nav {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-    .overview-sidebar nav a,
-    .overview-sidebar nav a.flex,
-    .overview-sidebar nav a.hidden {
-        display: grid !important;
-        grid-template-columns: 32px minmax(0, 1fr);
-        align-items: center;
-        width: 100%;
-        min-height: 48px;
-        column-gap: 0.75rem;
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-    }
-    .overview-sidebar nav a.hidden {
-        display: none !important;
-    }
-    .overview-sidebar nav a .material-symbols-outlined {
-        width: 32px;
-        min-width: 32px;
-        max-width: 32px;
-        height: 32px;
-        overflow: hidden;
-        font-size: 21px;
-        line-height: 1;
-        text-align: center;
-    }
-    .overview-sidebar nav a > span:last-child {
-        display: block;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        line-height: 1.25;
-    }
-    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] {
-        grid-template-columns: 32px minmax(0, 1fr);
-    }
-    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] > span:last-child {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        color: inherit;
-    }
-    /* ── 修复：消息通知按钮被 JS 注入 campusshare-notification-trigger 后样式异常 ── */
-    .overview-sidebar nav a.campusshare-notification-trigger {
-        display: grid !important;
-        grid-template-columns: 32px minmax(0, 1fr) !important;
-        align-items: center !important;
-        width: 100% !important;
-        height: auto !important;
-        min-height: 48px !important;
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-        border-radius: 0.75rem !important;
-        line-height: 1.25 !important;
-    }
-    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 32px !important;
-        min-width: 32px !important;
-        max-width: 32px !important;
-        height: 32px !important;
-        flex: none !important;
-    }
-    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell .material-symbols-outlined {
-        width: 32px !important;
-        min-width: 32px !important;
-        max-width: 32px !important;
-        height: 32px !important;
-        font-size: 21px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-badge {
-        position: absolute !important;
-        top: -4px !important;
-        right: -6px !important;
-        display: inline-flex !important;
-        width: 18px !important;
-        min-width: 18px !important;
-        max-width: 18px !important;
-        height: 18px !important;
-        min-height: 18px !important;
-        padding: 0 !important;
-        border-radius: 999px !important;
-        align-items: center !important;
-        justify-content: center !important;
-        overflow: visible !important;
-        white-space: nowrap !important;
-        line-height: 1 !important;
-        text-overflow: clip !important;
-    }
     .apple-button {
         background: var(--cs-primary);
         color: #fff;
@@ -205,38 +108,202 @@
         transform: translateY(-2px);
         box-shadow: 0 26px 64px rgba(15,23,42,0.10);
     }
+
+    /* ── Sidebar: unified panel ── */
+    .overview-sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .overview-sidebar nav a {
+        display: grid !important;
+        grid-template-columns: 24px minmax(0, 1fr);
+        align-items: center;
+        width: 100%;
+        min-height: 40px;
+        column-gap: 0.625rem;
+        padding: 0 0.75rem;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+    .overview-sidebar nav a.hidden {
+        display: none !important;
+    }
+    .overview-sidebar nav a .material-symbols-outlined {
+        width: 24px;
+        min-width: 24px;
+        max-width: 24px;
+        height: 24px;
+        font-size: 20px;
+        line-height: 1;
+        text-align: center;
+    }
+    .overview-sidebar nav a > span:last-child {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        line-height: 1.25;
+    }
+    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] {
+        grid-template-columns: 24px minmax(0, 1fr);
+    }
+    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] > span:last-child {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: inherit;
+    }
+    /* ── Fix: JS injects campusshare-notification-trigger class ── */
+    .overview-sidebar nav a.campusshare-notification-trigger {
+        display: grid !important;
+        grid-template-columns: 24px minmax(0, 1fr) !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 40px !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        border-radius: 10px !important;
+        line-height: 1.25 !important;
+    }
+    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 24px !important;
+        min-width: 24px !important;
+        max-width: 24px !important;
+        height: 24px !important;
+        flex: none !important;
+    }
+    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell .material-symbols-outlined {
+        width: 24px !important;
+        min-width: 24px !important;
+        max-width: 24px !important;
+        height: 24px !important;
+        font-size: 20px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-badge {
+        position: absolute !important;
+        top: -3px !important;
+        right: -5px !important;
+        display: inline-flex !important;
+        width: 16px !important;
+        min-width: 16px !important;
+        max-width: 16px !important;
+        height: 16px !important;
+        min-height: 16px !important;
+        padding: 0 !important;
+        border-radius: 999px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 9px !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+        line-height: 1 !important;
+        text-overflow: clip !important;
+    }
+    /* Override JS-injected hover background — match other nav items: color-only change */
+    .overview-sidebar nav a.campusshare-notification-trigger:hover {
+        background-color: rgba(255,255,255,0.7) !important;
+        color: #005d90 !important;
+    }
+
+    /* ── Sidebar divider ── */
+    .sidebar-divider {
+        height: 1px;
+        background: rgba(120,133,150,0.12);
+        margin: 0.5rem 0.75rem;
+    }
+
+    /* ── Hero ── */
     [data-overview-hero] {
-        min-height: 360px;
+        min-height: 280px;
         background:
             linear-gradient(100deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.86) 46%, rgba(255,255,255,0.18) 100%),
             url("/pages/assets/img/campus-hero.svg") right center / contain no-repeat,
             #ffffff;
     }
     [data-overview-hero] h1 {
-        max-width: 760px;
-        font-size: clamp(2rem, 3.2vw, 3.65rem);
-        line-height: 1.04;
-        letter-spacing: 0;
+        max-width: 680px;
+        font-size: clamp(1.75rem, 2.8vw, 2.85rem);
+        line-height: 1.08;
+        letter-spacing: -0.01em;
     }
     [data-role="overview-search-input"] {
         box-shadow: none !important;
         border: 0 !important;
         outline: 0 !important;
     }
+
+    /* ── Empty States ── */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2.5rem 1rem;
+        text-align: center;
+    }
+    .empty-state .material-symbols-outlined {
+        font-size: 36px;
+        color: #c4cdd5;
+        margin-bottom: 0.75rem;
+        font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 48;
+    }
+    .empty-state p {
+        font-size: 13px;
+        color: #94a3b8;
+        max-width: 240px;
+        line-height: 1.5;
+    }
+
+    /* ── Section Header ── */
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .section-header h2 {
+        font-size: 1.125rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .section-link {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--cs-primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+    }
+    .section-link:hover {
+        background: rgba(0,93,144,0.06);
+    }
+
+    /* ── Responsive ── */
     @media (max-width: 1180px) {
         .overview-shell { grid-template-columns: 1fr !important; }
         .overview-sidebar { position: static !important; width: auto !important; height: auto !important; }
-        [data-overview-hero] { min-height: 320px; }
+        [data-overview-hero] { min-height: auto; }
     }
     @media (max-width: 760px) {
         .desktop-nav, .overview-sidebar { display: none !important; }
         .overview-main { padding: 1rem !important; }
-        [data-overview-hero] h1 { font-size: 2.2rem; }
+        [data-overview-hero] h1 { font-size: 1.8rem; }
         [data-overview-hero] { min-height: auto; }
     }
 </style>
 </head>
 <body data-page="market-overview">
+
+<!-- ── Top Navigation ── -->
 <header class="apple-nav sticky top-0 z-50">
     <nav class="mx-auto flex h-[72px] max-w-[1440px] items-center gap-6 px-6 lg:px-9">
         <button class="headline-font shrink-0 text-xl font-extrabold text-[#005d90]" data-nav-target="/pages/market_overview.html" type="button">CampusShare</button>
@@ -245,7 +312,7 @@
             <input class="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400" data-role="overview-search-input" placeholder="搜索二手商品、课程资料、团队项目" type="text"/>
             <button class="min-w-[4.25rem] whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-bold text-[#005d90] hover:bg-[#eef6fb]" data-nav-target="/pages/market_listing.html" type="button">分类</button>
         </div>
-        <div class="desktop-nav hidden items-center gap-2 text-sm font-bold lg:flex">
+        <div class="desktop-nav hidden items-center gap-1 text-sm font-bold lg:flex">
             <a class="apple-link-active rounded-full px-4 py-2" data-nav-target="/pages/market_overview.html" href="#">主页</a>
             <a class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100 hover:text-[#005d90]" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
             <a class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100 hover:text-[#005d90]" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
@@ -255,97 +322,129 @@
     </nav>
 </header>
 
-<main class="overview-main mx-auto grid max-w-[1440px] grid-cols-[260px_minmax(0,1fr)] gap-8 px-6 py-8 lg:px-9 overview-shell">
-    <aside class="overview-sidebar sticky top-24 flex h-[calc(100vh-7rem)] w-[260px] flex-col gap-4">
-        <section class="apple-glass rounded-2xl p-4">
-            <div class="mb-5 flex items-center gap-3">
-                <div class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#eef6fb] text-sm font-bold text-[#005d90]" data-role="overview-profile-avatar">未</div>
+<!-- ── Main Layout ── -->
+<main class="overview-main mx-auto grid max-w-[1440px] grid-cols-[240px_minmax(0,1fr)] gap-7 px-6 py-7 lg:px-9 overview-shell">
+
+    <!-- Sidebar: single unified glass panel -->
+    <aside class="overview-sidebar sticky top-24 flex h-[calc(100vh-7rem)] w-[240px] flex-col">
+        <section class="apple-glass rounded-2xl p-4 flex flex-col flex-1 min-h-0">
+
+            <!-- Profile -->
+            <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-[#eef6fb] text-sm font-bold text-[#005d90] shrink-0" data-role="overview-profile-avatar">未</div>
                 <div class="min-w-0">
                     <p class="truncate text-sm font-extrabold text-slate-950" data-role="overview-profile-name">未登录用户</p>
-                    <p class="truncate text-xs text-slate-500" data-role="overview-profile-role">游客模式</p>
+                    <p class="truncate text-[11px] text-slate-400" data-role="overview-profile-role">游客模式</p>
                 </div>
             </div>
-            <nav class="text-sm font-semibold">
-                <a class="rounded-xl bg-white py-2.5 text-[#005d90] shadow-sm" data-nav-target="/pages/market_overview.html" href="#"><span class="material-symbols-outlined">home</span><span>主页</span></a>
-                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/my_publish.html" href="#"><span class="material-symbols-outlined">format_list_bulleted</span><span>我的发布</span></a>
-                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/order_center.html" href="#"><span class="material-symbols-outlined">receipt_long</span><span>订单中心</span></a>
-                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/recruitment_board.html" href="#"><span class="material-symbols-outlined">groups</span><span>团队招募</span></a>
-                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/notification_center.html" href="#"><span class="material-symbols-outlined">notifications</span><span>消息通知</span></a>
-                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/user_profile.html" href="#"><span class="material-symbols-outlined">settings</span><span>个人设置</span></a>
-                <a class="hidden rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#"><span class="material-symbols-outlined">admin_panel_settings</span><span>管理后台</span></a>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- Navigation -->
+            <nav class="py-1 text-sm font-semibold">
+                <a class="bg-white text-[#005d90] shadow-sm" data-nav-target="/pages/market_overview.html" href="#"><span class="material-symbols-outlined">home</span><span>主页</span></a>
+                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/my_publish.html" href="#"><span class="material-symbols-outlined">format_list_bulleted</span><span>我的发布</span></a>
+                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/order_center.html" href="#"><span class="material-symbols-outlined">receipt_long</span><span>订单中心</span></a>
+                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/recruitment_board.html" href="#"><span class="material-symbols-outlined">groups</span><span>团队招募</span></a>
+                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/notification_center.html" href="#"><span class="material-symbols-outlined">notifications</span><span>消息通知</span></a>
+                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/user_profile.html" href="#"><span class="material-symbols-outlined">settings</span><span>个人设置</span></a>
+                <a class="hidden text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#"><span class="material-symbols-outlined">admin_panel_settings</span><span>管理后台</span></a>
             </nav>
-        </section>
-        <section class="apple-glass rounded-2xl p-4">
-            <h2 class="mb-4 text-xs font-extrabold uppercase tracking-[0.18em] text-slate-400">消息提醒</h2>
-            <div class="space-y-4" data-role="overview-notice-list">
-                <p class="text-xs text-slate-500">暂无消息提醒</p>
-            </div>
-        </section>
-        <section class="apple-glass rounded-2xl p-4">
-            <h2 class="mb-4 text-xs font-extrabold uppercase tracking-[0.18em] text-slate-400">我的数据</h2>
-            <div class="grid gap-3">
-                <div class="rounded-xl bg-white p-3">
-                    <p class="text-xs text-slate-500">我的收藏</p>
-                    <p class="mt-1 text-sm font-extrabold" data-role="overview-favorite-summary">商品 0 · 资料 0</p>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- Messages (inline) -->
+            <div class="px-1 py-2">
+                <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">消息提醒</p>
+                <div data-role="overview-notice-list">
+                    <p class="text-[12px] text-slate-400 leading-relaxed">暂无新消息</p>
                 </div>
-                <div class="rounded-xl bg-white p-3">
-                    <p class="text-xs text-slate-500">当前积分</p>
-                    <p class="mt-1 text-sm font-extrabold" data-role="overview-point-balance">0</p>
+            </div>
+
+            <!-- Bottom stats (pushed to bottom) -->
+            <div class="mt-auto pt-2">
+                <div class="sidebar-divider"></div>
+                <div class="grid grid-cols-2 gap-2 pt-3 px-1">
+                    <div>
+                        <p class="text-[11px] text-slate-400">收藏</p>
+                        <p class="text-sm font-extrabold text-slate-800 mt-0.5" data-role="overview-favorite-summary">0</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-slate-400">积分</p>
+                        <p class="text-sm font-extrabold text-slate-800 mt-0.5" data-role="overview-point-balance">0</p>
+                    </div>
                 </div>
             </div>
         </section>
     </aside>
 
-    <section class="min-w-0 flex-1">
-        <section class="apple-glass relative mb-8 overflow-hidden rounded-2xl p-8 lg:p-12" data-overview-hero>
-            <div class="relative max-w-3xl">
-                <span class="mb-5 inline-flex rounded-full bg-[#eef6fb] px-3 py-1 text-xs font-extrabold tracking-[0.18em] text-[#005d90]">校园可信交易平台</span>
+    <!-- Content Area -->
+    <section class="min-w-0 flex-1 space-y-6">
+
+        <!-- Hero -->
+        <section class="apple-glass relative overflow-hidden rounded-2xl px-8 py-8 lg:px-10 lg:py-10" data-overview-hero>
+            <div class="relative max-w-2xl">
+                <span class="mb-4 inline-flex rounded-full bg-[#eef6fb] px-3 py-1 text-[11px] font-bold text-[#005d90]">校园可信交易平台</span>
                 <h1 class="headline-font font-extrabold text-slate-950">把校园交易、资料共享和团队协作放进一个清爽入口。</h1>
-                <p class="mt-5 max-w-2xl text-base leading-8 text-slate-600">从二手商品发布到资料下载积分，从订单状态到招募申请，CampusShare 让每一步都有记录、有反馈、可追踪。</p>
-                <div class="mt-8 flex flex-wrap gap-3">
-                    <button class="apple-button rounded-full px-6 py-3 text-sm font-bold" data-nav-target="/pages/market_listing.html" type="button">浏览市场</button>
-                    <button class="rounded-full border border-[rgba(120,133,150,0.24)] bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:text-[#005d90]" data-nav-target="/pages/publish_create.html" type="button">开始发布</button>
+                <p class="mt-4 max-w-xl text-[15px] leading-7 text-slate-500">从二手商品发布到资料下载积分，从订单状态到招募申请，CampusShare 让每一步都有记录、有反馈、可追踪。</p>
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <button class="apple-button rounded-full px-6 py-2.5 text-sm font-bold" data-nav-target="/pages/market_listing.html" type="button">浏览市场</button>
+                    <button class="rounded-full border border-[rgba(120,133,150,0.20)] bg-white px-6 py-2.5 text-sm font-bold text-slate-600 hover:text-[#005d90] hover:border-[rgba(0,93,144,0.2)]" data-nav-target="/pages/publish_create.html" type="button">开始发布</button>
                 </div>
             </div>
         </section>
 
-        <section class="mb-8">
-            <div class="mb-5 flex items-end justify-between gap-4">
-                <div>
-                    <h2 class="headline-font text-2xl font-extrabold text-slate-950">推荐交易</h2>
-                    <p class="mt-1 text-sm text-slate-500" data-role="overview-recommended-summary">暂无推荐交易</p>
-                </div>
-                <a class="rounded-full px-4 py-2 text-sm font-bold text-[#005d90] hover:bg-white" data-nav-target="/pages/market_listing.html" href="#">查看全部</a>
+        <!-- Recommended Products -->
+        <section>
+            <div class="section-header">
+                <h2 class="headline-font">推荐交易</h2>
+                <a class="section-link" data-nav-target="/pages/market_listing.html" href="#">查看全部</a>
             </div>
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4" data-role="overview-product-grid">
-                <div class="col-span-full apple-glass rounded-2xl py-10 text-center text-sm text-slate-500">暂无推荐交易</div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" data-role="overview-product-grid">
+                <div class="col-span-full apple-glass rounded-xl">
+                    <div class="empty-state">
+                        <span class="material-symbols-outlined">storefront</span>
+                        <p>还没有推荐交易，去市场看看吧</p>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.85fr)]">
-            <div class="apple-glass rounded-2xl p-6">
-                <div class="mb-5 flex items-center justify-between gap-4">
-                    <h2 class="headline-font text-xl font-extrabold text-slate-950">精选资料</h2>
-                    <button class="rounded-full bg-[#eef6fb] px-4 py-2 text-xs font-extrabold text-[#005d90]" data-nav-target="/pages/publish_create.html?type=material" type="button">上传文档</button>
+        <!-- Bottom Grid: Materials + Recruitment -->
+        <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <div class="apple-glass rounded-xl p-5">
+                <div class="section-header">
+                    <h2 class="headline-font">精选资料</h2>
+                    <button class="section-link" data-nav-target="/pages/publish_create.html?type=material" type="button">上传文档</button>
                 </div>
-                <div class="space-y-3" data-role="overview-material-list">
-                    <div class="py-6 text-center text-sm text-slate-500">暂无精选资料</div>
+                <div data-role="overview-material-list">
+                    <div class="empty-state">
+                        <span class="material-symbols-outlined">description</span>
+                        <p>精选资料即将上线</p>
+                    </div>
                 </div>
             </div>
-            <div class="apple-glass rounded-2xl p-6">
-                <h2 class="headline-font mb-5 text-xl font-extrabold text-slate-950">招募精选</h2>
-                <div class="space-y-4" data-role="overview-recruitment-list">
-                    <div class="rounded-xl bg-white p-4 text-xs text-slate-500">暂无招募精选</div>
+            <div class="apple-glass rounded-xl p-5">
+                <div class="section-header">
+                    <h2 class="headline-font">招募精选</h2>
+                    <a class="section-link" data-nav-target="/pages/recruitment_board.html" href="#">查看全部</a>
                 </div>
-                <button class="mt-6 w-full rounded-full bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-[#005d90]" data-nav-target="/pages/market_listing.html?view=FORUM" type="button">浏览所有项目</button>
+                <div data-role="overview-recruitment-list">
+                    <div class="empty-state">
+                        <span class="material-symbols-outlined">groups</span>
+                        <p>暂无招募信息</p>
+                    </div>
+                </div>
+                <button class="mt-3 w-full rounded-full bg-[#005d90] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#004b74] active:scale-[0.98]" data-nav-target="/pages/recruitment_board.html" type="button">浏览所有项目</button>
             </div>
         </section>
     </section>
 </main>
 
-<footer class="mx-auto mt-6 max-w-[1440px] px-6 py-10 lg:px-9">
-    <div class="flex flex-col items-center justify-between gap-4 border-t border-[rgba(120,133,150,0.16)] pt-6 text-xs text-slate-500 md:flex-row">
-        <span class="headline-font font-extrabold text-slate-900">CampusShare</span>
+<!-- Footer -->
+<footer class="mx-auto mt-4 max-w-[1440px] px-6 py-8 lg:px-9">
+    <div class="flex flex-col items-center justify-between gap-4 border-t border-[rgba(120,133,150,0.12)] pt-6 text-xs text-slate-400 md:flex-row">
+        <span class="headline-font font-extrabold text-slate-800">CampusShare</span>
         <span>© 2026 CampusShare</span>
         <div class="flex flex-wrap justify-center gap-5">
             <a class="hover:text-[#005d90]" href="#">隐私政策</a>

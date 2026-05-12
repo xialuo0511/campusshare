@@ -1,4 +1,4 @@
-﻿/**
+/**
  * CampusShare 椤甸潰鎺ュ彛灏佽
  */
 (function InitCampusShareApi() {
@@ -836,7 +836,8 @@
         }
         normalizedTriggerElement.classList.add("campusshare-notification-trigger");
         const isUserSidebarTrigger = !!normalizedTriggerElement.closest("[data-user-sidebar]")
-            || !!normalizedTriggerElement.closest("[data-workspace-nav]");
+            || !!normalizedTriggerElement.closest("[data-workspace-nav]")
+            || !!normalizedTriggerElement.closest(".overview-sidebar");
         const computedStyle = window.getComputedStyle(normalizedTriggerElement);
         if (computedStyle.position === "static") {
             normalizedTriggerElement.style.position = "relative";
@@ -900,7 +901,8 @@
     function IsSidebarNotificationTrigger(notificationTrigger) {
         return !!notificationTrigger
             && (!!notificationTrigger.closest("[data-user-sidebar]")
-                || !!notificationTrigger.closest("[data-workspace-nav]"));
+                || !!notificationTrigger.closest("[data-workspace-nav]")
+                || !!notificationTrigger.closest(".overview-sidebar"));
     }
 
     /**
@@ -1074,6 +1076,13 @@
                 height: 1.25rem;
                 flex: 0 0 1.25rem;
             }
+            .overview-sidebar .campusshare-notification-icon-shell {
+                width: 24px;
+                height: 24px;
+                min-width: 24px;
+                max-width: 24px;
+                flex: 0 0 24px;
+            }
             [data-user-sidebar] .campusshare-notification-icon-shell > .campusshare-notification-badge {
                 top: -6px;
                 right: -8px;
@@ -1082,6 +1091,10 @@
                 top: -6px;
                 right: -8px;
             }
+            .overview-sidebar .campusshare-notification-icon-shell > .campusshare-notification-badge {
+                top: -4px;
+                right: -6px;
+            }
             .campusshare-notification-trigger {
                 position: relative;
                 line-height: 1;
@@ -1089,7 +1102,8 @@
                 transition: background-color 0.15s ease, color 0.15s ease;
             }
             [data-user-sidebar] .campusshare-notification-trigger,
-            [data-workspace-nav].campusshare-notification-trigger {
+            [data-workspace-nav].campusshare-notification-trigger,
+            .overview-sidebar .campusshare-notification-trigger {
                 border-radius: 0.5rem;
                 line-height: 1.25rem;
             }

@@ -153,12 +153,26 @@ public class IdempotencyInterceptor implements HandlerInterceptor {
         }
         String requestId = ResolveRequestId(request, request.getHeader(RequestIdFilter.REQUEST_ID_HEADER));
         LOGGER.warn(
-            "Idempotency redis unavailable, degrade enabled. action={}, requestId={}, method={}, path={}",
+            "Idempotency redis unavailable, degrade enabled. action={}, requestId={}, method={}, path={}, cause={}",
             action,
             requestId,
             request.getMethod(),
             request.getRequestURI(),
-            exception
+            BuildExceptionMessage(exception)
         );
+    }
+
+    /**
+     * 构建异常摘要
+     */
+    private String BuildExceptionMessage(Throwable throwable) {
+        if (throwable == null) {
+            return "";
+        }
+        String message = throwable.getMessage();
+        if (message == null || message.isBlank()) {
+            return throwable.getClass().getSimpleName();
+        }
+        return throwable.getClass().getSimpleName() + ": " + message.trim();
     }
 }

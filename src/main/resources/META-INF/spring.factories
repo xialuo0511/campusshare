@@ -1,0 +1,2 @@
+org.springframework.boot.SpringBootExceptionReporter=\
+com.xialuo.campusshare.common.boot.ConciseConnectionFailureReporter

@@ -67,8 +67,7 @@ public class GlobalExceptionHandler {
             requestPath,
             sqlState,
             errorCode,
-            BuildExceptionMessage(rootCause),
-            exception
+            BuildExceptionMessage(rootCause)
         );
         return ApiResponse.Failure(BizCodeEnum.SYSTEM_ERROR, "数据库访问异常，请确认数据库与建表脚本已初始化", GetRequestId(request));
     }
@@ -89,8 +88,7 @@ public class GlobalExceptionHandler {
             requestId,
             request.getMethod(),
             requestPath,
-            BuildExceptionMessage(rootCause),
-            exception
+            BuildExceptionMessage(rootCause)
         );
         return ApiResponse.Failure(BizCodeEnum.SYSTEM_ERROR, "缓存服务不可用，请启动Redis后重试", requestId);
     }

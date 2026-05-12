@@ -45,6 +45,7 @@
 
         const messageBar = CreateMessageBar(pageHeader);
         const governanceWorkspace = CreateGovernanceWorkspace();
+        const orderManagementWorkspace = CreateOrderManagementWorkspace();
         const statsSection = document.querySelector("[data-admin-section='stats']");
         const workbenchSection = document.querySelector("[data-admin-section='workbench']");
         const contentReviewSection = document.querySelector("[data-admin-section='content-review']");
@@ -54,7 +55,8 @@
             statsSection,
             workbenchSection,
             contentReviewSection,
-            governanceWorkspace
+            governanceWorkspace,
+            orderManagementWorkspace
         };
         BindAdminSubviewNavigation(adminNavItemList, adminSubviewContext, messageBar);
         if (!window.CampusShareApi) {
@@ -120,9 +122,11 @@
                 taskPager,
                 messageBar,
                 governanceWorkspace,
+                orderManagementWorkspace,
                 activityPanel
             );
         });
+        BindOrderManagementActions(orderManagementWorkspace, messageBar);
         LoadDashboardData(
             statCardList,
             reviewTableBody,
@@ -130,6 +134,7 @@
             taskPager,
             messageBar,
             governanceWorkspace,
+            orderManagementWorkspace,
             activityPanel
         );
     }
@@ -144,6 +149,7 @@
         taskPager,
         messageBar,
         governanceWorkspace,
+        orderManagementWorkspace,
         activityPanel
     ) {
         try {
@@ -237,6 +243,7 @@
                 auditLogListResult,
                 opsSummary
             );
+            RenderOrderManagementWorkspace(orderManagementWorkspace, orderListResult);
 
             if (reviewTableBody && reviewState && taskPager) {
                 reviewState.reviewTaskList = BuildReviewTaskList(
@@ -368,6 +375,9 @@
         const workbenchSection = context && context.workbenchSection ? context.workbenchSection : null;
         const contentReviewSection = context && context.contentReviewSection ? context.contentReviewSection : null;
         const governanceSection = context && context.governanceWorkspace ? context.governanceWorkspace.wrapper : null;
+        const orderManagementSection = context && context.orderManagementWorkspace
+            ? context.orderManagementWorkspace.wrapper
+            : null;
         const titleNode = headerNode ? headerNode.querySelector("h1") : null;
         const subtitleNode = headerNode ? headerNode.querySelector("p") : null;
 
@@ -378,7 +388,8 @@
                 showStats: true,
                 showWorkbench: true,
                 showContentReview: false,
-                showGovernance: true
+                showGovernance: true,
+                showOrderManagement: false
             },
             MANAGEMENT: {
                 title: "\u6cbb\u7406\u7ba1\u7406",
@@ -386,15 +397,17 @@
                 showStats: false,
                 showWorkbench: false,
                 showContentReview: false,
-                showGovernance: true
+                showGovernance: true,
+                showOrderManagement: false
             },
             ORDER_LIST: {
-                title: "\u8ba2\u5355\u5217\u8868",
-                subtitle: "\u67e5\u770b\u5e76\u6cbb\u7406\u5e73\u53f0\u8ba2\u5355\u72b6\u6001",
+                title: "\u8ba2\u5355\u7ba1\u7406",
+                subtitle: "\u8ffd\u8e2a\u8ba2\u5355\u6d41\u8f6c\u3001\u4ea4\u6613\u98ce\u9669\u4e0e\u5f02\u5e38\u5904\u7406",
                 showStats: false,
                 showWorkbench: false,
                 showContentReview: false,
-                showGovernance: true
+                showGovernance: false,
+                showOrderManagement: true
             },
             CONTENT_REVIEW: {
                 title: "\u5185\u5bb9\u5ba1\u6838",
@@ -402,7 +415,8 @@
                 showStats: false,
                 showWorkbench: false,
                 showContentReview: true,
-                showGovernance: false
+                showGovernance: false,
+                showOrderManagement: false
             },
             ANALYTICS: {
                 title: "\u6570\u636e\u5206\u6790",
@@ -410,7 +424,8 @@
                 showStats: true,
                 showWorkbench: true,
                 showContentReview: false,
-                showGovernance: false
+                showGovernance: false,
+                showOrderManagement: false
             }
         };
         const viewMeta = viewMetaMap[viewKey] || viewMetaMap.DASHBOARD;
@@ -431,6 +446,9 @@
         }
         if (governanceSection) {
             governanceSection.classList.toggle("hidden", !viewMeta.showGovernance);
+        }
+        if (orderManagementSection) {
+            orderManagementSection.classList.toggle("hidden", !viewMeta.showOrderManagement);
         }
     }
 
@@ -1335,6 +1353,102 @@
         };
     }
 
+    function CreateOrderManagementWorkspace() {
+        const mainElement = document.querySelector("main");
+        if (!mainElement) {
+            return null;
+        }
+        const workspaceElement = document.createElement("section");
+        workspaceElement.className = "mt-8 hidden space-y-5";
+        workspaceElement.innerHTML = [
+            "<section class=\"rounded-[1.75rem] bg-white/84 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] ring-1 ring-white/70 backdrop-blur-2xl\">",
+            "<div class=\"flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between\">",
+            "<div>",
+            "<p class=\"text-xs font-extrabold uppercase tracking-[0.18em] text-primary\">Order Command Center</p>",
+            "<h3 class=\"mt-1 text-2xl font-extrabold text-slate-950\">订单管理</h3>",
+            "<p class=\"mt-1 text-sm text-slate-500\">集中查看平台订单、交易节点、买卖双方与异常关闭操作。</p>",
+            "</div>",
+            "<div class=\"flex flex-col gap-2 sm:flex-row sm:items-center\">",
+            "<div class=\"relative\">",
+            "<span class=\"material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400\">search</span>",
+            "<input data-order-search type=\"search\" class=\"w-full rounded-full py-2 pl-10 pr-4 text-sm sm:w-72\" placeholder=\"搜索订单号 / 买家 / 卖家\"/>",
+            "</div>",
+            "<select data-order-status-filter class=\"rounded-full px-4 py-2 text-sm font-semibold text-slate-600\">",
+            "<option value=\"ALL\">全部订单</option>",
+            "<option value=\"PENDING_SELLER_CONFIRM\">待卖家确认</option>",
+            "<option value=\"PENDING_OFFLINE_TRADE\">线下交易中</option>",
+            "<option value=\"PENDING_BUYER_CONFIRM\">待买家确认</option>",
+            "<option value=\"COMPLETED\">已完成</option>",
+            "<option value=\"CANCELED\">已取消</option>",
+            "<option value=\"CLOSED\">已关闭</option>",
+            "</select>",
+            "<button data-order-action=\"refresh\" class=\"inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-slate-950/10 hover:-translate-y-0.5 hover:bg-slate-800\"><span class=\"material-symbols-outlined text-base\">refresh</span>刷新</button>",
+            "</div>",
+            "</div>",
+            "<div class=\"mt-5 grid grid-cols-2 gap-3 lg:grid-cols-5\">",
+            "<article class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"text-xs font-semibold text-slate-500\">总订单</p><p data-order-summary=\"total\" class=\"mt-2 text-2xl font-extrabold text-slate-950\">0</p></article>",
+            "<article class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"text-xs font-semibold text-slate-500\">进行中</p><p data-order-summary=\"ongoing\" class=\"mt-2 text-2xl font-extrabold text-primary\">0</p></article>",
+            "<article class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"text-xs font-semibold text-slate-500\">已完成</p><p data-order-summary=\"completed\" class=\"mt-2 text-2xl font-extrabold text-emerald-600\">0</p></article>",
+            "<article class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"text-xs font-semibold text-slate-500\">已取消</p><p data-order-summary=\"canceled\" class=\"mt-2 text-2xl font-extrabold text-slate-500\">0</p></article>",
+            "<article class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"text-xs font-semibold text-slate-500\">已关闭</p><p data-order-summary=\"closed\" class=\"mt-2 text-2xl font-extrabold text-rose-600\">0</p></article>",
+            "</div>",
+            "</section>",
+            "<section class=\"grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.75fr)]\">",
+            "<div class=\"overflow-hidden rounded-[1.5rem] bg-white/84 shadow-[0_18px_60px_rgba(15,23,42,0.07)] ring-1 ring-white/70 backdrop-blur-xl\">",
+            "<div class=\"flex items-center justify-between border-b border-[rgba(120,133,150,0.16)] px-5 py-4\">",
+            "<div><h3 class=\"text-base font-extrabold text-slate-950\">订单列表</h3><p data-order-list-hint class=\"mt-1 text-xs text-slate-500\">显示最近订单</p></div>",
+            "<span class=\"rounded-full bg-[#eef6fb] px-3 py-1 text-xs font-bold text-primary\">实时状态</span>",
+            "</div>",
+            "<div class=\"overflow-x-auto\">",
+            "<table class=\"w-full min-w-[760px] text-left border-collapse\">",
+            "<thead class=\"bg-slate-50/80 text-xs uppercase tracking-widest text-slate-500\"><tr><th class=\"px-5 py-3\">订单</th><th class=\"px-5 py-3\">交易双方</th><th class=\"px-5 py-3\">金额</th><th class=\"px-5 py-3\">状态</th><th class=\"px-5 py-3\">更新时间</th><th class=\"px-5 py-3 text-right\">操作</th></tr></thead>",
+            "<tbody data-order-table-body class=\"divide-y divide-[rgba(120,133,150,0.14)]\"></tbody>",
+            "</table>",
+            "</div>",
+            "<div class=\"flex items-center justify-between border-t border-[rgba(120,133,150,0.16)] bg-slate-50/60 px-5 py-3 text-xs text-slate-500\">",
+            "<button data-order-action=\"prev\" class=\"rounded-full bg-white px-3 py-1.5 font-bold text-slate-600 ring-1 ring-slate-200 hover:text-primary\">上一页</button>",
+            "<span data-order-page-indicator>第 1 页</span>",
+            "<button data-order-action=\"next\" class=\"rounded-full bg-white px-3 py-1.5 font-bold text-slate-600 ring-1 ring-slate-200 hover:text-primary\">下一页</button>",
+            "</div>",
+            "</div>",
+            "<aside class=\"rounded-[1.5rem] bg-white/84 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.07)] ring-1 ring-white/70 backdrop-blur-xl\">",
+            "<div class=\"flex items-center justify-between gap-3\">",
+            "<div><h3 class=\"text-base font-extrabold text-slate-950\">订单详情</h3><p class=\"mt-1 text-xs text-slate-500\">选择左侧订单查看</p></div>",
+            "<span class=\"material-symbols-outlined text-primary\">receipt_long</span>",
+            "</div>",
+            "<div data-order-detail class=\"mt-5 rounded-2xl bg-slate-50/80 p-5 text-sm text-slate-500 ring-1 ring-slate-200/70\">暂无选中订单</div>",
+            "</aside>",
+            "</section>"
+        ].join("");
+        mainElement.appendChild(workspaceElement);
+        return {
+            wrapper: workspaceElement,
+            searchInput: workspaceElement.querySelector("[data-order-search]"),
+            statusFilter: workspaceElement.querySelector("[data-order-status-filter]"),
+            refreshButton: workspaceElement.querySelector("[data-order-action='refresh']"),
+            prevButton: workspaceElement.querySelector("[data-order-action='prev']"),
+            nextButton: workspaceElement.querySelector("[data-order-action='next']"),
+            tableBody: workspaceElement.querySelector("[data-order-table-body]"),
+            detailPanel: workspaceElement.querySelector("[data-order-detail]"),
+            pageIndicator: workspaceElement.querySelector("[data-order-page-indicator]"),
+            listHint: workspaceElement.querySelector("[data-order-list-hint]"),
+            summaryTotal: workspaceElement.querySelector("[data-order-summary='total']"),
+            summaryOngoing: workspaceElement.querySelector("[data-order-summary='ongoing']"),
+            summaryCompleted: workspaceElement.querySelector("[data-order-summary='completed']"),
+            summaryCanceled: workspaceElement.querySelector("[data-order-summary='canceled']"),
+            summaryClosed: workspaceElement.querySelector("[data-order-summary='closed']"),
+            state: {
+                pageNo: 1,
+                pageSize: DEFAULT_ORDER_PAGE_SIZE,
+                statusFilter: "ALL",
+                keyword: "",
+                orderList: [],
+                totalCount: 0,
+                selectedOrderId: 0
+            }
+        };
+    }
+
     /**
      * 缁戝畾娌荤悊宸ヤ綔鍖轰簨浠?
      */
@@ -1377,6 +1491,290 @@
                 actionButton.disabled = false;
             }
         });
+    }
+
+    function BindOrderManagementActions(orderWorkspace, messageBar) {
+        if (!orderWorkspace || !orderWorkspace.wrapper) {
+            return;
+        }
+        const state = orderWorkspace.state;
+        if (orderWorkspace.statusFilter) {
+            orderWorkspace.statusFilter.addEventListener("change", function HandleStatusChange() {
+                state.statusFilter = orderWorkspace.statusFilter.value || "ALL";
+                state.pageNo = 1;
+                ReloadOrderManagementData(orderWorkspace, messageBar);
+            });
+        }
+        if (orderWorkspace.searchInput) {
+            orderWorkspace.searchInput.addEventListener("input", function HandleSearchInput() {
+                state.keyword = String(orderWorkspace.searchInput.value || "").trim().toLowerCase();
+                state.pageNo = 1;
+                RenderOrderManagementTable(orderWorkspace);
+            });
+        }
+        if (orderWorkspace.refreshButton) {
+            orderWorkspace.refreshButton.addEventListener("click", function HandleRefreshClick() {
+                ReloadOrderManagementData(orderWorkspace, messageBar);
+            });
+        }
+        if (orderWorkspace.prevButton) {
+            orderWorkspace.prevButton.addEventListener("click", function HandlePrevClick() {
+                if (state.pageNo <= 1) {
+                    return;
+                }
+                state.pageNo -= 1;
+                ReloadOrderManagementData(orderWorkspace, messageBar);
+            });
+        }
+        if (orderWorkspace.nextButton) {
+            orderWorkspace.nextButton.addEventListener("click", function HandleNextClick() {
+                const maxPage = Math.max(1, Math.ceil(SafeNumber(state.totalCount) / state.pageSize));
+                if (state.pageNo >= maxPage) {
+                    return;
+                }
+                state.pageNo += 1;
+                ReloadOrderManagementData(orderWorkspace, messageBar);
+            });
+        }
+        orderWorkspace.wrapper.addEventListener("click", async function HandleOrderWorkspaceClick(event) {
+            const actionButton = event.target.closest("[data-order-action]");
+            if (!actionButton) {
+                return;
+            }
+            const action = actionButton.getAttribute("data-order-action") || "";
+            const orderId = SafeNumber(actionButton.getAttribute("data-order-id"));
+            if (action === "select") {
+                orderWorkspace.state.selectedOrderId = orderId;
+                RenderOrderManagementTable(orderWorkspace);
+                RenderOrderManagementDetail(orderWorkspace);
+                return;
+            }
+            if (action === "close") {
+                await HandleOrderManagementClose(orderWorkspace, actionButton, messageBar);
+            }
+        });
+    }
+
+    async function ReloadOrderManagementData(orderWorkspace, messageBar) {
+        if (!orderWorkspace || !window.CampusShareApi || !window.CampusShareApi.ListOrdersByAdmin) {
+            return;
+        }
+        const state = orderWorkspace.state;
+        try {
+            const result = await window.CampusShareApi.ListOrdersByAdmin(
+                state.pageNo,
+                state.pageSize,
+                state.statusFilter || "ALL"
+            );
+            RenderOrderManagementWorkspace(orderWorkspace, result);
+            HideMessage(messageBar);
+        } catch (error) {
+            ShowError(messageBar, error instanceof Error ? error.message : "订单数据加载失败");
+        }
+    }
+
+    async function HandleOrderManagementClose(orderWorkspace, actionButton, messageBar) {
+        const orderId = SafeNumber(actionButton.getAttribute("data-order-id"));
+        const orderNo = actionButton.getAttribute("data-order-no") || "";
+        if (!orderId || !window.CampusShareApi || !window.CampusShareApi.CloseOrderByAdmin) {
+            return;
+        }
+        if (!window.confirm(`确定强制关闭订单 ${orderNo || `#${orderId}`} 吗？`)) {
+            return;
+        }
+        actionButton.disabled = true;
+        try {
+            await window.CampusShareApi.CloseOrderByAdmin(orderId, "后台订单管理强制关闭");
+            ShowSuccess(messageBar, "订单已强制关闭");
+            await ReloadOrderManagementData(orderWorkspace, messageBar);
+        } catch (error) {
+            ShowError(messageBar, error instanceof Error ? error.message : "强制关闭失败");
+        } finally {
+            actionButton.disabled = false;
+        }
+    }
+
+    function RenderOrderManagementWorkspace(orderWorkspace, orderListResult) {
+        if (!orderWorkspace) {
+            return;
+        }
+        const state = orderWorkspace.state;
+        const safeResult = orderListResult || {};
+        state.orderList = Array.isArray(safeResult.orderList) ? safeResult.orderList : [];
+        state.totalCount = SafeNumber(safeResult.filteredCount != null ? safeResult.filteredCount : safeResult.totalCount);
+        if (!state.selectedOrderId && state.orderList.length) {
+            state.selectedOrderId = SafeNumber(state.orderList[0].orderId);
+        }
+        SetNodeText(orderWorkspace.summaryTotal, FormatNumber(safeResult.totalCount));
+        SetNodeText(orderWorkspace.summaryOngoing, FormatNumber(safeResult.ongoingCount));
+        SetNodeText(orderWorkspace.summaryCompleted, FormatNumber(safeResult.completedCount));
+        SetNodeText(orderWorkspace.summaryCanceled, FormatNumber(safeResult.canceledCount));
+        SetNodeText(orderWorkspace.summaryClosed, FormatNumber(safeResult.closedCount));
+        RenderOrderManagementTable(orderWorkspace);
+        RenderOrderManagementDetail(orderWorkspace);
+    }
+
+    function RenderOrderManagementTable(orderWorkspace) {
+        if (!orderWorkspace || !orderWorkspace.tableBody) {
+            return;
+        }
+        const state = orderWorkspace.state;
+        const filteredOrderList = FilterOrderManagementList(state.orderList, state.keyword);
+        if (orderWorkspace.listHint) {
+            orderWorkspace.listHint.textContent = `当前显示 ${filteredOrderList.length} 条 · 筛选 ${ResolveOrderStatusText(state.statusFilter)}`;
+        }
+        if (orderWorkspace.pageIndicator) {
+            const maxPage = Math.max(1, Math.ceil(SafeNumber(state.totalCount) / state.pageSize));
+            orderWorkspace.pageIndicator.textContent = `第 ${state.pageNo} / ${maxPage} 页`;
+        }
+        if (orderWorkspace.prevButton) {
+            orderWorkspace.prevButton.disabled = state.pageNo <= 1;
+            orderWorkspace.prevButton.classList.toggle("opacity-50", state.pageNo <= 1);
+        }
+        if (orderWorkspace.nextButton) {
+            const maxPage = Math.max(1, Math.ceil(SafeNumber(state.totalCount) / state.pageSize));
+            orderWorkspace.nextButton.disabled = state.pageNo >= maxPage;
+            orderWorkspace.nextButton.classList.toggle("opacity-50", state.pageNo >= maxPage);
+        }
+        if (!filteredOrderList.length) {
+            orderWorkspace.tableBody.innerHTML = "<tr><td colspan=\"6\" class=\"px-5 py-10 text-center text-sm text-slate-400\">暂无匹配订单</td></tr>";
+            return;
+        }
+        orderWorkspace.tableBody.innerHTML = filteredOrderList.map(function BuildOrderRow(orderItem) {
+            const orderId = SafeNumber(orderItem.orderId);
+            const orderStatus = String(orderItem.orderStatus || "UNKNOWN");
+            const isSelected = orderId === SafeNumber(state.selectedOrderId);
+            const statusMeta = ResolveOrderStatusMeta(orderStatus);
+            const canClose = IsOrderClosable(orderStatus);
+            return [
+                `<tr class="${isSelected ? "bg-[#eef6fb]/60" : "hover:bg-slate-50/80"} transition-colors">`,
+                "<td class=\"px-5 py-4\">",
+                `<button data-order-action="select" data-order-id="${orderId}" class="text-left">`,
+                `<span class="block text-sm font-extrabold text-slate-900">${EscapeHtml(orderItem.orderNo || `#${orderId}`)}</span>`,
+                `<span class="mt-1 block text-xs text-slate-400">商品 #${SafeNumber(orderItem.productId)}</span>`,
+                "</button>",
+                "</td>",
+                "<td class=\"px-5 py-4 text-xs text-slate-500\">",
+                `<p class="font-semibold text-slate-700">买家：${EscapeHtml(orderItem.buyerDisplayName || `#${SafeNumber(orderItem.buyerUserId)}`)}</p>`,
+                `<p class="mt-1">卖家：${EscapeHtml(orderItem.sellerDisplayName || `#${SafeNumber(orderItem.sellerUserId)}`)}</p>`,
+                "</td>",
+                `<td class="px-5 py-4 text-sm font-extrabold text-slate-900">¥ ${FormatAmount(orderItem.orderAmount)}</td>`,
+                "<td class=\"px-5 py-4\">",
+                `<span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${statusMeta.className}">${statusMeta.text}</span>`,
+                "</td>",
+                `<td class="px-5 py-4 text-xs text-slate-500">${EscapeHtml(FormatShortDateTime(orderItem.updateTime || orderItem.createTime))}</td>`,
+                "<td class=\"px-5 py-4 text-right\">",
+                "<div class=\"inline-flex items-center gap-2\">",
+                `<button data-order-action="select" data-order-id="${orderId}" class="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-primary ring-1 ring-slate-200 hover:bg-[#eef6fb]">查看</button>`,
+                canClose
+                    ? `<button data-order-action="close" data-order-id="${orderId}" data-order-no="${EscapeHtml(orderItem.orderNo || "")}" class="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 ring-1 ring-amber-100 hover:bg-amber-100">强制关闭</button>`
+                    : "",
+                "</div>",
+                "</td>",
+                "</tr>"
+            ].join("");
+        }).join("");
+    }
+
+    function RenderOrderManagementDetail(orderWorkspace) {
+        if (!orderWorkspace || !orderWorkspace.detailPanel) {
+            return;
+        }
+        const state = orderWorkspace.state;
+        const selectedOrder = (state.orderList || []).find(function FindSelected(orderItem) {
+            return SafeNumber(orderItem.orderId) === SafeNumber(state.selectedOrderId);
+        });
+        if (!selectedOrder) {
+            orderWorkspace.detailPanel.innerHTML = "暂无选中订单";
+            return;
+        }
+        const statusMeta = ResolveOrderStatusMeta(selectedOrder.orderStatus);
+        const canClose = IsOrderClosable(String(selectedOrder.orderStatus || ""));
+        orderWorkspace.detailPanel.innerHTML = [
+            "<div class=\"space-y-4\">",
+            "<div class=\"flex items-start justify-between gap-4\">",
+            "<div>",
+            `<p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Order</p>`,
+            `<h4 class="mt-1 text-xl font-extrabold text-slate-950">${EscapeHtml(selectedOrder.orderNo || `#${SafeNumber(selectedOrder.orderId)}`)}</h4>`,
+            "</div>",
+            `<span class="rounded-full px-2.5 py-1 text-[11px] font-bold ${statusMeta.className}">${statusMeta.text}</span>`,
+            "</div>",
+            "<div class=\"grid grid-cols-2 gap-3 text-xs\">",
+            BuildOrderDetailMetric("订单金额", `¥ ${FormatAmount(selectedOrder.orderAmount)}`),
+            BuildOrderDetailMetric("商品 ID", `#${SafeNumber(selectedOrder.productId)}`),
+            BuildOrderDetailMetric("创建时间", FormatShortDateTime(selectedOrder.createTime)),
+            BuildOrderDetailMetric("更新时间", FormatShortDateTime(selectedOrder.updateTime)),
+            "</div>",
+            "<div class=\"rounded-2xl bg-white/70 p-4 ring-1 ring-slate-200/70\">",
+            "<p class=\"text-xs font-bold text-slate-400\">交易双方</p>",
+            `<p class="mt-2 text-sm font-semibold text-slate-800">买家：${EscapeHtml(selectedOrder.buyerDisplayName || `#${SafeNumber(selectedOrder.buyerUserId)}`)}</p>`,
+            `<p class="mt-1 text-sm font-semibold text-slate-800">卖家：${EscapeHtml(selectedOrder.sellerDisplayName || `#${SafeNumber(selectedOrder.sellerUserId)}`)}</p>`,
+            "</div>",
+            "<div class=\"rounded-2xl bg-white/70 p-4 ring-1 ring-slate-200/70\">",
+            "<p class=\"text-xs font-bold text-slate-400\">交易地点</p>",
+            `<p class="mt-2 text-sm text-slate-700">${EscapeHtml(selectedOrder.tradeLocation || "未填写")}</p>`,
+            "</div>",
+            selectedOrder.closeReason
+                ? `<div class="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700 ring-1 ring-rose-100"><span class="font-bold">关闭原因：</span>${EscapeHtml(selectedOrder.closeReason)}</div>`
+                : "",
+            "<div class=\"flex flex-col gap-2\">",
+            `<a href="/pages/order_detail.html?orderId=${SafeNumber(selectedOrder.orderId)}" class="inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-bold text-primary ring-1 ring-slate-200 hover:bg-[#eef6fb]">打开订单详情</a>`,
+            canClose
+                ? `<button data-order-action="close" data-order-id="${SafeNumber(selectedOrder.orderId)}" data-order-no="${EscapeHtml(selectedOrder.orderNo || "")}" class="inline-flex items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800">强制关闭订单</button>`
+                : "<span class=\"rounded-full bg-slate-100 px-4 py-2 text-center text-xs font-bold text-slate-400\">当前状态不可强制关闭</span>",
+            "</div>",
+            "</div>"
+        ].join("");
+    }
+
+    function BuildOrderDetailMetric(label, value) {
+        return [
+            "<div class=\"rounded-2xl bg-white/70 p-3 ring-1 ring-slate-200/70\">",
+            `<p class="text-[11px] font-semibold text-slate-400">${EscapeHtml(label)}</p>`,
+            `<p class="mt-1 text-sm font-extrabold text-slate-900">${EscapeHtml(value || "-")}</p>`,
+            "</div>"
+        ].join("");
+    }
+
+    function FilterOrderManagementList(orderList, keyword) {
+        const safeList = Array.isArray(orderList) ? orderList : [];
+        const safeKeyword = String(keyword || "").trim().toLowerCase();
+        if (!safeKeyword) {
+            return safeList;
+        }
+        return safeList.filter(function MatchOrder(orderItem) {
+            return [
+                orderItem.orderNo,
+                orderItem.orderStatus,
+                orderItem.buyerDisplayName,
+                orderItem.sellerDisplayName,
+                orderItem.tradeLocation,
+                orderItem.orderId,
+                orderItem.productId
+            ].some(function MatchField(value) {
+                return String(value || "").toLowerCase().includes(safeKeyword);
+            });
+        });
+    }
+
+    function ResolveOrderStatusMeta(orderStatus) {
+        const status = String(orderStatus || "UNKNOWN");
+        const map = {
+            PENDING_SELLER_CONFIRM: { text: "待卖家确认", className: "bg-amber-50 text-amber-700 ring-1 ring-amber-100" },
+            PENDING_OFFLINE_TRADE: { text: "线下交易中", className: "bg-blue-50 text-blue-700 ring-1 ring-blue-100" },
+            PENDING_BUYER_CONFIRM: { text: "待买家确认", className: "bg-[#eef6fb] text-primary ring-1 ring-[rgba(0,93,144,0.12)]" },
+            COMPLETED: { text: "已完成", className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100" },
+            CANCELED: { text: "已取消", className: "bg-slate-100 text-slate-500 ring-1 ring-slate-200" },
+            CLOSED: { text: "已关闭", className: "bg-rose-50 text-rose-700 ring-1 ring-rose-100" }
+        };
+        return map[status] || { text: status, className: "bg-slate-100 text-slate-600 ring-1 ring-slate-200" };
+    }
+
+    function ResolveOrderStatusText(orderStatus) {
+        if (!orderStatus || orderStatus === "ALL") {
+            return "全部订单";
+        }
+        return ResolveOrderStatusMeta(orderStatus).text;
     }
 
     /**
@@ -1732,6 +2130,32 @@
             return "0.00";
         }
         return priceValue.toFixed(2);
+    }
+
+    function FormatAmount(value) {
+        return FormatPrice(value);
+    }
+
+    function FormatShortDateTime(value) {
+        if (!value) {
+            return "-";
+        }
+        const dateValue = new Date(value);
+        if (Number.isNaN(dateValue.getTime())) {
+            return String(value);
+        }
+        return dateValue.toLocaleString("zh-CN", {
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    }
+
+    function SetNodeText(node, text) {
+        if (node) {
+            node.textContent = text;
+        }
     }
 
     /**

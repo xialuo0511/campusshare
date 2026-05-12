@@ -2337,6 +2337,9 @@
         ListMyNotifications() {
             return RequestApi("/api/v1/notifications", "GET", null, true);
         },
+        ListNotifications() {
+            return RequestApi("/api/v1/notifications", "GET", null, true);
+        },
         MarkNotificationRead(notificationId) {
             return RequestApi(`/api/v1/notifications/${notificationId}/read`, "POST", {}, true);
         },

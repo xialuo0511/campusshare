@@ -157,11 +157,12 @@
         const styleElement = childDocument.createElement("style");
         styleElement.id = "campusshare-workspace-child-style";
         styleElement.textContent = [
-            "html,body{min-height:100%!important;background:#f8fafc!important;}",
+            "html,body{min-height:100%!important;background:transparent!important;}",
             "body>header,[data-user-topbar],[data-user-sidebar],footer{display:none!important;}",
-            "body>main{display:block!important;width:100%!important;max-width:none!important;min-height:100vh!important;margin:0!important;padding:2rem!important;}",
+            "body>main{display:block!important;width:100%!important;max-width:none!important;min-height:100vh!important;margin:0!important;padding:2rem!important;background:transparent!important;}",
             "body>main>aside:first-child{display:none!important;}",
-            "body>main>section{width:100%!important;max-width:none!important;}"
+            "body>main>section{width:100%!important;max-width:none!important;}",
+            ".bg-surface-container-lowest:first-child,body>main>section>div:first-child{background:rgba(255,255,255,.72)!important;}"
         ].join("");
         childDocument.head.appendChild(styleElement);
     }

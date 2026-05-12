@@ -141,6 +141,44 @@
         opacity: 1 !important;
         color: inherit;
     }
+    /* ── 修复：消息通知按钮被 JS 注入 campusshare-notification-trigger 后样式异常 ── */
+    .overview-sidebar nav a.campusshare-notification-trigger {
+        display: grid !important;
+        grid-template-columns: 32px minmax(0, 1fr) !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 48px !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        border-radius: 0.75rem !important;
+        line-height: 1.25 !important;
+    }
+    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+        height: 32px !important;
+        flex: none !important;
+    }
+    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell .material-symbols-outlined {
+        width: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+        height: 32px !important;
+        font-size: 21px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-badge {
+        position: absolute;
+        top: -4px;
+        right: -6px;
+    }
     .apple-button {
         background: var(--cs-primary);
         color: #fff;

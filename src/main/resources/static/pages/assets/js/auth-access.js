@@ -44,7 +44,6 @@
             verifyCodeRow
         );
 
-        SetupLabels(authForm, accountInput, passwordInput, userNameInput, emailInput, verificationCodeInput, submitButton, sendCodeButton);
         BindPasswordToggle(passwordInput, passwordToggleButton, passwordToggleIcon);
 
         const authNoticeText = campusShareApi && campusShareApi.ConsumeAuthNotice ? campusShareApi.ConsumeAuthNotice() : "";
@@ -172,26 +171,6 @@
         SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton);
     }
 
-    function SetupLabels(authForm, accountInput, passwordInput, userNameInput, emailInput, verificationCodeInput, submitButton, sendCodeButton) {
-        const labelList = authForm.querySelectorAll("label");
-        if (labelList[0]) labelList[0].textContent = "学号";
-        if (labelList[1]) labelList[1].textContent = "密码";
-        if (labelList[2]) labelList[2].textContent = "用户名";
-        if (labelList[3]) labelList[3].textContent = "学院";
-        if (labelList[4]) labelList[4].textContent = "年级";
-        if (labelList[5]) labelList[5].textContent = "邮箱";
-
-        accountInput.placeholder = "请输入 11 位学号";
-        accountInput.maxLength = 11;
-        accountInput.inputMode = "numeric";
-        passwordInput.placeholder = "请输入密码";
-        userNameInput.placeholder = "请输入用户名";
-        emailInput.placeholder = "请输入邮箱";
-        verificationCodeInput.placeholder = "请输入 6 位验证码";
-        submitButton.textContent = "登录";
-        sendCodeButton.textContent = "发送验证码";
-    }
-
     function BuildMessageBar(authForm) {
         const messageBar = document.createElement("div");
         messageBar.className = "rounded-xl px-3 py-2 text-sm bg-slate-50 text-slate-600 border border-[rgba(120,133,150,0.18)]";
@@ -206,7 +185,7 @@
         verifyCodeRow.innerHTML = [
             "<label class=\"ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500\">邮箱验证码</label>",
             "<div class=\"flex items-center gap-2\">",
-            "<input class=\"flex-1 rounded-xl px-4 py-3 text-sm\" type=\"text\" maxlength=\"6\"/>",
+            "<input class=\"flex-1 rounded-xl px-4 py-3 text-sm\" type=\"text\" maxlength=\"6\" placeholder=\"请输入 6 位验证码\"/>",
             "<button type=\"button\" class=\"rounded-xl border border-[rgba(120,133,150,0.24)] bg-white px-3 py-3 text-xs font-bold text-slate-700 hover:text-[#005d90]\">发送验证码</button>",
             "</div>"
         ].join("");

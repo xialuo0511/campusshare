@@ -1,273 +1,305 @@
-﻿<!DOCTYPE html>
-
-<html class="light" lang="zh-CN"><head>
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CampusShare | 开始发布</title>
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
-<link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
 <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "surface-container-low": "#f3f4f5",
-                        "surface-bright": "#f8f9fa",
-                        "surface": "#f8f9fa",
-                        "background": "#f8f9fa",
-                        "tertiary-fixed": "#d8e2ff",
-                        "on-primary-fixed": "#001d32",
-                        "surface-container-highest": "#e1e3e4",
-                        "on-primary-container": "#f3f7ff",
-                        "error": "#ba1a1a",
-                        "tertiary-fixed-dim": "#aec6ff",
-                        "on-primary-fixed-variant": "#004b74",
-                        "on-secondary-fixed-variant": "#004e5b",
-                        "secondary": "#006878",
-                        "inverse-on-surface": "#f0f1f2",
-                        "surface-tint": "#006399",
-                        "tertiary-container": "#4770be",
-                        "error-container": "#ffdad6",
-                        "outline": "#707881",
-                        "on-tertiary-fixed-variant": "#0f4490",
-                        "primary-fixed-dim": "#94ccff",
-                        "on-secondary-fixed": "#001f25",
-                        "on-surface-variant": "#404850",
-                        "secondary-container": "#69e5ff",
-                        "surface-container-high": "#e7e8e9",
-                        "secondary-fixed-dim": "#58d6f1",
-                        "on-error": "#ffffff",
-                        "on-tertiary-fixed": "#001a42",
-                        "primary-container": "#0077b6",
-                        "surface-container": "#edeeef",
-                        "surface-container-lowest": "#ffffff",
-                        "tertiary": "#2b57a4",
-                        "on-secondary": "#ffffff",
-                        "primary-fixed": "#cde5ff",
-                        "on-error-container": "#93000a",
-                        "on-secondary-container": "#006575",
-                        "surface-variant": "#e1e3e4",
-                        "on-tertiary": "#ffffff",
-                        "on-primary": "#ffffff",
-                        "outline-variant": "#bfc7d1",
-                        "on-surface": "#191c1d",
-                        "primary": "#005d90",
-                        "surface-dim": "#d9dadb",
-                        "secondary-fixed": "#a7edff",
-                        "on-tertiary-container": "#f7f7ff",
-                        "inverse-surface": "#2e3132",
-                        "inverse-primary": "#94ccff",
-                        "on-background": "#191c1d"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
-                    },
-                    "fontFamily": {
-                        "headline": ["Manrope"],
-                        "body": ["Inter"],
-                        "label": ["Inter"]
-                    }
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    primary: "#005d90",
+                    "primary-strong": "#004b74",
+                    "on-primary": "#ffffff",
+                    surface: "#f5f5f7",
+                    "surface-card": "#ffffff",
+                    "surface-soft": "#eef3f7",
+                    line: "rgba(120,133,150,0.18)",
+                    muted: "#667085",
+                    ink: "#172033",
+                    danger: "#b42318",
+                    tertiary: "#3454d1"
                 },
-            },
+                borderRadius: {
+                    DEFAULT: "8px",
+                    lg: "10px",
+                    xl: "16px",
+                    full: "999px"
+                },
+                fontFamily: {
+                    headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                    body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
+                }
+            }
         }
-    </script>
+    };
+</script>
 <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            color: #191c1d;
-        }
-        .editorial-shadow {
-            box-shadow: 0 8px 24px rgba(25, 28, 29, 0.06);
-        }
-    </style>
-<link href="/pages/assets/css/campusshare-modern.css?v=20260509-3" rel="stylesheet"/>
+    :root {
+        --publish-bg: #f5f5f7;
+        --publish-card: rgba(255, 255, 255, 0.82);
+        --publish-line: rgba(120, 133, 150, 0.18);
+        --publish-shadow: 0 22px 56px rgba(15, 23, 42, 0.08);
+        --publish-ease: cubic-bezier(0.2, 0, 0, 1);
+    }
+    * { box-sizing: border-box; }
+    html { text-rendering: optimizeLegibility; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        color: #172033;
+        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        background:
+            radial-gradient(circle at 14% 10%, rgba(0, 93, 144, 0.09), transparent 24rem),
+            radial-gradient(circle at 86% 6%, rgba(52, 84, 209, 0.06), transparent 22rem),
+            linear-gradient(180deg, #ffffff 0%, var(--publish-bg) 42%);
+        text-wrap: pretty;
+    }
+    body[data-embedded="true"] {
+        background: transparent !important;
+    }
+    h1, h2, h3, .headline-font {
+        font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        letter-spacing: 0;
+    }
+    button, a, input, select, textarea {
+        transition: color 180ms var(--publish-ease), background-color 180ms var(--publish-ease),
+            border-color 180ms var(--publish-ease), box-shadow 180ms var(--publish-ease), transform 180ms var(--publish-ease);
+    }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+        outline: 2px solid rgba(0, 93, 144, 0.34);
+        outline-offset: 3px;
+    }
+    .material-symbols-outlined {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
+    }
+    .publish-glass {
+        border: 1px solid var(--publish-line);
+        background: var(--publish-card);
+        backdrop-filter: blur(20px);
+        box-shadow: var(--publish-shadow);
+    }
+    .publish-nav {
+        border-bottom: 1px solid rgba(120, 133, 150, 0.12);
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(18px);
+    }
+    body[data-embedded="true"] .publish-nav,
+    body[data-embedded="true"] footer,
+    body[data-embedded="true"] [data-publish-aside] {
+        display: none !important;
+    }
+    body[data-embedded="true"] main {
+        max-width: none !important;
+        padding: 0 !important;
+    }
+    body[data-embedded="true"] [data-publish-layout] {
+        display: block !important;
+    }
+    body[data-embedded="true"] [data-publish-card] {
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+    }
+    input, select, textarea {
+        border: 1px solid rgba(120, 133, 150, 0.16) !important;
+        background: rgba(255, 255, 255, 0.86) !important;
+    }
+    input:hover, select:hover, textarea:hover {
+        border-color: rgba(0, 93, 144, 0.24) !important;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: rgba(0, 93, 144, 0.44) !important;
+        box-shadow: 0 0 0 4px rgba(0, 93, 144, 0.10) !important;
+        outline: 0;
+    }
+    [data-role="publish-upload-panel"] {
+        border-color: rgba(0, 93, 144, 0.24);
+        background:
+            linear-gradient(180deg, rgba(238, 246, 251, 0.72), rgba(255, 255, 255, 0.62)),
+            rgba(255, 255, 255, 0.76);
+    }
+    [data-role="publish-upload-panel"]:hover {
+        border-color: rgba(0, 93, 144, 0.46);
+        box-shadow: inset 0 0 0 1px rgba(0, 93, 144, 0.08);
+    }
+    @media (max-width: 980px) {
+        [data-publish-layout] { grid-template-columns: 1fr !important; }
+    }
+</style>
 </head>
-<body class="bg-surface text-on-surface">
-<!-- TopNavBar -->
-<header class="bg-[#f8f9fa] dark:bg-slate-950 sticky top-0 z-50">
-<div class="flex justify-between items-center w-full px-6 py-3 max-w-[1440px] mx-auto">
-<div class="flex items-center gap-8">
-<span class="text-2xl font-bold tracking-tighter text-[#005d90] dark:text-sky-500 font-headline">CampusShare</span>
-<nav class="hidden md:flex gap-6 font-['Manrope'] text-sm tracking-wide">
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" data-nav-target="/pages/market_listing.html" href="#">浜ゆ槗甯傚満</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">瀛︽湳璧勬簮</a>
-<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-[#005d90] transition-colors" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">鏍″洯璁哄潧</a>
-</nav>
-</div>
-<div class="flex items-center gap-4">
-<button class="bg-primary text-on-primary px-5 py-1.5 rounded-lg text-sm font-semibold hover:bg-primary-container transition-all scale-95 active:scale-100" data-nav-target="/pages/publish_create.html">鍙戝竷</button>
-<span class="material-symbols-outlined text-slate-600 cursor-pointer">notifications</span>
-<span class="material-symbols-outlined text-slate-600 cursor-pointer">account_circle</span>
-</div>
-</div>
+<body class="text-ink">
+<header class="publish-nav sticky top-0 z-50">
+    <div class="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-6 lg:px-9">
+        <button class="headline-font text-xl font-extrabold text-[#005d90]" data-nav-target="/pages/market_overview.html" type="button">CampusShare</button>
+        <nav class="hidden items-center gap-6 text-sm font-bold md:flex">
+            <a class="text-slate-600 hover:text-[#005d90]" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
+            <a class="text-slate-600 hover:text-[#005d90]" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
+            <a class="text-slate-600 hover:text-[#005d90]" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
+        </nav>
+        <button class="rounded-full bg-[#005d90] px-5 py-2 text-sm font-bold text-white hover:bg-[#004b74]" data-nav-target="/pages/publish_create.html" type="button">发布</button>
+    </div>
 </header>
-<main class="max-w-7xl mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
-<!-- Left Sidebar: Form Progress & Info -->
-<aside class="w-full lg:w-1/3 space-y-8">
-<div>
-<h1 class="text-4xl font-headline font-bold text-on-surface tracking-tight mb-4 leading-tight" data-role="publish-page-title">鍒涘缓鏂板彂甯?/h1>
-<p class="text-body-lg text-slate-600 leading-relaxed">
-                    鍙戝竷浜屾墜鍟嗗搧銆佸涔犺祫鏂欐垨缁勯槦鎷涘嫙锛岃淇℃伅鏇村揩鍒拌揪闇€瑕佺殑浜恒€?                </p>
-</div>
-<div class="bg-surface-container-lowest p-6 rounded-xl editorial-shadow space-y-6">
-<div class="flex items-start gap-4">
-<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary text-sm font-bold">1</div>
-<div>
-<h3 class="font-headline font-bold text-primary">鏍稿績璇︽儏</h3>
-<p class="text-xs text-slate-500">鏍囬銆佸垎绫诲強鏂版棫绋嬪害</p>
-</div>
-</div>
-<div class="flex items-start gap-4">
-<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-slate-400 text-sm font-bold">2</div>
-<div>
-<h3 class="font-headline font-bold text-slate-400">濯掍綋涓庢枃浠?/h3>
-<p class="text-xs text-slate-500">涓婁紶鍥剧墖鎴?PDF 璧勬簮</p>
-</div>
-</div>
-<div class="flex items-start gap-4">
-<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-slate-400 text-sm font-bold">3</div>
-<div>
-<h3 class="font-headline font-bold text-slate-400">浜ゆ槗淇℃伅</h3>
-<p class="text-xs text-slate-500">浠锋牸銆佸湴鐐逛笌琛ュ厖璇存槑</p>
-</div>
-</div>
-</div>
-<div class="relative rounded-xl overflow-hidden aspect-[4/3] group">
-<img class="w-full h-full object-cover" data-alt="Modern university library with clean architectural lines, tall windows, and students studying at sleek wooden tables in soft daylight" src="/pages/assets/img/campusshare-placeholder.svg"/>
-<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex flex-col justify-end p-6">
-<p class="text-white text-sm font-label uppercase tracking-widest mb-1">鍙戝竷鍓嶇‘璁?/p>
-<h4 class="text-white font-headline font-bold text-lg">鐪熷疄銆佹竻鏅般€佸彲瀹℃牳</h4>
-</div>
-</div>
-</aside>
-<!-- Right Side: The Form -->
-<section class="flex-1 space-y-8">
-<div class="bg-surface-container-lowest p-8 rounded-xl editorial-shadow border border-outline-variant/10">
-<form class="space-y-10" data-role="publish-form">
-<!-- Section 1: Item Identity -->
-<div class="space-y-6">
-<div class="flex items-center gap-2 mb-2">
-<span class="w-1.5 h-6 bg-primary rounded-full"></span>
-<h2 class="font-headline font-bold text-xl uppercase tracking-wider text-slate-900">鍩烘湰淇℃伅</h2>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div class="space-y-2 md:col-span-2">
-<label class="text-xs font-label font-semibold uppercase tracking-widest text-slate-500" data-role="publish-title-label">鍟嗗搧鏍囬</label>
-<input class="w-full px-4 py-3 bg-surface-container-low border-0 rounded-lg focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-slate-400" data-role="publish-title" placeholder="渚嬪锛氭湁鏈哄寲瀛︾鍥涚増 - Smith" type="text"/>
-</div>
-<div class="space-y-2">
-<label class="text-xs font-label font-semibold uppercase tracking-widest text-slate-500" data-role="publish-category-label">鍒嗙被</label>
-<select class="w-full px-4 py-3 bg-surface-container-low border-0 rounded-lg focus:ring-2 focus:ring-primary/20 text-on-surface" data-role="publish-category">
-<option>閫夋嫨鍒嗙被</option>
-<option>鏁欐潗</option>
-<option>瀛︽湳璧勬簮锛堢數瀛愮増锛?/option>
-<option>瀹為獙璁惧</option>
-<option>鐢靛瓙浜у搧</option>
-</select>
-</div>
-<div class="space-y-2" data-role="publish-condition-section">
-<label class="text-xs font-label font-semibold uppercase tracking-widest text-slate-500">鏂版棫绋嬪害</label>
-<div class="flex gap-2">
-<button class="flex-1 py-2 text-xs font-bold rounded-lg border border-primary bg-primary-container/10 text-primary" data-role="publish-condition-button" type="button">鍏ㄦ柊</button>
-<button class="flex-1 py-2 text-xs font-bold rounded-lg border border-transparent bg-surface-container text-slate-600 hover:bg-surface-container-high transition-colors" data-role="publish-condition-button" type="button">浜屾墜</button>
-<button class="flex-1 py-2 text-xs font-bold rounded-lg border border-transparent bg-surface-container text-slate-600 hover:bg-surface-container-high transition-colors" data-role="publish-condition-button" type="button">鐢靛瓙鐗?/button>
-</div>
-</div>
-</div>
-</div>
-<!-- Section 2: Media Upload -->
-<div class="space-y-6">
-<div class="flex items-center gap-2 mb-2">
-<span class="w-1.5 h-6 bg-secondary rounded-full"></span>
-<h2 class="font-headline font-bold text-xl uppercase tracking-wider text-slate-900">涓婁紶濯掍綋涓庢枃浠?/h2>
-</div>
-<div class="border-2 border-dashed border-outline-variant/30 rounded-xl p-10 bg-surface-container-low flex flex-col items-center justify-center text-center group hover:bg-surface-container transition-colors cursor-pointer" data-role="publish-upload-panel">
-<div class="w-16 h-16 bg-surface-container-lowest rounded-full flex items-center justify-center mb-4 editorial-shadow group-hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
-</div>
-<p class="text-on-surface font-semibold mb-1" data-role="publish-upload-title">鎷栨嫿鍥剧墖鎴栨枃妗?/p>
-<p class="text-slate-500 text-xs max-w-xs" data-role="publish-upload-description">鏀寔 JPG, PNG, PDF (鏈€澶?25MB)銆傛帹鑽愪负鏁欐潗鎻愪緵楂樺垎杈ㄧ巼鍥剧墖銆?/p>
-<button class="mt-4 text-primary font-bold text-sm underline underline-offset-4" data-role="publish-browse-file" type="button">娴忚鏂囦欢</button>
-</div>
-</div>
-<!-- Section 3: Pricing & Content -->
-<div class="space-y-6">
-<div class="flex items-center gap-2 mb-2">
-<span class="w-1.5 h-6 bg-tertiary rounded-full"></span>
-<h2 class="font-headline font-bold text-xl uppercase tracking-wider text-slate-900">鐗╂祦涓庡唴瀹?/h2>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div class="space-y-2">
-<label class="text-xs font-label font-semibold uppercase tracking-widest text-slate-500" data-role="publish-price-label">浠锋牸锛堝厓锛?/label>
-<div class="relative">
-<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold" data-role="publish-price-prefix">楼</span>
-<input class="w-full pl-8 pr-4 py-3 bg-surface-container-low border-0 rounded-lg focus:ring-2 focus:ring-primary/20 text-on-surface" data-role="publish-price" placeholder="0.00" type="number"/>
-</div>
-<p class="text-[10px] text-slate-400">杈撳叆 0 琛ㄧず鍏嶈垂/鎹愯禒</p>
-</div>
-<div class="space-y-2">
-<label class="text-xs font-label font-semibold uppercase tracking-widest text-slate-500" data-role="publish-location-label">浜ゆ槗鍦扮偣</label>
-<select class="w-full px-4 py-3 bg-surface-container-low border-0 rounded-lg focus:ring-2 focus:ring-primary/20 text-on-surface" data-role="publish-location">
-<option>涓绘牎鍖哄浘涔﹂</option>
-<option>瀛︾敓浼氬寳妤?/option>
-<option>宸ョ▼瀛﹂儴骞垮満</option>
-<option>杩滅▼锛堢數瀛愪笅杞斤級</option>
-</select>
-</div>
-<div class="space-y-2 md:col-span-2">
-<label class="text-xs font-label font-semibold uppercase tracking-widest text-slate-500" data-role="publish-description-label">璇︾粏鎻忚堪</label>
-<textarea class="w-full px-4 py-3 bg-surface-container-low border-0 rounded-lg focus:ring-2 focus:ring-primary/20 text-on-surface resize-none" data-role="publish-description" placeholder="鎻忚堪鐗╁搧鏂版棫绋嬪害銆佸寘鍚殑绔犺妭鎴栦换浣曠己椤垫儏鍐?.." rows="5"></textarea>
-</div>
-</div>
-</div>
-<!-- Final Checklist -->
-<div class="p-6 bg-secondary-container/10 rounded-xl border border-secondary/20 space-y-4" data-role="publish-copyright-section">
-<label class="flex items-start gap-3 cursor-pointer group">
-<div class="mt-1 relative flex items-center">
-<input class="w-5 h-5 rounded border-secondary text-secondary focus:ring-secondary/20" data-role="publish-copyright" type="checkbox"/>
-</div>
-<span class="text-sm text-slate-700 leading-tight" data-role="publish-copyright-text">
-                                鎴戝０鏄庢鏉愭枡锛堝鏋滄槸鐢靛瓙鐗堬級涓嶈繚鍙嶆満鏋勭増鏉冩斂绛栵紝骞朵笖鎴戞湁鏉冨湪 CampusShare 缃戠粶鍐呭叡浜鍐呭銆?                            </span>
-</label>
-</div>
-<!-- Actions -->
-<div class="flex items-center justify-end gap-4 pt-4 border-t border-outline-variant/20">
-<button class="px-6 py-3 text-slate-600 font-bold hover:text-primary transition-colors" type="button">鏀惧純鑽夌</button>
-<button class="px-10 py-3 bg-primary text-on-primary font-headline font-bold rounded-lg editorial-shadow hover:bg-primary-container transition-all active:scale-95" data-role="publish-submit" type="submit">鍙戝竷鍟嗗搧</button>
-</div>
-</form>
-</div>
-</section>
+
+<main class="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-[300px_minmax(0,1fr)]" data-publish-layout>
+        <aside class="space-y-6" data-publish-aside>
+            <div>
+                <p class="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-[#005d90]">Create Listing</p>
+                <h1 class="headline-font text-4xl font-extrabold leading-tight text-slate-950" data-role="publish-page-title">创建新发布</h1>
+                <p class="mt-4 text-sm leading-7 text-slate-600">发布二手商品、学习资料或团队招募，让信息更快到达需要的人。</p>
+            </div>
+            <div class="publish-glass rounded-2xl p-5">
+                <div class="space-y-5">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-[#005d90] text-sm font-bold text-white">1</div>
+                        <div>
+                            <h3 class="font-bold text-[#005d90]">核心详情</h3>
+                            <p class="text-xs text-slate-500">标题、分类与新旧程度</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-400">2</div>
+                        <div>
+                            <h3 class="font-bold text-slate-500">媒体与文件</h3>
+                            <p class="text-xs text-slate-500">上传图片或 PDF 资源</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-400">3</div>
+                        <div>
+                            <h3 class="font-bold text-slate-500">交易信息</h3>
+                            <p class="text-xs text-slate-500">价格、地点与补充说明</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="min-w-0">
+            <div class="publish-glass rounded-2xl p-6 lg:p-8" data-publish-card>
+                <form class="space-y-9" data-role="publish-form">
+                    <section class="space-y-5">
+                        <div class="flex items-center gap-2">
+                            <span class="h-6 w-1.5 rounded-full bg-[#005d90]"></span>
+                            <h2 class="headline-font text-xl font-extrabold text-slate-950">基本信息</h2>
+                        </div>
+                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <div class="space-y-2 md:col-span-2">
+                                <label class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500" data-role="publish-title-label">商品标题</label>
+                                <input class="w-full rounded-xl px-4 py-3 text-sm" data-role="publish-title" placeholder="例如：有机化学第四版 - Smith" type="text"/>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500" data-role="publish-category-label">分类</label>
+                                <select class="w-full rounded-xl px-4 py-3 text-sm" data-role="publish-category">
+                                    <option value="">选择分类</option>
+                                    <option>教材</option>
+                                    <option>学术资源（电子版）</option>
+                                    <option>实验设备</option>
+                                    <option>电子产品</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2" data-role="publish-condition-section">
+                                <label class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">新旧程度</label>
+                                <div class="flex gap-2">
+                                    <button class="flex-1 rounded-xl border border-[#005d90] bg-[#eef6fb] py-2 text-xs font-bold text-[#005d90]" data-role="publish-condition-button" type="button">全新</button>
+                                    <button class="flex-1 rounded-xl border border-transparent bg-slate-100 py-2 text-xs font-bold text-slate-600" data-role="publish-condition-button" type="button">二手</button>
+                                    <button class="flex-1 rounded-xl border border-transparent bg-slate-100 py-2 text-xs font-bold text-slate-600" data-role="publish-condition-button" type="button">电子版</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-5">
+                        <div class="flex items-center gap-2">
+                            <span class="h-6 w-1.5 rounded-full bg-[#006878]"></span>
+                            <h2 class="headline-font text-xl font-extrabold text-slate-950">上传媒体与文件</h2>
+                        </div>
+                        <div class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-9 text-center" data-role="publish-upload-panel">
+                            <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+                                <span class="material-symbols-outlined text-3xl text-[#005d90]">cloud_upload</span>
+                            </div>
+                            <p class="mb-1 font-bold text-slate-900" data-role="publish-upload-title">拖放图片或文档</p>
+                            <p class="max-w-sm text-xs leading-6 text-slate-500" data-role="publish-upload-description">支持 JPG、PNG、PDF，最大 25MB。建议为教材提供清晰图片。</p>
+                            <button class="mt-4 text-sm font-extrabold text-[#005d90] underline underline-offset-4" data-role="publish-browse-file" type="button">浏览文件</button>
+                        </div>
+                    </section>
+
+                    <section class="space-y-5">
+                        <div class="flex items-center gap-2">
+                            <span class="h-6 w-1.5 rounded-full bg-[#3454d1]"></span>
+                            <h2 class="headline-font text-xl font-extrabold text-slate-950">交易与内容</h2>
+                        </div>
+                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <div class="space-y-2">
+                                <label class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500" data-role="publish-price-label">价格（元）</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400" data-role="publish-price-prefix">¥</span>
+                                    <input class="w-full rounded-xl py-3 pl-9 pr-4 text-sm" data-role="publish-price" placeholder="0.00" type="number"/>
+                                </div>
+                                <p class="text-[10px] text-slate-400">输入 0 表示免费或捐赠</p>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500" data-role="publish-location-label">交易地点</label>
+                                <select class="w-full rounded-xl px-4 py-3 text-sm" data-role="publish-location">
+                                    <option>主校区图书馆</option>
+                                    <option>学生会北楼</option>
+                                    <option>工程学部广场</option>
+                                    <option>远程（电子下载）</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2 md:col-span-2">
+                                <label class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500" data-role="publish-description-label">详细描述</label>
+                                <textarea class="w-full resize-none rounded-xl px-4 py-3 text-sm leading-6" data-role="publish-description" placeholder="描述物品新旧程度、包含的章节或任何缺页情况..." rows="5"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="rounded-2xl border border-[rgba(0,104,120,0.20)] bg-[#f1fbfd] p-5" data-role="publish-copyright-section">
+                        <label class="flex cursor-pointer items-start gap-3">
+                            <input class="mt-1 h-5 w-5 rounded border-slate-300 text-[#006878]" data-role="publish-copyright" type="checkbox"/>
+                            <span class="text-sm leading-6 text-slate-700" data-role="publish-copyright-text">我声明此材料（如为电子版）不违反版权政策，并且我有权在 CampusShare 网络内共享此内容。</span>
+                        </label>
+                    </section>
+
+                    <div class="flex items-center justify-end gap-3 border-t border-[rgba(120,133,150,0.16)] pt-5">
+                        <button class="rounded-full px-5 py-3 font-bold text-slate-600 hover:bg-white hover:text-[#005d90]" type="button">放弃草稿</button>
+                        <button class="rounded-full bg-[#005d90] px-9 py-3 font-extrabold text-white hover:bg-[#004b74]" data-role="publish-submit" type="submit">发布商品</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
 </main>
-<!-- Footer -->
-<footer class="bg-[#f8f9fa] dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 w-full py-12 px-6 mt-20">
-<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-<div class="space-y-2">
-<span class="font-['Manrope'] font-bold text-slate-900 dark:text-slate-100 text-xl">CampusShare</span>
-<p class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500">漏 2026 CampusShare</p>
-</div>
-<nav class="flex flex-wrap justify-center gap-8 font-['Inter'] text-xs uppercase tracking-widest">
-<a class="text-slate-500 hover:text-[#005d90] transition-colors" href="#">闅愮鏀跨瓥</a>
-<a class="text-slate-500 hover:text-[#005d90] transition-colors" href="#">鏈嶅姟鏉℃</a>
-<a class="text-slate-500 hover:text-[#005d90] transition-colors" href="#">鏈烘瀯鍝佺墝</a>
-<a class="text-slate-500 hover:text-[#005d90] transition-colors" href="#">鏀寔</a>
-<a class="text-slate-500 hover:text-[#005d90] transition-colors" href="#">鑱旂郴鎴戜滑</a>
-</nav>
-</div>
+
+<footer class="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+    <div class="flex flex-col items-center justify-between gap-4 border-t border-[rgba(120,133,150,0.16)] pt-6 text-xs text-slate-500 md:flex-row">
+        <span class="headline-font font-extrabold text-slate-900">CampusShare</span>
+        <span>&copy; 2026 CampusShare</span>
+        <div class="flex flex-wrap justify-center gap-5">
+            <a class="hover:text-[#005d90]" href="#">隐私政策</a>
+            <a class="hover:text-[#005d90]" href="#">服务条款</a>
+            <a class="hover:text-[#005d90]" href="#">支持</a>
+        </div>
+    </div>
 </footer>
-<script src="/pages/assets/js/campusshare-api.js"></script>
-<script src="/pages/assets/js/publish-create.js?v=20260425-post-upload"></script>
-</body></html>
-
-
-
+<script>
+    if (new URLSearchParams(window.location.search).get("embedded") === "1") {
+        document.body.setAttribute("data-embedded", "true");
+    }
+</script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260512-apple-refine"></script>
+<script src="/pages/assets/js/publish-create.js?v=20260512-apple-refine"></script>
+</body>
+</html>

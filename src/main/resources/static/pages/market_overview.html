@@ -124,7 +124,7 @@
         line-height: 1;
         text-align: center;
     }
-    .overview-sidebar nav a span:last-child {
+    .overview-sidebar nav a > span:last-child {
         display: block;
         min-width: 0;
         overflow: hidden;
@@ -135,7 +135,7 @@
     .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] {
         grid-template-columns: 32px minmax(0, 1fr);
     }
-    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] span:last-child {
+    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] > span:last-child {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -175,9 +175,23 @@
         justify-content: center !important;
     }
     .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-badge {
-        position: absolute;
-        top: -4px;
-        right: -6px;
+        position: absolute !important;
+        top: -4px !important;
+        right: -6px !important;
+        display: inline-flex !important;
+        width: 18px !important;
+        min-width: 18px !important;
+        max-width: 18px !important;
+        height: 18px !important;
+        min-height: 18px !important;
+        padding: 0 !important;
+        border-radius: 999px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+        line-height: 1 !important;
+        text-overflow: clip !important;
     }
     .apple-button {
         background: var(--cs-primary);

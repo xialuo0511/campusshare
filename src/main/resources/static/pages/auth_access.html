@@ -102,6 +102,32 @@
         margin-left: -4px;
         margin-right: -4px;
     }
+    main[data-auth-shell] {
+        grid-template-columns: minmax(0, 520px) 420px;
+        justify-content: center;
+    }
+    .auth-visual {
+        min-width: 0;
+        overflow: hidden;
+    }
+    .auth-visual h1 {
+        font-size: clamp(3rem, 6vw, 5.4rem) !important;
+        max-width: 100%;
+    }
+    [data-password-toggle] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        line-height: 1;
+    }
+    [data-password-toggle-icon] {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
     @keyframes authModeSwitch {
         0% { opacity: 0.76; transform: translateY(8px) scale(0.992); }
         100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -113,6 +139,16 @@
     }
     .auth-mode-switching { animation: authModeSwitch 260ms var(--auth-ease); }
     .auth-field-shake { animation: authFieldShake 360ms ease; }
+    @media (max-width: 1120px) {
+        main[data-auth-shell] {
+            max-width: 980px;
+            grid-template-columns: minmax(0, 500px) 420px;
+            gap: 2.5rem;
+        }
+        .auth-visual h1 {
+            font-size: clamp(3rem, 8vw, 5.4rem) !important;
+        }
+    }
     @media (max-width: 900px) {
         .auth-visual { display: none; }
     }
@@ -126,11 +162,11 @@
 </style>
 </head>
 <body class="flex min-h-screen flex-col">
-<main class="mx-auto grid w-full max-w-[1160px] flex-1 grid-cols-1 items-center gap-10 px-5 py-10 lg:grid-cols-[minmax(0,560px)_420px] lg:gap-16 lg:px-8">
-    <section class="auth-visual mx-auto w-full max-w-[560px]">
+<main class="mx-auto grid w-full max-w-[1100px] flex-1 grid-cols-1 items-center gap-14 px-5 py-10 lg:px-8" data-auth-shell>
+    <section class="auth-visual mx-auto w-full max-w-[520px]">
         <p class="mb-5 inline-flex rounded-full bg-white/80 px-4 py-2 text-xs font-extrabold tracking-[0.18em] text-[#005d90] shadow-sm">CAMPUS TRUSTED MARKET</p>
         <h1 class="headline-font max-w-3xl text-[clamp(3rem,7vw,6.6rem)] font-extrabold leading-[0.92] text-slate-950">CampusShare</h1>
-        <p class="mt-6 max-w-xl text-lg leading-8 text-slate-600">登录后进入统一工作台，继续管理发布、订单、资料积分、组队申请和站内消息。</p>
+        <p class="mt-6 max-w-xl text-lg leading-8 text-slate-600">登录后进入统一工作台，继续管理发布、订单、资料积分、团队申请和站内消息。</p>
         <div class="mt-10 grid max-w-xl grid-cols-3 gap-3">
             <div class="rounded-2xl bg-white/78 p-4 shadow-sm">
                 <span class="material-symbols-outlined text-[#005d90]">verified_user</span>
@@ -162,10 +198,10 @@
             <form class="space-y-4">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div class="auth-field space-y-1 md:col-span-2">
-                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">账号</label>
+                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">学号</label>
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">person</span>
-                            <input class="w-full rounded-xl py-3 pl-10 pr-4 text-sm" placeholder="用户名" type="text"/>
+                            <input class="w-full rounded-xl py-3 pl-10 pr-4 text-sm" placeholder="请输入 11 位学号" type="text"/>
                         </div>
                     </div>
                     <div class="auth-field space-y-1 md:col-span-2">
@@ -179,8 +215,8 @@
                         </div>
                     </div>
                     <div class="auth-field space-y-1 md:col-span-2">
-                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">显示名称</label>
-                        <input class="w-full rounded-xl px-4 py-3 text-sm" placeholder="例如：张三" type="text"/>
+                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">用户名</label>
+                        <input class="w-full rounded-xl px-4 py-3 text-sm" placeholder="请输入用户名" type="text"/>
                     </div>
                     <div class="auth-field space-y-1">
                         <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">学院</label>
@@ -228,10 +264,10 @@
     <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-[rgba(120,133,150,0.16)] pt-6 text-xs text-slate-500 md:flex-row">
         <span class="headline-font font-extrabold text-slate-900">CampusShare</span>
         <span>© 2026 CampusShare</span>
-        <span class="font-semibold text-slate-600">校园交易平台</span>
+        <span class="font-semibold text-slate-600">校园资源共享平台</span>
     </div>
 </footer>
-<script src="/pages/assets/js/campusshare-api.js"></script>
-<script src="/pages/assets/js/auth-access.js?v=20260511-apple-auth"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260512-apple-fix"></script>
+<script src="/pages/assets/js/auth-access.js?v=20260512-apple-fix"></script>
 </body>
 </html>

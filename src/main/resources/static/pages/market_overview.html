@@ -114,26 +114,32 @@
     .overview-sidebar nav a.hidden {
         display: none !important;
     }
-    .overview-sidebar nav a .material-symbols-outlined,
-    .overview-sidebar nav a span:first-child {
-        grid-column: 1;
+    .overview-sidebar nav a .material-symbols-outlined {
         width: 32px;
         min-width: 32px;
         max-width: 32px;
         height: 32px;
         overflow: hidden;
-        font-size: 22px;
+        font-size: 21px;
         line-height: 1;
         text-align: center;
     }
     .overview-sidebar nav a span:last-child {
-        grid-column: 2;
         display: block;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         line-height: 1.25;
+    }
+    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] {
+        grid-template-columns: 32px minmax(0, 1fr);
+    }
+    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] span:last-child {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: inherit;
     }
     .apple-button {
         background: var(--cs-primary);
@@ -154,7 +160,6 @@
             url("/pages/assets/img/campus-hero.svg") right center / contain no-repeat,
             #ffffff;
     }
-    [data-overview-hero] img { display: none; }
     [data-overview-hero] h1 {
         max-width: 760px;
         font-size: clamp(2rem, 3.2vw, 3.65rem);
@@ -177,13 +182,6 @@
         [data-overview-hero] h1 { font-size: 2.2rem; }
         [data-overview-hero] { min-height: auto; }
     }
-    @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
-            transition-duration: 0.01ms !important;
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-        }
-    }
 </style>
 </head>
 <body data-page="market-overview">
@@ -192,7 +190,7 @@
         <button class="headline-font shrink-0 text-xl font-extrabold text-[#005d90]" data-nav-target="/pages/market_overview.html" type="button">CampusShare</button>
         <div class="hidden min-w-0 flex-1 items-center gap-3 rounded-full border border-[rgba(120,133,150,0.18)] bg-white/80 px-4 py-2 md:flex">
             <span class="material-symbols-outlined text-slate-400">search</span>
-            <input class="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400" data-role="overview-search-input" placeholder="搜索二手商品、课程资料、组队项目" type="text"/>
+            <input class="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400" data-role="overview-search-input" placeholder="搜索二手商品、课程资料、团队项目" type="text"/>
             <button class="min-w-[4.25rem] whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-bold text-[#005d90] hover:bg-[#eef6fb]" data-nav-target="/pages/market_listing.html" type="button">分类</button>
         </div>
         <div class="desktop-nav hidden items-center gap-2 text-sm font-bold lg:flex">
@@ -215,14 +213,14 @@
                     <p class="truncate text-xs text-slate-500" data-role="overview-profile-role">游客模式</p>
                 </div>
             </div>
-            <nav class="space-y-1 text-sm font-semibold">
-                <a class="flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 text-[#005d90] shadow-sm" data-nav-target="/pages/market_overview.html" href="#"><span class="material-symbols-outlined">home</span><span>主页</span></a>
-                <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/my_publish.html" href="#"><span class="material-symbols-outlined">format_list_bulleted</span><span>我的发布</span></a>
-                <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/order_center.html" href="#"><span class="material-symbols-outlined">receipt_long</span><span>订单中心</span></a>
-                <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/recruitment_board.html" href="#"><span class="material-symbols-outlined">groups</span><span>组队招募</span></a>
-                <a class="flex w-full min-w-0 items-center gap-3 rounded-xl px-3 py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/notification_center.html" href="#"><span class="material-symbols-outlined shrink-0">notifications</span><span class="min-w-0 whitespace-nowrap">消息通知</span></a>
-                <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/user_profile.html" href="#"><span class="material-symbols-outlined">settings</span><span>个人设置</span></a>
-                <a class="hidden items-center gap-3 rounded-xl px-3 py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#"><span class="material-symbols-outlined">admin_panel_settings</span><span>管理后台</span></a>
+            <nav class="text-sm font-semibold">
+                <a class="rounded-xl bg-white py-2.5 text-[#005d90] shadow-sm" data-nav-target="/pages/market_overview.html" href="#"><span class="material-symbols-outlined">home</span><span>主页</span></a>
+                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/my_publish.html" href="#"><span class="material-symbols-outlined">format_list_bulleted</span><span>我的发布</span></a>
+                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/order_center.html" href="#"><span class="material-symbols-outlined">receipt_long</span><span>订单中心</span></a>
+                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/recruitment_board.html" href="#"><span class="material-symbols-outlined">groups</span><span>团队招募</span></a>
+                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/notification_center.html" href="#"><span class="material-symbols-outlined">notifications</span><span>消息通知</span></a>
+                <a class="rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/user_profile.html" href="#"><span class="material-symbols-outlined">settings</span><span>个人设置</span></a>
+                <a class="hidden rounded-xl py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#"><span class="material-symbols-outlined">admin_panel_settings</span><span>管理后台</span></a>
             </nav>
         </section>
         <section class="apple-glass rounded-2xl p-4">
@@ -248,10 +246,9 @@
 
     <section class="min-w-0 flex-1">
         <section class="apple-glass relative mb-8 overflow-hidden rounded-2xl p-8 lg:p-12" data-overview-hero>
-            <img alt="CampusShare campus workspace" src="/pages/assets/img/campus-hero.svg"/>
             <div class="relative max-w-3xl">
                 <span class="mb-5 inline-flex rounded-full bg-[#eef6fb] px-3 py-1 text-xs font-extrabold tracking-[0.18em] text-[#005d90]">校园可信交易平台</span>
-                <h1 class="headline-font font-extrabold text-slate-950">把校园交易、资料共享和组队协作放进一个清爽入口。</h1>
+                <h1 class="headline-font font-extrabold text-slate-950">把校园交易、资料共享和团队协作放进一个清爽入口。</h1>
                 <p class="mt-5 max-w-2xl text-base leading-8 text-slate-600">从二手商品发布到资料下载积分，从订单状态到招募申请，CampusShare 让每一步都有记录、有反馈、可追踪。</p>
                 <div class="mt-8 flex flex-wrap gap-3">
                     <button class="apple-button rounded-full px-6 py-3 text-sm font-bold" data-nav-target="/pages/market_listing.html" type="button">浏览市场</button>
@@ -305,7 +302,7 @@
         </div>
     </div>
 </footer>
-<script src="/pages/assets/js/campusshare-api.js?v=20260510-mojibake"></script>
-<script src="/pages/assets/js/market-overview.js?v=20260511-apple-home"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260512-apple-fix"></script>
+<script src="/pages/assets/js/market-overview.js?v=20260512-apple-fix"></script>
 </body>
 </html>

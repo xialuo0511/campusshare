@@ -51,11 +51,34 @@
         margin: 0;
         font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif;
         color: #172033;
-        background:
-            radial-gradient(circle at 15% 12%, rgba(0,93,144,0.11), transparent 24rem),
-            radial-gradient(circle at 88% 18%, rgba(52,84,209,0.08), transparent 24rem),
-            linear-gradient(180deg, #ffffff 0%, var(--auth-bg) 45%);
+        position: relative;
+        overflow-x: hidden;
+        background: linear-gradient(180deg, #ffffff 0%, var(--auth-bg) 45%);
         text-wrap: pretty;
+    }
+    body::before,
+    body::after {
+        content: "";
+        position: fixed;
+        z-index: -1;
+        width: 34rem;
+        height: 34rem;
+        border-radius: 999px;
+        pointer-events: none;
+        filter: blur(2px);
+        will-change: transform;
+    }
+    body::before {
+        left: -7rem;
+        top: -8rem;
+        background: radial-gradient(circle, rgba(0,93,144,0.12) 0%, rgba(0,93,144,0.06) 38%, transparent 68%);
+        animation: authOrbDriftA 18s ease-in-out infinite alternate;
+    }
+    body::after {
+        right: -9rem;
+        top: -5rem;
+        background: radial-gradient(circle, rgba(52,84,209,0.10) 0%, rgba(0,93,144,0.04) 42%, transparent 70%);
+        animation: authOrbDriftB 23s ease-in-out infinite alternate;
     }
     h1, h2, h3, .headline-font {
         font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
@@ -112,8 +135,11 @@
     }
     .auth-visual h1 {
         font-size: clamp(3rem, 4.8vw, 4.55rem) !important;
+        font-weight: 950;
         max-width: 100%;
         line-height: 0.98;
+        letter-spacing: -0.01em;
+        text-shadow: 0 1px 0 rgba(255,255,255,0.72);
     }
     [data-password-toggle] {
         display: inline-flex;
@@ -137,6 +163,18 @@
         0%, 100% { transform: translateX(0); }
         20%, 60% { transform: translateX(-7px); }
         40%, 80% { transform: translateX(7px); }
+    }
+    @keyframes authOrbDriftA {
+        0% { transform: translate3d(0, 0, 0) scale(1); }
+        37% { transform: translate3d(3.5rem, 2rem, 0) scale(1.06); }
+        71% { transform: translate3d(1rem, 5rem, 0) scale(0.96); }
+        100% { transform: translate3d(5rem, 1.5rem, 0) scale(1.08); }
+    }
+    @keyframes authOrbDriftB {
+        0% { transform: translate3d(0, 0, 0) scale(1); }
+        29% { transform: translate3d(-4rem, 2.5rem, 0) scale(1.04); }
+        64% { transform: translate3d(-1rem, 6rem, 0) scale(0.97); }
+        100% { transform: translate3d(-5rem, 1rem, 0) scale(1.07); }
     }
     .auth-mode-switching { animation: authModeSwitch 260ms var(--auth-ease); }
     .auth-field-shake { animation: authFieldShake 360ms ease; }

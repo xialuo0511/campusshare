@@ -1,234 +1,89 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CampusShare - 涓汉璧勬枡</title>
-    <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet" />
-    <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet" />
-    <script src="/pages/assets/vendor/tailwindcss.js"></script>
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            display: inline-block;
-            line-height: 1;
-            width: 1em;
-            height: 1em;
-        }
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
-    </style>
-<link href="/pages/assets/css/campusshare-modern.css?v=20260509-3" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CampusShare - 个人资料</title>
+<link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
+<link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<script src="/pages/assets/vendor/tailwindcss.js"></script>
+<style>
+body{margin:0;min-height:100vh;font-family:"Inter","Noto Sans SC","Microsoft YaHei",sans-serif;background:#f5f5f7;color:#172033;text-wrap:pretty}h1,h2,h3{font-family:"Manrope","Noto Sans SC","Microsoft YaHei",sans-serif}.material-symbols-outlined{display:inline-flex;line-height:1;font-variation-settings:"FILL" 0,"wght" 430,"GRAD" 0,"opsz" 24}.glass{border:1px solid rgba(120,133,150,.18);background:rgba(255,255,255,.88);box-shadow:0 20px 52px rgba(15,23,42,.08);backdrop-filter:blur(18px)}[data-user-topbar],[data-user-sidebar],footer{display:none}.campusshare-embedded-page main{margin-left:0!important;padding:1.5rem!important;max-width:none!important}.profile-modern-shell{max-width:none!important}
+</style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen">
-<header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-sm" data-user-topbar>
-    <div>
-        <a class="text-xl font-bold tracking-tight text-sky-900" href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html">CampusShare</a>
-        <nav>
-            <a href="/pages/market_listing.html" data-nav-target="/pages/market_listing.html">浜ゆ槗甯傚満</a>
-            <a href="/pages/market_listing.html?view=MATERIAL" data-nav-target="/pages/market_listing.html?view=MATERIAL">瀛︽湳璧勬簮</a>
-            <a href="/pages/market_listing.html?view=FORUM" data-nav-target="/pages/market_listing.html?view=FORUM">鏍″洯璁哄潧</a>
-        </nav>
-    </div>
-</header>
-
+<body class="min-h-screen bg-slate-50 text-slate-900">
+<header data-user-topbar></header>
 <div class="flex" data-user-shell>
-    <aside class="fixed left-0 h-screen w-64 bg-slate-50 px-4 py-6" data-user-sidebar>
-        <div class="mb-8 flex items-center gap-3 px-2">
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-white">
-                <span class="material-symbols-outlined text-lg">person</span>
-            </div>
-            <div>
-                <p class="text-sm font-bold text-slate-900">涓汉涓績</p>
-                <p class="text-[10px] text-slate-500">鏍″洯璁よ瘉鐢ㄦ埛</p>
-            </div>
-        </div>
-        <nav class="space-y-1">
-            <a href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">home</span>涓婚〉
-            </a>
-            <a href="/pages/my_publish.html" data-nav-target="/pages/my_publish.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">list_alt</span>鎴戠殑鍙戝竷
-            </a>
-            <a href="/pages/order_center.html" data-nav-target="/pages/order_center.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">receipt_long</span>璁㈠崟涓績
-            </a>
-            <a href="/pages/recruitment_board.html" data-nav-target="/pages/recruitment_board.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">groups</span>缁勯槦鎷涘嫙
-            </a>
-            <a href="/pages/notification_center.html" data-nav-target="/pages/notification_center.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">notifications</span>娑堟伅閫氱煡
-            </a>
-            <a href="/pages/user_profile.html" data-nav-target="/pages/user_profile.html" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">settings</span>涓汉璁剧疆
-            </a>
-            <a href="/pages/admin_dashboard.html" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" class="hidden flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">
-                <span class="material-symbols-outlined">admin_panel_settings</span>绠＄悊浠〃鐩?            </a>
-        </nav>
-        <div class="mt-6 border-t border-slate-200 pt-6" data-user-sidebar-footer>
-            <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-500 hover:bg-slate-100">
-                <span class="material-symbols-outlined">logout</span>閫€鍑虹櫥褰?            </a>
-        </div>
-    </aside>
-
-<main class="profile-modern-shell mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8" data-user-main>
-    <div data-role="message-bar" class="mb-5 hidden rounded-lg border px-3 py-2 text-sm"></div>
-
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+<aside data-user-sidebar></aside>
+<main class="profile-modern-shell mx-auto w-full max-w-7xl px-6 py-8" data-user-main>
+    <div data-role="message-bar" class="mb-5 hidden rounded-xl border px-3 py-2 text-sm"></div>
+    <div class="glass mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl p-6">
         <div>
-            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">涓汉璧勬枡璁剧疆</h1>
-            <p class="mt-1 text-sm text-slate-500">鏌ョ湅骞剁淮鎶や綘鐨勮处鍙疯祫鏂欍€佺Н鍒嗗拰璁よ瘉鐘舵€?/p>
+            <h1 class="text-3xl font-extrabold text-slate-950">个人资料设置</h1>
+            <p class="mt-1 text-sm text-slate-500">查看并维护你的账号资料、积分和认证状态。</p>
         </div>
         <div class="flex items-center gap-2">
-            <a class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" href="/pages/order_center.html" data-nav-target="/pages/order_center.html">璁㈠崟涓績</a>
-            <a class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" href="/pages/my_publish.html" data-nav-target="/pages/my_publish.html">鎴戠殑鍙戝竷</a>
-            <button type="button" data-action="logout" class="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">閫€鍑虹櫥褰?/button>
+            <a class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" href="/pages/order_center.html" data-nav-target="/pages/order_center.html">订单中心</a>
+            <a class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100" href="/pages/my_publish.html" data-nav-target="/pages/my_publish.html">我的发布</a>
+            <button type="button" data-action="logout" class="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">退出登录</button>
         </div>
     </div>
-
     <div class="grid gap-6 lg:grid-cols-3">
-        <section class="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-2">
+        <section class="glass rounded-2xl p-6 lg:col-span-2">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-sky-100 text-2xl font-bold text-sky-700" data-role="avatar-initials">--</div>
+                    <div class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-[#eef6fb] text-2xl font-bold text-[#005d90]" data-role="avatar-initials">--</div>
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900" data-role="display-name">鍔犺浇涓?/h2>
-                        <p class="text-sm text-slate-500">璐﹀彿锛?span data-role="account">-</span></p>
-                        <p class="mt-1 text-xs text-slate-500">瑙掕壊锛?span data-role="role-text">-</span> 路 鐘舵€侊細<span data-role="status-text">-</span></p>
+                        <h2 class="text-2xl font-bold text-slate-950" data-role="display-name">加载中</h2>
+                        <p class="text-sm text-slate-500">账号：<span data-role="account">-</span></p>
+                        <p class="mt-1 text-xs text-slate-500">角色：<span data-role="role-text">-</span> · 状态：<span data-role="status-text">-</span></p>
                     </div>
                 </div>
                 <div class="flex flex-wrap justify-end gap-2">
-                    <label class="cursor-pointer rounded-lg border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-100">
-                        涓婁紶澶村儚
-                        <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" data-action="avatar-upload" />
+                    <label class="cursor-pointer rounded-full border border-sky-200 bg-[#eef6fb] px-4 py-2 text-sm font-semibold text-[#005d90] hover:bg-white">
+                        上传头像
+                        <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" data-action="avatar-upload"/>
                     </label>
-                    <button type="button" data-action="open-edit" class="rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800">缂栬緫璧勬枡</button>
+                    <button type="button" data-action="open-edit" class="rounded-full bg-[#005d90] px-4 py-2 text-sm font-semibold text-white hover:bg-[#004b74]">编辑资料</button>
                 </div>
             </div>
-
-            <div class="mt-4 hidden rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700" data-role="avatar-review-hint"></div>
-
+            <div class="mt-4 hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700" data-role="avatar-review-hint"></div>
             <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                <div class="rounded-lg bg-slate-50 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">瀛﹀彿 / 宸ュ彿</p>
-                    <p class="mt-2 text-sm text-slate-800" data-role="account-readonly">-</p>
-                </div>
-                <div class="rounded-lg bg-slate-50 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">閭</p>
-                    <p class="mt-2 text-sm text-slate-800" data-role="email">-</p>
-                </div>
-                <div class="rounded-lg bg-slate-50 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">鎵嬫満鍙?/p>
-                    <p class="mt-2 text-sm text-slate-800" data-role="phone">-</p>
-                </div>
-                <div class="rounded-lg bg-slate-50 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">瀛﹂櫌</p>
-                    <p class="mt-2 text-sm text-slate-800" data-role="college">-</p>
-                </div>
-                <div class="rounded-lg bg-slate-50 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">骞寸骇</p>
-                    <p class="mt-2 text-sm text-slate-800" data-role="grade">-</p>
-                </div>
+                <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">学号 / 工号</p><p class="mt-2 text-sm text-slate-800" data-role="account-readonly">-</p></div>
+                <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">邮箱</p><p class="mt-2 text-sm text-slate-800" data-role="email">-</p></div>
+                <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">手机号</p><p class="mt-2 text-sm text-slate-800" data-role="phone">-</p></div>
+                <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">学院</p><p class="mt-2 text-sm text-slate-800" data-role="college">-</p></div>
+                <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">年级</p><p class="mt-2 text-sm text-slate-800" data-role="grade">-</p></div>
             </div>
-
-            <p class="mt-4 text-xs text-slate-500">鏈€杩戠櫥褰曪細<span data-role="last-login-time">-</span></p>
+            <p class="mt-4 text-xs text-slate-500">最近登录：<span data-role="last-login-time">-</span></p>
         </section>
-
         <section class="space-y-4">
-            <div class="rounded-xl border border-slate-200 bg-white p-5">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">褰撳墠绉垎</p>
-                <p class="mt-3 text-4xl font-extrabold text-sky-700" data-role="point-balance">0</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-5">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">鎴戠殑鍟嗗搧</p>
-                <p class="mt-3 text-3xl font-bold text-slate-900" data-role="product-count">0</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-5">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">鎴戠殑璧勬枡</p>
-                <p class="mt-3 text-3xl font-bold text-slate-900" data-role="material-count">0</p>
-            </div>
+            <div class="glass rounded-2xl p-5"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">当前积分</p><p class="mt-3 text-4xl font-extrabold text-[#005d90]" data-role="point-balance">0</p></div>
+            <div class="glass rounded-2xl p-5"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">我的商品</p><p class="mt-3 text-3xl font-bold text-slate-950" data-role="product-count">0</p></div>
+            <div class="glass rounded-2xl p-5"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">我的资料</p><p class="mt-3 text-3xl font-bold text-slate-950" data-role="material-count">0</p></div>
         </section>
     </div>
-
     <section class="mt-6 grid gap-6 lg:grid-cols-2">
-        <div class="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 class="text-lg font-bold text-slate-900">鍗栧璁よ瘉</h3>
-            <p class="mt-2 text-sm text-slate-500" data-role="seller-verify-status">鏈彂璧疯璇佺敵璇?/p>
-            <button type="button" data-action="seller-verify" class="mt-4 rounded-lg border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-100">鐢宠璁よ瘉鍗栧</button>
-        </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 class="text-lg font-bold text-slate-900">蹇嵎鍏ュ彛</h3>
-            <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
-                <a class="rounded-lg border border-slate-200 px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html">浜ゆ槗甯傚満</a>
-                <a class="rounded-lg border border-slate-200 px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/market_listing.html?view=MATERIAL" data-nav-target="/pages/market_listing.html?view=MATERIAL">瀛︽湳璧勬簮</a>
-                <a class="rounded-lg border border-slate-200 px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/notification_center.html" data-nav-target="/pages/notification_center.html">娑堟伅閫氱煡</a>
-                <a class="rounded-lg border border-slate-200 px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/order_center.html" data-nav-target="/pages/order_center.html">璁㈠崟涓績</a>
-            </div>
-        </div>
+        <div class="glass rounded-2xl p-6"><h3 class="text-lg font-bold text-slate-950">卖家认证</h3><p class="mt-2 text-sm text-slate-500" data-role="seller-verify-status">未发起认证申请</p><button type="button" data-action="seller-verify" class="mt-4 rounded-full border border-sky-200 bg-[#eef6fb] px-4 py-2 text-sm font-semibold text-[#005d90] hover:bg-white">申请认证卖家</button></div>
+        <div class="glass rounded-2xl p-6"><h3 class="text-lg font-bold text-slate-950">快捷入口</h3><div class="mt-3 grid grid-cols-2 gap-2 text-sm"><a class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/market_overview.html" data-nav-target="/pages/market_overview.html">交易市场</a><a class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/market_listing.html?view=MATERIAL" data-nav-target="/pages/market_listing.html?view=MATERIAL">学术资源</a><a class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/notification_center.html" data-nav-target="/pages/notification_center.html">消息通知</a><a class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-slate-700 hover:bg-slate-100" href="/pages/order_center.html" data-nav-target="/pages/order_center.html">订单中心</a></div></div>
     </section>
-
-    <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6">
-        <h3 class="text-lg font-bold text-slate-900">绉垎娴佹按</h3>
-        <div data-role="ledger-list" class="mt-4 space-y-3">
-            <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">姝ｅ湪鍔犺浇绉垎娴佹按...</div>
-        </div>
-    </section>
+    <section class="glass mt-6 rounded-2xl p-6"><h3 class="text-lg font-bold text-slate-950">积分流水</h3><div data-role="ledger-list" class="mt-4 space-y-3"><div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">正在加载积分流水...</div></div></section>
 </main>
 </div>
-
 <div data-role="profile-edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div data-role="modal-overlay" class="absolute inset-0 bg-slate-900/45"></div>
-    <div class="relative w-full max-w-lg rounded-xl bg-white shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-            <h3 class="text-xl font-bold text-slate-900">缂栬緫璧勬枡</h3>
-            <button type="button" data-action="close-edit" class="rounded-lg p-1 text-slate-500 hover:bg-slate-100">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
+    <div class="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4"><h3 class="text-xl font-bold text-slate-950">编辑资料</h3><button type="button" data-action="close-edit" class="rounded-lg p-1 text-slate-500 hover:bg-slate-100"><span class="material-symbols-outlined">close</span></button></div>
         <form data-role="profile-edit-form" class="space-y-4 px-6 py-5">
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">瀛﹀彿 / 宸ュ彿</label>
-                    <input data-field="accountReadonly" type="text" class="w-full rounded-lg border-slate-300 bg-slate-100 text-sm text-slate-600" readonly />
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">閭</label>
-                    <input data-field="emailReadonly" type="email" class="w-full rounded-lg border-slate-300 bg-slate-100 text-sm text-slate-600" readonly />
-                </div>
-            </div>
-            <div>
-                <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">鏄电О</label>
-                <input data-field="displayName" type="text" maxlength="20" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="璇疯緭鍏ユ樀绉? />
-            </div>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">瀛﹂櫌</label>
-                    <input data-field="college" type="text" maxlength="50" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="璇疯緭鍏ュ闄? />
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">骞寸骇</label>
-                    <input data-field="grade" type="text" maxlength="20" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="璇疯緭鍏ュ勾绾? />
-                </div>
-            </div>
-            <div>
-                <label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">鎵嬫満鍙?/label>
-                <input data-field="phone" type="text" maxlength="30" class="w-full rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="閫夊～" />
-            </div>
-            <div class="flex justify-end gap-2 border-t border-slate-200 pt-4">
-                <button type="button" data-action="cancel-edit" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">鍙栨秷</button>
-                <button type="submit" class="rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800">淇濆瓨</button>
-            </div>
+            <div class="grid gap-4 sm:grid-cols-2"><div><label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">学号 / 工号</label><input data-field="accountReadonly" type="text" class="w-full rounded-xl border-slate-300 bg-slate-100 text-sm text-slate-600" readonly/></div><div><label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">邮箱</label><input data-field="emailReadonly" type="email" class="w-full rounded-xl border-slate-300 bg-slate-100 text-sm text-slate-600" readonly/></div></div>
+            <div><label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">昵称</label><input data-field="displayName" type="text" maxlength="20" class="w-full rounded-xl border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="请输入昵称"/></div>
+            <div class="grid gap-4 sm:grid-cols-2"><div><label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">学院</label><input data-field="college" type="text" maxlength="50" class="w-full rounded-xl border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="请输入学院"/></div><div><label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">年级</label><input data-field="grade" type="text" maxlength="20" class="w-full rounded-xl border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="请输入年级"/></div></div>
+            <div><label class="mb-1 block text-xs font-semibold tracking-wide text-slate-500">手机号</label><input data-field="phone" type="text" maxlength="30" class="w-full rounded-xl border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="选填"/></div>
+            <div class="flex justify-end gap-2 border-t border-slate-200 pt-4"><button type="button" data-action="cancel-edit" class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">取消</button><button type="submit" class="rounded-full bg-[#005d90] px-4 py-2 text-sm font-semibold text-white hover:bg-[#004b74]">保存</button></div>
         </form>
     </div>
 </div>
-
-<footer class="lg:ml-64 mt-10 border-t border-slate-200 bg-white px-6 py-6 text-center text-sm text-slate-500">
-    漏 2026 CampusShare
-</footer>
-
 <script src="/pages/assets/js/campusshare-api.js"></script>
-<script src="/pages/assets/js/user-profile.js"></script>
+<script src="/pages/assets/js/user-profile.js?v=20260511-clean"></script>
 </body>
 </html>
-
-

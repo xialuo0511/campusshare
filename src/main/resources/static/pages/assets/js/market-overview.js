@@ -87,7 +87,7 @@
         }
         if (!hasLoginSession) {
             view.profileNameNode.textContent = "未登录用户";
-            view.profileRoleNode.textContent = "娓稿妯″紡";
+            view.profileRoleNode.textContent = "游客模式";
             view.profileAvatarNode.textContent = "未";
             return;
         }
@@ -561,7 +561,7 @@
             return;
         }
         recruitmentListNode.innerHTML = safeList.map(function BuildRecruitmentCard(item, index) {
-            const directionText = item.direction || "缁煎悎";
+            const directionText = item.direction || "综合";
             const memberLimit = SafeNumber(item.memberLimit);
             const currentMemberCount = SafeNumber(item.currentMemberCount);
             const remainingSeats = Math.max(0, memberLimit - currentMemberCount);

@@ -320,6 +320,15 @@
                 SwitchAdminSubview(context, viewKey);
             });
         });
+
+        Array.from(document.querySelectorAll("[data-admin-nav-shortcut]")).forEach(function BindShortcut(shortcutButton) {
+            shortcutButton.addEventListener("click", function HandleShortcutClick(event) {
+                event.preventDefault();
+                const viewKey = shortcutButton.getAttribute("data-admin-nav-shortcut") || "DASHBOARD";
+                ApplyAdminNavState(adminNavItemList, viewKey);
+                SwitchAdminSubview(context, viewKey);
+            });
+        });
     }
 
     function ApplyAdminNavState(adminNavItemList, activeViewKey) {
@@ -1229,29 +1238,30 @@
         const workspaceElement = document.createElement("section");
         workspaceElement.className = "mt-8 grid grid-cols-1 xl:grid-cols-2 gap-6";
         workspaceElement.innerHTML = [
-            "<div class=\"xl:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 p-5\">",
-            "<div class=\"flex items-center justify-between gap-3 mb-4\">",
+            "<div class=\"xl:col-span-2 rounded-[1.75rem] bg-white/82 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] ring-1 ring-white/70 backdrop-blur-2xl\">",
+            "<div class=\"flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between\">",
             "<div>",
-            "<h3 class=\"text-lg font-semibold text-on-surface\">治理总览</h3>",
-            "<p class=\"text-xs text-slate-500\">规则、商品、订单与审计日志联动面板</p>",
+            "<p class=\"text-xs font-extrabold uppercase tracking-[0.18em] text-primary\">Operations</p>",
+            "<h3 class=\"mt-1 text-2xl font-extrabold text-slate-950\">治理总览</h3>",
+            "<p class=\"mt-1 text-sm text-slate-500\">规则、商品、订单与审计日志的统一管理视图</p>",
             "</div>",
-            "<button data-governance-action=\"refresh\" class=\"px-3 py-1.5 text-xs rounded-md bg-surface-container text-slate-700 font-semibold hover:bg-surface-container-high\">刷新治理数据</button>",
+            "<button data-governance-action=\"refresh\" class=\"inline-flex items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-slate-800\">刷新治理数据</button>",
             "</div>",
             "<div class=\"grid grid-cols-2 md:grid-cols-4 gap-3 text-xs\">",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">待审用户</p><p data-role=\"summary-user-pending\" class=\"text-lg font-bold text-primary\">0</p></div>",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">待处理举报</p><p data-role=\"summary-report-pending\" class=\"text-lg font-bold text-primary\">0</p></div>",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">进行中订单</p><p data-role=\"summary-order-ongoing\" class=\"text-lg font-bold text-primary\">0</p></div>",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">近7天审计</p><p data-role=\"summary-audit-seven\" class=\"text-lg font-bold text-primary\">0</p></div>",
+            "<div class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"font-semibold text-slate-500\">待审用户</p><p data-role=\"summary-user-pending\" class=\"mt-2 text-2xl font-extrabold text-primary\">0</p></div>",
+            "<div class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"font-semibold text-slate-500\">待处理举报</p><p data-role=\"summary-report-pending\" class=\"mt-2 text-2xl font-extrabold text-rose-600\">0</p></div>",
+            "<div class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"font-semibold text-slate-500\">进行中订单</p><p data-role=\"summary-order-ongoing\" class=\"mt-2 text-2xl font-extrabold text-slate-950\">0</p></div>",
+            "<div class=\"rounded-2xl bg-slate-50/90 p-4 ring-1 ring-slate-200/70\"><p class=\"font-semibold text-slate-500\">近7天审计</p><p data-role=\"summary-audit-seven\" class=\"mt-2 text-2xl font-extrabold text-emerald-600\">0</p></div>",
             "</div>",
             "<div class=\"mt-3 grid grid-cols-1 md:grid-cols-4 gap-3 text-xs\">",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">系统运行状态</p><p data-role=\"summary-ops-health\" class=\"text-sm font-semibold text-on-surface\">-</p></div>",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">邮件待派发/失败</p><p data-role=\"summary-ops-mail\" class=\"text-sm font-semibold text-on-surface\">0 / 0</p></div>",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">超时待卖家确认</p><p data-role=\"summary-ops-timeout-seller\" class=\"text-sm font-semibold text-on-surface\">0</p></div>",
-            "<div class=\"rounded-lg bg-surface-container-low p-3\"><p class=\"text-slate-500\">超时待买家确认</p><p data-role=\"summary-ops-timeout-buyer\" class=\"text-sm font-semibold text-on-surface\">0</p></div>",
+            "<div class=\"rounded-2xl bg-white/70 p-4 ring-1 ring-slate-200/70\"><p class=\"text-slate-500\">系统运行状态</p><p data-role=\"summary-ops-health\" class=\"mt-1 text-sm font-bold text-on-surface\">-</p></div>",
+            "<div class=\"rounded-2xl bg-white/70 p-4 ring-1 ring-slate-200/70\"><p class=\"text-slate-500\">邮件待派发/失败</p><p data-role=\"summary-ops-mail\" class=\"mt-1 text-sm font-bold text-on-surface\">0 / 0</p></div>",
+            "<div class=\"rounded-2xl bg-white/70 p-4 ring-1 ring-slate-200/70\"><p class=\"text-slate-500\">超时待卖家确认</p><p data-role=\"summary-ops-timeout-seller\" class=\"mt-1 text-sm font-bold text-on-surface\">0</p></div>",
+            "<div class=\"rounded-2xl bg-white/70 p-4 ring-1 ring-slate-200/70\"><p class=\"text-slate-500\">超时待买家确认</p><p data-role=\"summary-ops-timeout-buyer\" class=\"mt-1 text-sm font-bold text-on-surface\">0</p></div>",
             "</div>",
             "</div>",
 
-            "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden\">",
+            "<div class=\"rounded-[1.5rem] bg-white/84 shadow-[0_18px_60px_rgba(15,23,42,0.07)] ring-1 ring-white/70 backdrop-blur-xl overflow-hidden\">",
             "<div class=\"px-5 py-4 border-b border-surface-container flex items-center justify-between\">",
             "<h3 class=\"text-base font-semibold text-on-surface\">规则配置</h3>",
             "<span class=\"text-xs text-slate-500\">可在线修改</span>",
@@ -1264,7 +1274,7 @@
             "</div>",
             "</div>",
 
-            "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden\">",
+            "<div class=\"rounded-[1.5rem] bg-white/84 shadow-[0_18px_60px_rgba(15,23,42,0.07)] ring-1 ring-white/70 backdrop-blur-xl overflow-hidden\">",
             "<div class=\"px-5 py-4 border-b border-surface-container flex items-center justify-between\">",
             "<h3 class=\"text-base font-semibold text-on-surface\">商品治理</h3>",
             "<span class=\"text-xs text-slate-500\">可强制下架</span>",
@@ -1277,7 +1287,7 @@
             "</div>",
             "</div>",
 
-            "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden\">",
+            "<div class=\"rounded-[1.5rem] bg-white/84 shadow-[0_18px_60px_rgba(15,23,42,0.07)] ring-1 ring-white/70 backdrop-blur-xl overflow-hidden\">",
             "<div class=\"px-5 py-4 border-b border-surface-container flex items-center justify-between\">",
             "<h3 class=\"text-base font-semibold text-on-surface\">订单治理</h3>",
             "<span class=\"text-xs text-slate-500\">可强制关闭</span>",
@@ -1290,7 +1300,7 @@
             "</div>",
             "</div>",
 
-            "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden\">",
+            "<div class=\"rounded-[1.5rem] bg-white/84 shadow-[0_18px_60px_rgba(15,23,42,0.07)] ring-1 ring-white/70 backdrop-blur-xl overflow-hidden\">",
             "<div class=\"px-5 py-4 border-b border-surface-container flex items-center justify-between\">",
             "<h3 class=\"text-base font-semibold text-on-surface\">审计日志</h3>",
             "<span class=\"text-xs text-slate-500\">最近操作</span>",

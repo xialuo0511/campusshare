@@ -1,333 +1,70 @@
 <!DOCTYPE html>
-
-<html class="light" lang="zh-CN"><head>
+<html class="light" lang="zh-CN">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>CampusShare 璁㈠崟涓績</title>
+<title>CampusShare 订单中心</title>
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
 <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "surface-container-low": "#f3f4f5",
-                    "surface-bright": "#f8f9fa",
-                    "surface": "#f8f9fa",
-                    "background": "#f8f9fa",
-                    "tertiary-fixed": "#d8e2ff",
-                    "on-primary-fixed": "#001d32",
-                    "surface-container-highest": "#e1e3e4",
-                    "on-primary-container": "#f3f7ff",
-                    "error": "#ba1a1a",
-                    "tertiary-fixed-dim": "#aec6ff",
-                    "on-primary-fixed-variant": "#004b74",
-                    "on-secondary-fixed-variant": "#004e5b",
-                    "secondary": "#006878",
-                    "inverse-on-surface": "#f0f1f2",
-                    "surface-tint": "#006399",
-                    "tertiary-container": "#4770be",
-                    "error-container": "#ffdad6",
-                    "outline": "#707881",
-                    "on-tertiary-fixed-variant": "#0f4490",
-                    "primary-fixed-dim": "#94ccff",
-                    "on-secondary-fixed": "#001f25",
-                    "on-surface-variant": "#404850",
-                    "secondary-container": "#69e5ff",
-                    "surface-container-high": "#e7e8e9",
-                    "secondary-fixed-dim": "#58d6f1",
-                    "on-error": "#ffffff",
-                    "on-tertiary-fixed": "#001a42",
-                    "primary-container": "#0077b6",
-                    "surface-container": "#edeeef",
-                    "surface-container-lowest": "#ffffff",
-                    "tertiary": "#2b57a4",
-                    "on-secondary": "#ffffff",
-                    "primary-fixed": "#cde5ff",
-                    "on-error-container": "#93000a",
-                    "on-secondary-container": "#006575",
-                    "surface-variant": "#e1e3e4",
-                    "on-tertiary": "#ffffff",
-                    "on-primary": "#ffffff",
-                    "outline-variant": "#bfc7d1",
-                    "on-surface": "#191c1d",
-                    "primary": "#005d90",
-                    "surface-dim": "#d9dadb",
-                    "secondary-fixed": "#a7edff",
-                    "on-tertiary-container": "#f7f7ff",
-                    "inverse-surface": "#2e3132",
-                    "inverse-primary": "#94ccff",
-                    "on-background": "#191c1d"
-            },
-            "borderRadius": {
-                    "DEFAULT": "0.125rem",
-                    "lg": "0.25rem",
-                    "xl": "0.5rem",
-                    "full": "0.75rem"
-            },
-            "fontFamily": {
-                    "headline": ["Manrope"],
-                    "body": ["Inter"],
-                    "label": ["Inter"]
-            }
-          },
-        },
-      }
-    </script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#005d90","primary-container":"#0077b6","on-primary":"#fff",surface:"#f5f5f7","surface-container-low":"#f5f5f7","surface-container":"#edf1f5","surface-container-lowest":"#fff",outline:"#6b7582","outline-variant":"#c8d0da","on-surface":"#172033","on-surface-variant":"#566273",secondary:"#006878",tertiary:"#3454d1",error:"#b42318"},borderRadius:{DEFAULT:"8px",lg:"10px",xl:"16px",full:"999px"},fontFamily:{headline:["Manrope","Noto Sans SC","Microsoft YaHei","sans-serif"],body:["Inter","Noto Sans SC","Microsoft YaHei","sans-serif"]}}}};
+</script>
 <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-        }
-        h1, h2, h3 {
-            font-family: 'Manrope', sans-serif;
-        }
-    </style>
-<link href="/pages/assets/css/campusshare-modern.css?v=20260509-3" rel="stylesheet"/>
+body{margin:0;min-height:100vh;font-family:"Inter","Noto Sans SC","Microsoft YaHei",sans-serif;background:#f5f5f7;color:#172033;text-wrap:pretty}h1,h2,h3{font-family:"Manrope","Noto Sans SC","Microsoft YaHei",sans-serif}.material-symbols-outlined{line-height:1;font-variation-settings:"FILL" 0,"wght" 430,"GRAD" 0,"opsz" 24}.glass{border:1px solid rgba(120,133,150,.18);background:rgba(255,255,255,.88);box-shadow:0 20px 52px rgba(15,23,42,.08);backdrop-filter:blur(18px)}[data-user-topbar],[data-user-sidebar],footer{display:none}body:not(.campusshare-embedded-page) [data-user-main]{margin-left:16rem}.campusshare-embedded-page [data-user-main]{margin-left:0!important;padding:1.5rem!important;max-width:none!important}.campusshare-embedded-page .max-w-6xl{max-width:none!important}
+</style>
 </head>
 <body class="text-on-surface">
-<!-- TopNavBar -->
-<header class="bg-[#eef2f6] dark:bg-slate-950 font-['Manrope'] text-sm tracking-wide" data-user-topbar>
-<div>
-<a class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100" data-nav-target="/pages/market_overview.html" href="#">CampusShare</a>
-<nav>
-<a data-nav-target="/pages/market_listing.html" href="#">浜ゆ槗甯傚満</a>
-<a data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">瀛︽湳璧勬簮</a>
-<a data-nav-target="/pages/market_listing.html?view=FORUM" href="#">鏍″洯璁哄潧</a>
-</nav>
-</div>
-</header>
+<header data-user-topbar></header>
 <div class="flex min-h-screen" data-user-shell>
-<!-- SideNavBar -->
-<aside class="h-screen w-64 fixed left-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 px-4 border-r border-slate-200" data-user-sidebar>
-<div class="mb-8 px-2 flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-sky-100 text-sky-800 overflow-hidden flex items-center justify-center text-sm font-bold" data-role="sidebar-avatar">--</div>
-<div>
-<p class="text-sm font-semibold text-on-surface">涓汉涓績</p>
-<p class="text-xs text-slate-500">瀛︽湳棣嗗憳</p>
-</div>
-</div>
-<nav class="flex-1 space-y-1">
-<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="/pages/market_overview.html" href="#">
-<span class="material-symbols-outlined text-xl">home</span>
-<span class="font-medium text-sm">涓婚〉</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="/pages/my_publish.html" href="#">
-<span class="material-symbols-outlined text-xl">format_list_bulleted</span>
-<span class="font-medium text-sm">鎴戠殑鍙戝竷</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 bg-[#ffffff] dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm translate-x-1" data-nav-target="/pages/order_center.html" href="#">
-<span class="material-symbols-outlined text-xl">receipt_long</span>
-<span class="font-medium text-sm">璁㈠崟涓績</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="/pages/recruitment_board.html" href="#">
-<span class="material-symbols-outlined text-xl">groups</span>
-<span class="font-medium text-sm">缁勯槦鎷涘嫙</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="/pages/notification_center.html" href="#">
-<span class="material-symbols-outlined text-xl">notifications</span>
-<span class="font-medium text-sm">娑堟伅閫氱煡</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-nav-target="/pages/user_profile.html" href="#">
-<span class="material-symbols-outlined text-xl">settings</span>
-<span class="font-medium text-sm">涓汉璁剧疆</span>
-</a>
-<a class="hidden flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 rounded-md" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#">
-<span class="material-symbols-outlined text-xl">admin_panel_settings</span>
-<span class="font-medium text-sm">绠＄悊浠〃鐩?/span>
-</a>
-</nav>
-<div class="mt-auto space-y-1 border-t border-slate-200 dark:border-slate-800 pt-4" data-user-sidebar-footer>
-<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:text-error transition-colors" href="#">
-<span class="material-symbols-outlined text-xl">logout</span>
-<span class="text-sm">閫€鍑虹櫥褰?/span>
-</a>
-</div>
-</aside>
-<!-- Main Content Area -->
-<main class="ml-64 flex-1 p-8 bg-surface-container-low min-h-screen" data-user-main>
-<div class="max-w-6xl mx-auto">
-<header class="mb-8">
-<h1 class="text-3xl font-extrabold text-on-surface tracking-tight">璁㈠崟涓績</h1>
-<p class="text-slate-500 mt-1">绠＄悊鎮ㄧ殑鏈烘瀯浜ゆ槗鍜屽鏈祫婧愯幏鍙栥€?/p>
-</header>
-<!-- Order Status Overview (Bento Style) -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
-<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">鎬昏鍗?/p>
-<p class="text-3xl font-bold text-primary" data-role="order-summary-total">0</p>
-<div class="mt-2 text-xs text-secondary font-medium">杈冧笂鏈?+12%</div>
-</div>
-<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
-<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">杩涜涓氦鏄?/p>
-<p class="text-3xl font-bold text-secondary" data-role="order-summary-ongoing">0</p>
-<div class="mt-2 text-xs text-slate-500 font-medium">8 涓渶瑕佸鐞?/div>
-</div>
-<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
-<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">宸插畬鎴?/p>
-<p class="text-3xl font-bold text-tertiary" data-role="order-summary-completed">0</p>
-<div class="mt-2 text-xs text-slate-500 font-medium">鎴愬姛鐨勪氦鎺?/div>
-</div>
-<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
-<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">澶勭悊鏃堕棿</p>
-<p class="text-3xl font-bold text-on-surface" data-role="order-summary-point">0</p>
-<div class="mt-2 text-xs text-error font-medium">杈冪洰鏍?-0.4</div>
-</div>
-</div>
-<!-- Active Order Tracking -->
-<section class="bg-surface-container-lowest rounded-xl shadow-sm p-8 mb-8" data-role="order-tracking-section">
-<div class="text-center text-sm text-slate-400 py-6">鏆傛棤鍙拷韪鍗?/div>
-</section>
-<!-- Detailed Orders Table -->
-<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-<div class="px-6 py-4 border-b border-surface-container flex justify-between items-center bg-white">
-<h3 class="font-bold text-on-surface">鍘嗗彶璁㈠崟</h3>
-<div class="flex gap-2">
-<button class="text-xs font-bold text-slate-500 px-3 py-1.5 rounded bg-surface-container-low">鍏ㄩ儴</button>
-<button class="text-xs font-bold text-slate-400 px-3 py-1.5 rounded hover:bg-surface-container-low">寰呭鐞?/button>
-<button class="text-xs font-bold text-slate-400 px-3 py-1.5 rounded hover:bg-surface-container-low">宸插畬鎴?/button>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-surface-container-low/50">
-<th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">璁㈠崟鍙?/th>
-<th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">鍟嗗搧/璧勬簮</th>
-<th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">鍗栧/涔板</th>
-<th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">鏈€鍚庢洿鏂?/th>
-<th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right">浠锋牸</th>
-<th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-center">鐘舵€?/th>
-<th class="px-6 py-4"></th>
-</tr>
-</thead>
-<tbody class="divide-y divide-surface-container">
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="px-6 py-4 text-xs font-mono text-slate-500">#CS-99182</td>
-<td class="px-6 py-4">
-<p class="text-sm font-bold text-on-surface">鏈夋満鍖栧 绗?鍗?/p>
-<p class="text-[10px] text-slate-400">绮捐鐗?/p>
-</td>
-<td class="px-6 py-4 text-sm text-on-surface">Dr. Sarah Jenkins</td>
-<td class="px-6 py-4 text-xs text-slate-500">2024骞?0鏈?0鏃?/td>
-<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">$45.00</td>
-<td class="px-6 py-4 text-center">
-<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase tracking-tighter">宸插畬鎴?/span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors cursor-pointer">more_vert</button>
-</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="px-6 py-4 text-xs font-mono text-slate-500">#CS-99175</td>
-<td class="px-6 py-4">
-<p class="text-sm font-bold text-on-surface">CAD 璁稿彲 - 瀛︾敓闂ㄦ埛</p>
-<p class="text-[10px] text-slate-400">鏁板瓧璁块棶瀵嗛挜</p>
-</td>
-<td class="px-6 py-4 text-sm text-on-surface">宸ョ▼閮ㄦ敮鎸?/td>
-<td class="px-6 py-4 text-xs text-slate-500">2024骞?0鏈?9鏃?/td>
-<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">$120.00</td>
-<td class="px-6 py-4 text-center">
-<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-[10px] font-bold uppercase tracking-tighter">寰呭鐞?/span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors cursor-pointer">more_vert</button>
-</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="px-6 py-4 text-xs font-mono text-slate-500">#CS-99161</td>
-<td class="px-6 py-4">
-<p class="text-sm font-bold text-on-surface">缁熻鍒嗘瀽鍖?/p>
-<p class="text-[10px] text-slate-400">鍗板埛鏈熷垔 (5鏈?</p>
-</td>
-<td class="px-6 py-4 text-sm text-on-surface">Michael Zhao</td>
-<td class="px-6 py-4 text-xs text-slate-500">2024骞?0鏈?8鏃?/td>
-<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">$85.50</td>
-<td class="px-6 py-4 text-center">
-<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[10px] font-bold uppercase tracking-tighter">宸插彇娑?/span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors cursor-pointer">more_vert</button>
-</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="px-6 py-4 text-xs font-mono text-slate-500">#CS-99155</td>
-<td class="px-6 py-4">
-<p class="text-sm font-bold text-on-surface">宸ヤ笟缁樺浘鏉?/p>
-<p class="text-[10px] text-slate-400">澶у昂瀵?(A0)</p>
-</td>
-<td class="px-6 py-4 text-sm text-on-surface">Arch Collective</td>
-<td class="px-6 py-4 text-xs text-slate-500">2024骞?0鏈?5鏃?/td>
-<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">$310.00</td>
-<td class="px-6 py-4 text-center">
-<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase tracking-tighter">宸插畬鎴?/span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors cursor-pointer">more_vert</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="bg-surface-container-low p-4 flex justify-between items-center px-6">
-<p class="text-xs text-slate-500">鏄剧ず 128 涓鍗曚腑鐨?1-10 涓?/p>
-<div class="flex gap-1">
-<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-white transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
-<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-white text-xs font-bold text-primary">1</button>
-<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-white text-xs font-bold text-slate-500">2</button>
-<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-white text-xs font-bold text-slate-500">3</button>
-<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-white transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
-</div>
-</div>
-</div>
-<!-- Secondary Actions / Help Section -->
-<div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-<div class="bg-tertiary-container text-white p-6 rounded-xl flex items-center justify-between">
-<div>
-<h4 class="font-bold text-lg mb-1">闇€瑕佷氦鏄撳府鍔╋紵</h4>
-<p class="text-xs opacity-90 mb-4">鎴戜滑鐨勬敮鎸佸洟闃?24/7 鎻愪緵璋冭В鏈嶅姟銆?/p>
-<button class="bg-white text-tertiary px-6 py-2 rounded-lg text-xs font-extrabold uppercase tracking-widest transition-all hover:bg-surface-bright">鑱旂郴鏀寔</button>
-</div>
-<span class="material-symbols-outlined text-6xl opacity-20">support_agent</span>
-</div>
-<div class="bg-surface-container-highest p-6 rounded-xl border border-dashed border-slate-300 flex items-center gap-6">
-<div class="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-inner">
-<span class="material-symbols-outlined text-primary text-3xl">receipt_long</span>
-</div>
-<div>
-<h4 class="font-bold text-on-surface mb-1">绋庡姟涓庢満鏋勬敹鎹?/h4>
-<p class="text-xs text-slate-500 mb-3">涓嬭浇鐢ㄤ簬瀛︽湳瀹¤鐨勭患鍚堜氦鏄撴姤鍛娿€?/p>
-<a class="text-primary text-xs font-bold underline" href="#">鐢熸垚鎶ュ憡</a>
-</div>
-</div>
-</div>
+<aside data-user-sidebar></aside>
+<main class="flex-1 bg-surface-container-low p-8" data-user-main>
+<div class="mx-auto max-w-6xl">
+    <header class="mb-8">
+        <h1 class="text-3xl font-extrabold text-slate-950">订单中心</h1>
+        <p class="mt-1 text-sm text-slate-500">管理你的校园交易订单和状态流转。</p>
+    </header>
+    <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div class="glass rounded-2xl p-6"><p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">总订单</p><p class="text-3xl font-extrabold text-primary" data-role="order-summary-total">0</p><div class="mt-2 text-xs text-slate-500">全部订单数量</div></div>
+        <div class="glass rounded-2xl p-6"><p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">进行中交易</p><p class="text-3xl font-extrabold text-secondary" data-role="order-summary-ongoing">0</p><div class="mt-2 text-xs text-slate-500">需要继续处理</div></div>
+        <div class="glass rounded-2xl p-6"><p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">已完成</p><p class="text-3xl font-extrabold text-tertiary" data-role="order-summary-completed">0</p><div class="mt-2 text-xs text-slate-500">成功交付订单</div></div>
+        <div class="glass rounded-2xl p-6"><p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">处理时间</p><p class="text-3xl font-extrabold text-slate-950" data-role="order-summary-point">0</p><div class="mt-2 text-xs text-slate-500">平均处理指标</div></div>
+    </div>
+    <section class="glass mb-8 rounded-2xl p-8" data-role="order-tracking-section">
+        <div class="py-6 text-center text-sm text-slate-500">暂无可追踪订单</div>
+    </section>
+    <div class="overflow-hidden rounded-xl rounded-2xl bg-white shadow-sm bg-surface-container-lowest">
+        <div class="flex items-center justify-between border-b border-[rgba(120,133,150,.16)] bg-white px-6 py-4">
+            <h3 class="font-extrabold text-slate-950">历史订单</h3>
+            <div class="flex gap-2">
+                <button class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">全部</button>
+                <button class="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-100">待处理</button>
+                <button class="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-100">已完成</button>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse text-left">
+                <thead><tr class="bg-slate-50">
+                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">订单号</th>
+                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">商品/资源</th>
+                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">卖家/买家</th>
+                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">最后更新</th>
+                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-right text-slate-400">价格</th>
+                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-center text-slate-400">状态</th>
+                    <th class="px-6 py-4"></th>
+                </tr></thead>
+                <tbody class="divide-y divide-surface-container"></tbody>
+            </table>
+        </div>
+        <div class="bg-surface-container-low p-4 flex justify-between items-center px-6">
+            <p class="text-xs text-slate-500">暂无订单</p>
+            <div class="flex gap-1"></div>
+        </div>
+    </div>
 </div>
 </main>
 </div>
-<!-- Footer -->
-<footer class="w-full py-12 px-6 mt-auto bg-[#f8f9fa] dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
-<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-<div class="flex flex-col items-center md:items-start gap-2">
-<span class="font-['Manrope'] font-bold text-slate-900 dark:text-slate-100 text-lg">CampusShare</span>
-<p class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] text-slate-500">漏 2026 CampusShare</p>
-</div>
-<div class="flex flex-wrap justify-center gap-8">
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">闅愮鏀跨瓥</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">鏈嶅姟鏉℃</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">鏈烘瀯鍝佺墝</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">鏀寔</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">鑱旂郴鎴戜滑</a>
-</div>
-</div>
-</footer>
 <script src="/pages/assets/js/campusshare-api.js?v=20260510-mojibake"></script>
-<script src="/pages/assets/js/order-center.js?v=20260425-avatar-shell"></script>
-</body></html>
-
-
-
+<script src="/pages/assets/js/order-center.js?v=20260511-clean"></script>
+</body>
+</html>

@@ -7,19 +7,19 @@
     const LEDGER_PREVIEW_SIZE = 5;
 
     const STATUS_TEXT_MAP = {
-        PENDING_SELLER_CONFIRM: "寰呭崠瀹剁‘璁?,
-        PENDING_OFFLINE_TRADE: "寰呯嚎涓嬩氦鏄?,
-        PENDING_BUYER_CONFIRM: "寰呬拱瀹剁‘璁?,
-        COMPLETED: "宸插畬鎴?,
-        CANCELED: "宸插彇娑?,
-        CLOSED: "宸插叧闂?
+        PENDING_SELLER_CONFIRM: "待卖家确认",
+        PENDING_OFFLINE_TRADE: "待线下交易",
+        PENDING_BUYER_CONFIRM: "待买家确认",
+        COMPLETED: "已完成",
+        CANCELED: "已取消",
+        CLOSED: "已关闭"
     };
 
     const TRACKING_STAGE_LIST = [
-        { key: "PENDING_SELLER_CONFIRM", label: "宸蹭笅鍗? },
-        { key: "PENDING_OFFLINE_TRADE", label: "鍗栧纭" },
-        { key: "PENDING_BUYER_CONFIRM", label: "寰呬拱瀹剁‘璁? },
-        { key: "COMPLETED", label: "宸插畬鎴? }
+        { key: "PENDING_SELLER_CONFIRM", label: "已下单" },
+        { key: "PENDING_OFFLINE_TRADE", label: "卖家确认" },
+        { key: "PENDING_BUYER_CONFIRM", label: "待买家确认" },
+        { key: "COMPLETED", label: "已完成" }
     ];
 
     /**
@@ -197,7 +197,7 @@
             if (action === "review") {
                 const targetOrder = state.orderMap.get(orderId);
                 if (!targetOrder) {
-                    ShowError(messageBar, "鏈壘鍒板彲璇勪环璁㈠崟");
+                    ShowError(messageBar, "未找到可评价订单");
                     return;
                 }
                 OpenReviewModal(reviewModal, targetOrder, messageBar, async function AfterReviewSubmitted() {
@@ -219,19 +219,19 @@
             try {
                 if (action === "confirm") {
                     await window.CampusShareApi.ConfirmOrder(orderId);
-                    ShowSuccess(messageBar, `璁㈠崟 #${orderId} 宸茬‘璁);
+                    ShowSuccess(messageBar, `订单 #${orderId} 已确认`);
                 } else if (action === "handover") {
                     await window.CampusShareApi.HandoverOrder(orderId);
-                    ShowSuccess(messageBar, `璁㈠崟 #${orderId} 宸茶浆涓哄緟涔板纭`);
+                    ShowSuccess(messageBar, `订单 #${orderId} 已转为待买家确认`);
                 } else if (action === "complete") {
                     await window.CampusShareApi.CompleteOrder(orderId);
-                    ShowSuccess(messageBar, `璁㈠崟 #${orderId} 宸插畬鎴恅);
+                    ShowSuccess(messageBar, `订单 #${orderId} 已完成`);
                 } else if (action === "cancel") {
                     await window.CampusShareApi.CancelOrder(orderId);
-                    ShowSuccess(messageBar, `璁㈠崟 #${orderId} 宸插彇娑坄);
+                    ShowSuccess(messageBar, `订单 #${orderId} 已取消`);
                 } else if (action === "close") {
-                    await window.CampusShareApi.CloseOrder(orderId, "鐢ㄦ埛鎵嬪姩鍏抽棴");
-                    ShowSuccess(messageBar, `璁㈠崟 #${orderId} 宸插叧闂璥);
+                    await window.CampusShareApi.CloseOrder(orderId, "用户手动关闭");
+                    ShowSuccess(messageBar, `订单 #${orderId} 已关闭`);
                 } else {
                     return;
                 }
@@ -247,7 +247,7 @@
                 );
                 await LoadPointLedger(pointPanel, summaryNodeMap, messageBar);
             } catch (error) {
-                ShowError(messageBar, ResolveErrorText(error, "璁㈠崟鎿嶄綔澶辫触"));
+                ShowError(messageBar, ResolveErrorText(error, "订单操作失败"));
             } finally {
                 actionButton.disabled = false;
             }
@@ -316,7 +316,7 @@
             RenderPaginationArea(state, orderList.length, paginationText, paginationButtonContainer);
             HideMessage(messageBar);
         } catch (error) {
-            ShowError(messageBar, ResolveErrorText(error, "璁㈠崟鍒楄〃鍔犺浇澶辫触"));
+            ShowError(messageBar, ResolveErrorText(error, "订单列表加载失败"));
             RenderOrderTracking(trackingSection, [], currentUserId);
             RenderOrderTable([], currentUserId, tableBody);
         }
@@ -331,7 +331,7 @@
             RenderPointSummary(summaryNodeMap, ledgerResult);
             RenderPointLedgerList(pointPanel, ledgerResult);
         } catch (error) {
-            ShowError(messageBar, ResolveErrorText(error, "绉垎娴佹按鍔犺浇澶辫触"));
+            ShowError(messageBar, ResolveErrorText(error, "积分流水加载失败"));
         }
     }
 
@@ -363,13 +363,13 @@
         });
         const targetOrder = ongoingOrder || (orderList && orderList.length ? orderList[0] : null);
         if (!targetOrder) {
-            trackingSection.innerHTML = "<div class=\"text-center text-sm text-slate-400 py-6\">鏆傛棤鍙拷韪鍗?/div>";
+            trackingSection.innerHTML = "<div class=\"text-center text-sm text-slate-400 py-6\">暂无可追踪订单</div>";
             return;
         }
 
         const stageIndex = ResolveTrackingStageIndex(targetOrder.orderStatus);
         const progressWidth = Math.max(0, Math.min(100, (stageIndex / (TRACKING_STAGE_LIST.length - 1)) * 100));
-        const statusText = STATUS_TEXT_MAP[targetOrder.orderStatus] || targetOrder.orderStatus || "鏈煡鐘舵€?;
+        const statusText = STATUS_TEXT_MAP[targetOrder.orderStatus] || targetOrder.orderStatus || "未知状态";
         const counterpartText = BuildCounterpartText(targetOrder, currentUserId);
         const stepsHtml = TRACKING_STAGE_LIST.map(function BuildStep(step, index) {
             const reached = index <= stageIndex;
@@ -386,7 +386,7 @@
 
         trackingSection.innerHTML = [
             "<div class=\"flex justify-between items-center mb-6\">",
-            "<h2 class=\"text-xl font-bold text-on-surface\">璁㈠崟杩借釜</h2>",
+            "<h2 class=\"text-xl font-bold text-on-surface\">订单追踪</h2>",
             `<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold uppercase tracking-widest">${EscapeHtml(statusText)}</span>`,
             "</div>",
             "<div class=\"flex items-center justify-between relative mb-12\">",
@@ -396,11 +396,11 @@
             "</div>",
             "<div class=\"bg-surface-container-low p-5 rounded-lg flex items-center justify-between gap-4 flex-wrap\">",
             "<div class=\"min-w-0\">",
-            `<p class="text-sm font-bold text-on-surface">璁㈠崟鍙? #${EscapeHtml(targetOrder.orderNo || targetOrder.orderId)}</p>`,
-            `<p class="text-xs text-slate-500 mt-1">鍟嗗搧ID: ${EscapeHtml(String(targetOrder.productId || "-"))} 路 ${EscapeHtml(counterpartText)}</p>`,
+            `<p class="text-sm font-bold text-on-surface">订单号 #${EscapeHtml(targetOrder.orderNo || targetOrder.orderId)}</p>`,
+            `<p class="text-xs text-slate-500 mt-1">商品ID: ${EscapeHtml(String(targetOrder.productId || "-"))} · ${EscapeHtml(counterpartText)}</p>`,
             "</div>",
             "<div class=\"flex gap-3\">",
-            `<button class="bg-white text-on-surface border border-outline-variant text-xs font-bold px-5 py-2 rounded-lg hover:bg-surface-container transition-all" data-order-action="detail" data-order-id="${EscapeHtml(String(targetOrder.orderId))}">鏌ョ湅璇︽儏</button>`,
+            `<button class="bg-white text-on-surface border border-outline-variant text-xs font-bold px-5 py-2 rounded-lg hover:bg-surface-container transition-all" data-order-action="detail" data-order-id="${EscapeHtml(String(targetOrder.orderId))}">查看详情</button>`,
             "</div>",
             "</div>"
         ].join("");
@@ -412,7 +412,7 @@
     function RenderPaginationArea(state, currentCount, paginationText, paginationButtonContainer) {
         const startIndex = state.totalCount === 0 ? 0 : ((state.pageNo - 1) * state.pageSize + 1);
         const endIndex = state.totalCount === 0 ? 0 : (startIndex + Math.max(0, currentCount - 1));
-        paginationText.textContent = `鏄剧ず ${state.totalCount} 涓鍗曚腑鐨?${startIndex}-${endIndex} 椤筦;
+        paginationText.textContent = `显示 ${state.totalCount} 个订单中的 ${startIndex}-${endIndex} 项`;
 
         const pageButtonList = BuildPageButtonList(state.pageNo, state.totalPages);
         const pageButtonHtml = pageButtonList.map(function BuildPageButton(item) {
@@ -437,7 +437,7 @@
      */
     function RenderOrderTable(orderList, currentUserId, tableBody) {
         if (!orderList || orderList.length === 0) {
-            tableBody.innerHTML = "<tr><td colspan=\"7\" class=\"px-6 py-8 text-center text-sm text-slate-400\">鏆傛棤璁㈠崟鏁版嵁</td></tr>";
+            tableBody.innerHTML = "<tr><td colspan=\"7\" class=\"px-6 py-8 text-center text-sm text-slate-400\">暂无订单数据</td></tr>";
             return;
         }
 
@@ -451,12 +451,12 @@
                 "<tr class=\"hover:bg-surface-container-low transition-colors group\">",
                 `<td class="px-6 py-4 text-xs font-mono text-slate-500">#${EscapeHtml(orderItem.orderNo || "")}</td>`,
                 "<td class=\"px-6 py-4\">",
-                `<p class="text-sm font-bold text-on-surface">鍟嗗搧ID: ${EscapeHtml(String(orderItem.productId || ""))}</p>`,
-                `<p class="text-[10px] text-slate-400">浜ゆ槗鍦扮偣: ${EscapeHtml(orderItem.tradeLocation || "-")}</p>`,
+                `<p class="text-sm font-bold text-on-surface">商品ID: ${EscapeHtml(String(orderItem.productId || ""))}</p>`,
+                `<p class="text-[10px] text-slate-400">交易地点: ${EscapeHtml(orderItem.tradeLocation || "-")}</p>`,
                 "</td>",
                 `<td class="px-6 py-4 text-sm text-on-surface">${EscapeHtml(counterpartText)}</td>`,
                 `<td class="px-6 py-4 text-xs text-slate-500">${EscapeHtml(FormatTime(orderItem.updateTime))}</td>`,
-                `<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">楼${EscapeHtml(FormatAmount(orderItem.orderAmount))}</td>`,
+                `<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">¥${EscapeHtml(FormatAmount(orderItem.orderAmount))}</td>`,
                 `<td class="px-6 py-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter ${statusClass}">${EscapeHtml(statusText)}</span></td>`,
                 `<td class="px-6 py-4 text-right">${actionButtons}</td>`,
                 "</tr>"
@@ -472,10 +472,10 @@
             return `涔板ID:${orderItem.buyerUserId} / 鍗栧ID:${orderItem.sellerUserId}`;
         }
         if (Number(orderItem.buyerUserId) === Number(currentUserId)) {
-            return `鎴戞槸涔板 / 鍗栧ID:${orderItem.sellerUserId}`;
+            return `我是买家 / 卖家ID:${orderItem.sellerUserId}`;
         }
         if (Number(orderItem.sellerUserId) === Number(currentUserId)) {
-            return `鎴戞槸鍗栧 / 涔板ID:${orderItem.buyerUserId}`;
+            return `我是卖家 / 买家ID:${orderItem.buyerUserId}`;
         }
         return `涔板ID:${orderItem.buyerUserId} / 鍗栧ID:${orderItem.sellerUserId}`;
     }
@@ -491,29 +491,29 @@
 
         if (orderItem.orderStatus === "PENDING_SELLER_CONFIRM" && isSeller) {
             return [
-                `<button data-order-action="confirm" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">纭</button>`,
-                `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">鍙栨秷</button>`
+                `<button data-order-action="confirm" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">确认</button>`,
+                `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">取消</button>`
             ].join("");
         }
         if (orderItem.orderStatus === "PENDING_OFFLINE_TRADE" && isSeller) {
             return [
-                `<button data-order-action="handover" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">绾夸笅宸蹭氦浠?/button>`,
-                `<button data-order-action="close" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">鍏抽棴</button>`
+                `<button data-order-action="handover" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">线下已交付</button>`,
+                `<button data-order-action="close" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">关闭</button>`
             ].join("");
         }
         if (orderItem.orderStatus === "PENDING_BUYER_CONFIRM" && isBuyer) {
             return [
-                `<button data-order-action="complete" data-order-id="${orderItem.orderId}" class="${buttonClass} text-secondary">瀹屾垚</button>`,
-                `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">鍙栨秷</button>`
+                `<button data-order-action="complete" data-order-id="${orderItem.orderId}" class="${buttonClass} text-secondary">完成</button>`,
+                `<button data-order-action="cancel" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">取消</button>`
             ].join("");
         }
         if (orderItem.orderStatus === "COMPLETED" && isBuyer) {
             return [
-                `<button data-order-action="review" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">鍘昏瘎浠?/button>`,
-                `<button data-order-action="detail" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">璇︽儏</button>`
+                `<button data-order-action="review" data-order-id="${orderItem.orderId}" class="${buttonClass} text-primary">去评价</button>`,
+                `<button data-order-action="detail" data-order-id="${orderItem.orderId}" class="${buttonClass} ml-2 text-slate-600">详情</button>`
             ].join("");
         }
-        return `<button data-order-action="detail" data-order-id="${orderItem.orderId}" class="${buttonClass} text-slate-600">鏌ョ湅</button>`;
+        return `<button data-order-action="detail" data-order-id="${orderItem.orderId}" class="${buttonClass} text-slate-600">查看</button>`;
     }
 
     /**
@@ -525,27 +525,27 @@
         wrapper.innerHTML = [
             "<div class=\"w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-xl p-6\">",
             "<div class=\"flex items-center justify-between mb-4\">",
-            "<h3 class=\"text-lg font-bold text-on-surface\">璁㈠崟璇勪环</h3>",
+            "<h3 class=\"text-lg font-bold text-on-surface\">订单评价</h3>",
             "<button type=\"button\" data-role=\"close\" class=\"material-symbols-outlined text-slate-500 hover:text-slate-700\">close</button>",
             "</div>",
             "<p class=\"text-sm text-slate-500 mb-4\" data-role=\"order-label\">-</p>",
             "<label class=\"block mb-4\">",
-            "<span class=\"text-xs text-slate-500 font-semibold\">璇勫垎</span>",
+            "<span class=\"text-xs text-slate-500 font-semibold\">评分</span>",
             "<select data-role=\"score\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm\">",
-            "<option value=\"5\">5 鍒?/option>",
-            "<option value=\"4\">4 鍒?/option>",
-            "<option value=\"3\">3 鍒?/option>",
-            "<option value=\"2\">2 鍒?/option>",
-            "<option value=\"1\">1 鍒?/option>",
+            "<option value=\"5\">5 分</option>",
+            "<option value=\"4\">4 分</option>",
+            "<option value=\"3\">3 分</option>",
+            "<option value=\"2\">2 分</option>",
+            "<option value=\"1\">1 分</option>",
             "</select>",
             "</label>",
             "<label class=\"block\">",
-            "<span class=\"text-xs text-slate-500 font-semibold\">璇勪环鍐呭</span>",
-            "<textarea data-role=\"content\" maxlength=\"500\" rows=\"4\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg p-3 text-sm resize-none\" placeholder=\"璇疯緭鍏ユ湰娆′氦鏄撲綋楠孿"></textarea>",
+            "<span class=\"text-xs text-slate-500 font-semibold\">评价内容</span>",
+            "<textarea data-role=\"content\" maxlength=\"500\" rows=\"4\" class=\"mt-1 w-full bg-surface-container-low border border-outline-variant/30 rounded-lg p-3 text-sm resize-none\" placeholder=\"请输入本次交易体验\"></textarea>",
             "</label>",
             "<div class=\"flex justify-end items-center gap-3 mt-5\">",
-            "<button type=\"button\" data-role=\"cancel\" class=\"px-4 py-2 rounded-lg text-sm text-on-surface-variant hover:bg-surface-container\">鍙栨秷</button>",
-            "<button type=\"button\" data-role=\"submit\" class=\"px-4 py-2 rounded-lg text-sm bg-primary text-white font-semibold\">鎻愪氦璇勪环</button>",
+            "<button type=\"button\" data-role=\"cancel\" class=\"px-4 py-2 rounded-lg text-sm text-on-surface-variant hover:bg-surface-container\">取消</button>",
+            "<button type=\"button\" data-role=\"submit\" class=\"px-4 py-2 rounded-lg text-sm bg-primary text-white font-semibold\">提交评价</button>",
             "</div>",
             "</div>"
         ].join("");
@@ -570,7 +570,7 @@
             return;
         }
         reviewModal.currentOrder = orderItem;
-        reviewModal.orderLabel.textContent = `璁㈠崟 #${orderItem.orderNo || orderItem.orderId} 路 鍟嗗搧ID ${orderItem.productId || "-"}`;
+        reviewModal.orderLabel.textContent = `订单 #${orderItem.orderNo || orderItem.orderId} · 商品ID ${orderItem.productId || "-"}`;
         reviewModal.scoreSelect.value = "5";
         reviewModal.contentInput.value = "";
         reviewModal.wrapper.classList.remove("hidden");
@@ -591,17 +591,17 @@
         reviewModal.submitButton.onclick = async function HandleSubmitReview() {
             const currentOrder = reviewModal.currentOrder;
             if (!currentOrder || !currentOrder.productId) {
-                ShowError(messageBar, "褰撳墠璁㈠崟缂哄皯鍟嗗搧淇℃伅锛屾棤娉曡瘎浠?);
+                ShowError(messageBar, "当前订单缺少商品信息，无法评价");
                 return;
             }
             const score = Number(reviewModal.scoreSelect.value || "0");
             const content = reviewModal.contentInput.value ? reviewModal.contentInput.value.trim() : "";
             if (!score || score < 1 || score > 5) {
-                ShowError(messageBar, "璇勫垎闇€鍦?1 鍒?5 鍒嗕箣闂?);
+                ShowError(messageBar, "评分需在 1 到 5 分之间");
                 return;
             }
             if (!content) {
-                ShowError(messageBar, "璇勪环鍐呭涓嶈兘涓虹┖");
+                ShowError(messageBar, "评价内容不能为空");
                 return;
             }
 
@@ -613,12 +613,12 @@
                     toUserId: currentOrder.sellerUserId || null
                 });
                 closeModal();
-                ShowSuccess(messageBar, "璇勪环宸叉彁浜?);
+                ShowSuccess(messageBar, "评价已提交");
                 if (typeof onSubmitted === "function") {
                     await onSubmitted();
                 }
             } catch (error) {
-                ShowError(messageBar, ResolveErrorText(error, "璇勪环鎻愪氦澶辫触"));
+                ShowError(messageBar, ResolveErrorText(error, "评价提交失败"));
             } finally {
                 reviewModal.submitButton.disabled = false;
             }
@@ -633,7 +633,7 @@
         panel.className = "bg-surface-container-lowest rounded-xl shadow-sm p-6 mt-8";
         panel.innerHTML = [
             "<div class=\"flex items-center justify-between mb-4\">",
-            "<h3 class=\"text-lg font-bold text-on-surface\">鏈€杩戠Н鍒嗘祦姘?/h3>",
+            "<h3 class=\"text-lg font-bold text-on-surface\">最近积分流水</h3>",
             "<span class=\"text-xs text-slate-500\">鏈€杩?5 鏉?/span>",
             "</div>",
             "<div class=\"overflow-x-auto\">",
@@ -641,9 +641,9 @@
             "<thead><tr class=\"bg-surface-container-low/50\">",
             "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">鏃堕棿</th>",
             "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">绫诲瀷</th>",
-            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">鍙樺姩</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">变动</th>",
             "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right\">浣欓</th>",
-            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">澶囨敞</th>",
+            "<th class=\"px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest\">备注</th>",
             "</tr></thead>",
             "<tbody class=\"divide-y divide-surface-container\"></tbody>",
             "</table>",
@@ -778,10 +778,10 @@
      */
     function FormatTransactionType(transactionType) {
         if (transactionType === "UPLOAD_REWARD") {
-            return "涓婁紶濂栧姳";
+            return "上传奖励";
         }
         if (transactionType === "DOWNLOAD_COST") {
-            return "涓嬭浇鎵ｅ噺";
+            return "下载扣减";
         }
         if (transactionType === "MANUAL_ADJUST") {
             return "浜哄伐璋冩暣";

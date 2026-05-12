@@ -1,224 +1,237 @@
-﻿<!DOCTYPE html>
-
-<html class="light" lang="zh-CN"><head>
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>CampusShare | 机构访问</title>
+<title>CampusShare | 登录注册</title>
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
 <script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
             extend: {
-              "colors": {
-                      "surface-container-low": "#f3f4f5",
-                      "surface-bright": "#f8f9fa",
-                      "surface": "#f8f9fa",
-                      "background": "#f8f9fa",
-                      "tertiary-fixed": "#d8e2ff",
-                      "on-primary-fixed": "#001d32",
-                      "surface-container-highest": "#e1e3e4",
-                      "on-primary-container": "#f3f7ff",
-                      "error": "#ba1a1a",
-                      "tertiary-fixed-dim": "#aec6ff",
-                      "on-primary-fixed-variant": "#004b74",
-                      "on-secondary-fixed-variant": "#004e5b",
-                      "secondary": "#006878",
-                      "inverse-on-surface": "#f0f1f2",
-                      "surface-tint": "#006399",
-                      "tertiary-container": "#4770be",
-                      "error-container": "#ffdad6",
-                      "outline": "#707881",
-                      "on-tertiary-fixed-variant": "#0f4490",
-                      "primary-fixed-dim": "#94ccff",
-                      "on-secondary-fixed": "#001f25",
-                      "on-surface-variant": "#404850",
-                      "secondary-container": "#69e5ff",
-                      "surface-container-high": "#e7e8e9",
-                      "secondary-fixed-dim": "#58d6f1",
-                      "on-error": "#ffffff",
-                      "on-tertiary-fixed": "#001a42",
-                      "primary-container": "#0077b6",
-                      "surface-container": "#edeeef",
-                      "surface-container-lowest": "#ffffff",
-                      "tertiary": "#2b57a4",
-                      "on-secondary": "#ffffff",
-                      "primary-fixed": "#cde5ff",
-                      "on-error-container": "#93000a",
-                      "on-secondary-container": "#006575",
-                      "surface-variant": "#e1e3e4",
-                      "on-tertiary": "#ffffff",
-                      "on-primary": "#ffffff",
-                      "outline-variant": "#bfc7d1",
-                      "on-surface": "#191c1d",
-                      "primary": "#005d90",
-                      "surface-dim": "#d9dadb",
-                      "secondary-fixed": "#a7edff",
-                      "on-tertiary-container": "#f7f7ff",
-                      "inverse-surface": "#2e3132",
-                      "inverse-primary": "#94ccff",
-                      "on-background": "#191c1d"
-              },
-              "borderRadius": {
-                      "DEFAULT": "0.125rem",
-                      "lg": "0.25rem",
-                      "xl": "0.5rem",
-                      "full": "0.75rem"
-              },
-              "fontFamily": {
-                      "headline": ["Manrope"],
-                      "body": ["Inter"],
-                      "label": ["Inter"]
-              }
-            },
-          }
+                colors: {
+                    primary: "#005d90",
+                    "primary-strong": "#004b74",
+                    surface: "#f5f5f7",
+                    card: "#ffffff",
+                    line: "rgba(120,133,150,0.18)",
+                    muted: "#667085",
+                    ink: "#172033",
+                    error: "#b42318"
+                },
+                borderRadius: {
+                    DEFAULT: "8px",
+                    lg: "10px",
+                    xl: "16px",
+                    full: "999px"
+                },
+                fontFamily: {
+                    headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                    body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
+                }
+            }
         }
-    </script>
+    };
+</script>
 <style>
-        body { font-family: 'Inter', sans-serif; }
-        .headline-font { font-family: 'Manrope', sans-serif; }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    :root {
+        --auth-bg: #f5f5f7;
+        --auth-card: rgba(255,255,255,0.86);
+        --auth-line: rgba(120,133,150,0.18);
+        --auth-shadow: 0 28px 70px rgba(15,23,42,0.11);
+        --auth-ease: cubic-bezier(0.2, 0, 0, 1);
+    }
+    * { box-sizing: border-box; }
+    html { text-rendering: optimizeLegibility; }
+    body {
+        min-height: 100vh;
+        margin: 0;
+        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        color: #172033;
+        background:
+            radial-gradient(circle at 15% 12%, rgba(0,93,144,0.11), transparent 24rem),
+            radial-gradient(circle at 88% 18%, rgba(52,84,209,0.08), transparent 24rem),
+            linear-gradient(180deg, #ffffff 0%, var(--auth-bg) 45%);
+        text-wrap: pretty;
+    }
+    h1, h2, h3, .headline-font {
+        font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        letter-spacing: 0;
+    }
+    button, a, input, select {
+        transition: color 180ms var(--auth-ease), background-color 180ms var(--auth-ease),
+            border-color 180ms var(--auth-ease), box-shadow 180ms var(--auth-ease), transform 180ms var(--auth-ease);
+    }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+        outline: 2px solid rgba(0,93,144,0.34);
+        outline-offset: 3px;
+    }
+    .material-symbols-outlined {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
+    }
+    .auth-card {
+        border: 1px solid var(--auth-line);
+        background: var(--auth-card);
+        backdrop-filter: blur(22px);
+        box-shadow: var(--auth-shadow);
+    }
+    .auth-field input,
+    .auth-field select {
+        border: 1px solid rgba(120,133,150,0.18);
+        background: rgba(255,255,255,0.88);
+    }
+    .auth-field input:hover,
+    .auth-field select:hover {
+        border-color: rgba(0,93,144,0.24);
+    }
+    .auth-field input:focus,
+    .auth-field select:focus {
+        border-color: rgba(0,93,144,0.45);
+        box-shadow: inset 0 0 0 1px rgba(0,93,144,0.20), 0 0 0 4px rgba(0,93,144,0.10);
+        outline: 0;
+    }
+    [data-register-fields] {
+        padding: 4px;
+        margin-left: -4px;
+        margin-right: -4px;
+    }
+    @keyframes authModeSwitch {
+        0% { opacity: 0.76; transform: translateY(8px) scale(0.992); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes authFieldShake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-7px); }
+        40%, 80% { transform: translateX(7px); }
+    }
+    .auth-mode-switching { animation: authModeSwitch 260ms var(--auth-ease); }
+    .auth-field-shake { animation: authFieldShake 360ms ease; }
+    @media (max-width: 900px) {
+        .auth-visual { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
         }
-        .bg-pattern {
-            background-color: #f8f9fa;
-            background-image: radial-gradient(#bfc7d1 0.5px, transparent 0.5px);
-            background-size: 24px 24px;
-        }
-        @keyframes authModeSwitch {
-            0% { opacity: 0.76; transform: translateY(8px) scale(0.992); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes authFieldShake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-7px); }
-            40%, 80% { transform: translateX(7px); }
-        }
-        .auth-mode-switching {
-            animation: authModeSwitch 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
-        }
-        .auth-field-shake {
-            animation: authFieldShake 360ms ease;
-        }
-    </style>
+    }
+</style>
 </head>
-<body class="bg-pattern min-h-screen flex flex-col">
-<main class="flex-grow flex items-center justify-center px-4 py-12">
-<div class="w-full max-w-[480px] bg-surface-container-lowest rounded-xl shadow-[0_24px_48px_-12px_rgba(25,28,29,0.08)] overflow-hidden">
-<div class="p-8 pb-4 text-center">
-<h1 class="headline-font text-3xl font-extrabold tracking-tighter text-primary mb-2">CampusShare</h1>
-<p class="text-on-surface-variant font-body text-sm">访问机构在线市场</p>
-</div>
-<div class="flex px-8 border-b border-surface-container">
-<button class="flex-1 py-4 text-sm font-semibold headline-font text-primary border-b-2 border-primary transition-all duration-200" type="button">
-                    登录
-                </button>
-<button class="flex-1 py-4 text-sm font-semibold headline-font text-on-surface-variant hover:text-primary transition-all duration-200" type="button">
-                    注册
-                </button>
-</div>
-<div class="p-8 space-y-6">
-<form class="space-y-4">
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div class="space-y-1 md:col-span-2">
-<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">账号</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">person</span>
-<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="用户名" type="text"/>
-</div>
-</div>
-<div class="space-y-1 md:col-span-2">
-<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">密码</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">lock</span>
-<input class="w-full pl-10 pr-12 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="请输入密码" type="password"/>
-<button aria-label="显示密码" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors" data-password-toggle="" type="button">
-<span class="material-symbols-outlined text-lg" data-password-toggle-icon="">visibility_off</span>
-</button>
-</div>
-</div>
-<div class="space-y-1 md:col-span-2">
-<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">显示名称</label>
-<input class="w-full px-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="例如：张三 教授" type="text"/>
-</div>
-<div class="space-y-1">
-<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">学院</label>
-<select class="w-full px-3 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm appearance-none">
-<option>工程学院</option>
-<option>理学院</option>
-<option>人文艺术学院</option>
-<option>商学院</option>
-<option>医学院</option>
-</select>
-</div>
-<div class="space-y-1">
-<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">年级</label>
-<select class="w-full px-3 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm appearance-none">
-<option>教师</option>
-<option>教职工</option>
-<option>博士生</option>
-<option>博士后</option>
-<option>本科生</option>
-</select>
-</div>
-<div class="space-y-1 md:col-span-2">
-<label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">联系方式</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">mail</span>
-<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="institutional.email@campus.edu" type="email"/>
-</div>
-</div>
-</div>
-<div class="pt-4">
-<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-semibold headline-font text-sm shadow-sm hover:bg-primary-container transition-colors active:scale-[0.98] duration-150" type="submit">
-                            登录
-                        </button>
-</div>
-<div class="flex items-center gap-4 py-2">
-<div class="h-[1px] flex-grow bg-surface-container-high"></div>
-<span class="text-[10px] font-bold uppercase tracking-widest text-outline">安全网关</span>
-<div class="h-[1px] flex-grow bg-surface-container-high"></div>
-</div>
-<div class="flex justify-center gap-6">
-<div class="flex items-center gap-2 text-on-surface-variant">
-<span class="material-symbols-outlined text-base">shield</span>
-<span class="text-[11px] font-medium">SSL 加密</span>
-</div>
-<div class="flex items-center gap-2 text-on-surface-variant">
-<span class="material-symbols-outlined text-base">verified_user</span>
-<span class="text-[11px] font-medium">仅限认证域名</span>
-</div>
-</div>
-</form>
-</div>
-<div class="bg-surface-container-low p-6 text-center">
-<p class="text-xs text-on-surface-variant">
-                    访问本门户即表示您同意
-                    <a class="text-primary font-semibold underline underline-offset-2" href="#">机构条款</a>
-</p>
-</div>
-</div>
-</main>
-<footer class="w-full py-12 px-6 mt-auto bg-surface-bright border-t border-slate-200">
-<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-<div class="font-['Manrope'] font-bold text-slate-900">CampusShare</div>
-<div class="flex flex-wrap justify-center gap-8">
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">隐私政策</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">服务条款</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">机构品牌</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">支持</a>
-<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-colors" href="#">联系我们</a>
-</div>
-<div class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500">
-                © 2026 CampusShare
+<body class="flex min-h-screen flex-col">
+<main class="mx-auto grid w-full max-w-[1160px] flex-1 grid-cols-1 items-center gap-10 px-5 py-10 lg:grid-cols-[minmax(0,560px)_420px] lg:gap-16 lg:px-8">
+    <section class="auth-visual mx-auto w-full max-w-[560px]">
+        <p class="mb-5 inline-flex rounded-full bg-white/80 px-4 py-2 text-xs font-extrabold tracking-[0.18em] text-[#005d90] shadow-sm">CAMPUS TRUSTED MARKET</p>
+        <h1 class="headline-font max-w-3xl text-[clamp(3rem,7vw,6.6rem)] font-extrabold leading-[0.92] text-slate-950">CampusShare</h1>
+        <p class="mt-6 max-w-xl text-lg leading-8 text-slate-600">登录后进入统一工作台，继续管理发布、订单、资料积分、组队申请和站内消息。</p>
+        <div class="mt-10 grid max-w-xl grid-cols-3 gap-3">
+            <div class="rounded-2xl bg-white/78 p-4 shadow-sm">
+                <span class="material-symbols-outlined text-[#005d90]">verified_user</span>
+                <p class="mt-3 text-sm font-bold">身份审核</p>
             </div>
-</div>
+            <div class="rounded-2xl bg-white/78 p-4 shadow-sm">
+                <span class="material-symbols-outlined text-[#005d90]">receipt_long</span>
+                <p class="mt-3 text-sm font-bold">订单追踪</p>
+            </div>
+            <div class="rounded-2xl bg-white/78 p-4 shadow-sm">
+                <span class="material-symbols-outlined text-[#005d90]">school</span>
+                <p class="mt-3 text-sm font-bold">资料积分</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="auth-card mx-auto w-full max-w-[420px] overflow-hidden rounded-2xl">
+        <div class="px-8 pb-4 pt-8 text-center">
+            <h2 class="headline-font text-3xl font-extrabold text-[#005d90]">CampusShare</h2>
+            <p class="mt-2 text-sm text-slate-500">访问校园资源共享平台</p>
+        </div>
+        <div class="border-b border-[rgba(120,133,150,0.16)] px-8">
+            <div class="flex rounded-full bg-slate-100 p-1">
+                <button class="flex-1 rounded-full bg-white py-3 text-sm font-extrabold text-[#005d90] shadow-sm" type="button">登录</button>
+                <button class="flex-1 rounded-full py-3 text-sm font-extrabold text-slate-500 hover:text-[#005d90]" type="button">注册</button>
+            </div>
+        </div>
+        <div class="p-8">
+            <form class="space-y-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="auth-field space-y-1 md:col-span-2">
+                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">账号</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">person</span>
+                            <input class="w-full rounded-xl py-3 pl-10 pr-4 text-sm" placeholder="用户名" type="text"/>
+                        </div>
+                    </div>
+                    <div class="auth-field space-y-1 md:col-span-2">
+                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">密码</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">lock</span>
+                            <input class="w-full rounded-xl py-3 pl-10 pr-12 text-sm" placeholder="请输入密码" type="password"/>
+                            <button aria-label="显示密码" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#005d90]" data-password-toggle="" type="button">
+                                <span class="material-symbols-outlined" data-password-toggle-icon="">visibility_off</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="auth-field space-y-1 md:col-span-2">
+                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">显示名称</label>
+                        <input class="w-full rounded-xl px-4 py-3 text-sm" placeholder="例如：张三" type="text"/>
+                    </div>
+                    <div class="auth-field space-y-1">
+                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">学院</label>
+                        <select class="w-full appearance-none rounded-xl px-4 py-3 text-sm">
+                            <option>工程学院</option>
+                            <option>理学院</option>
+                            <option>人文艺术学院</option>
+                            <option>商学院</option>
+                            <option>医学院</option>
+                        </select>
+                    </div>
+                    <div class="auth-field space-y-1">
+                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">年级</label>
+                        <select class="w-full appearance-none rounded-xl px-4 py-3 text-sm">
+                            <option>本科生</option>
+                            <option>研究生</option>
+                            <option>博士生</option>
+                            <option>教师</option>
+                            <option>教职工</option>
+                        </select>
+                    </div>
+                    <div class="auth-field space-y-1 md:col-span-2">
+                        <label class="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">邮箱</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">mail</span>
+                            <input class="w-full rounded-xl py-3 pl-10 pr-4 text-sm" placeholder="name@campus.edu" type="email"/>
+                        </div>
+                    </div>
+                </div>
+                <button class="w-full rounded-full bg-[#005d90] py-3.5 text-sm font-extrabold text-white shadow-sm hover:bg-[#004b74] active:scale-[0.99]" type="submit">登录</button>
+                <div class="flex items-center gap-4 py-1">
+                    <div class="h-px flex-1 bg-[rgba(120,133,150,0.18)]"></div>
+                    <span class="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">安全网关</span>
+                    <div class="h-px flex-1 bg-[rgba(120,133,150,0.18)]"></div>
+                </div>
+                <div class="flex justify-center gap-6 text-xs font-semibold text-slate-500">
+                    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-base">shield</span>SSL 加密</span>
+                    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-base">verified_user</span>审核准入</span>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+<footer class="px-6 py-8">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-[rgba(120,133,150,0.16)] pt-6 text-xs text-slate-500 md:flex-row">
+        <span class="headline-font font-extrabold text-slate-900">CampusShare</span>
+        <span>© 2026 CampusShare</span>
+        <span class="font-semibold text-slate-600">校园交易平台</span>
+    </div>
 </footer>
 <script src="/pages/assets/js/campusshare-api.js"></script>
-<script src="/pages/assets/js/auth-access.js"></script>
-</body></html>
-
-
-
+<script src="/pages/assets/js/auth-access.js?v=20260511-apple-auth"></script>
+</body>
+</html>

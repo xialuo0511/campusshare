@@ -1,353 +1,452 @@
 <!DOCTYPE html>
-
-<html class="light" lang="zh-CN"><head>
+<html class="light" lang="zh-CN">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>CampusShare 绠＄悊鍚庡彴</title>
+<title>CampusShare 管理后台</title>
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
 <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "surface-container-low": "#f3f4f5",
-                        "surface-bright": "#f8f9fa",
-                        "surface": "#f8f9fa",
-                        "background": "#f8f9fa",
-                        "tertiary-fixed": "#d8e2ff",
-                        "on-primary-fixed": "#001d32",
-                        "surface-container-highest": "#e1e3e4",
-                        "on-primary-container": "#f3f7ff",
-                        "error": "#ba1a1a",
-                        "tertiary-fixed-dim": "#aec6ff",
-                        "on-primary-fixed-variant": "#004b74",
-                        "on-secondary-fixed-variant": "#004e5b",
-                        "secondary": "#006878",
-                        "inverse-on-surface": "#f0f1f2",
-                        "surface-tint": "#006399",
-                        "tertiary-container": "#4770be",
-                        "error-container": "#ffdad6",
-                        "outline": "#707881",
-                        "on-tertiary-fixed-variant": "#0f4490",
-                        "primary-fixed-dim": "#94ccff",
-                        "on-secondary-fixed": "#001f25",
-                        "on-surface-variant": "#404850",
-                        "secondary-container": "#69e5ff",
-                        "surface-container-high": "#e7e8e9",
-                        "secondary-fixed-dim": "#58d6f1",
-                        "on-error": "#ffffff",
-                        "on-tertiary-fixed": "#001a42",
-                        "primary-container": "#0077b6",
-                        "surface-container": "#edeeef",
-                        "surface-container-lowest": "#ffffff",
-                        "tertiary": "#2b57a4",
-                        "on-secondary": "#ffffff",
-                        "primary-fixed": "#cde5ff",
-                        "on-error-container": "#93000a",
-                        "on-secondary-container": "#006575",
-                        "surface-variant": "#e1e3e4",
-                        "on-tertiary": "#ffffff",
-                        "on-primary": "#ffffff",
-                        "outline-variant": "#bfc7d1",
-                        "on-surface": "#191c1d",
-                        "primary": "#005d90",
-                        "surface-dim": "#d9dadb",
-                        "secondary-fixed": "#a7edff",
-                        "on-tertiary-container": "#f7f7ff",
-                        "inverse-surface": "#2e3132",
-                        "inverse-primary": "#94ccff",
-                        "on-background": "#191c1d"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
-                    },
-                    "fontFamily": {
-                        "headline": ["Manrope"],
-                        "body": ["Inter"],
-                        "label": ["Inter"]
-                    }
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    primary: "#005d90",
+                    "primary-strong": "#004b74",
+                    surface: "#f5f5f7",
+                    card: "#ffffff",
+                    line: "rgba(120,133,150,0.18)",
+                    muted: "#667085",
+                    ink: "#172033",
+                    error: "#b42318",
+                    "error-soft": "#fff1f0",
+                    tertiary: "#3454d1"
                 },
-            },
+                borderRadius: {
+                    DEFAULT: "8px",
+                    lg: "10px",
+                    xl: "16px",
+                    full: "999px"
+                },
+                fontFamily: {
+                    headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                    body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
+                }
+            }
         }
-    </script>
+    };
+</script>
 <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
+    :root {
+        --admin-bg: #f5f5f7;
+        --admin-card: rgba(255,255,255,0.86);
+        --admin-line: rgba(120,133,150,0.18);
+        --admin-shadow: 0 22px 56px rgba(15,23,42,0.08);
+        --admin-ease: cubic-bezier(0.2, 0, 0, 1);
+    }
+    * { box-sizing: border-box; }
+    html { text-rendering: optimizeLegibility; }
+    body {
+        min-height: 100vh;
+        margin: 0;
+        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        color: #172033;
+        background:
+            radial-gradient(circle at 16% 8%, rgba(0,93,144,0.10), transparent 24rem),
+            linear-gradient(180deg, #ffffff 0%, var(--admin-bg) 36%);
+        text-wrap: pretty;
+    }
+    h1, h2, h3, .headline-font {
+        font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        letter-spacing: 0;
+    }
+    a, button, input, select, textarea {
+        transition: color 180ms var(--admin-ease), background-color 180ms var(--admin-ease),
+            border-color 180ms var(--admin-ease), box-shadow 180ms var(--admin-ease), transform 180ms var(--admin-ease);
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+        outline: 2px solid rgba(0,93,144,0.34);
+        outline-offset: 3px;
+    }
+    .material-symbols-outlined {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.25rem;
+        min-width: 1.25rem;
+        overflow: hidden;
+        line-height: 1;
+        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
+    }
+    .admin-glass {
+        border: 1px solid var(--admin-line);
+        background: var(--admin-card);
+        backdrop-filter: blur(20px);
+        box-shadow: var(--admin-shadow);
+    }
+    aside[data-admin-sidebar] {
+        left: 1.25rem;
+        top: 5.75rem;
+        width: 15rem;
+        height: calc(100vh - 7rem);
+        border: 1px solid var(--admin-line);
+        border-radius: 16px;
+        background: var(--admin-card);
+        backdrop-filter: blur(20px);
+        box-shadow: var(--admin-shadow);
+    }
+    [data-admin-topbar] {
+        height: 72px;
+        border-bottom: 1px solid rgba(120,133,150,0.12);
+        background: rgba(255,255,255,0.76);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 1px 0 rgba(255,255,255,0.7);
+    }
+    [data-admin-main] {
+        margin-left: 17rem;
+        padding-top: 5.75rem;
+        padding-right: 1.25rem;
+        padding-bottom: 1.25rem;
+    }
+    aside[data-admin-sidebar] nav,
+    aside[data-admin-sidebar] [data-admin-side-actions] {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    [data-admin-nav],
+    aside[data-admin-sidebar] [data-nav-target] {
+        display: grid !important;
+        grid-template-columns: 32px minmax(0, 1fr);
+        align-items: center;
+        width: 100%;
+        min-height: 44px;
+        column-gap: 0.75rem;
+        border-radius: 10px;
+    }
+    [data-admin-nav] .material-symbols-outlined,
+    aside[data-admin-sidebar] [data-nav-target] .material-symbols-outlined {
+        width: 32px;
+        min-width: 32px;
+        max-width: 32px;
+        height: 32px;
+        overflow: hidden;
+        font-size: 21px;
+        line-height: 1;
+        text-align: center;
+    }
+    [data-admin-nav] span:last-child,
+    aside[data-admin-sidebar] [data-nav-target] span:last-child {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        line-height: 1.25;
+    }
+    [data-admin-nav]:hover {
+        background: rgba(0,93,144,0.07);
+        color: #005d90;
+        transform: translateX(2px);
+    }
+    [data-admin-nav][aria-current="page"],
+    [data-admin-nav].translate-x-1 {
+        background: #ffffff;
+        color: #005d90;
+        box-shadow: 0 12px 26px rgba(15,23,42,0.07);
+    }
+    input, select, textarea {
+        border: 1px solid rgba(120,133,150,0.18) !important;
+        background: rgba(255,255,255,0.88) !important;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: rgba(0,93,144,0.45) !important;
+        box-shadow: 0 0 0 4px rgba(0,93,144,0.10) !important;
+        outline: 0 !important;
+    }
+    .review-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+    .review-scrollbar::-webkit-scrollbar-thumb { background: rgba(64,72,80,0.22); border-radius: 999px; }
+    @media (max-width: 980px) {
+        aside[data-admin-sidebar] {
+            position: static !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 1rem !important;
         }
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
-        .review-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        main[data-admin-main], footer[data-admin-footer] {
+            margin-left: 0 !important;
+            padding: 1rem !important;
         }
-        .review-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(64, 72, 80, 0.25);
-            border-radius: 999px;
+        main[data-admin-main] {
+            padding-top: 1rem !important;
         }
-    </style>
-<link href="/pages/assets/css/campusshare-modern.css?v=20260509-3" rel="stylesheet"/>
+        [data-review-main-grid] {
+            display: block !important;
+            height: auto !important;
+            min-height: 0 !important;
+        }
+        [data-review-main-grid] > * { margin-bottom: 1rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+        }
+    }
+</style>
 </head>
-<body class="bg-surface text-on-surface min-h-screen">
-<!-- SideNavBar Component (Shared Anchor) -->
-<aside class="h-screen w-64 fixed left-0 top-0 bg-[#f3f4f5] dark:bg-slate-900 flex flex-col p-4 border-r border-transparent z-40">
-<div class="mb-8 px-2">
-<span class="text-lg font-semibold text-[#005d90]">CampusShare</span>
-<div class="mt-4 flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-800 overflow-hidden flex items-center justify-center text-sm font-bold" data-role="admin-sidebar-avatar">--</div>
-<div>
-<p class="text-sm font-semibold text-on-surface leading-tight" data-role="admin-sidebar-name">涓汉涓績</p>
-<p class="text-xs text-slate-500" data-role="admin-sidebar-role">瀛︽湳绠＄悊鍛?/p>
-</div>
-</div>
-</div>
-<nav class="flex-1 space-y-1">
-<!-- Active Navigation Logic: Mapping "Dashboard" -->
-<a class="flex items-center gap-3 px-3 py-2 bg-[#ffffff] dark:bg-slate-800 text-[#005d90] dark:text-sky-400 font-semibold rounded-md shadow-sm transition-all duration-200 ease-in-out translate-x-1" data-admin-nav="DASHBOARD" data-nav-target="local" href="#">
-<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-<span class="font-['Inter'] text-sm">浠〃鐩?/span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="CONTENT_REVIEW" data-nav-target="local" href="#">
-<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
-<span class="font-['Inter'] text-sm">瀹℃牳宸ヤ綔鍙?/span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="MANAGEMENT" data-nav-target="local" href="#">
-<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
-<span class="font-['Inter'] text-sm">鐢ㄦ埛涓庤鍒?/span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="ORDER_LIST" data-nav-target="local" href="#">
-<span class="material-symbols-outlined" data-icon="format_list_bulleted">format_list_bulleted</span>
-<span class="font-['Inter'] text-sm">璁㈠崟绠＄悊</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-admin-nav="ANALYTICS" data-nav-target="local" href="#">
-<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
-<span class="font-['Inter'] text-sm">鏁版嵁缁熻</span>
-</a>
-</nav>
-<div class="mt-auto space-y-1">
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" data-nav-target="/pages/market_overview.html" href="#">
-<span class="material-symbols-outlined" data-icon="home">home</span>
-<span class="font-['Inter'] text-sm">杩斿洖涓婚〉</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-[#edeeef] dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
-<span class="material-symbols-outlined" data-icon="logout">logout</span>
-<span class="font-['Inter'] text-sm">閫€鍑虹櫥褰?/span>
-</a>
-</div>
-</aside>
-<!-- Main Content Area -->
-<main class="ml-64 p-8 pb-24" data-admin-main>
-<!-- Top Header Area -->
-<header class="flex justify-between items-center mb-10" data-admin-section="header">
-<div>
-<h1 class="text-3xl font-bold text-on-surface tracking-tight">鏈烘瀯姒傝</h1>
-<p class="text-on-surface-variant text-sm mt-1">瀹炴椂骞冲彴娲诲姩鍜岀鐞嗗伐浣滃彴銆?/p>
-</div>
-<div class="flex items-center gap-4">
-<div class="relative">
-<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-sm">search</span>
-<input class="pl-10 pr-4 py-2 bg-surface-container-lowest border-none outline-none ring-1 ring-outline-variant/20 rounded-xl text-sm w-64 focus:ring-primary" placeholder="鎼滅储璧勬簮..." type="text"/>
-</div>
-<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-xl">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-</button>
-<button class="h-10 w-10 overflow-hidden flex items-center justify-center text-sm font-bold text-sky-800 bg-sky-100 hover:bg-surface-container transition-colors rounded-xl" data-role="admin-header-avatar" type="button">--</button>
-</div>
+<body class="min-h-screen">
+<header class="fixed left-0 right-0 top-0 z-50" data-admin-topbar>
+    <div class="flex h-full items-center justify-between px-6 lg:px-9">
+        <button type="button" class="headline-font text-xl font-extrabold text-[#005d90]" data-nav-target="/pages/market_overview.html">CampusShare</button>
+        <div class="hidden items-center gap-2 text-sm font-bold lg:flex">
+            <button type="button" class="rounded-full bg-[#eef6fb] px-4 py-2 text-[#005d90]" data-admin-nav-shortcut="DASHBOARD">管理工作台</button>
+            <button type="button" class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100 hover:text-[#005d90]" data-admin-nav-shortcut="CONTENT_REVIEW">审核队列</button>
+            <button type="button" class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100 hover:text-[#005d90]" data-nav-target="/pages/market_overview.html">返回主页</button>
+        </div>
+    </div>
 </header>
-<!-- High-Level Stats (Bento Grid Style) -->
-<section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10" data-admin-section="stats">
-<div class="col-span-1 md:col-span-2 bg-surface-container-lowest p-6 rounded-xl border-none ring-1 ring-outline-variant/10 shadow-sm relative overflow-hidden">
-<div class="flex justify-between items-start">
-<div>
-<p class="text-label-md font-medium text-on-surface-variant uppercase tracking-wider mb-1">鎬绘椿璺冨彂甯?/p>
-<h2 class="text-4xl font-extrabold text-primary">--</h2>
-</div>
-<div class="bg-secondary-container p-2 rounded-lg text-on-secondary-container">
-<span class="material-symbols-outlined" data-icon="inventory">inventory</span>
-</div>
-</div>
-<div class="mt-4 flex items-center gap-2 text-sm">
-<span class="text-green-600 font-bold">--</span>
-<span class="text-on-surface-variant">鍔犺浇涓?/span>
-</div>
-<!-- Abstract Decorative Element -->
-<div class="absolute -right-4 -bottom-4 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-</div>
-<div class="bg-surface-container-lowest p-6 rounded-xl border-none ring-1 ring-outline-variant/10 shadow-sm">
-<p class="text-label-md font-medium text-on-surface-variant uppercase tracking-wider mb-1">寰呭鐞嗕妇鎶?/p>
-<div class="flex items-end justify-between">
-<h2 class="text-4xl font-extrabold text-error">--</h2>
-<span class="text-xs font-bold text-on-error-container bg-error-container px-2 py-1 rounded-full">鍔犺浇涓?/span>
-</div>
-<div class="mt-4 h-1 w-full bg-surface-container rounded-full overflow-hidden">
-<div class="bg-error h-full w-[10%]"></div>
-</div>
-</div>
-<div class="bg-surface-container-lowest p-6 rounded-xl border-none ring-1 ring-outline-variant/10 shadow-sm">
-<p class="text-label-md font-medium text-on-surface-variant uppercase tracking-wider mb-1">鏈€杩戣鍗?/p>
-<h2 class="text-4xl font-extrabold text-tertiary">--</h2>
-<p class="text-xs text-on-surface-variant mt-4">杩涜涓細<span class="font-semibold">--</span>锛屽凡瀹屾垚锛?span class="font-semibold">--</span></p>
-</div>
-</section>
-<!-- Secondary Section: Analytics and Table -->
-<div class="grid grid-cols-1 gap-8 items-start" data-admin-section="workbench">
-<!-- Analytics Chart Module (Visual Placeholder) -->
-<section class="bg-surface-container-lowest p-6 rounded-xl shadow-sm ring-1 ring-outline-variant/10" data-admin-activity-panel>
-<h3 class="text-title-md font-semibold text-on-surface mb-6">骞冲彴娲诲姩</h3>
-<div class="space-y-6">
-<div>
-<div class="flex justify-between items-center mb-2">
-<span class="text-sm font-medium text-on-surface-variant">鐢ㄦ埛澧為暱</span>
-<span class="text-sm font-bold text-primary" data-role="activity-user-growth-rate">--</span>
-</div>
-<div class="h-16 flex items-end gap-1" data-role="activity-user-growth-bars"></div>
-</div>
-<div>
-<div class="flex justify-between items-center mb-2">
-<span class="text-sm font-medium text-on-surface-variant">璧勬簮浜ゆ崲</span>
-<span class="text-sm font-bold text-tertiary" data-role="activity-resource-exchange-text">--</span>
-</div>
-<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
-<div class="bg-tertiary h-full w-0" data-role="activity-resource-exchange-progress"></div>
-</div>
-</div>
-<div class="pt-4 border-t border-surface-container">
-<p class="text-xs text-on-surface-variant italic" data-role="activity-note">鈥滄鍦ㄥ姞杞藉钩鍙版椿鍔ㄦ暟鎹?..鈥?/p>
-</div>
-</div>
-</section>
-</div>
-<section class="hidden mt-8" data-admin-section="content-review">
-<section class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-outline-variant/10 overflow-hidden" data-review-page-main>
-<header class="px-8 py-6 bg-surface-card border-b border-outline/25 flex items-center justify-between">
-<div>
-<h2 class="text-2xl font-extrabold text-on-surface">鍐呭瀹℃牳宸ヤ綔鍙?/h2>
-<p class="text-sm text-on-surface-variant mt-1">甯栧瓙銆佸晢鍝併€佽祫鏂欎笌鐢ㄦ埛缁熶竴瀹℃牳鍏ュ彛</p>
-</div>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-<input class="w-80 rounded-xl border-none bg-surface-container-low pl-10 pr-4 py-2.5 text-sm ring-1 ring-outline/30 focus:ring-primary" data-review-global-search placeholder="鎼滅储鏍囬銆佸彂甯冭€呫€両D" type="text"/>
-</div>
-</header>
-<section class="px-8 pt-6 pb-4">
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4" data-review-stat-grid>
-<article class="bg-surface-card rounded-xl p-5 ring-1 ring-outline/20 shadow-sm">
-<p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">寰呭鏍告€婚噺</p>
-<h2 class="text-3xl font-extrabold text-primary mt-3">-</h2>
-<p class="text-xs mt-2 text-slate-500">褰撳墠绛涢€?/p>
-</article>
-<article class="bg-surface-card rounded-xl p-5 ring-1 ring-outline/20 shadow-sm">
-<p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">鏈宸插鐞?/p>
-<h2 class="text-3xl font-extrabold text-green-700 mt-3">-</h2>
-<p class="text-xs mt-2 text-slate-500">褰撳墠浼氳瘽</p>
-</article>
-<article class="bg-surface-card rounded-xl p-5 ring-1 ring-outline/20 shadow-sm">
-<p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">骞冲潎绛夊緟鏃堕暱</p>
-<h2 class="text-3xl font-extrabold mt-3">-</h2>
-<p class="text-xs mt-2 text-slate-500">闃熷垪浼扮畻</p>
-</article>
-<article class="bg-surface-card rounded-xl p-5 ring-1 ring-outline/20 shadow-sm">
-<p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">褰撳墠闃熷垪</p>
-<h2 class="text-3xl font-extrabold mt-3">-</h2>
-<p class="text-xs mt-2 text-slate-500">鍟嗗搧 / 甯栧瓙 / 璧勬枡 / 鐢ㄦ埛</p>
-</article>
-</div>
-</section>
-<section class="px-8 pb-8 min-h-0">
-<div class="grid grid-cols-12 gap-6 h-[calc(100vh-18rem)] min-h-[700px]" data-review-main-grid>
-<section class="col-span-3 bg-surface-card rounded-xl ring-1 ring-outline/20 shadow-sm overflow-hidden flex flex-col">
-<div class="px-5 py-4 border-b border-outline/20">
-<h3 class="text-lg font-bold">瀹℃牳闃熷垪</h3>
-<div class="flex flex-wrap gap-2 mt-4" data-review-filter-group>
-<button class="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-bold transition-colors" type="button">鍏ㄩ儴</button>
-<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">鍟嗗搧</button>
-<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">甯栧瓙</button>
-<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">璧勬枡</button>
-<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">鐢ㄦ埛</button>
-<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">楂橀闄?/button>
-<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-slate-600 text-xs font-semibold transition-colors" type="button">鏈€鏂?/button>
-</div>
-</div>
-<div class="px-5 py-4 border-b border-outline/20">
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base">search</span>
-<input class="w-full rounded-xl border-none bg-surface-container-low px-10 py-2.5 text-sm ring-1 ring-outline/30 focus:ring-primary" data-review-queue-search placeholder="绛涢€夐槦鍒? type="text"/>
-</div>
-</div>
-<div class="review-scrollbar overflow-y-auto flex-1 p-3 space-y-3" data-review-queue-list>
-<div class="p-4 rounded-xl bg-surface-container-low text-sm text-slate-500">姝ｅ湪鍔犺浇寰呭鏍镐换鍔?..</div>
-</div>
-</section>
-<section class="col-span-6 bg-surface-card rounded-xl ring-1 ring-outline/20 shadow-sm overflow-hidden flex flex-col" data-review-detail-panel>
-<div class="px-6 py-5 border-b border-outline/20" data-review-detail-header>
-<h2 class="text-xl font-bold">璇烽€夋嫨宸︿晶浠诲姟</h2>
-<p class="text-sm text-slate-500 mt-2">涓棿鏍忓睍绀哄畬鏁村鏍镐俊鎭?/p>
-</div>
-<div class="review-scrollbar overflow-y-auto flex-1 px-6 py-6 space-y-4" data-review-detail-body>
-<article class="rounded-xl bg-surface-container-low p-5 text-sm text-slate-600">鏆傛棤鍐呭</article>
-</div>
-</section>
-<aside class="col-span-3 bg-surface-card rounded-xl ring-1 ring-outline/20 shadow-sm overflow-hidden flex flex-col" data-review-decision-panel>
-<div class="px-5 py-5 border-b border-outline/20">
-<h3 class="text-lg font-bold">瀹℃牳鍐崇瓥</h3>
-<p class="text-xs text-slate-500 mt-1">閫氳繃鐩存帴鐐瑰嚮鈥滈€氳繃鈥濓紝椹冲洖闇€濉啓鎰忚</p>
-</div>
-<div class="review-scrollbar overflow-y-auto flex-1 px-5 py-5 space-y-4">
-<article class="rounded-xl bg-surface-container-low p-4">
-<p class="text-sm font-bold">褰撳墠鐘舵€?/p>
-<span class="inline-flex mt-3 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white ring-1 ring-outline/40" data-review-current-status>寰呭鏍?/span>
-</article>
-<article class="rounded-xl bg-surface-container-low p-4 space-y-4">
-<div>
-<label class="block text-sm font-bold mb-2" for="reject-template">鎰忚妯℃澘</label>
-<select class="w-full rounded-xl border-none bg-white py-3 px-4 text-sm ring-1 ring-outline/30 focus:ring-primary" id="reject-template"></select>
-</div>
-<div>
-<label class="block text-sm font-bold mb-2" for="review-note">瀹℃牳鎰忚</label>
-<textarea class="w-full min-h-[160px] rounded-xl border-none bg-white py-3 px-4 text-sm leading-6 ring-1 ring-outline/30 focus:ring-primary resize-none" id="review-note" placeholder="椹冲洖鏃惰濉啓鍘熷洜"></textarea>
-</div>
-</article>
-</div>
-<div class="px-5 py-5 border-t border-outline/20 bg-surface-container-low">
-<div class="grid grid-cols-2 gap-3 mb-3">
-<button class="px-4 py-3 rounded-xl bg-white font-semibold ring-1 ring-outline/30 hover:bg-surface transition-colors" data-review-prev type="button">涓婁竴鏉?/button>
-<button class="px-4 py-3 rounded-xl bg-white font-semibold ring-1 ring-outline/30 hover:bg-surface transition-colors" data-review-next type="button">涓嬩竴鏉?/button>
-</div>
-<div class="grid grid-cols-2 gap-3">
-<button class="px-4 py-3 rounded-xl bg-red-700 text-white font-bold hover:opacity-95 transition-opacity" data-review-reject type="button">椹冲洖</button>
-<button class="px-4 py-3 rounded-xl bg-primary text-white font-bold hover:opacity-95 transition-opacity" data-review-approve type="button">閫氳繃</button>
-</div>
-</div>
+
+<aside class="fixed z-40 flex flex-col px-4 py-5" data-admin-sidebar>
+    <div class="mb-6 px-2">
+        <div class="mt-5 flex items-center gap-3">
+            <div class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#eef6fb] text-sm font-bold text-[#005d90]" data-role="admin-sidebar-avatar">管</div>
+            <div class="min-w-0">
+                <p class="truncate text-sm font-extrabold text-slate-950" data-role="admin-sidebar-name">管理中心</p>
+                <p class="truncate text-xs text-slate-500" data-role="admin-sidebar-role">平台管理员</p>
+            </div>
+        </div>
+    </div>
+    <nav class="flex-1 text-sm font-semibold">
+        <a class="flex items-center gap-3 px-3 py-2.5 text-[#005d90]" data-admin-nav="DASHBOARD" data-nav-target="local" href="#">
+            <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span><span>仪表盘</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600" data-admin-nav="CONTENT_REVIEW" data-nav-target="local" href="#">
+            <span class="material-symbols-outlined" data-icon="fact_check">fact_check</span><span>审核工作台</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600" data-admin-nav="MANAGEMENT" data-nav-target="local" href="#">
+            <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span><span>用户与规则</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600" data-admin-nav="ORDER_LIST" data-nav-target="local" href="#">
+            <span class="material-symbols-outlined" data-icon="format_list_bulleted">format_list_bulleted</span><span>订单管理</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600" data-admin-nav="ANALYTICS" data-nav-target="local" href="#">
+            <span class="material-symbols-outlined" data-icon="analytics">analytics</span><span>数据统计</span>
+        </a>
+    </nav>
+    <div class="mt-auto border-t border-[rgba(120,133,150,0.16)] pt-4 text-sm font-semibold" data-admin-side-actions>
+        <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-600 hover:bg-white hover:text-[#005d90]" data-nav-target="/pages/market_overview.html" href="#">
+            <span class="material-symbols-outlined" data-icon="home">home</span><span>返回主页</span>
+        </a>
+        <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-600 hover:bg-white hover:text-[#b42318]" href="#">
+            <span class="material-symbols-outlined" data-icon="logout">logout</span><span>退出登录</span>
+        </a>
+    </div>
 </aside>
-</div>
-</section>
-</section>
-</section>
+
+<main data-admin-main>
+    <header class="admin-glass mb-8 flex flex-col gap-5 rounded-2xl p-5 lg:flex-row lg:items-center lg:justify-between" data-admin-section="header">
+        <div>
+            <p class="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#005d90]">CampusShare Admin</p>
+            <h1 class="headline-font text-3xl font-extrabold text-slate-950">平台概览</h1>
+            <p class="mt-1 text-sm text-slate-500">实时查看平台活动、审核队列和运营状态。</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                <input class="w-72 rounded-full py-2.5 pl-10 pr-4 text-sm" placeholder="搜索资源、用户或订单" type="text"/>
+            </div>
+            <button class="rounded-full bg-white p-2.5 text-slate-600 shadow-sm hover:text-[#005d90]" type="button">
+                <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+            </button>
+            <button class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#eef6fb] text-sm font-bold text-[#005d90]" data-role="admin-header-avatar" type="button">管</button>
+        </div>
+    </header>
+
+    <section class="mb-8 grid grid-cols-1 gap-5 md:grid-cols-4" data-admin-section="stats">
+        <div class="admin-glass md:col-span-2 overflow-hidden rounded-2xl p-6">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">总活跃发布</p>
+                    <h2 class="mt-3 text-5xl font-extrabold text-[#005d90]">--</h2>
+                </div>
+                <div class="rounded-xl bg-[#eef6fb] p-3 text-[#005d90]">
+                    <span class="material-symbols-outlined" data-icon="inventory">inventory</span>
+                </div>
+            </div>
+            <div class="mt-5 flex items-center gap-2 text-sm">
+                <span class="font-bold text-emerald-700">--</span>
+                <span class="text-slate-500">加载中</span>
+            </div>
+        </div>
+        <div class="admin-glass rounded-2xl p-6">
+            <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">待处理举报</p>
+            <div class="mt-4 flex items-end justify-between">
+                <h2 class="text-5xl font-extrabold text-[#b42318]">--</h2>
+                <span class="rounded-full bg-[#fff1f0] px-2.5 py-1 text-xs font-bold text-[#b42318]">加载中</span>
+            </div>
+            <div class="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full w-[10%] bg-[#b42318]"></div>
+            </div>
+        </div>
+        <div class="admin-glass rounded-2xl p-6">
+            <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">最近订单</p>
+            <h2 class="mt-4 text-5xl font-extrabold text-[#3454d1]">--</h2>
+            <p class="mt-5 text-xs text-slate-500">进行中：<span class="font-semibold">--</span>，已完成：<span class="font-semibold">--</span></p>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 gap-8" data-admin-section="workbench">
+        <section class="admin-glass rounded-2xl p-6" data-admin-activity-panel>
+            <h3 class="headline-font mb-6 text-xl font-extrabold text-slate-950">平台活动</h3>
+            <div class="space-y-6">
+                <div>
+                    <div class="mb-2 flex items-center justify-between">
+                        <span class="text-sm font-semibold text-slate-600">用户增长</span>
+                        <span class="text-sm font-bold text-[#005d90]" data-role="activity-user-growth-rate">--</span>
+                    </div>
+                    <div class="flex h-20 items-end gap-1" data-role="activity-user-growth-bars"></div>
+                </div>
+                <div>
+                    <div class="mb-2 flex items-center justify-between">
+                        <span class="text-sm font-semibold text-slate-600">资源交换</span>
+                        <span class="text-sm font-bold text-[#3454d1]" data-role="activity-resource-exchange-text">--</span>
+                    </div>
+                    <div class="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div class="h-full w-0 bg-[#3454d1]" data-role="activity-resource-exchange-progress"></div>
+                    </div>
+                </div>
+                <div class="border-t border-[rgba(120,133,150,0.16)] pt-4">
+                    <p class="text-xs text-slate-500" data-role="activity-note">正在加载平台活动数据...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <section class="hidden" data-admin-section="content-review">
+        <section class="admin-glass overflow-hidden rounded-2xl" data-review-page-main>
+            <header class="flex flex-col gap-4 border-b border-[rgba(120,133,150,0.16)] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h2 class="headline-font text-2xl font-extrabold text-slate-950">内容审核工作台</h2>
+                    <p class="mt-1 text-sm text-slate-500">帖子、商品、资料与用户的统一审核入口。</p>
+                </div>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                    <input class="w-full rounded-full py-2.5 pl-10 pr-4 text-sm lg:w-80" data-review-global-search placeholder="搜索标题、发布者或 ID" type="text"/>
+                </div>
+            </header>
+            <section class="px-6 pb-4 pt-6">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-4" data-review-stat-grid>
+                    <article class="rounded-2xl bg-white p-5 shadow-sm">
+                        <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">待审核总量</p>
+                        <h2 class="mt-3 text-3xl font-extrabold text-[#005d90]">-</h2>
+                        <p class="mt-2 text-xs text-slate-500">当前筛选</p>
+                    </article>
+                    <article class="rounded-2xl bg-white p-5 shadow-sm">
+                        <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">本次已处理</p>
+                        <h2 class="mt-3 text-3xl font-extrabold text-emerald-700">-</h2>
+                        <p class="mt-2 text-xs text-slate-500">当前会话</p>
+                    </article>
+                    <article class="rounded-2xl bg-white p-5 shadow-sm">
+                        <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">平均等待时长</p>
+                        <h2 class="mt-3 text-3xl font-extrabold">-</h2>
+                        <p class="mt-2 text-xs text-slate-500">队列估算</p>
+                    </article>
+                    <article class="rounded-2xl bg-white p-5 shadow-sm">
+                        <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">当前队列</p>
+                        <h2 class="mt-3 text-3xl font-extrabold">-</h2>
+                        <p class="mt-2 text-xs text-slate-500">商品 / 帖子 / 资料 / 用户</p>
+                    </article>
+                </div>
+            </section>
+            <section class="min-h-0 px-6 pb-6">
+                <div class="grid h-[calc(100vh-18rem)] min-h-[700px] grid-cols-12 gap-5" data-review-main-grid>
+                    <section class="col-span-3 flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm">
+                        <div class="border-b border-[rgba(120,133,150,0.16)] px-5 py-4">
+                            <h3 class="headline-font text-lg font-extrabold">审核队列</h3>
+                            <div class="mt-4 flex flex-wrap gap-2" data-review-filter-group>
+                                <button class="rounded-full bg-[#005d90] px-3 py-1.5 text-xs font-bold text-white" type="button">全部</button>
+                                <button class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">商品</button>
+                                <button class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">帖子</button>
+                                <button class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">资料</button>
+                                <button class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">用户</button>
+                                <button class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">高风险</button>
+                                <button class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">最新</button>
+                            </div>
+                        </div>
+                        <div class="border-b border-[rgba(120,133,150,0.16)] px-5 py-4">
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                                <input class="w-full rounded-full px-10 py-2.5 text-sm" data-review-queue-search placeholder="筛选队列" type="text"/>
+                            </div>
+                        </div>
+                        <div class="review-scrollbar flex-1 space-y-3 overflow-y-auto p-3" data-review-queue-list>
+                            <div class="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">正在加载待审核任务...</div>
+                        </div>
+                    </section>
+                    <section class="col-span-6 flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm" data-review-detail-panel>
+                        <div class="border-b border-[rgba(120,133,150,0.16)] px-6 py-5" data-review-detail-header>
+                            <h2 class="headline-font text-xl font-extrabold">请选择左侧任务</h2>
+                            <p class="mt-2 text-sm text-slate-500">中间栏展示完整审核信息。</p>
+                        </div>
+                        <div class="review-scrollbar flex-1 space-y-4 overflow-y-auto px-6 py-6" data-review-detail-body>
+                            <article class="rounded-xl bg-slate-50 p-5 text-sm text-slate-600">暂无内容</article>
+                        </div>
+                    </section>
+                    <aside class="col-span-3 flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm" data-review-decision-panel>
+                        <div class="border-b border-[rgba(120,133,150,0.16)] px-5 py-5">
+                            <h3 class="headline-font text-lg font-extrabold">审核决策</h3>
+                            <p class="mt-1 text-xs text-slate-500">通过可直接提交，驳回需要填写意见。</p>
+                        </div>
+                        <div class="review-scrollbar flex-1 space-y-4 overflow-y-auto px-5 py-5">
+                            <article class="rounded-xl bg-slate-50 p-4">
+                                <p class="text-sm font-bold">当前状态</p>
+                                <span class="mt-3 inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-bold shadow-sm" data-review-current-status>待审核</span>
+                            </article>
+                            <article class="space-y-4 rounded-xl bg-slate-50 p-4">
+                                <div>
+                                    <label class="mb-2 block text-sm font-bold" for="reject-template">意见模板</label>
+                                    <select class="w-full rounded-xl px-4 py-3 text-sm" id="reject-template"></select>
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-bold" for="review-note">审核意见</label>
+                                    <textarea class="min-h-[160px] w-full resize-none rounded-xl px-4 py-3 text-sm leading-6" id="review-note" placeholder="驳回时请填写原因"></textarea>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="border-t border-[rgba(120,133,150,0.16)] bg-slate-50 px-5 py-5">
+                            <div class="mb-3 grid grid-cols-2 gap-3">
+                                <button class="rounded-xl bg-white px-4 py-3 font-semibold shadow-sm hover:bg-slate-100" data-review-prev type="button">上一条</button>
+                                <button class="rounded-xl bg-white px-4 py-3 font-semibold shadow-sm hover:bg-slate-100" data-review-next type="button">下一条</button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button class="rounded-xl bg-[#b42318] px-4 py-3 font-bold text-white hover:opacity-95" data-review-reject type="button">驳回</button>
+                                <button class="rounded-xl bg-[#005d90] px-4 py-3 font-bold text-white hover:bg-[#004b74]" data-review-approve type="button">通过</button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+        </section>
+    </section>
 </main>
-<!-- Footer Component (Shared Anchor) -->
-<footer class="ml-64 bg-[#f8f9fa] dark:bg-slate-950 py-6 px-6 border-t border-slate-200 dark:border-slate-800">
-<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-<div class="flex items-center gap-4">
-<span class="font-['Manrope'] font-bold text-slate-900 dark:text-slate-100">CampusShare</span>
-<p class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500">漏 2026 CampusShare</p>
-</div>
-<div class="flex gap-6">
-<a class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-all opacity-80 hover:opacity-100" href="#">闅愮鏀跨瓥</a>
-<a class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-all opacity-80 hover:opacity-100" href="#">鏈嶅姟鏉℃</a>
-<a class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#005d90] transition-all opacity-80 hover:opacity-100" href="#">鎶€鏈敮鎸?/a>
-</div>
-</div>
+
+<footer class="ml-64 px-8 pb-8" data-admin-footer>
+    <div class="flex flex-col items-center justify-between gap-4 border-t border-[rgba(120,133,150,0.16)] pt-6 text-xs text-slate-500 md:flex-row">
+        <span class="headline-font font-extrabold text-slate-900">CampusShare</span>
+        <span>© 2026 CampusShare</span>
+        <div class="flex gap-5">
+            <a class="hover:text-[#005d90]" href="#">隐私政策</a>
+            <a class="hover:text-[#005d90]" href="#">服务条款</a>
+            <a class="hover:text-[#005d90]" href="#">技术支持</a>
+        </div>
+    </div>
 </footer>
 <script src="/pages/assets/js/campusshare-api.js?v=20260510-mojibake"></script>
-<script src="/pages/assets/js/admin-dashboard.js?v=20260425-avatar-shell"></script>
-<script src="/pages/assets/js/admin-content-review.js?v=20260422"></script>
-</body></html>
-
-
-
+<script src="/pages/assets/js/admin-dashboard.js?v=20260511-apple-admin"></script>
+<script src="/pages/assets/js/admin-content-review.js?v=20260511-apple-admin"></script>
+</body>
+</html>

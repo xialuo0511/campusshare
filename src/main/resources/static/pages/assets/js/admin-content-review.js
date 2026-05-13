@@ -908,9 +908,9 @@
     function BuildRecruitmentPreviewUrl(taskItem, detailItem) {
         const recruitmentId = SafeNumber((detailItem && detailItem.recruitmentId) || (taskItem && taskItem.taskId));
         if (recruitmentId <= 0) {
-            return "/pages/team_post_preview.html";
+            return "/pages/recruitment_board.html";
         }
-        return `/pages/team_post_preview.html?recruitmentId=${encodeURIComponent(String(recruitmentId))}`;
+        return `/pages/recruitment_board.html?focusRecruitmentId=${encodeURIComponent(String(recruitmentId))}`;
     }
 
     function BuildProductImageUrlList(taskItem, detailItem) {

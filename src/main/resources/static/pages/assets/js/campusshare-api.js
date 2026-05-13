@@ -134,8 +134,7 @@
         PROFILE: "/pages/user_profile.html",
         MY_PUBLISH: "/pages/my_publish.html",
         ADMIN: "/pages/admin_dashboard.html",
-        ADMIN_BATCH_REVIEW: "/pages/admin_batch_review.html",
-        ERROR_STATUS: "/pages/error_status.html"
+        ADMIN_BATCH_REVIEW: "/pages/admin_batch_review.html"
     };
     const USER_WORKSPACE_CHILD_PATH_SET = new Set([
         PAGE_PATH_MAP.LISTING,
@@ -151,8 +150,7 @@
     ].map(NormalizePagePath));
     const PUBLIC_PAGE_PATH_SET = new Set([
         PAGE_PATH_MAP.AUTH,
-        PAGE_PATH_MAP.OVERVIEW,
-        PAGE_PATH_MAP.ERROR_STATUS
+        PAGE_PATH_MAP.OVERVIEW
     ]);
 
     let notificationPanelElement = null;

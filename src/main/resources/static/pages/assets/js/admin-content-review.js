@@ -73,6 +73,16 @@
             pointBalance: { label: "积分余额", note: "账户积分信息" },
             registerTime: { label: "注册时间", note: "若接口未返回则显示为-" },
             lastLoginTime: { label: "最近登录", note: "最近一次登录时间" }
+        },
+        SELLER_VERIFICATION: {
+            applicationId: { label: "申请ID", note: "卖家认证申请唯一标识" },
+            userId: { label: "用户ID", note: "申请人账号唯一标识" },
+            realName: { label: "真实姓名", note: "申请人提交的认证姓名" },
+            contactPhone: { label: "联系电话", note: "管理员核验联系方式" },
+            qualificationDesc: { label: "资质说明", note: "申请人对卖家资质的说明" },
+            credentialFileIds: { label: "凭证文件", note: "申请人上传的凭证文件 ID" },
+            applicationStatus: { label: "申请状态", note: "当前卖家认证审核状态" },
+            createTime: { label: "申请时间", note: "提交卖家认证的时间" }
         }
     };
 
@@ -276,12 +286,13 @@
 
     async function ReloadTaskQueue(refs, state, messageBar) {
         try {
-            const [productResult, recruitmentResult, materialResult, pendingUserResult, pendingAvatarResult] = await Promise.all([
+            const [productResult, recruitmentResult, materialResult, pendingUserResult, pendingAvatarResult, pendingSellerResult] = await Promise.all([
                 window.CampusShareApi.ListPendingProductsByAdmin(1, 300),
                 window.CampusShareApi.ListPendingTeamRecruitmentsByAdmin(1, 300),
                 window.CampusShareApi.ListPendingMaterials(1, 300),
                 window.CampusShareApi.ListPendingUsers(),
-                window.CampusShareApi.ListPendingAvatarReviews ? window.CampusShareApi.ListPendingAvatarReviews() : []
+                window.CampusShareApi.ListPendingAvatarReviews ? window.CampusShareApi.ListPendingAvatarReviews() : [],
+                window.CampusShareApi.ListPendingSellerVerifications ? window.CampusShareApi.ListPendingSellerVerifications() : []
             ]);
 
             const pendingProductList = productResult && Array.isArray(productResult.productList) ? productResult.productList : [];
@@ -289,8 +300,9 @@
             const pendingMaterialList = materialResult && Array.isArray(materialResult.materialList) ? materialResult.materialList : [];
             const pendingUserList = Array.isArray(pendingUserResult) ? pendingUserResult : [];
             const pendingAvatarList = Array.isArray(pendingAvatarResult) ? pendingAvatarResult : [];
+            const pendingSellerList = Array.isArray(pendingSellerResult) ? pendingSellerResult : [];
 
-            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList, pendingMaterialList, pendingUserList, pendingAvatarList);
+            state.taskList = BuildTaskList(pendingProductList, pendingRecruitmentList, pendingMaterialList, pendingUserList, pendingAvatarList, pendingSellerList);
             if (!state.selectedTaskKey && state.taskList.length) {
                 state.selectedTaskKey = BuildTaskKey(state.taskList[0]);
             }
@@ -303,7 +315,7 @@
         }
     }
 
-    function BuildTaskList(productList, recruitmentList, materialList, userList, avatarList) {
+    function BuildTaskList(productList, recruitmentList, materialList, userList, avatarList, sellerVerificationList) {
         const productTaskList = (Array.isArray(productList) ? productList : []).map(function MapProduct(item) {
             const productId = SafeNumber(item.productId);
             return {
@@ -370,8 +382,22 @@
             };
         });
 
+        const sellerVerificationTaskList = (Array.isArray(sellerVerificationList) ? sellerVerificationList : []).map(function MapSellerVerification(item) {
+            const applicationId = SafeNumber(item.applicationId);
+            const userId = SafeNumber(item.userId);
+            return {
+                taskType: "SELLER_VERIFICATION",
+                taskId: applicationId,
+                title: `${item.realName || `用户 #${userId}`} 的卖家认证`,
+                ownerText: `用户ID ${userId}`,
+                metaText: `卖家认证 · ${item.contactPhone || "未填写电话"}`,
+                createTime: item.createTime,
+                rawItem: item
+            };
+        });
+
         return productTaskList
-            .concat(recruitmentTaskList, materialTaskList, userTaskList, avatarTaskList)
+            .concat(recruitmentTaskList, materialTaskList, userTaskList, avatarTaskList, sellerVerificationTaskList)
             .sort(function SortByTimeDesc(leftItem, rightItem) {
                 return ResolveTimeValue(rightItem.createTime) - ResolveTimeValue(leftItem.createTime);
             });
@@ -390,6 +416,9 @@
         }
         if (taskType === "MATERIAL") {
             return { typeText: "资料", iconName: "description", tagClass: "bg-amber-50 text-amber-700" };
+        }
+        if (taskType === "SELLER_VERIFICATION") {
+            return { typeText: "卖家", iconName: "verified_user", tagClass: "bg-sky-50 text-sky-700" };
         }
         if (taskType === "USER" || taskType === "USER_AVATAR") {
             return { typeText: "用户", iconName: "person_add", tagClass: "bg-cyan-50 text-cyan-700" };
@@ -436,7 +465,10 @@
             if (state.filterType === "PRODUCT" && taskItem.taskType !== "PRODUCT") return false;
             if (state.filterType === "TEAM_RECRUITMENT" && taskItem.taskType !== "TEAM_RECRUITMENT") return false;
             if (state.filterType === "MATERIAL" && taskItem.taskType !== "MATERIAL") return false;
-            if (state.filterType === "USER" && taskItem.taskType !== "USER" && taskItem.taskType !== "USER_AVATAR") return false;
+            if (state.filterType === "USER"
+                && taskItem.taskType !== "USER"
+                && taskItem.taskType !== "USER_AVATAR"
+                && taskItem.taskType !== "SELLER_VERIFICATION") return false;
             if (state.filterType === "HIGH_RISK" && !IsHighRiskTask(taskItem)) return false;
             if (state.filterType === "RECENT" && (Date.now() - ResolveTimeValue(taskItem.createTime)) > DAY_MS) return false;
 
@@ -487,7 +519,8 @@
             `商品 ${filteredTaskList.filter(item => item.taskType === "PRODUCT").length}`,
             `帖子 ${filteredTaskList.filter(item => item.taskType === "TEAM_RECRUITMENT").length}`,
             `资料 ${filteredTaskList.filter(item => item.taskType === "MATERIAL").length}`,
-            `用户 ${filteredTaskList.filter(item => item.taskType === "USER").length}`
+            `用户 ${filteredTaskList.filter(item => item.taskType === "USER" || item.taskType === "USER_AVATAR").length}`,
+            `卖家 ${filteredTaskList.filter(item => item.taskType === "SELLER_VERIFICATION").length}`
         ].join(" / ");
 
         refs.statCardList[0].querySelector("h2").textContent = String(totalCount);
@@ -592,6 +625,8 @@
             detailResult = await window.CampusShareApi.GetProductDetail(taskItem.taskId);
         } else if (taskItem.taskType === "MATERIAL") {
             detailResult = await window.CampusShareApi.GetMaterialDetail(taskItem.taskId);
+        } else if (taskItem.taskType === "SELLER_VERIFICATION") {
+            detailResult = taskItem.rawItem || {};
         } else if (taskItem.taskType === "USER" || taskItem.taskType === "USER_AVATAR") {
             detailResult = taskItem.rawItem || {};
         } else {
@@ -606,12 +641,16 @@
             ? "商品发布"
             : (taskItem.taskType === "MATERIAL"
                 ? "资料发布"
-                : (taskItem.taskType === "USER" ? "用户注册" : "组队帖子"));
+                : (taskItem.taskType === "SELLER_VERIFICATION"
+                    ? "卖家认证"
+                    : (taskItem.taskType === "USER" ? "用户注册" : "组队帖子")));
         const idText = taskItem.taskType === "PRODUCT"
             ? `商品ID: ${taskItem.taskId}`
             : (taskItem.taskType === "MATERIAL"
                 ? `资料ID: ${taskItem.taskId}`
-                : (taskItem.taskType === "USER" ? `用户ID: ${taskItem.taskId}` : `帖子ID: ${taskItem.taskId}`));
+                : (taskItem.taskType === "SELLER_VERIFICATION"
+                    ? `申请ID: ${taskItem.taskId}`
+                    : (taskItem.taskType === "USER" ? `用户ID: ${taskItem.taskId}` : `帖子ID: ${taskItem.taskId}`)));
         const createTimeText = FormatTime(
             (detailItem && (detailItem.createTime || detailItem.registerTime)) || taskItem.createTime
         );
@@ -641,6 +680,10 @@
         }
         if (taskItem.taskType === "USER_AVATAR") {
             bodyNode.innerHTML = BuildUserAvatarDetailHtml(taskItem, detailItem || {});
+            return;
+        }
+        if (taskItem.taskType === "SELLER_VERIFICATION") {
+            bodyNode.innerHTML = BuildSellerVerificationDetailHtml(taskItem, detailItem || {});
             return;
         }
         if (taskItem.taskType === "USER") {
@@ -793,6 +836,53 @@
             BuildFieldGridSection("核心字段（含中文说明）", summaryFieldMap, CORE_FIELD_META.USER),
             BuildTextSection("注册审核说明", `账号状态：${statusText}\n主联系方式：${contactText}`),
             BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || detailItem || {})
+        ].join("");
+    }
+
+    function BuildSellerVerificationDetailHtml(taskItem, detailItem) {
+        const credentialFileIdList = Array.isArray(detailItem.credentialFileIds)
+            ? detailItem.credentialFileIds.filter(Boolean)
+            : [];
+        const summaryFieldMap = {
+            applicationId: detailItem.applicationId,
+            userId: detailItem.userId,
+            realName: detailItem.realName,
+            contactPhone: detailItem.contactPhone,
+            qualificationDesc: detailItem.qualificationDesc,
+            credentialFileIds: credentialFileIdList.join(" / ") || "-",
+            applicationStatus: detailItem.applicationStatus,
+            createTime: FormatTime(detailItem.createTime)
+        };
+        return [
+            BuildFieldGridSection("卖家认证信息", summaryFieldMap, CORE_FIELD_META.SELLER_VERIFICATION),
+            BuildTextSection("资质说明", detailItem.qualificationDesc || "未填写"),
+            BuildCredentialFileSection(credentialFileIdList),
+            BuildObjectSection("完整字段（待审快照）", taskItem.rawItem || detailItem || {})
+        ].join("");
+    }
+
+    function BuildCredentialFileSection(fileIdList) {
+        if (!Array.isArray(fileIdList) || !fileIdList.length) {
+            return BuildTextSection("凭证文件", "未上传凭证文件");
+        }
+        const fileHtml = fileIdList.map(function BuildFileLink(fileId) {
+            const safeFileId = String(fileId || "").trim();
+            const fileUrl = BuildPublicFileUrl(safeFileId);
+            return [
+                "<a class=\"inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-primary ring-1 ring-outline/20 hover:ring-primary/50\" target=\"_blank\" rel=\"noopener noreferrer\"",
+                ` href="${EscapeHtml(fileUrl)}">`,
+                "<span class=\"material-symbols-outlined !text-base\">attach_file</span>",
+                EscapeHtml(safeFileId),
+                "</a>"
+            ].join("");
+        }).join("");
+        return [
+            "<article class=\"rounded-xl bg-surface-container-low p-5 ring-1 ring-outline/20\">",
+            "<h3 class=\"text-sm font-bold mb-3\">凭证文件</h3>",
+            "<div class=\"flex flex-wrap gap-3\">",
+            fileHtml,
+            "</div>",
+            "</article>"
         ].join("");
     }
 
@@ -1274,6 +1364,12 @@
                     selectedTask.taskId,
                     approved,
                     reviewRemark || (approved ? "头像审核通过" : "头像审核驳回")
+                );
+            } else if (selectedTask.taskType === "SELLER_VERIFICATION") {
+                await window.CampusShareApi.ReviewSellerVerification(
+                    selectedTask.taskId,
+                    approved,
+                    reviewRemark || (approved ? "卖家认证审核通过" : "卖家认证审核驳回")
                 );
             } else if (selectedTask.taskType === "USER") {
                 await window.CampusShareApi.ReviewUser(

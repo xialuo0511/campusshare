@@ -191,6 +191,18 @@
         document.head.appendChild(styleElement);
     }
 
+    function EscapeHtml(text) {
+        return String(text == null ? "" : text).replace(/[&<>"']/g, function ReplaceHtml(charValue) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "\"": "&quot;",
+                "'": "&#39;"
+            }[charValue];
+        });
+    }
+
     function BuildLoadingState(options) {
         EnsureAppleLoadingStyle();
         const safeOptions = options || {};

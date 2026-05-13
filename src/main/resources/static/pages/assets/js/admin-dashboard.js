@@ -56,6 +56,7 @@
             statsSection,
             workbenchSection,
             contentReviewSection,
+            globalSearchWrap,
             governanceWorkspace,
             orderManagementWorkspace
         };
@@ -375,6 +376,7 @@
         const statsSection = context && context.statsSection ? context.statsSection : null;
         const workbenchSection = context && context.workbenchSection ? context.workbenchSection : null;
         const contentReviewSection = context && context.contentReviewSection ? context.contentReviewSection : null;
+        const globalSearchWrap = context && context.globalSearchWrap ? context.globalSearchWrap : null;
         const governanceSection = context && context.governanceWorkspace ? context.governanceWorkspace.wrapper : null;
         const orderManagementSection = context && context.orderManagementWorkspace
             ? context.orderManagementWorkspace.wrapper

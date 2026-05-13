@@ -49,6 +49,7 @@
         const statsSection = document.querySelector("[data-admin-section='stats']");
         const workbenchSection = document.querySelector("[data-admin-section='workbench']");
         const contentReviewSection = document.querySelector("[data-admin-section='content-review']");
+        const globalSearchWrap = document.querySelector("[data-admin-global-search-wrap]");
         const adminNavItemList = Array.from(document.querySelectorAll("aside [data-admin-nav]"));
         const adminSubviewContext = {
             pageHeader,
@@ -443,6 +444,9 @@
         }
         if (contentReviewSection) {
             contentReviewSection.classList.toggle("hidden", !viewMeta.showContentReview);
+        }
+        if (globalSearchWrap) {
+            globalSearchWrap.classList.toggle("hidden", !!viewMeta.showContentReview);
         }
         if (governanceSection) {
             governanceSection.classList.toggle("hidden", !viewMeta.showGovernance);

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 管理端内容审核页逻辑
  * - 商品审核
  * - 组队帖子审核
@@ -16,7 +16,7 @@
     const RISK_KEYWORD_LIST = ["代装", "预装", "私聊", "vx", "微信", "导流"];
     const DAY_MS = 24 * 60 * 60 * 1000;
     const IMAGE_FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp"];
-    const EMPTY_DETAIL_TEXT = "<article class=\"rounded-xl bg-surface-container-low p-5 text-sm text-slate-600\">当前没有可展示的审核详情。</article>";
+    const EMPTY_DETAIL_TEXT = "<div class=\"flex flex-col items-center justify-center py-10 text-center\"><span class=\"material-symbols-outlined text-slate-200\" style=\"font-size:48px;width:48px;min-width:48px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 48\">fact_check</span><p class=\"mt-3 text-[13px] text-slate-400\">当前没有可展示的审核详情</p></div>";
 
     const CORE_FIELD_META = {
         PRODUCT: {
@@ -142,7 +142,7 @@
 
     function CollectPageRefs(pageMain) {
         return {
-            statCardList: Array.from(pageMain.querySelectorAll("[data-review-stat-grid] article")),
+            statCardList: Array.from(pageMain.querySelectorAll("[data-review-stat-grid] .stat-compact")),
             filterButtonList: Array.from(pageMain.querySelectorAll("[data-review-filter-group] button")),
             queueSearchInput: pageMain.querySelector("[data-review-queue-search]"),
             globalSearchInput: pageMain.querySelector("[data-review-global-search]"),
@@ -495,11 +495,11 @@
         refs.filterButtonList.forEach(function RenderButton(buttonNode, index) {
             const buttonFilter = FILTER_VALUE_LIST[index] || "ALL";
             const isActive = buttonFilter === state.filterType;
-            buttonNode.classList.toggle("bg-primary", isActive);
+            buttonNode.classList.toggle("bg-[#005d90]", isActive);
             buttonNode.classList.toggle("text-white", isActive);
             buttonNode.classList.toggle("font-bold", isActive);
-            buttonNode.classList.toggle("bg-surface-container-low", !isActive);
-            buttonNode.classList.toggle("text-slate-600", !isActive);
+            buttonNode.classList.toggle("bg-slate-100", !isActive);
+            buttonNode.classList.toggle("text-slate-500", !isActive);
             buttonNode.classList.toggle("font-semibold", !isActive);
         });
     }
@@ -523,17 +523,17 @@
             `卖家 ${filteredTaskList.filter(item => item.taskType === "SELLER_VERIFICATION").length}`
         ].join(" / ");
 
-        refs.statCardList[0].querySelector("h2").textContent = String(totalCount);
-        refs.statCardList[0].querySelector("p:last-child").textContent = `筛选：${ResolveFilterTypeText(state.filterType)}`;
+        refs.statCardList[0].querySelector(".stat-value").textContent = String(totalCount);
+        refs.statCardList[0].querySelector(".stat-label").textContent = "待审核总量";
 
-        refs.statCardList[1].querySelector("h2").textContent = String(state.processedCount);
-        refs.statCardList[1].querySelector("p:last-child").textContent = "当前会话";
+        refs.statCardList[1].querySelector(".stat-value").textContent = String(state.processedCount);
+        refs.statCardList[1].querySelector(".stat-label").textContent = "本次已处理";
 
-        refs.statCardList[2].querySelector("h2").textContent = `${waitingHour.toFixed(1)}h`;
-        refs.statCardList[2].querySelector("p:last-child").textContent = "队列平均等待";
+        refs.statCardList[2].querySelector(".stat-value").textContent = `${waitingHour.toFixed(1)}h`;
+        refs.statCardList[2].querySelector(".stat-label").textContent = "队列平均等待";
 
-        refs.statCardList[3].querySelector("h2").textContent = String(totalCount);
-        refs.statCardList[3].querySelector("p:last-child").textContent = queueText;
+        refs.statCardList[3].querySelector(".stat-value").textContent = String(totalCount);
+        refs.statCardList[3].querySelector(".stat-label").textContent = queueText;
     }
 
     function ResolveFilterTypeText(filterType) {
@@ -551,7 +551,7 @@
             return;
         }
         if (!filteredTaskList.length) {
-            refs.queueListNode.innerHTML = "<div class=\"p-4 rounded-xl bg-surface-container-low text-sm text-slate-500\">当前筛选条件下暂无待审核任务。</div>";
+            refs.queueListNode.innerHTML = "<div class=\"flex flex-col items-center justify-center rounded-xl bg-slate-50/70 px-4 py-8 text-center text-[13px] text-slate-400\"><span class=\"material-symbols-outlined mb-2 text-slate-300\">inbox</span>当前筛选条件下暂无待审核任务</div>";
             return;
         }
         refs.queueListNode.innerHTML = filteredTaskList.map(function BuildTaskCard(taskItem, index) {
@@ -562,17 +562,17 @@
             const iconName = taskTypeVisual.iconName;
             const typeTagClass = taskTypeVisual.tagClass;
             return [
-                `<article data-task-key="${EscapeHtml(taskKey)}" class="rounded-xl p-4 cursor-pointer transition-all ring-1 ${isSelected ? "bg-white ring-primary shadow-sm" : "bg-surface-container-low ring-outline/20 hover:ring-primary/40"}">`,
+                `<article data-task-key="${EscapeHtml(taskKey)}" class="queue-item ${isSelected ? "is-active" : ""}">`,
                 "<div class=\"flex items-start justify-between gap-2\">",
                 "<div class=\"min-w-0\">",
-                `<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${typeTagClass}"><span class="material-symbols-outlined !text-[13px]">${iconName}</span>${typeText}</div>`,
-                `<h4 class="text-sm font-bold text-slate-800 mt-2 line-clamp-2">${EscapeHtml(taskItem.title || "-")}</h4>`,
-                `<p class="text-xs text-slate-500 mt-1 line-clamp-1">${EscapeHtml(taskItem.ownerText || "-")}</p>`,
-                `<p class="text-xs text-slate-500 mt-1 line-clamp-1">${EscapeHtml(taskItem.metaText || "-")}</p>`,
+                `<div class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${typeTagClass}"><span class="material-symbols-outlined !text-[13px]">${iconName}</span>${typeText}</div>`,
+                `<h4 class="mt-2 line-clamp-2 text-[13px] font-bold leading-5 text-slate-800">${EscapeHtml(taskItem.title || "-")}</h4>`,
+                `<p class="mt-1 line-clamp-1 text-[11px] text-slate-500">${EscapeHtml(taskItem.ownerText || "-")}</p>`,
+                `<p class="mt-1 line-clamp-1 text-[11px] text-slate-400">${EscapeHtml(taskItem.metaText || "-")}</p>`,
                 "</div>",
                 `<span class="text-[11px] text-slate-400">${EscapeHtml(String(index + 1))}</span>`,
                 "</div>",
-                `<p class="text-[11px] text-slate-400 mt-2">${EscapeHtml(FormatTime(taskItem.createTime))}</p>`,
+                `<p class="mt-2 text-[11px] text-slate-400">${EscapeHtml(FormatTime(taskItem.createTime))}</p>`,
                 "</article>"
             ].join("");
         }).join("");
@@ -591,13 +591,13 @@
     async function RenderTaskDetail(refs, state) {
         const selectedTask = GetSelectedTask(state, state.filteredTaskList);
         if (!selectedTask) {
-            refs.detailHeaderNode.innerHTML = "<h2 class=\"text-xl font-bold\">暂无任务</h2><p class=\"text-sm text-slate-500 mt-2\">请调整筛选条件后重试。</p>";
+            refs.detailHeaderNode.innerHTML = "<h3 class=\"headline-font\">暂无任务</h3><p class=\"mt-1 text-[12px] text-slate-400\">请调整筛选条件后重试。</p>";
             refs.detailBodyNode.innerHTML = EMPTY_DETAIL_TEXT;
             return;
         }
 
         const currentRenderToken = ++state.detailRenderToken;
-        refs.detailBodyNode.innerHTML = "<article class=\"rounded-xl bg-surface-container-low p-5 text-sm text-slate-600\">正在加载详情...</article>";
+        refs.detailBodyNode.innerHTML = "<div class=\"flex flex-col gap-2 p-4\"><div class=\"skeleton-pulse h-6 w-3/4\"></div><div class=\"skeleton-pulse h-40 w-full\"></div><div class=\"skeleton-pulse h-6 w-1/2\"></div></div>";
 
         try {
             const detailResult = await LoadTaskDetail(state, selectedTask);
@@ -611,7 +611,7 @@
                 return;
             }
             PatchDetailHeader(refs.detailHeaderNode, selectedTask, null);
-            refs.detailBodyNode.innerHTML = `<article class="rounded-xl bg-red-50 text-red-700 p-5 text-sm">加载详情失败：${EscapeHtml(error instanceof Error ? error.message : "未知错误")}</article>`;
+            refs.detailBodyNode.innerHTML = `<div class="rounded-lg bg-red-50 p-4 text-[13px] text-red-600">加载详情失败：${EscapeHtml(error instanceof Error ? error.message : "未知错误")}</div>`;
         }
     }
 
@@ -662,7 +662,7 @@
             `<p class="text-sm text-slate-500 mt-1">${EscapeHtml(idText)} · 发布者：${EscapeHtml(taskItem.ownerText || "-")}</p>`,
             "</div>",
             "<div class=\"text-right\">",
-            "<p class=\"text-xs uppercase tracking-widest text-slate-500 font-semibold\">提交时间</p>",
+            '<p class="text-[11px] font-semibold text-slate-400">提交时间</p>',
             `<p class="text-sm font-semibold mt-1">${EscapeHtml(createTimeText)}</p>`,
             "</div>",
             "</div>"
@@ -956,7 +956,7 @@
             "<article class=\"rounded-xl bg-surface-container-low p-5 ring-1 ring-outline/20\">",
             "<div class=\"flex items-center justify-between gap-3 mb-3\">",
             `<h3 class="text-sm font-bold">${EscapeHtml(title)}</h3>`,
-            `<a href="${EscapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:opacity-95 transition-opacity"><span class="material-symbols-outlined !text-sm">open_in_new</span>新窗口打开</a>`,
+            `<a href="${EscapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-[#004b74] active:scale-[0.98] transition-all"><span class="material-symbols-outlined !text-sm">open_in_new</span>新窗口打开</a>`,
             "</div>",
             `<p class="text-xs text-slate-500 mb-3">${EscapeHtml(descriptionText || "")}</p>`,
             `<div class="rounded-xl overflow-hidden ring-1 ring-outline/20 bg-white"><iframe src="${EscapeHtml(safeUrl)}" loading="lazy" class="w-full h-[520px] bg-white"></iframe></div>`,
@@ -1207,7 +1207,7 @@
                 "</div>",
                 "<div class=\"px-5 py-4 border-t border-outline/20 bg-surface-container-low flex items-center justify-end gap-3\">",
                 "<button type=\"button\" data-review-confirm-cancel class=\"px-4 py-2 rounded-lg bg-white ring-1 ring-outline/30 text-sm font-semibold text-slate-700 hover:bg-surface\">取消</button>",
-                "<button type=\"button\" data-review-confirm-submit class=\"px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:opacity-95 transition-opacity\">确认</button>",
+                "<button type=\"button\" data-review-confirm-submit class=\"px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-[#004b74] active:scale-[0.98] transition-all\">确认</button>",
                 "</div>",
                 "</div>"
             ].join("");

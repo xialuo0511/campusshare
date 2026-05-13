@@ -134,7 +134,7 @@
                 `<span class="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold text-[#005d90] ring-1 ring-[rgba(0,93,144,0.10)]">${unreadCount} 未读</span>`,
                 "</div>",
                 records.slice(0, 3).map(BuildNoticePreviewHtml).join(""),
-                "<a class=\"mt-2 block w-full rounded-full bg-white/80 px-3 py-2 text-center text-[12px] font-bold text-[#005d90] ring-1 ring-[rgba(0,93,144,0.10)] transition hover:bg-white\" href=\"/pages/notification_center.html\">查看全部消息</a>"
+                "<a class=\"mt-2 block w-full rounded-full bg-white/80 px-3 py-2 text-center text-[12px] font-bold text-[#005d90] ring-1 ring-[rgba(0,93,144,0.10)] transition hover:bg-white\" href=\"/pages/user_workspace.html?target=%2Fpages%2Fnotification_center.html\">查看全部消息</a>"
             ].join("");
         } catch (error) {
             RenderNoticeState(view.noticeListNode, "消息加载失败", "error");

@@ -171,6 +171,65 @@
         return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
     }
 
+    function EnsureAppleLoadingStyle() {
+        if (document.getElementById("campusshare-loading-state-style")) {
+            return;
+        }
+        const styleElement = document.createElement("style");
+        styleElement.id = "campusshare-loading-state-style";
+        styleElement.textContent = [
+            ".campusshare-loading-state{position:relative;overflow:hidden;border:1px solid rgba(120,133,150,.16);background:rgba(255,255,255,.82);backdrop-filter:blur(20px);box-shadow:0 22px 70px rgba(15,23,42,.07);}",
+            ".campusshare-loading-state::before{content:\"\";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.68) 42%,transparent 72%);transform:translateX(-100%);animation:campusshare-loading-sweep 1.8s cubic-bezier(.2,0,0,1) infinite;}",
+            ".campusshare-loading-pulse{animation:campusshare-loading-pulse 1.55s ease-in-out infinite;}",
+            ".campusshare-loading-dot{width:.5rem;height:.5rem;border-radius:999px;background:#005d90;animation:campusshare-loading-dot 1.15s ease-in-out infinite;}",
+            ".campusshare-loading-dot:nth-child(2){animation-delay:.14s}.campusshare-loading-dot:nth-child(3){animation-delay:.28s}",
+            "@keyframes campusshare-loading-sweep{to{transform:translateX(100%)}}",
+            "@keyframes campusshare-loading-pulse{0%,100%{opacity:.48}50%{opacity:1}}",
+            "@keyframes campusshare-loading-dot{0%,100%{transform:translateY(0);opacity:.34}50%{transform:translateY(-.28rem);opacity:1}}",
+            "@media (prefers-reduced-motion:reduce){.campusshare-loading-state::before,.campusshare-loading-pulse,.campusshare-loading-dot{animation:none!important}}"
+        ].join("");
+        document.head.appendChild(styleElement);
+    }
+
+    function BuildLoadingState(options) {
+        EnsureAppleLoadingStyle();
+        const safeOptions = options || {};
+        const titleText = safeOptions.title || "正在加载";
+        const subtitleText = safeOptions.subtitle || "正在同步校园数据，请稍候";
+        const requestedCardCount = Number(safeOptions.cardCount || 3);
+        const cardCount = Number.isFinite(requestedCardCount) ? Math.max(1, requestedCardCount) : 3;
+        const compact = !!safeOptions.compact;
+        const cardListHtml = Array.from({ length: cardCount }).map(function BuildCard(_, index) {
+            const widthClass = index % 3 === 0 ? "w-2/3" : (index % 3 === 1 ? "w-1/2" : "w-3/4");
+            return [
+                "<div class=\"rounded-2xl bg-white/72 p-4 ring-1 ring-[rgba(120,133,150,0.12)]\">",
+                `<div class=\"campusshare-loading-pulse h-3 ${widthClass} rounded-full bg-slate-200/90\"></div>`,
+                "<div class=\"mt-3 space-y-2\">",
+                "<div class=\"campusshare-loading-pulse h-2 rounded-full bg-slate-100\"></div>",
+                "<div class=\"campusshare-loading-pulse h-2 w-5/6 rounded-full bg-slate-100\"></div>",
+                "</div>",
+                "</div>"
+            ].join("");
+        }).join("");
+        return [
+            `<div class="campusshare-loading-state rounded-[1.5rem] ${compact ? "p-6" : "p-8"} text-slate-600">`,
+            "<div class=\"relative z-10 flex flex-col gap-5\">",
+            "<div class=\"flex items-center justify-between gap-4\">",
+            "<div>",
+            `<p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#005d90]">CampusShare</p>`,
+            `<h3 class="mt-1 text-lg font-extrabold text-slate-950">${EscapeHtml(titleText)}</h3>`,
+            `<p class="mt-1 text-sm text-slate-500">${EscapeHtml(subtitleText)}</p>`,
+            "</div>",
+            "<div class=\"flex items-center gap-1.5\"><span class=\"campusshare-loading-dot\"></span><span class=\"campusshare-loading-dot\"></span><span class=\"campusshare-loading-dot\"></span></div>",
+            "</div>",
+            `<div class="grid grid-cols-1 gap-3 ${cardCount >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"}">`,
+            cardListHtml,
+            "</div>",
+            "</div>",
+            "</div>"
+        ].join("");
+    }
+
     /**
      * 璇诲彇浠ょ墝
      */
@@ -2095,6 +2154,7 @@
         RenderUserAvatar,
         ResolveUserInitial,
         ClearCurrentUserProfile,
+        BuildLoadingState,
         SetSessionFromLogin,
         ClearSession,
         ConsumeAuthNotice,

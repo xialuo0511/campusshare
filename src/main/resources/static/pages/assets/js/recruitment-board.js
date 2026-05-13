@@ -99,6 +99,7 @@
      */
     async function LoadRecruitments(state, recruitmentGrid, currentUserId, currentUserRole, messageBar) {
         try {
+            RenderRecruitmentLoading(recruitmentGrid);
             const listResult = await window.CampusShareApi.ListTeamRecruitments({
                 pageNo: state.pageNo,
                 pageSize: state.pageSize,
@@ -112,6 +113,7 @@
             RenderRecruitmentCards(recruitmentGrid, recruitmentList, currentUserId, currentUserRole, state.focusRecruitmentId);
             HideMessage(messageBar);
         } catch (error) {
+            recruitmentGrid.innerHTML = BuildRecruitmentEmptyState("加载失败", "招募信息暂时无法同步，请稍后重试。", "refresh");
             ShowError(messageBar, error instanceof Error ? error.message : "招募列表加载失败");
         }
     }
@@ -121,7 +123,7 @@
      */
     function RenderRecruitmentCards(recruitmentGrid, recruitmentList, currentUserId, currentUserRole, focusRecruitmentId) {
         if (recruitmentList.length === 0) {
-            recruitmentGrid.innerHTML = "<div class=\"col-span-1 md:col-span-2 lg:col-span-3 bg-surface-container-lowest rounded-xl p-10 text-center text-slate-500\">暂无招募信息</div>";
+            recruitmentGrid.innerHTML = BuildRecruitmentEmptyState("暂无招募信息", "当前筛选条件下还没有组队招募。", "groups");
             return;
         }
         recruitmentGrid.innerHTML = recruitmentList.map(function BuildCard(item) {
@@ -166,6 +168,35 @@
         if (focusRecruitmentId !== null) {
             HighlightFocusedRecruitmentCard(recruitmentGrid, focusRecruitmentId);
         }
+    }
+
+    function RenderRecruitmentLoading(recruitmentGrid) {
+        if (!recruitmentGrid) {
+            return;
+        }
+        if (window.CampusShareApi && typeof window.CampusShareApi.BuildLoadingState === "function") {
+            recruitmentGrid.innerHTML = [
+                "<div class=\"col-span-1 md:col-span-2 lg:col-span-3\">",
+                window.CampusShareApi.BuildLoadingState({
+                    title: "正在加载组队招募",
+                    subtitle: "正在同步最新招募、成员名额与申请状态",
+                    cardCount: 3
+                }),
+                "</div>"
+            ].join("");
+            return;
+        }
+        recruitmentGrid.innerHTML = "<div class=\"col-span-1 md:col-span-2 lg:col-span-3 rounded-xl bg-white p-10 text-center text-sm text-slate-500\">正在加载组队招募</div>";
+    }
+
+    function BuildRecruitmentEmptyState(title, subtitle, icon) {
+        return [
+            "<div class=\"col-span-1 md:col-span-2 lg:col-span-3 rounded-[1.5rem] bg-white/84 p-10 text-center shadow-[0_18px_60px_rgba(15,23,42,0.06)] ring-1 ring-white/70 backdrop-blur-xl\">",
+            `<div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef6fb] text-[#005d90]"><span class="material-symbols-outlined">${EscapeHtml(icon || "inbox")}</span></div>`,
+            `<h3 class="mt-4 text-base font-extrabold text-slate-950">${EscapeHtml(title)}</h3>`,
+            `<p class="mt-1 text-sm text-slate-500">${EscapeHtml(subtitle)}</p>`,
+            "</div>"
+        ].join("");
     }
 
     function ResolveFocusRecruitmentId() {

@@ -270,7 +270,7 @@
             return;
         }
         HideMessage(materialMessageBar);
-        materialSubviewList.innerHTML = "<div class=\"col-span-full text-sm text-slate-400 py-8 text-center\">加载中...</div>";
+        RenderListLoading(materialSubviewList, "正在加载学术资源", "正在同步课程资料、积分与下载状态", 3);
         try {
             const result = await window.CampusShareApi.ListPublishedMaterials({ pageNo: 1, pageSize: 9 });
             const materialList = result && Array.isArray(result.materialList) ? result.materialList : [];
@@ -519,7 +519,7 @@
         if (!forumSubviewList) {
             return;
         }
-        forumSubviewList.innerHTML = "<div class=\"text-sm text-slate-400 py-8 text-center\">加载中...</div>";
+        RenderListLoading(forumSubviewList, "正在加载校园论坛", "正在同步组队招募和协作项目", 2);
         try {
             const result = await window.CampusShareApi.ListTeamRecruitments({ pageNo: 1, pageSize: 8 });
             const recruitmentList = result && Array.isArray(result.recruitmentList) ? result.recruitmentList : [];
@@ -545,11 +545,32 @@
         }
     }
 
+    function RenderListLoading(container, title, subtitle, cardCount) {
+        if (!container) {
+            return;
+        }
+        const wrapperClass = container.hasAttribute("data-market-material-list") ? "col-span-full" : "";
+        if (window.CampusShareApi && typeof window.CampusShareApi.BuildLoadingState === "function") {
+            container.innerHTML = [
+                `<div class="${wrapperClass}">`,
+                window.CampusShareApi.BuildLoadingState({
+                    title,
+                    subtitle,
+                    cardCount: cardCount || 3
+                }),
+                "</div>"
+            ].join("");
+            return;
+        }
+        container.innerHTML = `<div class="${wrapperClass} py-8 text-center text-sm text-slate-400">${EscapeHtml(title || "正在加载")}</div>`;
+    }
+
     /**
      * 鍔犺浇鍟嗗搧鍒楄〃
      */
     async function LoadProductList(state, productGrid, summaryText, pageText, messageBar) {
         try {
+            RenderListLoading(productGrid, "正在加载交易市场", "正在同步商品、筛选条件与分页状态", 3);
             const listResult = await window.CampusShareApi.ListProducts({
                 pageNo: state.pageNo,
                 pageSize: state.pageSize,

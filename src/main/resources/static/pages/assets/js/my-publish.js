@@ -133,6 +133,7 @@
      */
     async function LoadMyPublishList(state, listContainer, paginationContainer, messageBar) {
         try {
+            RenderPageLoading(listContainer, "正在加载发布内容", "正在读取你的商品与资料发布记录", 3);
             if (state.tabType === TAB_TYPE_PRODUCT) {
                 const query = {
                     pageNo: state.pageNo,
@@ -190,6 +191,16 @@
             return;
         }
         try {
+            statsCardList.forEach(function RenderStatLoading(cardElement) {
+                const valueNode = cardElement.querySelector("p.text-3xl");
+                const noteNode = cardElement.querySelector("p.text-xs");
+                if (valueNode) {
+                    valueNode.textContent = "…";
+                }
+                if (noteNode) {
+                    noteNode.textContent = "正在同步";
+                }
+            });
             const resultList = await Promise.all([
                 window.CampusShareApi.ListMyProducts({ pageNo: 1, pageSize: 1, productStatus: "PUBLISHED" }),
                 window.CampusShareApi.ListMyProducts({ pageNo: 1, pageSize: 1, productStatus: "OFFLINE" }),
@@ -250,7 +261,7 @@
      */
     function RenderProductList(productList, listContainer) {
         if (!Array.isArray(productList) || productList.length === 0) {
-            listContainer.innerHTML = "<div class=\"bg-surface-container-lowest rounded-xl p-10 text-center text-slate-500\">暂无商品发布，去发布页创建第一条吧</div>";
+            listContainer.innerHTML = BuildEmptyState("暂无商品发布", "通过发布入口创建第一条校园交易商品。", "add", "去发布", "go-publish");
             return;
         }
 
@@ -291,7 +302,7 @@
      */
     function RenderMaterialList(materialList, listContainer) {
         if (!Array.isArray(materialList) || materialList.length === 0) {
-            listContainer.innerHTML = "<div class=\"bg-surface-container-lowest rounded-xl p-10 text-center text-slate-500\">暂无资料发布，去发布页上传第一份资料吧</div>";
+            listContainer.innerHTML = BuildEmptyState("暂无资料发布", "上传课程资料后会在这里统一管理。", "upload_file", "上传资料", "go-publish");
             return;
         }
 
@@ -324,6 +335,32 @@
                 "</div>"
             ].join("");
         }).join("");
+    }
+
+    function RenderPageLoading(container, title, subtitle, cardCount) {
+        if (!container) {
+            return;
+        }
+        if (window.CampusShareApi && typeof window.CampusShareApi.BuildLoadingState === "function") {
+            container.innerHTML = window.CampusShareApi.BuildLoadingState({
+                title,
+                subtitle,
+                cardCount: cardCount || 3
+            });
+            return;
+        }
+        container.innerHTML = `<div class="rounded-xl bg-white p-10 text-center text-sm text-slate-500">${EscapeHtml(title || "正在加载")}</div>`;
+    }
+
+    function BuildEmptyState(title, subtitle, icon, actionText, action) {
+        return [
+            "<div class=\"rounded-[1.5rem] bg-white/84 p-10 text-center shadow-[0_18px_60px_rgba(15,23,42,0.06)] ring-1 ring-white/70 backdrop-blur-xl\">",
+            `<div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef6fb] text-[#005d90]"><span class="material-symbols-outlined">${EscapeHtml(icon || "inbox")}</span></div>`,
+            `<h3 class="mt-4 text-base font-extrabold text-slate-950">${EscapeHtml(title)}</h3>`,
+            `<p class="mt-1 text-sm text-slate-500">${EscapeHtml(subtitle)}</p>`,
+            action ? `<button data-action="${EscapeHtml(action)}" class="mt-5 rounded-full bg-[#005d90] px-5 py-2 text-sm font-bold text-white hover:bg-[#004b74]">${EscapeHtml(actionText || "去处理")}</button>` : "",
+            "</div>"
+        ].join("");
     }
 
     async function TriggerMaterialFileDownload(downloadResult, materialId) {

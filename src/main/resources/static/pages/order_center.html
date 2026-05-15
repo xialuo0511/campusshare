@@ -7,64 +7,184 @@
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
 <script id="tailwind-config">
-tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#005d90","primary-container":"#0077b6","on-primary":"#fff",surface:"#f5f5f7","surface-container-low":"#f5f5f7","surface-container":"#edf1f5","surface-container-lowest":"#fff",outline:"#6b7582","outline-variant":"#c8d0da","on-surface":"#172033","on-surface-variant":"#566273",secondary:"#006878",tertiary:"#3454d1",error:"#b42318"},borderRadius:{DEFAULT:"8px",lg:"10px",xl:"16px",full:"999px"},fontFamily:{headline:["Manrope","Noto Sans SC","Microsoft YaHei","sans-serif"],body:["Inter","Noto Sans SC","Microsoft YaHei","sans-serif"]}}}};
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                primary: "#005d90",
+                "primary-soft": "#eef6fb",
+                surface: "#f5f5f7",
+                card: "#ffffff",
+                line: "rgba(120,133,150,0.16)",
+                muted: "#64748b",
+                ink: "#172033",
+                tertiary: "#3454d1",
+                error: "#b42318",
+                success: "#0a8a4f"
+            },
+            borderRadius: { DEFAULT: "8px", md: "10px", lg: "12px", xl: "16px", full: "999px" },
+            fontFamily: {
+                headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
+            }
+        }
+    }
+};
 </script>
 <style>
-body{margin:0;min-height:100vh;font-family:"Inter","Noto Sans SC","Microsoft YaHei",sans-serif;background:#f5f5f7;color:#172033;text-wrap:pretty}h1,h2,h3{font-family:"Manrope","Noto Sans SC","Microsoft YaHei",sans-serif}.material-symbols-outlined{line-height:1;font-variation-settings:"FILL" 0,"wght" 430,"GRAD" 0,"opsz" 24}.glass{border:1px solid rgba(120,133,150,.18);background:rgba(255,255,255,.88);box-shadow:0 20px 52px rgba(15,23,42,.08);backdrop-filter:blur(18px)}[data-user-topbar],[data-user-sidebar],footer{display:none}body:not(.campusshare-embedded-page) [data-user-main]{margin-left:16rem}.campusshare-embedded-page [data-user-main]{margin-left:0!important;padding:1.5rem!important;max-width:none!important}.campusshare-embedded-page .max-w-6xl{max-width:none!important}
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--cs-font-body);
+        background: var(--cs-surface);
+        color: var(--cs-ink);
+        text-wrap: pretty;
+    }
+    h1, h2, h3 { font-family: var(--cs-font-headline); letter-spacing: 0; }
+    .material-symbols-outlined {
+        line-height: 1;
+        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
+    }
+
+    .glass {
+        border: 1px solid var(--cs-line);
+        background: rgba(255,255,255,0.88);
+        box-shadow: var(--cs-shadow-sm);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+
+    /* Embedded mode */
+    [data-user-topbar], [data-user-sidebar], footer { display: none; }
+    body:not(.campusshare-embedded-page) [data-user-main] { margin-left: 16.75rem; }
+    .campusshare-embedded-page [data-user-main] {
+        margin-left: 0 !important;
+        padding: 1.5rem !important;
+        max-width: none !important;
+    }
+    .campusshare-embedded-page .max-w-6xl { max-width: none !important; }
+
+    /* Filter chip tabs */
+    .order-filter-btn {
+        padding: 6px 14px;
+        border-radius: var(--cs-radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        background: transparent;
+        color: var(--cs-muted);
+        border: none;
+        cursor: pointer;
+        transition: background-color 180ms var(--cs-ease), color 180ms var(--cs-ease);
+    }
+    .order-filter-btn.is-active {
+        background: var(--cs-primary-soft);
+        color: var(--cs-primary);
+    }
+    .order-filter-btn:hover:not(.is-active) {
+        background: rgba(120,133,150,0.06);
+        color: var(--cs-ink);
+    }
 </style>
 </head>
-<body class="text-on-surface">
+<body>
 <header data-user-topbar></header>
 <div class="flex min-h-screen" data-user-shell>
 <aside data-user-sidebar></aside>
-<main class="flex-1 bg-surface-container-low p-8" data-user-main>
+<main class="flex-1 p-8" data-user-main>
 <div class="mx-auto max-w-6xl">
-    <header class="mb-8">
-        <h1 class="text-3xl font-extrabold text-slate-950">订单中心</h1>
-        <p class="mt-1 text-sm text-slate-500">管理你的校园交易订单和状态流转。</p>
-    </header>
-    <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-        <div class="glass rounded-2xl p-6"><p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">总订单</p><p class="text-3xl font-extrabold text-primary" data-role="order-summary-total">0</p><div class="mt-2 text-xs text-slate-500">全部订单数量</div></div>
-        <div class="glass rounded-2xl p-6"><p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">进行中交易</p><p class="text-3xl font-extrabold text-secondary" data-role="order-summary-ongoing">0</p><div class="mt-2 text-xs text-slate-500">需要继续处理</div></div>
-        <div class="glass rounded-2xl p-6"><p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">已完成</p><p class="text-3xl font-extrabold text-tertiary" data-role="order-summary-completed">0</p><div class="mt-2 text-xs text-slate-500">成功交付订单</div></div>
-        <div class="glass rounded-2xl p-6"><p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">处理时间</p><p class="text-3xl font-extrabold text-slate-950" data-role="order-summary-point">0</p><div class="mt-2 text-xs text-slate-500">平均处理指标</div></div>
+
+    <!-- Page header -->
+    <div class="cs-page-header mb-8">
+        <div>
+            <h1 class="cs-h1">订单中心</h1>
+            <p class="cs-caption mt-1">管理你的校园交易订单和状态流转</p>
+        </div>
     </div>
-    <section class="glass mb-8 rounded-2xl p-8" data-role="order-tracking-section">
-        <div class="py-6 text-center text-sm text-slate-500">暂无可追踪订单</div>
+
+    <!-- Stats cards -->
+    <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div class="cs-stat-card">
+            <p class="cs-caption mb-1">总订单</p>
+            <p class="cs-stat-card__value" data-role="order-summary-total">0</p>
+            <p class="cs-stat-card__label">全部订单数量</p>
+        </div>
+        <div class="cs-stat-card">
+            <p class="cs-caption mb-1">进行中</p>
+            <p class="cs-stat-card__value" data-role="order-summary-ongoing"
+               style="color:var(--cs-warning);">0</p>
+            <p class="cs-stat-card__label">需要继续处理</p>
+        </div>
+        <div class="cs-stat-card">
+            <p class="cs-caption mb-1">已完成</p>
+            <p class="cs-stat-card__value" data-role="order-summary-completed"
+               style="color:var(--cs-success);">0</p>
+            <p class="cs-stat-card__label">成功交付订单</p>
+        </div>
+        <div class="cs-stat-card">
+            <p class="cs-caption mb-1">指标</p>
+            <p class="cs-stat-card__value" data-role="order-summary-point">0</p>
+            <p class="cs-stat-card__label">平均处理时间</p>
+        </div>
+    </div>
+
+    <!-- Order tracking section -->
+    <section class="glass mb-8 rounded-xl p-6" data-role="order-tracking-section">
+        <div class="cs-empty" style="padding:2rem;">
+            <span class="material-symbols-outlined cs-empty__icon">local_shipping</span>
+            <p class="cs-empty__title">暂无可追踪订单</p>
+        </div>
     </section>
-    <div class="overflow-hidden rounded-xl rounded-2xl bg-white shadow-sm bg-surface-container-lowest">
-        <div class="flex items-center justify-between border-b border-[rgba(120,133,150,.16)] bg-white px-6 py-4">
-            <h3 class="font-extrabold text-slate-950">历史订单</h3>
-            <div class="flex gap-2">
-                <button class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">全部</button>
-                <button class="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-100">待处理</button>
-                <button class="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-100">已完成</button>
+
+    <!-- Order list table -->
+    <div class="overflow-hidden rounded-xl" style="background:var(--cs-card);border:1px solid var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+
+        <!-- Table header / filters -->
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4"
+             style="border-color:var(--cs-line);background:var(--cs-card);">
+            <h3 class="text-base font-semibold" style="color:var(--cs-ink);">历史订单</h3>
+            <div class="flex gap-1">
+                <button class="order-filter-btn is-active" type="button">全部</button>
+                <button class="order-filter-btn" type="button">待处理</button>
+                <button class="order-filter-btn" type="button">已完成</button>
+                <button class="order-filter-btn" type="button">已关闭</button>
             </div>
         </div>
+
+        <!-- Table -->
         <div class="overflow-x-auto">
-            <table class="w-full border-collapse text-left">
-                <thead><tr class="bg-slate-50">
-                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">订单号</th>
-                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">商品/资源</th>
-                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">卖家/买家</th>
-                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">最后更新</th>
-                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-right text-slate-400">价格</th>
-                    <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-center text-slate-400">状态</th>
-                    <th class="px-6 py-4"></th>
-                </tr></thead>
-                <tbody class="divide-y divide-surface-container"></tbody>
+            <table class="cs-table">
+                <thead>
+                    <tr>
+                        <th>订单号</th>
+                        <th>商品/资源</th>
+                        <th>卖家/买家</th>
+                        <th>最后更新</th>
+                        <th style="text-align:right;">价格</th>
+                        <th style="text-align:center;">状态</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y" style="border-color:var(--cs-line);"></tbody>
             </table>
         </div>
-        <div class="bg-surface-container-low p-4 flex justify-between items-center px-6">
-            <p class="text-xs text-slate-500">暂无订单</p>
+
+        <!-- Table footer -->
+        <div class="flex items-center justify-between border-t px-6 py-3"
+             style="border-color:var(--cs-line);background:rgba(120,133,150,0.03);">
+            <p class="text-sm" style="color:var(--cs-muted);">暂无订单</p>
             <div class="flex gap-1"></div>
         </div>
+
     </div>
+
 </div>
 </main>
 </div>
-<script src="/pages/assets/js/campusshare-api.js?v=20260510-mojibake"></script>
-<script src="/pages/assets/js/order-center.js?v=20260511-clean"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/order-center.js?v=20260515"></script>
 </body>
 </html>

@@ -1,63 +1,149 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html class="light" lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CampusShare - 消息中心</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>消息中心 | CampusShare</title>
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
 <script id="tailwind-config">
-tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#005d90","primary-container":"#0077b6","on-primary":"#fff",surface:"#f5f5f7","surface-container":"#edf1f5","surface-container-low":"#f5f5f7","surface-container-lowest":"#fff",outline:"#6b7582","outline-variant":"#c8d0da","on-surface":"#172033","on-surface-variant":"#566273"},borderRadius:{DEFAULT:"8px",lg:"10px",xl:"16px",full:"999px"},fontFamily:{headline:["Manrope","Noto Sans SC","Microsoft YaHei","sans-serif"],body:["Inter","Noto Sans SC","Microsoft YaHei","sans-serif"]}}}};
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                primary: "#005d90",
+                "primary-strong": "#004b74",
+                "primary-soft": "#eef6fb",
+                surface: "#f5f5f7",
+                card: "#ffffff",
+                line: "rgba(120,133,150,0.16)",
+                muted: "#64748b",
+                ink: "#172033",
+                error: "#b42318",
+                /* MD compat — JS adds/removes these class names on filter buttons & rendered HTML */
+                "surface-container-lowest": "#ffffff",
+                "surface-container": "#edeeef",
+                "on-primary": "#ffffff",
+                "on-surface": "#191c1d",
+                "on-surface-variant": "#404850",
+                "primary-container": "#0077b6",
+                "outline": "#707881",
+                "outline-variant": "#bfc7d1"
+            },
+            borderRadius: { DEFAULT: "8px", md: "10px", lg: "12px", xl: "16px", full: "999px" },
+            fontFamily: {
+                headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
+            }
+        }
+    }
+};
 </script>
 <style>
-body{margin:0;min-height:100vh;font-family:"Inter","Noto Sans SC","Microsoft YaHei",sans-serif;background:#f5f5f7;color:#172033;text-wrap:pretty}h1,h2,h3{font-family:"Manrope","Noto Sans SC","Microsoft YaHei",sans-serif}.material-symbols-outlined{line-height:1;font-variation-settings:"FILL" 0,"wght" 430,"GRAD" 0,"opsz" 24}.glass{border:1px solid rgba(120,133,150,.18);background:rgba(255,255,255,.88);box-shadow:0 20px 52px rgba(15,23,42,.08);backdrop-filter:blur(18px)}[data-user-topbar],[data-user-sidebar],footer{display:none}.campusshare-embedded-page main{margin-left:0!important;padding:1.5rem!important}.campusshare-embedded-page .max-w-6xl{max-width:none!important}
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--cs-font-body);
+        background: var(--cs-surface);
+        color: var(--cs-ink);
+        text-wrap: pretty;
+    }
+    h1, h2, h3 { font-family: var(--cs-font-headline); letter-spacing: 0; }
+    .material-symbols-outlined {
+        line-height: 1;
+        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
+    }
+
+    /* Embedded mode */
+    [data-user-topbar], [data-user-sidebar], footer { display: none; }
+    body:not(.campusshare-embedded-page) [data-user-main] { margin-left: 16.75rem; }
+    .campusshare-embedded-page [data-user-main] {
+        margin-left: 0 !important;
+        padding: 1.5rem !important;
+    }
+    .campusshare-embedded-page .max-w-6xl { max-width: none !important; }
 </style>
 </head>
-<body class="min-h-screen bg-surface text-on-surface">
+<body>
 <header data-user-topbar></header>
 <div class="flex" data-user-shell>
 <aside data-user-sidebar></aside>
-<main class="min-h-screen flex-1 bg-surface p-8" data-user-main>
-    <div class="mx-auto max-w-6xl">
-        <section class="glass mb-6 overflow-hidden rounded-2xl">
-            <div class="flex flex-col gap-6 p-6 lg:flex-row lg:items-center lg:justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eef6fb] text-primary">
-                        <span class="material-symbols-outlined text-3xl">notifications_active</span>
-                    </div>
-                    <div>
-                        <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-slate-400">Notification Center</p>
-                        <h1 class="mt-1 text-3xl font-extrabold text-slate-950">消息中心</h1>
-                        <p class="mt-1 text-sm text-slate-500">集中处理订单、审核、积分和组队相关提醒。</p>
-                    </div>
+<main class="min-h-screen flex-1 p-8" data-user-main>
+<div class="mx-auto max-w-6xl">
+
+    <!-- Page header card -->
+    <section class="mb-6 overflow-hidden rounded-xl"
+             style="background:var(--cs-card);border:1px solid var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+        <div class="flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl"
+                     style="background:var(--cs-primary-soft);color:var(--cs-primary);">
+                    <span class="material-symbols-outlined" style="font-size:28px;">notifications_active</span>
                 </div>
-                <button class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-on-primary shadow-sm transition hover:bg-primary-container disabled:cursor-not-allowed disabled:bg-slate-300" type="button" data-notification-mark-all>
-                    <span class="material-symbols-outlined text-lg" data-icon="done_all">done_all</span>
-                    全部标记为已读
-                </button>
+                <div>
+                    <p class="cs-micro mb-0.5">Notification Center</p>
+                    <h1 class="cs-h2">消息中心</h1>
+                    <p class="cs-caption mt-0.5">集中处理订单、审核和组队相关提醒</p>
+                </div>
             </div>
-            <div class="grid grid-cols-1 border-t border-[rgba(120,133,150,.16)] md:grid-cols-3">
-                <div class="px-6 py-4"><p class="text-xs font-bold uppercase tracking-widest text-slate-400">全部消息</p><p class="mt-1 text-2xl font-extrabold" data-notification-total>0</p></div>
-                <div class="border-y border-[rgba(120,133,150,.16)] px-6 py-4 md:border-x md:border-y-0"><p class="text-xs font-bold uppercase tracking-widest text-slate-400">未读消息</p><p class="mt-1 text-2xl font-extrabold text-primary" data-notification-unread>0</p></div>
-                <div class="px-6 py-4"><p class="text-xs font-bold uppercase tracking-widest text-slate-400">已读消息</p><p class="mt-1 text-2xl font-extrabold text-slate-500" data-notification-read>0</p></div>
-            </div>
-        </section>
-        <div class="mb-5 flex flex-col gap-3 rounded-2xl border border-[rgba(120,133,150,.18)] bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex w-full items-center rounded-full bg-slate-100 p-1 sm:w-auto">
-                <button class="flex-1 rounded-full bg-white px-5 py-2 text-sm font-bold text-primary shadow-sm sm:flex-none" type="button" data-notification-filter="ALL">全部消息</button>
-                <button class="flex-1 rounded-full px-5 py-2 text-sm font-semibold text-slate-500 transition hover:text-primary sm:flex-none" type="button" data-notification-filter="UNREAD">未读</button>
-                <button class="flex-1 rounded-full px-5 py-2 text-sm font-semibold text-slate-500 transition hover:text-primary sm:flex-none" type="button" data-notification-filter="READ">已读</button>
-            </div>
-            <div class="flex items-center gap-2 text-xs font-medium text-slate-400"><span class="material-symbols-outlined text-base">update</span><span>按发送时间倒序排列</span></div>
+            <button class="cs-btn cs-btn--primary" data-notification-mark-all type="button">
+                <span class="material-symbols-outlined" style="font-size:18px;">done_all</span>
+                全部标记为已读
+            </button>
         </div>
-        <div class="space-y-4" data-notification-list>
-            <div class="rounded-2xl border border-[rgba(120,133,150,.18)] bg-white p-8 text-center text-sm text-slate-500 shadow-sm">正在加载消息...</div>
+
+        <!-- Stats row -->
+        <div class="grid grid-cols-3 border-t" style="border-color:var(--cs-line);">
+            <div class="px-6 py-4">
+                <p class="cs-micro">全部消息</p>
+                <p class="text-2xl font-bold font-headline mt-1" data-notification-total>0</p>
+            </div>
+            <div class="px-6 py-4 border-x" style="border-color:var(--cs-line);">
+                <p class="cs-micro">未读消息</p>
+                <p class="text-2xl font-bold font-headline mt-1" style="color:var(--cs-primary);" data-notification-unread>0</p>
+            </div>
+            <div class="px-6 py-4">
+                <p class="cs-micro">已读消息</p>
+                <p class="text-2xl font-bold font-headline mt-1" style="color:var(--cs-muted);" data-notification-read>0</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter tabs bar
+         JS: UpdateFilterButtonStyle adds bg-surface-container-lowest text-primary shadow-sm font-bold / text-on-surface-variant -->
+    <div class="mb-5 flex flex-col gap-3 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between"
+         style="background:var(--cs-card);border:1px solid var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+        <div class="flex items-center rounded-full p-1" style="background:rgba(120,133,150,0.08);">
+            <button class="flex-1 rounded-full bg-surface-container-lowest px-5 py-2 text-sm font-bold text-primary shadow-sm transition sm:flex-none"
+                    data-notification-filter="ALL" type="button">全部消息</button>
+            <button class="flex-1 rounded-full px-5 py-2 text-sm font-semibold text-on-surface-variant transition sm:flex-none"
+                    data-notification-filter="UNREAD" type="button">未读</button>
+            <button class="flex-1 rounded-full px-5 py-2 text-sm font-semibold text-on-surface-variant transition sm:flex-none"
+                    data-notification-filter="READ" type="button">已读</button>
+        </div>
+        <div class="flex items-center gap-2 text-xs" style="color:var(--cs-muted);">
+            <span class="material-symbols-outlined" style="font-size:16px;">update</span>
+            <span>按发送时间倒序排列</span>
         </div>
     </div>
+
+    <!-- Notification list -->
+    <div class="space-y-4" data-notification-list>
+        <div class="rounded-xl p-8 text-center text-sm"
+             style="background:var(--cs-card);border:1px solid var(--cs-line);color:var(--cs-muted);">
+            正在加载消息...
+        </div>
+    </div>
+
+</div>
 </main>
 </div>
-<script src="/pages/assets/js/campusshare-api.js?v=20260510-mojibake"></script>
-<script src="/pages/assets/js/notification-center.js?v=20260511-clean"></script>
+<footer></footer>
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/notification-center.js?v=20260515"></script>
 </body>
 </html>

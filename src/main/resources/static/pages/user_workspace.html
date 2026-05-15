@@ -7,6 +7,7 @@
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -15,21 +16,15 @@
                 colors: {
                     primary: "#005d90",
                     "primary-strong": "#004b74",
-                    "on-primary": "#ffffff",
+                    "primary-soft": "#eef6fb",
                     surface: "#f5f5f7",
-                    "surface-card": "#ffffff",
-                    "surface-soft": "#eef3f7",
-                    line: "rgba(120,133,150,0.18)",
-                    muted: "#667085",
+                    card: "#ffffff",
+                    line: "rgba(120,133,150,0.16)",
+                    muted: "#64748b",
                     ink: "#172033",
-                    danger: "#b42318"
+                    error: "#b42318"
                 },
-                borderRadius: {
-                    DEFAULT: "8px",
-                    lg: "10px",
-                    xl: "16px",
-                    full: "999px"
-                },
+                borderRadius: { DEFAULT: "8px", md: "10px", lg: "12px", xl: "16px", full: "999px" },
                 fontFamily: {
                     headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
                     body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
@@ -39,37 +34,25 @@
     };
 </script>
 <style>
-    :root {
-        --shell-bg: #f5f5f7;
-        --shell-card: rgba(255, 255, 255, 0.86);
-        --shell-line: rgba(120, 133, 150, 0.18);
-        --shell-shadow: 0 22px 56px rgba(15, 23, 42, 0.08);
-        --shell-ease: cubic-bezier(0.2, 0, 0, 1);
-    }
     * { box-sizing: border-box; }
     html { text-rendering: optimizeLegibility; }
+
     body {
         min-height: 100vh;
         margin: 0;
-        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif;
-        color: #172033;
+        font-family: var(--cs-font-body);
+        color: var(--cs-ink);
         background:
             radial-gradient(circle at 12% 8%, rgba(0, 93, 144, 0.08), transparent 26rem),
-            linear-gradient(180deg, #ffffff 0%, var(--shell-bg) 42%);
+            linear-gradient(180deg, #ffffff 0%, #f5f5f7 42%);
         text-wrap: pretty;
     }
+
     h1, h2, h3, .headline-font {
-        font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        font-family: var(--cs-font-headline);
         letter-spacing: 0;
     }
-    button, a {
-        transition: transform 180ms var(--shell-ease), color 180ms var(--shell-ease),
-            background-color 180ms var(--shell-ease), box-shadow 180ms var(--shell-ease);
-    }
-    button:focus-visible, a:focus-visible, iframe:focus-visible {
-        outline: 2px solid rgba(0, 93, 144, 0.34);
-        outline-offset: 3px;
-    }
+
     .material-symbols-outlined {
         display: inline-flex;
         align-items: center;
@@ -84,35 +67,57 @@
         text-align: center;
         font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
     }
+
+    /* ----- Top bar ----- */
     [data-workspace-topbar] {
-        height: 72px;
-        border-bottom: 1px solid rgba(120, 133, 150, 0.12);
-        background: rgba(255, 255, 255, 0.76);
-        backdrop-filter: blur(18px);
-        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+        height: 64px;
+        border-bottom: 1px solid var(--cs-line);
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
     }
+
     [data-workspace-top-nav] {
-        border-radius: 999px;
-        color: #566273;
+        border-radius: var(--cs-radius-full);
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--cs-muted);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: background-color 180ms var(--cs-ease), color 180ms var(--cs-ease);
     }
+
     [data-workspace-top-nav][aria-current="page"] {
-        color: #005d90;
-        background: rgba(0, 93, 144, 0.08);
+        color: var(--cs-primary);
+        background: var(--cs-primary-soft);
     }
+
+    [data-workspace-top-nav]:hover:not([aria-current="page"]) {
+        background: rgba(120, 133, 150, 0.06);
+        color: var(--cs-ink);
+    }
+
+    /* ----- Sidebar ----- */
     [data-workspace-sidebar] {
-        left: 1.25rem;
-        top: 5.75rem;
+        position: fixed;
+        left: 1rem;
+        top: 4.75rem;
         width: 15rem;
-        height: calc(100vh - 7rem);
-        border: 1px solid var(--shell-line);
-        border-radius: 16px;
-        background: var(--shell-card);
+        height: calc(100vh - 5.75rem);
+        border: 1px solid var(--cs-line);
+        border-radius: var(--cs-radius-xl);
+        background: var(--cs-card-glass);
         backdrop-filter: blur(20px);
-        box-shadow: var(--shell-shadow);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: var(--cs-shadow-sm);
     }
+
     [data-workspace-sidebar] nav {
-        gap: 0.25rem;
+        gap: 2px;
     }
+
     [data-workspace-nav],
     [data-workspace-admin],
     [data-workspace-logout] {
@@ -121,19 +126,32 @@
         align-items: center;
         width: 100%;
         min-height: 44px;
-        column-gap: 0.75rem;
-        border-radius: 10px;
+        column-gap: 12px;
+        padding: 0 10px;
+        border-radius: var(--cs-radius-md);
+        font-size: 14px;
+        font-weight: 500;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        color: var(--cs-muted);
+        transition:
+            background-color 180ms var(--cs-ease),
+            color 180ms var(--cs-ease),
+            transform 180ms var(--cs-ease);
+        position: relative;
     }
+
     [data-workspace-nav] span:first-child,
     [data-workspace-admin] span:first-child,
     [data-workspace-logout] span:first-child {
-        grid-column: 1;
         justify-self: center;
     }
+
     [data-workspace-nav] span:last-child,
     [data-workspace-admin] span:last-child,
     [data-workspace-logout] span:last-child {
-        grid-column: 2;
         display: block;
         min-width: 0;
         overflow: hidden;
@@ -141,112 +159,173 @@
         white-space: nowrap;
         line-height: 1.25;
     }
+
     [data-workspace-nav][aria-current="page"] {
-        background: #ffffff;
-        color: #005d90;
-        box-shadow: 0 12px 26px rgba(15, 23, 42, 0.07);
-        font-weight: 800;
+        background: var(--cs-primary-soft);
+        color: var(--cs-primary);
+        font-weight: 600;
     }
+
+    [data-workspace-nav][aria-current="page"]::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 25%;
+        bottom: 25%;
+        width: 3px;
+        background: var(--cs-primary);
+        border-radius: 0 2px 2px 0;
+    }
+
     [data-workspace-nav]:hover,
     [data-workspace-admin]:hover {
-        background: #edeeef;
-        color: #005d90;
+        background: rgba(120, 133, 150, 0.06);
+        color: var(--cs-ink);
         transform: translateX(2px);
     }
-    [data-workspace-logout]:hover {
-        background: rgba(180, 35, 24, 0.08);
+
+    [data-workspace-logout] {
+        color: var(--cs-error);
     }
+
+    [data-workspace-logout]:hover {
+        background: rgba(180, 35, 24, 0.06);
+    }
+
+    /* ----- Main frame area ----- */
     [data-workspace-main] {
         margin-left: 17rem;
-        padding-top: 5.75rem;
-        padding-right: 1.25rem;
-        padding-bottom: 1.25rem;
+        padding-top: 4.75rem;
+        padding-right: 1rem;
+        padding-bottom: 1rem;
     }
+
     [data-workspace-frame] {
-        height: calc(100vh - 7rem);
-        border: 1px solid var(--shell-line);
-        border-radius: 16px;
+        display: block;
+        width: 100%;
+        height: calc(100vh - 5.75rem);
+        border: 1px solid var(--cs-line);
+        border-radius: var(--cs-radius-xl);
         background: transparent;
-        box-shadow: var(--shell-shadow);
+        box-shadow: var(--cs-shadow-sm);
     }
+
+    /* ----- Avatar ----- */
+    [data-role="workspace-avatar"] {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: var(--cs-radius-md);
+        background: var(--cs-primary-soft);
+        color: var(--cs-primary);
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    /* ----- Responsive ----- */
     @media (max-width: 900px) {
         [data-workspace-topbar] nav { display: none; }
+
         [data-workspace-sidebar] {
             position: static;
             width: auto;
             height: auto;
-            margin: 5.5rem 1rem 1rem;
+            margin: 4.5rem 1rem 1rem;
+            border-radius: var(--cs-radius-xl);
         }
+
         [data-workspace-main] {
             margin-left: 0;
             padding: 0 1rem 1rem;
         }
-        [data-workspace-frame] { height: calc(100vh - 18rem); }
+
+        [data-workspace-frame] {
+            height: calc(100vh - 18rem);
+        }
     }
+
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
             transition-duration: 0.01ms !important;
             animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
         }
     }
 </style>
 </head>
 <body>
+
+<!-- Top Bar -->
 <header class="fixed left-0 right-0 top-0 z-50" data-workspace-topbar>
     <div class="flex h-full items-center justify-between px-6 lg:px-9">
-        <button type="button" class="headline-font text-xl font-extrabold text-[#005d90]" data-workspace-brand>CampusShare</button>
-        <nav class="flex items-center gap-2 text-sm font-bold">
-            <button type="button" class="px-4 py-2" data-workspace-top-nav data-workspace-target="/pages/market_listing.html">交易市场</button>
-            <button type="button" class="px-4 py-2" data-workspace-top-nav data-workspace-target="/pages/market_listing.html?view=MATERIAL">学术资源</button>
-            <button type="button" class="px-4 py-2" data-workspace-top-nav data-workspace-target="/pages/market_listing.html?view=FORUM">校园论坛</button>
+        <button class="headline-font text-xl font-extrabold" data-workspace-brand type="button"
+                style="color:var(--cs-primary);background:transparent;border:none;cursor:pointer;">
+            CampusShare
+        </button>
+        <nav class="flex items-center gap-1">
+            <button data-workspace-target="/pages/market_listing.html" data-workspace-top-nav type="button">交易市场</button>
+            <button data-workspace-target="/pages/market_listing.html?view=MATERIAL" data-workspace-top-nav type="button">学术资源</button>
+            <button data-workspace-target="/pages/market_listing.html?view=FORUM" data-workspace-top-nav type="button">校园论坛</button>
         </nav>
     </div>
 </header>
 
-<aside class="fixed z-40 flex flex-col px-4 py-5" data-workspace-sidebar>
-    <div class="mb-6 flex items-center gap-3 px-2">
-        <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#eef6fb] text-sm font-bold text-[#005d90]" data-role="workspace-avatar">用</div>
+<!-- Sidebar -->
+<aside class="z-40 flex flex-col px-3 py-5" data-workspace-sidebar>
+
+    <!-- Profile -->
+    <div class="mb-4 flex items-center gap-3 px-2">
+        <div data-role="workspace-avatar">用</div>
         <div class="min-w-0">
-            <p class="truncate text-sm font-extrabold text-slate-950" data-role="workspace-display-name">个人中心</p>
-            <p class="truncate text-xs text-slate-500" data-role="workspace-role">校园认证用户</p>
+            <p class="truncate text-sm font-semibold" data-role="workspace-display-name"
+               style="color:var(--cs-ink);">个人中心</p>
+            <p class="truncate text-xs" data-role="workspace-role" style="color:var(--cs-muted);">校园认证用户</p>
         </div>
     </div>
-    <nav class="flex flex-1 flex-col text-sm font-semibold">
-        <button type="button" class="px-3 py-2.5 text-slate-600" data-workspace-nav data-workspace-target="/pages/market_overview.html">
+
+    <!-- Nav -->
+    <nav class="flex flex-1 flex-col">
+        <button data-workspace-nav data-workspace-target="/pages/market_overview.html" type="button">
             <span class="material-symbols-outlined">home</span><span>主页</span>
         </button>
-        <button type="button" class="px-3 py-2.5 text-slate-600" data-workspace-nav data-workspace-target="/pages/my_publish.html">
+        <button data-workspace-nav data-workspace-target="/pages/my_publish.html" type="button">
             <span class="material-symbols-outlined">list_alt</span><span>我的发布</span>
         </button>
-        <button type="button" class="px-3 py-2.5 text-slate-600" data-workspace-nav data-workspace-target="/pages/order_center.html">
+        <button data-workspace-nav data-workspace-target="/pages/order_center.html" type="button">
             <span class="material-symbols-outlined">receipt_long</span><span>订单中心</span>
         </button>
-        <button type="button" class="px-3 py-2.5 text-slate-600" data-workspace-nav data-workspace-target="/pages/recruitment_board.html">
+        <button data-workspace-nav data-workspace-target="/pages/recruitment_board.html" type="button">
             <span class="material-symbols-outlined">groups</span><span>团队招募</span>
         </button>
-        <button type="button" class="px-3 py-2.5 text-slate-600" data-workspace-nav data-workspace-target="/pages/notification_center.html">
+        <button data-workspace-nav data-workspace-target="/pages/notification_center.html" type="button">
             <span class="material-symbols-outlined">notifications</span><span>消息通知</span>
         </button>
-        <button type="button" class="px-3 py-2.5 text-slate-600" data-workspace-nav data-workspace-target="/pages/user_profile.html">
+        <button data-workspace-nav data-workspace-target="/pages/user_profile.html" type="button">
             <span class="material-symbols-outlined">settings</span><span>个人设置</span>
         </button>
-        <button type="button" class="hidden px-3 py-2.5 text-slate-600" data-admin-only="true" data-workspace-admin>
+        <button class="hidden" data-admin-only="true" data-workspace-admin type="button">
             <span class="material-symbols-outlined">admin_panel_settings</span><span>管理后台</span>
         </button>
     </nav>
-    <div class="mt-4 border-t border-[rgba(120,133,150,0.16)] pt-4 text-sm font-semibold">
-        <button type="button" class="px-3 py-2.5 text-[#b42318]" data-workspace-logout>
+
+    <!-- Bottom actions -->
+    <div class="mt-3 border-t pt-3" style="border-color:var(--cs-line);">
+        <button data-workspace-logout type="button">
             <span class="material-symbols-outlined">logout</span><span>退出登录</span>
         </button>
     </div>
+
 </aside>
 
+<!-- Main iframe -->
 <main data-workspace-main>
-    <iframe class="block w-full border-0" data-workspace-frame title="CampusShare 子页面"></iframe>
+    <iframe class="border-0" data-workspace-frame title="CampusShare 子页面"></iframe>
 </main>
 
-<script src="/pages/assets/js/campusshare-api.js?v=20260512-apple-fix"></script>
-<script src="/pages/assets/js/user-workspace.js?v=20260512-apple-fix"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/user-workspace.js?v=20260515"></script>
 </body>
 </html>

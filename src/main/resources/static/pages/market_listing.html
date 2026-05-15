@@ -7,181 +7,369 @@
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
 <script id="tailwind-config">
 tailwind.config = {
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        primary: "#005d90",
-        "primary-container": "#0077b6",
-        "on-primary": "#ffffff",
-        surface: "#f5f5f7",
-        "surface-container-low": "#f5f5f7",
-        "surface-container": "#edf1f5",
-        "surface-container-lowest": "#ffffff",
-        "surface-container-high": "#e6ebf0",
-        "surface-container-highest": "#dde5ed",
-        outline: "#6b7582",
-        "outline-variant": "#c8d0da",
-        "on-surface": "#172033",
-        "on-surface-variant": "#566273",
-        secondary: "#006878",
-        "secondary-container": "#dff7fb",
-        "on-secondary-container": "#004e5b"
-      },
-      borderRadius: { DEFAULT: "8px", lg: "10px", xl: "16px", full: "999px" },
-      fontFamily: {
-        headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
-        body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
-      }
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                primary: "#005d90",
+                "primary-strong": "#004b74",
+                "primary-soft": "#eef6fb",
+                surface: "#f5f5f7",
+                card: "#ffffff",
+                line: "rgba(120,133,150,0.16)",
+                muted: "#64748b",
+                ink: "#172033"
+            },
+            borderRadius: { DEFAULT: "8px", md: "10px", lg: "12px", xl: "16px", full: "999px" },
+            fontFamily: {
+                headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
+            }
+        }
     }
-  }
 };
 </script>
 <style>
-    :root {
-        --cs-line: rgba(120,133,150,0.18);
-        --cs-shadow: 0 20px 52px rgba(15,23,42,0.08);
-        --cs-ease: cubic-bezier(0.2,0,0,1);
-    }
     * { box-sizing: border-box; }
+
     body {
         margin: 0;
         min-height: 100vh;
-        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif;
-        color: #172033;
-        background: #f5f5f7;
+        font-family: var(--cs-font-body);
+        color: var(--cs-ink);
+        background: var(--cs-surface);
         text-wrap: pretty;
     }
-    h1,h2,h3 { font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif; letter-spacing: 0; }
-    button,a,input,select { transition: all 180ms var(--cs-ease); }
-    .material-symbols-outlined { line-height: 1; font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24; }
-    .glass { border: 1px solid var(--cs-line); background: rgba(255,255,255,.86); box-shadow: var(--cs-shadow); backdrop-filter: blur(18px); }
+
+    h1, h2, h3 {
+        font-family: var(--cs-font-headline);
+        letter-spacing: 0;
+    }
+
+    .material-symbols-outlined {
+        line-height: 1;
+        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
+    }
+
+    .glass {
+        border: 1px solid var(--cs-line);
+        background: var(--cs-card-glass);
+        box-shadow: var(--cs-shadow-sm);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Embedded mode (when inside user_workspace iframe) */
     [data-user-topbar] { display: none; }
     [data-user-sidebar] { display: none; }
     body:not(.campusshare-embedded-page) [data-user-topbar] { display: block; }
     body:not(.campusshare-embedded-page) [data-user-sidebar] { display: flex; }
-    body:not(.campusshare-embedded-page) [data-user-main] { margin-left: 16rem; }
-    .campusshare-embedded-page [data-market-root] { max-width: none !important; padding: 1.5rem !important; }
-    input:focus, select:focus { outline: 0; box-shadow: 0 0 0 4px rgba(0,93,144,.10); border-color: rgba(0,93,144,.36); }
+    body:not(.campusshare-embedded-page) [data-user-main] { margin-left: 16.75rem; }
+    .campusshare-embedded-page [data-market-root] { max-width: none !important; padding: 1rem !important; }
+
+    /* ----- Filter sidebar panel ----- */
+    .filter-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted);
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: var(--cs-radius-full);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--cs-card);
+        color: var(--cs-muted);
+        border: 1px solid var(--cs-line);
+        cursor: pointer;
+        transition: background-color 180ms var(--cs-ease), color 180ms var(--cs-ease);
+    }
+
+    .filter-chip.is-active,
+    .filter-chip:focus {
+        background: var(--cs-primary-soft);
+        color: var(--cs-primary);
+        border-color: transparent;
+    }
+
+    .filter-input {
+        height: 38px;
+        width: 100%;
+        padding: 0 10px;
+        border: 1px solid var(--cs-line);
+        border-radius: var(--cs-radius-sm);
+        font-size: 13px;
+        background: var(--cs-card);
+        color: var(--cs-ink);
+        outline: none;
+        transition: border-color 180ms var(--cs-ease), box-shadow 180ms var(--cs-ease);
+    }
+
+    .filter-input::placeholder { color: var(--cs-muted); }
+
+    .filter-input:focus {
+        border-color: var(--cs-primary);
+        box-shadow: var(--cs-shadow-focus);
+    }
+
+    /* ----- Product card ----- */
+    .product-card {
+        background: var(--cs-card);
+        border: 1px solid var(--cs-line);
+        border-radius: var(--cs-radius-xl);
+        box-shadow: var(--cs-shadow-sm);
+        overflow: hidden;
+        transition: box-shadow 180ms var(--cs-ease), transform 180ms var(--cs-ease);
+        cursor: pointer;
+    }
+
+    .product-card:hover {
+        box-shadow: var(--cs-shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .product-card__image {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        background: rgba(120,133,150,0.06);
+    }
+
+    .product-card__body {
+        padding: 14px 16px 16px;
+    }
+
+    .product-card__price {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--cs-primary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ----- View nav tabs ----- */
+    .market-tab {
+        padding: 8px 16px;
+        border-radius: var(--cs-radius-full);
+        font-size: 14px;
+        font-weight: 600;
+        background: transparent;
+        color: var(--cs-muted);
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 180ms var(--cs-ease), color 180ms var(--cs-ease);
+    }
+
+    .market-tab.is-active,
+    a[data-market-nav].is-active {
+        background: var(--cs-primary-soft) !important;
+        color: var(--cs-primary) !important;
+    }
+
+    .market-tab:hover:not(.is-active),
+    a[data-market-nav]:hover:not(.is-active) {
+        background: rgba(120,133,150,0.06);
+        color: var(--cs-ink);
+    }
 </style>
 </head>
-<body class="bg-surface text-on-surface">
-<header class="sticky top-0 z-40 border-b border-[rgba(120,133,150,0.14)] bg-white/80 backdrop-blur" data-user-topbar>
-    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <a class="text-xl font-extrabold text-[#005d90]" data-nav-target="/pages/market_overview.html" href="#">CampusShare</a>
-        <nav class="flex gap-2 text-sm font-bold">
-            <a class="rounded-full px-4 py-2 text-[#005d90] bg-[#eef6fb]" data-market-nav="MARKET" data-nav-target="local" href="#">交易市场</a>
-            <a class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100" data-market-nav="MATERIAL" data-nav-target="local" href="#">学术资源</a>
-            <a class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100" data-market-nav="FORUM" data-nav-target="local" href="#">校园论坛</a>
-        </nav>
+<body class="bg-surface">
+
+<!-- ── Top Bar (hidden when embedded) ── -->
+<header class="sticky top-0 z-40" data-user-topbar>
+    <div class="border-b" style="border-color:var(--cs-line);background:rgba(255,255,255,0.86);backdrop-filter:blur(14px);">
+        <div class="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-6 lg:px-10">
+            <a class="text-xl font-extrabold" data-nav-target="/pages/market_overview.html" href="#"
+               style="color:var(--cs-primary);font-family:var(--cs-font-headline);">CampusShare</a>
+            <nav class="flex gap-1">
+                <a class="market-tab is-active" data-market-nav="MARKET" data-nav-target="local" href="#">交易市场</a>
+                <a class="market-tab" data-market-nav="MATERIAL" data-nav-target="local" href="#">学术资源</a>
+                <a class="market-tab" data-market-nav="FORUM" data-nav-target="local" href="#">校园论坛</a>
+            </nav>
+        </div>
     </div>
 </header>
+
 <div class="flex min-h-screen" data-user-shell>
-<aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 flex-col border-r border-[rgba(120,133,150,0.14)] bg-white/80 p-4" data-user-sidebar></aside>
-<main class="flex-1" data-user-main>
-<div class="mx-auto flex min-h-screen max-w-[1440px]" data-market-panel="MARKET" data-market-root>
-    <aside class="hidden w-72 shrink-0 p-5 lg:block">
-        <div class="glass sticky top-6 rounded-2xl p-5">
-            <h2 class="mb-5 text-lg font-extrabold">筛选</h2>
-            <div class="space-y-7">
-                <section>
-                    <h3 class="mb-3 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">分类</h3>
-                    <div class="space-y-2 text-sm text-slate-600">
-                        <label class="flex items-center gap-3"><input checked class="rounded text-primary" type="checkbox"/>全部分类</label>
-                        <label class="flex items-center gap-3"><input class="rounded text-primary" type="checkbox"/>电子产品</label>
-                        <label class="flex items-center gap-3"><input class="rounded text-primary" type="checkbox"/>教材</label>
-                        <label class="flex items-center gap-3"><input class="rounded text-primary" type="checkbox"/>家具</label>
-                        <label class="flex items-center gap-3"><input class="rounded text-primary" type="checkbox"/>厨具</label>
+
+    <!-- User sidebar (injected by JS when not embedded) -->
+    <aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[16.75rem] flex-col border-r p-4"
+           data-user-sidebar
+           style="border-color:var(--cs-line);background:rgba(255,255,255,0.88);backdrop-filter:blur(14px);"></aside>
+
+    <main class="flex-1" data-user-main>
+
+        <!-- ── MARKET Panel ── -->
+        <div class="mx-auto flex min-h-screen max-w-[1400px]" data-market-panel="MARKET" data-market-root>
+
+            <!-- Filter Sidebar -->
+            <aside class="hidden w-64 shrink-0 p-5 lg:block">
+                <div class="glass sticky rounded-xl p-5" style="top:80px;">
+                    <h2 class="mb-5 text-base font-bold" style="color:var(--cs-ink);">筛选</h2>
+                    <div class="space-y-6">
+
+                        <section>
+                            <span class="filter-label">分类</span>
+                            <div class="space-y-2 text-sm" style="color:var(--cs-ink);">
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input checked class="rounded" type="checkbox" style="accent-color:var(--cs-primary);"/>全部分类
+                                </label>
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input class="rounded" type="checkbox" style="accent-color:var(--cs-primary);"/>电子产品
+                                </label>
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input class="rounded" type="checkbox" style="accent-color:var(--cs-primary);"/>教材
+                                </label>
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input class="rounded" type="checkbox" style="accent-color:var(--cs-primary);"/>家具
+                                </label>
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input class="rounded" type="checkbox" style="accent-color:var(--cs-primary);"/>厨具
+                                </label>
+                            </div>
+                        </section>
+
+                        <section>
+                            <span class="filter-label">价格范围</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input class="filter-input" placeholder="最低价" type="text"/>
+                                <input class="filter-input" placeholder="最高价" type="text"/>
+                            </div>
+                        </section>
+
+                        <section>
+                            <span class="filter-label">新旧程度</span>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="filter-chip is-active" type="button">全部成色</button>
+                                <button class="filter-chip" type="button">良好</button>
+                                <button class="filter-chip" type="button">全新</button>
+                                <button class="filter-chip" type="button">已使用</button>
+                            </div>
+                        </section>
+
+                        <section>
+                            <span class="filter-label">交易地点</span>
+                            <select class="filter-input appearance-none">
+                                <option>全部地点</option>
+                                <option>北校区图书馆</option>
+                                <option>学生中心</option>
+                                <option>工程楼</option>
+                                <option>西门广场</option>
+                            </select>
+                        </section>
+
+                        <button class="cs-btn cs-btn--secondary w-full" type="button">清除所有筛选</button>
+
                     </div>
-                </section>
-                <section>
-                    <h3 class="mb-3 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">价格范围</h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input class="rounded-xl border border-[rgba(120,133,150,0.18)] bg-white p-2 text-sm" placeholder="最低价" type="text"/>
-                        <input class="rounded-xl border border-[rgba(120,133,150,0.18)] bg-white p-2 text-sm" placeholder="最高价" type="text"/>
-                    </div>
-                </section>
-                <section>
-                    <h3 class="mb-3 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">新旧程度</h3>
-                    <div class="flex flex-wrap gap-2">
-                        <button class="rounded-full bg-[#eef6fb] px-3 py-1.5 text-xs font-bold text-[#005d90]">全部成色</button>
-                        <button class="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-600">良好</button>
-                        <button class="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-600">全新</button>
-                        <button class="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-600">已使用</button>
-                    </div>
-                </section>
-                <section>
-                    <h3 class="mb-3 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-400">交易地点</h3>
-                    <select class="w-full rounded-xl border border-[rgba(120,133,150,0.18)] bg-white p-2 text-sm">
-                        <option>全部地点</option>
-                        <option>北校区图书馆</option>
-                        <option>学生中心</option>
-                        <option>工程楼</option>
-                        <option>西门广场</option>
-                    </select>
-                </section>
-                <button class="w-full rounded-xl bg-slate-100 py-2.5 text-sm font-bold text-slate-700 hover:bg-white">清除所有筛选</button>
-            </div>
-        </div>
-    </aside>
-    <main class="min-w-0 flex-1 px-5 py-6">
-        <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-                <h1 class="text-3xl font-extrabold text-slate-950">校园交易市场</h1>
-                <p class="mt-1 text-sm font-medium text-on-surface-variant">显示 0 个校园商品</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="flex rounded-xl bg-white p-1 shadow-sm">
-                    <button class="rounded-lg bg-[#eef6fb] p-2 text-[#005d90]"><span class="material-symbols-outlined text-sm">grid_view</span></button>
-                    <button class="rounded-lg p-2 text-slate-400"><span class="material-symbols-outlined text-sm">list</span></button>
                 </div>
-                <select class="rounded-xl border border-[rgba(120,133,150,0.18)] bg-white py-2 pl-4 pr-10 text-sm font-medium">
-                    <option>最新发布</option>
-                    <option>价格：由低到高</option>
-                    <option>价格：由高到低</option>
-                    <option>热门程度</option>
-                </select>
+            </aside>
+
+            <!-- Product Grid -->
+            <main class="min-w-0 flex-1 px-5 py-6">
+                <!-- Header row -->
+                <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold" style="font-family:var(--cs-font-headline);color:var(--cs-ink);">
+                            校园交易市场
+                        </h1>
+                        <p class="mt-1 text-sm" style="color:var(--cs-muted);">显示 0 个校园商品</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <!-- View toggle -->
+                        <div class="flex rounded-xl p-1" style="background:var(--cs-card);border:1px solid var(--cs-line);">
+                            <button class="rounded-lg p-2" style="background:var(--cs-primary-soft);color:var(--cs-primary);" type="button">
+                                <span class="material-symbols-outlined" style="font-size:18px;">grid_view</span>
+                            </button>
+                            <button class="rounded-lg p-2" style="color:var(--cs-muted);" type="button">
+                                <span class="material-symbols-outlined" style="font-size:18px;">list</span>
+                            </button>
+                        </div>
+                        <!-- Sort -->
+                        <select class="filter-input" style="width:auto;padding-right:32px;">
+                            <option>最新发布</option>
+                            <option>价格：由低到高</option>
+                            <option>价格：由高到低</option>
+                            <option>热门程度</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Grid placeholder / JS fills this -->
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div class="col-span-full glass rounded-xl">
+                        <div class="cs-empty">
+                            <span class="material-symbols-outlined cs-empty__icon">storefront</span>
+                            <p class="cs-empty__title">暂无商品</p>
+                            <p class="cs-empty__body">快来发布你的第一件二手商品吧</p>
+                            <button class="cs-btn cs-btn--tertiary mt-2" data-nav-target="/pages/publish_create.html" type="button">去发布</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-12 flex justify-center" data-pagination-area="true"></div>
+            </main>
+
+        </div>
+
+        <!-- ── MATERIAL Panel ── -->
+        <section class="hidden min-h-screen px-6 py-6" data-market-panel="MATERIAL">
+            <div class="glass rounded-xl p-6">
+                <div class="mb-6 flex items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold" style="font-family:var(--cs-font-headline);color:var(--cs-ink);">学术资源</h1>
+                        <p class="mt-1 text-sm" style="color:var(--cs-muted);">与课程相关的资料和课件</p>
+                    </div>
+                    <button class="cs-btn cs-btn--primary" data-nav-target="/pages/publish_create.html?type=material" type="button">
+                        上传资料
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" data-market-material-list>
+                    <div class="col-span-full cs-empty">
+                        <span class="material-symbols-outlined cs-empty__icon">description</span>
+                        <p class="cs-empty__title">暂无资料</p>
+                        <p class="cs-empty__body">加载中...</p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <div class="col-span-full glass rounded-2xl p-12 text-center text-sm text-slate-500">暂无商品</div>
-        </div>
-        <div class="mt-16 flex justify-center" data-pagination-area="true"></div>
+        </section>
+
+        <!-- ── FORUM Panel ── -->
+        <section class="hidden min-h-screen px-6 py-6" data-market-panel="FORUM">
+            <div class="glass rounded-xl p-6">
+                <div class="mb-6 flex items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold" style="font-family:var(--cs-font-headline);color:var(--cs-ink);">校园论坛</h1>
+                        <p class="mt-1 text-sm" style="color:var(--cs-muted);">查看组队、活动与交流话题</p>
+                    </div>
+                    <button class="cs-btn cs-btn--primary" data-nav-target="/pages/publish_create.html?type=recruitment" type="button">
+                        发布帖子
+                    </button>
+                </div>
+                <div class="space-y-4" data-market-forum-list>
+                    <div class="cs-empty">
+                        <span class="material-symbols-outlined cs-empty__icon">forum</span>
+                        <p class="cs-empty__title">暂无帖子</p>
+                        <p class="cs-empty__body">加载中...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 </div>
-<section class="hidden min-h-screen px-6 py-8" data-market-panel="MATERIAL">
-    <div class="glass rounded-2xl p-8">
-        <div class="mb-6 flex items-center justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-extrabold">学术资源</h1>
-                <p class="mt-1 text-sm text-slate-500">与课程相关的资料和课件</p>
-            </div>
-            <button class="rounded-full bg-[#005d90] px-4 py-2 text-sm font-bold text-white" data-nav-target="/pages/publish_create.html?type=material">上传资料</button>
-        </div>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" data-market-material-list>
-            <div class="col-span-full py-8 text-center text-sm text-slate-500">加载中...</div>
-        </div>
-    </div>
-</section>
-<section class="hidden min-h-screen px-6 py-8" data-market-panel="FORUM">
-    <div class="glass rounded-2xl p-8">
-        <div class="mb-6 flex items-center justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-extrabold">校园论坛</h1>
-                <p class="mt-1 text-sm text-slate-500">查看组队、活动与交流话题</p>
-            </div>
-            <button class="rounded-full bg-[#005d90] px-4 py-2 text-sm font-bold text-white" data-nav-target="/pages/publish_create.html?type=recruitment">发布帖子</button>
-        </div>
-        <div class="space-y-4" data-market-forum-list>
-            <div class="py-8 text-center text-sm text-slate-500">加载中...</div>
-        </div>
-    </div>
-</section>
-</main>
-</div>
-<script src="/pages/assets/js/campusshare-api.js"></script>
-<script src="/pages/assets/js/market-listing.js?v=20260511-apple-clean"></script>
+
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/market-listing.js?v=20260515"></script>
 </body>
 </html>

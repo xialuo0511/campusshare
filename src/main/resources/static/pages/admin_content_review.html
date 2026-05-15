@@ -7,23 +7,34 @@
     <script src="/pages/assets/vendor/tailwindcss.js"></script>
     <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
     <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
-    <script>
+    <link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
                         primary: "#005d90",
-                        surface: "#f8f9fa",
+                        "primary-soft": "#eef6fb",
+                        surface: "#f5f5f7",
                         "surface-low": "#f3f4f5",
                         "surface-card": "#ffffff",
+                        card: "#ffffff",
+                        line: "rgba(120,133,150,0.16)",
+                        muted: "#64748b",
+                        ink: "#172033",
                         outline: "#bfc7d1",
-                        success: "#0f9d58",
-                        warning: "#b76e00",
-                        danger: "#ba1a1a"
+                        success: "#0a8a4f",
+                        warning: "#b66b00",
+                        danger: "#b42318"
                     },
                     boxShadow: {
                         soft: "0 12px 30px rgba(0, 63, 105, 0.08)"
+                    },
+                    borderRadius: { DEFAULT: "8px", md: "10px", lg: "12px", xl: "16px", full: "999px" },
+                    fontFamily: {
+                        headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                        body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
                     }
                 }
             }
@@ -207,8 +218,8 @@
         }
     })();
 </script>
-<script src="/pages/assets/js/campusshare-api.js?v=20260510-mojibake"></script>
-<script src="/pages/assets/js/admin-content-review.js?v=20260422"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/admin-content-review.js?v=20260515"></script>
 </body>
 </html>
 

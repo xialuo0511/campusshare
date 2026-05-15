@@ -1,448 +1,361 @@
 <!DOCTYPE html>
-
-<html lang="zh-CN"><head>
+<html class="light" lang="zh-CN">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>订单详情 - CampusShare</title>
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
-<link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
 <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "surface-container-high": "#e7e8e9",
-                        "primary-fixed-dim": "#94ccff",
-                        "secondary": "#006878",
-                        "primary-fixed": "#cde5ff",
-                        "on-secondary-fixed-variant": "#004e5b",
-                        "on-primary": "#ffffff",
-                        "inverse-primary": "#94ccff",
-                        "error": "#ba1a1a",
-                        "on-error-container": "#93000a",
-                        "primary-container": "#0077b6",
-                        "outline-variant": "#bfc7d1",
-                        "secondary-fixed": "#a7edff",
-                        "on-secondary-fixed": "#001f25",
-                        "inverse-on-surface": "#f0f1f2",
-                        "on-primary-fixed": "#001d32",
-                        "error-container": "#ffdad6",
-                        "primary": "#005d90",
-                        "on-primary-container": "#f3f7ff",
-                        "surface-container-highest": "#e1e3e4",
-                        "tertiary-container": "#4770be",
-                        "surface-container-low": "#f3f4f5",
-                        "surface-bright": "#f8f9fa",
-                        "secondary-container": "#69e5ff",
-                        "surface": "#f8f9fa",
-                        "secondary-fixed-dim": "#58d6f1",
-                        "on-primary-fixed-variant": "#004b74",
-                        "on-error": "#ffffff",
-                        "surface-dim": "#d9dadb",
-                        "on-secondary": "#ffffff",
-                        "tertiary-fixed": "#d8e2ff",
-                        "on-tertiary": "#ffffff",
-                        "on-surface": "#191c1d",
-                        "tertiary-fixed-dim": "#aec6ff",
-                        "on-secondary-container": "#006575",
-                        "surface-tint": "#006399",
-                        "on-tertiary-fixed-variant": "#004490",
-                        "on-tertiary-container": "#f7f7ff",
-                        "on-surface-variant": "#404850",
-                        "tertiary": "#2b57a4",
-                        "surface-container": "#edeeef",
-                        "surface-variant": "#e1e3e4",
-                        "inverse-surface": "#2e3132",
-                        "surface-container-lowest": "#ffffff",
-                        "on-tertiary-fixed": "#001a42",
-                        "on-background": "#191c1d",
-                        "outline": "#707881",
-                        "background": "#f8f9fa"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
-                    },
-                    "fontFamily": {
-                        "headline": ["Manrope"],
-                        "body": ["Inter"],
-                        "label": ["Inter"]
-                    }
-                }
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                primary: "#005d90",
+                "primary-strong": "#004b74",
+                "primary-container": "#0077b6",
+                "on-primary": "#ffffff",
+                "primary-soft": "#eef6fb",
+                surface: "#f5f5f7",
+                "surface-container-lowest": "#ffffff",
+                "surface-container-low": "#f5f5f7",
+                "surface-container": "#edeeef",
+                "surface-container-high": "#e7e8e9",
+                card: "#ffffff",
+                line: "rgba(120,133,150,0.16)",
+                muted: "#64748b",
+                ink: "#172033",
+                "on-surface": "#172033",
+                "on-surface-variant": "#566273",
+                "outline-variant": "#c8d0da",
+                outline: "#64748b",
+                secondary: "#006878",
+                error: "#b42318",
+                "error-container": "#ffdad6",
+                "on-error": "#ffffff"
+            },
+            borderRadius: { DEFAULT: "8px", md: "10px", lg: "12px", xl: "16px", full: "999px" },
+            fontFamily: {
+                headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
             }
         }
-    </script>
+    }
+};
+</script>
 <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
-    </style>
+    * { box-sizing: border-box; }
+    html { text-rendering: optimizeLegibility; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--cs-font-body);
+        color: var(--cs-ink);
+        background: var(--cs-surface);
+        text-wrap: pretty;
+    }
+
+    h1, h2, h3 { font-family: var(--cs-font-headline); letter-spacing: 0; }
+
+    .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
+        line-height: 1;
+    }
+
+    /* Embedded mode */
+    [data-user-topbar], [data-user-sidebar], footer { display: none; }
+    body:not(.campusshare-embedded-page) [data-user-main] { margin-left: 16.75rem; }
+    .campusshare-embedded-page [data-user-main] {
+        margin-left: 0 !important;
+        padding: 1.5rem !important;
+    }
+
+    /* Timeline steps - JS rewrites these classes so they must remain in Tailwind */
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+</style>
 </head>
-<body class="bg-surface text-on-surface">
-<!-- Top Navigation Shell -->
-<header class="w-full top-0 sticky bg-slate-50 dark:bg-slate-900" data-user-topbar>
-<div>
-<a class="text-xl font-bold tracking-tight text-sky-900 dark:text-sky-100" data-nav-target="/pages/market_overview.html" href="#">CampusShare</a>
-<nav>
-<a data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
-<a data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
-<a data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
-</nav>
-</div>
-</header>
+<body>
+<header data-user-topbar></header>
 <div class="flex min-h-screen" data-user-shell>
-<!-- Side Navigation Shell -->
-<aside class="h-screen w-64 fixed left-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 px-4 z-40" data-user-sidebar>
-<div class="flex items-center mb-8 px-2 space-x-3">
-<div class="w-10 h-10 rounded-full bg-sky-100 text-sky-800 overflow-hidden flex items-center justify-center text-sm font-bold" data-role="sidebar-avatar">--</div>
-<div>
-<div class="font-['Inter'] text-sm font-bold text-sky-800">个人中心</div>
-<div class="text-[10px] uppercase text-slate-500 tracking-tighter">校园身份已认证</div>
-</div>
-</div>
-<nav class="space-y-1 flex-1">
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/market_overview.html" href="#">
-<span class="material-symbols-outlined text-xl">home</span>
-<span class="font-medium text-sm">主页</span>
-</a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/my_publish.html" href="#">
-<span class="material-symbols-outlined text-xl">list_alt</span>
-<span class="font-medium text-sm">我的发布</span>
-</a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg bg-white shadow-sm text-sky-800 font-bold" data-nav-target="/pages/order_center.html" href="#">
-<span class="material-symbols-outlined text-xl">receipt_long</span>
-<span class="font-medium text-sm">订单中心</span>
-</a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/recruitment_board.html" href="#">
-<span class="material-symbols-outlined text-xl">groups</span>
-<span class="font-medium text-sm">组队招募</span>
-</a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/notification_center.html" href="#">
-<span class="material-symbols-outlined text-xl">notifications</span>
-<span class="font-medium text-sm">消息通知</span>
-</a>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-nav-target="/pages/user_profile.html" href="#">
-<span class="material-symbols-outlined text-xl">settings</span>
-<span class="font-medium text-sm">个人设置</span>
-</a>
-<a class="hidden flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-all" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#">
-<span class="material-symbols-outlined text-xl">admin_panel_settings</span>
-<span class="font-medium text-sm">管理仪表盘</span>
-</a>
-</nav>
-<div class="border-t border-slate-200 pt-4 space-y-1" data-user-sidebar-footer>
-<a class="flex items-center space-x-3 px-3 py-3 rounded-lg text-slate-500 hover:bg-slate-100 transition-all text-sm uppercase" href="#">
-<span class="material-symbols-outlined text-xl">logout</span>
-<span>退出登录</span>
-</a>
-</div>
-</aside>
-<!-- Main Content Canvas -->
-<main class="ml-64 flex-1 bg-surface-container-low min-h-screen px-12 py-10" data-user-main>
-<div class="max-w-6xl mx-auto">
-<!-- Header & Breadcrumbs -->
-<div class="mb-8">
-<nav class="flex items-center text-xs font-medium text-outline space-x-2 mb-2 uppercase tracking-widest">
-<a href="#">我的交易</a>
-<span class="material-symbols-outlined text-[14px]">chevron_right</span>
-<span class="text-primary font-bold">订单详情</span>
-</nav>
-<div class="flex justify-between items-end">
-<h1 class="text-3xl font-bold text-on-surface tracking-tight" data-role="order-heading">订单编号: -</h1>
-<div class="bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide" data-role="order-status-pill">
-                            待加载
-</div>
-</div>
-</div>
-<div class="hidden mb-8 rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-800 shadow-sm" data-role="order-terminal-banner">
-<div class="flex items-start gap-3">
-<div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-700">
-<span class="material-symbols-outlined text-xl" data-role="order-terminal-icon">block</span>
-</div>
-<div class="min-w-0">
-<div class="text-sm font-bold" data-role="order-terminal-title">订单已关闭</div>
-<div class="mt-1 text-xs leading-5 text-red-700/80" data-role="order-terminal-description">该订单已终止，后续不会继续推进。</div>
-</div>
-</div>
-</div>
-<!-- Transaction Timeline -->
-<div class="bg-surface-container-lowest rounded-xl p-10 mb-8 border border-outline-variant/10">
-<div class="relative flex justify-between">
-<!-- Connecting Line -->
-<div class="absolute top-5 left-0 w-full h-[2px] bg-surface-container-high z-0">
-<div class="h-full bg-primary" style="width: 0%;" data-role="order-timeline-progress"></div>
-</div>
-<!-- Step 1 -->
-<div class="relative z-10 flex flex-col items-center">
-<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center" data-role="order-step-circle-1">
-<span class="material-symbols-outlined" data-role="order-step-icon-1">check</span>
-</div>
-<span class="mt-3 text-xs font-bold text-on-surface" data-role="order-step-label-1">提交订单</span>
-<span class="text-[10px] text-outline" data-role="order-step-time-1">-</span>
-</div>
-<!-- Step 2 -->
-<div class="relative z-10 flex flex-col items-center">
-<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center" data-role="order-step-circle-2">
-<span class="material-symbols-outlined" data-role="order-step-icon-2">check</span>
-</div>
-<span class="mt-3 text-xs font-bold text-on-surface" data-role="order-step-label-2">卖家确认</span>
-<span class="text-[10px] text-outline" data-role="order-step-time-2">-</span>
-</div>
-<!-- Step 3 (Active) -->
-<div class="relative z-10 flex flex-col items-center">
-<div class="w-10 h-10 rounded-full bg-surface-container-lowest border-4 border-primary text-primary flex items-center justify-center" data-role="order-step-circle-3">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;" data-role="order-step-icon-3">handshake</span>
-</div>
-<span class="mt-3 text-xs font-bold text-primary" data-role="order-step-label-3">线下交付</span>
-<span class="text-[10px] text-outline" data-role="order-step-time-3">-</span>
-</div>
-<!-- Step 4 -->
-<div class="relative z-10 flex flex-col items-center">
-<div class="w-10 h-10 rounded-full bg-surface-container-high text-outline-variant flex items-center justify-center" data-role="order-step-circle-4">
-<span class="material-symbols-outlined" data-role="order-step-icon-4">verified</span>
-</div>
-<span class="mt-3 text-xs font-bold text-outline-variant" data-role="order-step-label-4">买家确认</span>
-<span class="text-[10px] text-outline-variant" data-role="order-step-time-4">-</span>
-</div>
-</div>
-</div>
-<div class="grid grid-cols-12 gap-8">
-<!-- Left Column: Details -->
-<div class="col-span-8 space-y-8">
-<!-- Product Snapshot -->
-<section class="bg-surface-container-lowest rounded-xl overflow-hidden">
-<div class="p-6 border-b border-surface-container">
-<h2 class="text-sm font-bold uppercase tracking-wider text-outline">物品清单</h2>
-</div>
-<div class="p-6 flex items-start space-x-6">
-<div class="w-32 h-32 rounded-lg bg-surface-container-high overflow-hidden flex-shrink-0">
-<img alt="商品图片" data-alt="professional laboratory compound microscope on a clean white desk, high-end scientific equipment, soft lab lighting" data-role="order-product-image" src="/pages/assets/img/campusshare-placeholder.svg"/>
-</div>
-<div class="flex-1">
-<div class="flex justify-between items-start">
-<h3 class="text-xl font-bold text-on-surface" data-role="order-product-title">加载中...</h3>
-<span class="text-2xl font-bold text-primary" data-role="order-product-price">¥ 0.00</span>
-</div>
-<div class="mt-2 space-y-1">
-<div class="flex items-center text-sm text-on-surface-variant">
-<span class="font-semibold w-20">物品状况:</span>
-<span class="bg-surface-container px-2 py-0.5 rounded text-xs" data-role="order-product-condition">-</span>
-</div>
-<div class="flex items-center text-sm text-on-surface-variant">
-<span class="font-semibold w-20">分类:</span>
-<span data-role="order-product-category">-</span>
-</div>
-<div class="flex items-start text-sm text-on-surface-variant mt-3">
-<span class="material-symbols-outlined text-sm mr-1 mt-0.5 text-secondary">info</span>
-<p class="text-xs leading-relaxed" data-role="order-product-description">暂无商品描述</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Buyer/Seller Grid -->
-<div class="grid grid-cols-2 gap-6">
-<div class="bg-surface-container-lowest rounded-xl p-6">
-<div class="flex items-center space-x-3 mb-4">
-<span class="material-symbols-outlined text-secondary">person</span>
-<h3 class="text-xs font-bold uppercase tracking-wider text-outline">买家信息</h3>
-</div>
-<div class="flex items-center space-x-4">
-<div class="w-12 h-12 rounded-full bg-sky-100 text-sky-800 overflow-hidden flex items-center justify-center text-sm font-bold" data-role="order-buyer-avatar">买</div>
-<div>
-<div class="font-bold text-on-surface" data-role="order-buyer-name">买家信息加载中</div>
-<div class="text-[10px] text-outline font-medium" data-role="order-buyer-subtitle">-</div>
-<div class="flex mt-1">
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star_half</span>
-</div>
-</div>
-</div>
-</div>
-<div class="bg-surface-container-lowest rounded-xl p-6">
-<div class="flex items-center space-x-3 mb-4">
-<span class="material-symbols-outlined text-secondary">storefront</span>
-<h3 class="text-xs font-bold uppercase tracking-wider text-outline">卖家信息</h3>
-</div>
-<div class="flex items-center space-x-4">
-<div class="w-12 h-12 rounded-full bg-sky-100 text-sky-800 overflow-hidden flex items-center justify-center text-sm font-bold" data-role="order-seller-avatar">卖</div>
-<div>
-<div class="font-bold text-on-surface" data-role="order-seller-name">卖家信息加载中</div>
-<div class="text-[10px] text-outline font-medium" data-role="order-seller-subtitle">-</div>
-<div class="flex mt-1">
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1;">star</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Location and Map Section (Bento Style) -->
-<div class="grid grid-cols-5 gap-6">
-<div class="col-span-3 bg-surface-container-lowest rounded-xl p-6 relative overflow-hidden h-64">
-<div class="absolute inset-0 grayscale opacity-40 z-0">
-<img alt="Map" class="w-full h-full object-cover" data-location="Shanghai" src="/pages/assets/img/campusshare-placeholder.svg"/>
-</div>
-<div class="relative z-10">
-<h3 class="text-xs font-bold uppercase tracking-wider text-outline mb-4">交易地点</h3>
-<div class="flex items-center space-x-2 text-on-surface font-bold text-lg">
-<span class="material-symbols-outlined text-error">location_on</span>
-<span data-role="order-trade-location">待协商</span>
-</div>
-<p class="text-xs text-on-surface-variant mt-1 ml-8" data-role="order-trade-location-sub">请与交易对方沟通具体地点</p>
-<div class="mt-12">
-<button class="bg-white/80 backdrop-blur-sm border border-outline-variant/30 px-4 py-2 rounded-lg text-xs font-bold text-on-surface hover:bg-white transition-all flex items-center space-x-2">
-<span class="material-symbols-outlined text-sm">map</span>
-<span>查看详细地图</span>
-</button>
-</div>
-</div>
-</div>
-<div class="col-span-2 bg-primary text-on-primary rounded-xl p-6 flex flex-col justify-between">
-<div>
-<h3 class="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-4">交易安全提示</h3>
-<p class="text-sm font-medium leading-relaxed">
-                                        线下交易时请务必在公共场所或监控区域进行。请核对物品状态后再行确认付款。
-                                    </p>
-</div>
-<div class="flex items-center space-x-2">
-<span class="material-symbols-outlined">security</span>
-<span class="text-xs font-bold">学术诚信交易保障</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Right Column: Summary & Actions -->
-<div class="col-span-4 space-y-6">
-<!-- Action Panel -->
-<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
-<h3 class="text-sm font-bold text-on-surface mb-6">交易操作</h3>
-<div class="space-y-3">
-<button class="w-full bg-primary hover:bg-primary-container text-on-primary py-4 rounded-xl font-bold flex items-center justify-center space-x-2 transition-all scale-100 active:scale-95" data-role="order-action-primary">
-<span class="material-symbols-outlined">verified</span>
-<span data-role="order-action-primary-text">确认交易已完成</span>
-</button>
-<button class="w-full bg-white border border-outline-variant text-on-surface py-4 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-surface-container transition-all" data-role="order-action-secondary">
-<span class="material-symbols-outlined">chat_bubble</span>
-<span data-role="order-action-secondary-text">联系交易对方</span>
-</button>
-<button class="w-full text-error font-bold py-4 text-xs uppercase tracking-widest hover:bg-error-container/20 rounded-xl transition-all" data-role="order-action-danger">
-                                    取消订单
-                                </button>
-</div>
-<div class="mt-8 pt-8 border-t border-surface-container">
-<div class="flex justify-between items-center mb-4">
-<span class="text-xs text-outline font-medium">支付金额</span>
-<span class="text-2xl font-bold text-on-surface tracking-tighter" data-role="order-amount-main">¥ 0.00</span>
-</div>
-<div class="space-y-3">
-<div class="flex justify-between text-xs">
-<span class="text-outline">商品总价</span>
-<span class="text-on-surface-variant" data-role="order-amount-item">¥ 0.00</span>
-</div>
-<div class="flex justify-between text-xs">
-<span class="text-outline">校园服务费</span>
-<span class="text-secondary font-bold">免手续费</span>
-</div>
-<div class="flex justify-between text-xs">
-<span class="text-outline">支付方式</span>
-<span class="text-on-surface-variant font-medium">担保交易 - 线下确认</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Metadata Info -->
-<div class="bg-surface-container-high/50 rounded-xl p-6">
-<h3 class="text-[10px] font-bold text-outline uppercase tracking-widest mb-4">交易详情明细</h3>
-<div class="space-y-4">
-<div>
-<div class="text-[10px] text-outline uppercase font-bold">订单编号</div>
-<div class="text-xs font-semibold text-on-surface" data-role="order-meta-order-no">-</div>
-</div>
-<div>
-<div class="text-[10px] text-outline uppercase font-bold">创建时间</div>
-<div class="text-xs font-semibold text-on-surface" data-role="order-meta-create-time">-</div>
-</div>
-<div>
-<div class="text-[10px] text-outline uppercase font-bold">最近更新时间</div>
-<div class="text-xs font-semibold text-on-surface" data-role="order-meta-update-time">-</div>
-</div>
-<div>
-<div class="text-[10px] text-outline uppercase font-bold">卖家确认时间</div>
-<div class="text-xs font-semibold text-on-surface" data-role="order-meta-seller-confirm-time">-</div>
-</div>
-<div>
-<div class="text-[10px] text-outline uppercase font-bold">买家确认时间</div>
-<div class="text-xs font-semibold text-on-surface" data-role="order-meta-buyer-confirm-time">-</div>
-</div>
-<div>
-<div class="text-[10px] text-outline uppercase font-bold">当前状态</div>
-<div class="flex items-center space-x-1 mt-1">
-<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">schedule</span>
-<span class="text-xs font-bold text-secondary" data-role="order-meta-status-text">-</span>
-</div>
-</div>
-<div>
-<div class="text-[10px] text-outline uppercase font-bold">关闭原因</div>
-<div class="text-xs font-semibold text-on-surface" data-role="order-meta-close-reason">-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+<aside data-user-sidebar></aside>
+<main class="flex-1 p-8 bg-surface-container-low min-h-screen" data-user-main>
+<div class="mx-auto max-w-6xl">
+
+    <!-- Breadcrumb -->
+    <nav class="mb-6 flex items-center gap-1.5 text-sm" style="color:var(--cs-muted);">
+        <a class="hover:underline" data-nav-target="/pages/order_center.html" href="#"
+           style="color:var(--cs-primary);">我的交易</a>
+        <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+        <span>订单详情</span>
+    </nav>
+
+    <!-- Page header -->
+    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <h1 class="text-2xl font-bold" style="font-family:var(--cs-font-headline);color:var(--cs-ink);"
+            data-role="order-heading">订单编号: -</h1>
+        <span class="cs-pill cs-pill--warning" data-role="order-status-pill">待加载</span>
+    </div>
+
+    <!-- Terminal state banner (hidden by default) -->
+    <div class="cs-banner cs-banner--error hidden mb-6" data-role="order-terminal-banner">
+        <span class="material-symbols-outlined shrink-0" data-role="order-terminal-icon"
+              style="font-size:20px;">block</span>
+        <div class="min-w-0">
+            <p class="font-semibold" data-role="order-terminal-title">订单已关闭</p>
+            <p class="mt-0.5 text-sm" data-role="order-terminal-description">该订单已终止，后续不会继续推进。</p>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="mb-8 rounded-xl border p-8"
+         style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+        <div class="relative flex justify-between">
+            <!-- Connector line -->
+            <div class="absolute left-0 top-5 z-0 h-0.5 w-full" style="background:var(--cs-line);">
+                <div class="h-full" style="background:var(--cs-primary);width:0%;"
+                     data-role="order-timeline-progress"></div>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="relative z-10 flex flex-col items-center gap-2">
+                <div class="step-circle bg-primary text-on-primary" data-role="order-step-circle-1">
+                    <span class="material-symbols-outlined" data-role="order-step-icon-1" style="font-size:18px;">check</span>
+                </div>
+                <span class="text-xs font-semibold" style="color:var(--cs-ink);" data-role="order-step-label-1">提交订单</span>
+                <span class="text-xs cs-micro" data-role="order-step-time-1">-</span>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="relative z-10 flex flex-col items-center gap-2">
+                <div class="step-circle bg-primary text-on-primary" data-role="order-step-circle-2">
+                    <span class="material-symbols-outlined" data-role="order-step-icon-2" style="font-size:18px;">check</span>
+                </div>
+                <span class="text-xs font-semibold" style="color:var(--cs-ink);" data-role="order-step-label-2">卖家确认</span>
+                <span class="text-xs cs-micro" data-role="order-step-time-2">-</span>
+            </div>
+
+            <!-- Step 3 (active) -->
+            <div class="relative z-10 flex flex-col items-center gap-2">
+                <div class="step-circle bg-surface-container-lowest border-4 border-primary text-primary"
+                     data-role="order-step-circle-3">
+                    <span class="material-symbols-outlined" data-role="order-step-icon-3" style="font-size:18px;">handshake</span>
+                </div>
+                <span class="text-xs font-semibold" style="color:var(--cs-primary);" data-role="order-step-label-3">线下交付</span>
+                <span class="text-xs cs-micro" data-role="order-step-time-3">-</span>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="relative z-10 flex flex-col items-center gap-2">
+                <div class="step-circle bg-surface-container-high text-outline-variant" data-role="order-step-circle-4">
+                    <span class="material-symbols-outlined" data-role="order-step-icon-4" style="font-size:18px;">verified</span>
+                </div>
+                <span class="text-xs font-semibold" style="color:var(--cs-muted);" data-role="order-step-label-4">买家确认</span>
+                <span class="text-xs cs-micro" data-role="order-step-time-4">-</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content grid -->
+    <div class="grid grid-cols-12 gap-6">
+
+        <!-- Left: Details -->
+        <div class="col-span-12 space-y-6 lg:col-span-8">
+
+            <!-- Product snapshot -->
+            <section class="rounded-xl border overflow-hidden"
+                     style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+                <div class="border-b px-5 py-4" style="border-color:var(--cs-line);">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider" style="color:var(--cs-muted);">物品清单</h2>
+                </div>
+                <div class="flex items-start gap-5 p-5">
+                    <div class="h-28 w-28 shrink-0 overflow-hidden rounded-lg" style="background:rgba(120,133,150,0.06);">
+                        <img alt="商品图片" class="h-full w-full object-cover"
+                             data-role="order-product-image" src="/pages/assets/img/campusshare-placeholder.svg"/>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between gap-3">
+                            <h3 class="text-lg font-bold" data-role="order-product-title"
+                                style="color:var(--cs-ink);">加载中...</h3>
+                            <span class="text-xl font-bold cs-numeric" data-role="order-product-price"
+                                  style="color:var(--cs-primary);">¥0.00</span>
+                        </div>
+                        <div class="mt-2 space-y-1.5 text-sm" style="color:var(--cs-muted);">
+                            <p>物品状况：<span class="cs-tag" data-role="order-product-condition">-</span></p>
+                            <p>分类：<span data-role="order-product-category">-</span></p>
+                            <p class="mt-2 text-xs leading-relaxed" data-role="order-product-description">暂无描述</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Buyer / Seller -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                <div class="rounded-xl border p-5"
+                     style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+                    <p class="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider"
+                       style="color:var(--cs-muted);">
+                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--cs-primary);">person</span>
+                        买家信息
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold"
+                             data-role="order-buyer-avatar"
+                             style="background:var(--cs-primary-soft);color:var(--cs-primary);">买</div>
+                        <div>
+                            <p class="font-semibold" data-role="order-buyer-name" style="color:var(--cs-ink);">买家信息加载中</p>
+                            <p class="text-xs" data-role="order-buyer-subtitle" style="color:var(--cs-muted);">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border p-5"
+                     style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+                    <p class="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider"
+                       style="color:var(--cs-muted);">
+                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--cs-primary);">storefront</span>
+                        卖家信息
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold"
+                             data-role="order-seller-avatar"
+                             style="background:var(--cs-primary-soft);color:var(--cs-primary);">卖</div>
+                        <div>
+                            <p class="font-semibold" data-role="order-seller-name" style="color:var(--cs-ink);">卖家信息加载中</p>
+                            <p class="text-xs" data-role="order-seller-subtitle" style="color:var(--cs-muted);">-</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Trade location -->
+            <section class="rounded-xl border p-5"
+                     style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+                <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider" style="color:var(--cs-muted);">交易地点</h3>
+                <div class="flex items-center gap-2 text-base font-bold" style="color:var(--cs-ink);">
+                    <span class="material-symbols-outlined" style="color:var(--cs-error);font-size:20px;">location_on</span>
+                    <span data-role="order-trade-location">待协商</span>
+                </div>
+                <p class="mt-1 text-xs" data-role="order-trade-location-sub"
+                   style="color:var(--cs-muted);padding-left:28px;">请与交易对方沟通具体地点</p>
+                <div class="mt-4 rounded-lg p-3" style="background:var(--cs-primary-soft);">
+                    <p class="text-xs leading-relaxed" style="color:var(--cs-primary);">
+                        线下交易时请务必在公共场所或监控区域进行。请核对物品状态后再行确认付款。
+                    </p>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Right: Actions + Metadata -->
+        <div class="col-span-12 space-y-5 lg:col-span-4">
+
+            <!-- Action panel -->
+            <div class="rounded-xl border p-6"
+                 style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
+                <h3 class="mb-5 text-sm font-semibold" style="color:var(--cs-ink);">交易操作</h3>
+                <div class="space-y-3">
+                    <button class="cs-btn cs-btn--primary w-full" data-role="order-action-primary" type="button">
+                        <span class="material-symbols-outlined" style="font-size:18px;">verified</span>
+                        <span data-role="order-action-primary-text">确认交易已完成</span>
+                    </button>
+                    <button class="cs-btn cs-btn--secondary w-full" data-role="order-action-secondary" type="button">
+                        <span class="material-symbols-outlined" style="font-size:18px;">chat_bubble</span>
+                        <span data-role="order-action-secondary-text">联系交易对方</span>
+                    </button>
+                    <button class="cs-btn w-full" data-role="order-action-danger" type="button"
+                            style="background:transparent;border:1px solid rgba(180,35,24,0.24);color:var(--cs-error);">
+                        取消订单
+                    </button>
+                </div>
+
+                <div class="mt-6 border-t pt-5" style="border-color:var(--cs-line);">
+                    <div class="mb-3 flex items-center justify-between">
+                        <span class="text-xs" style="color:var(--cs-muted);">支付金额</span>
+                        <span class="text-xl font-bold cs-numeric" data-role="order-amount-main"
+                              style="color:var(--cs-ink);">¥0.00</span>
+                    </div>
+                    <div class="space-y-2 text-xs" style="color:var(--cs-muted);">
+                        <div class="flex justify-between">
+                            <span>商品总价</span>
+                            <span class="cs-numeric" data-role="order-amount-item">¥0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>校园服务费</span>
+                            <span style="color:var(--cs-success);font-weight:600;">免手续费</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>支付方式</span>
+                            <span>线下确认</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata -->
+            <div class="rounded-xl border p-5"
+                 style="background:rgba(120,133,150,0.04);border-color:var(--cs-line);">
+                <h3 class="mb-4 text-xs font-semibold uppercase tracking-wider" style="color:var(--cs-muted);">交易详情明细</h3>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-xs" style="color:var(--cs-muted);">订单编号</p>
+                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-order-no"
+                           style="color:var(--cs-ink);">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs" style="color:var(--cs-muted);">创建时间</p>
+                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-create-time"
+                           style="color:var(--cs-ink);">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs" style="color:var(--cs-muted);">最近更新</p>
+                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-update-time"
+                           style="color:var(--cs-ink);">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs" style="color:var(--cs-muted);">卖家确认时间</p>
+                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-seller-confirm-time"
+                           style="color:var(--cs-ink);">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs" style="color:var(--cs-muted);">买家确认时间</p>
+                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-buyer-confirm-time"
+                           style="color:var(--cs-ink);">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs" style="color:var(--cs-muted);">当前状态</p>
+                        <p class="mt-0.5 text-xs font-bold" data-role="order-meta-status-text"
+                           style="color:var(--cs-primary);">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs" style="color:var(--cs-muted);">关闭原因</p>
+                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-close-reason"
+                           style="color:var(--cs-ink);">-</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 </main>
 </div>
-<!-- Footer Shell -->
-<footer class="w-full py-12 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center px-12 ml-64 relative z-10">
-<div class="mb-6 md:mb-0">
-<div class="font-bold text-sky-900 dark:text-sky-100 font-headline mb-2">CampusShare</div>
-<p class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500">© 2026 CampusShare</p>
-</div>
-<div class="flex space-x-8">
-<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 transition-colors" href="#">服务条款</a>
-<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 transition-colors" href="#">隐私政策</a>
-<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 transition-colors" href="#">无障碍声明</a>
-<a class="font-['Inter'] text-xs uppercase tracking-wider text-slate-500 hover:text-sky-900 transition-colors" href="#">联系客服</a>
-</div>
-</footer>
-<!-- Confirmation Modal (Hidden by Default/Mockup state) -->
-<div class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/40 backdrop-blur-sm">
-<div class="bg-white rounded-xl max-w-md w-full p-8 shadow-2xl">
-<div class="w-16 h-16 rounded-full bg-error-container text-error flex items-center justify-center mx-auto mb-6">
-<span class="material-symbols-outlined text-4xl">warning</span>
-</div>
-<h2 class="text-xl font-bold text-on-surface text-center mb-2">确认取消订单？</h2>
-<p class="text-center text-sm text-outline mb-8 leading-relaxed">
-                取消订单后，支付金额将原路返还，但过多的主动取消行为可能会影响您的“学术诚信积分”。
-            </p>
-<div class="grid grid-cols-2 gap-4">
-<button class="bg-surface-container-high py-3 rounded-xl font-bold text-on-surface-variant hover:bg-surface-container-highest transition-all">
-                    暂不取消
-                </button>
-<button class="bg-error text-on-error py-3 rounded-xl font-bold hover:bg-red-700 transition-all">
-                    确认取消
-                </button>
-</div>
-</div>
-</div>
-<script src="/pages/assets/js/campusshare-api.js?v=20260510-mojibake"></script>
-<script src="/pages/assets/js/order-detail.js?v=20260426-terminal-banner"></script>
-</body></html>
 
-
-
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/order-detail.js?v=20260515"></script>
+</body>
+</html>

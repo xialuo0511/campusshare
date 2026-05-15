@@ -7,6 +7,7 @@
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -40,11 +41,11 @@
 </script>
 <style>
     :root {
-        --admin-bg: #f5f5f7;
-        --admin-card: rgba(255,255,255,0.86);
-        --admin-line: rgba(120,133,150,0.18);
-        --admin-shadow: 0 22px 56px rgba(15,23,42,0.08);
-        --admin-ease: cubic-bezier(0.2, 0, 0, 1);
+        --admin-bg: var(--cs-surface);
+        --admin-card: var(--cs-card-glass);
+        --admin-line: var(--cs-line);
+        --admin-shadow: var(--cs-shadow-md);
+        --admin-ease: var(--cs-ease);
     }
     * { box-sizing: border-box; }
     html { text-rendering: optimizeLegibility; }
@@ -648,8 +649,8 @@
         </div>
     </div>
 </footer>
-<script src="/pages/assets/js/campusshare-api.js?v=20260510-mojibake"></script>
-<script src="/pages/assets/js/admin-dashboard.js?v=20260511-apple-admin"></script>
-<script src="/pages/assets/js/admin-content-review.js?v=20260511-apple-admin"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/admin-dashboard.js?v=20260515"></script>
+<script src="/pages/assets/js/admin-content-review.js?v=20260515"></script>
 </body>
 </html>

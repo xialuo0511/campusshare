@@ -7,69 +7,57 @@
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
 <script id="tailwind-config">
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: {
-                    primary: "#005d90",
-                    "primary-strong": "#004b74",
-                    "on-primary": "#ffffff",
-                    surface: "#f5f5f7",
-                    "surface-card": "#ffffff",
-                    "surface-soft": "#eef3f7",
-                    line: "rgba(120,133,150,0.18)",
-                    muted: "#667085",
-                    ink: "#172033",
-                    danger: "#b42318",
-                    tertiary: "#3454d1"
-                },
-                borderRadius: {
-                    DEFAULT: "8px",
-                    lg: "10px",
-                    xl: "16px",
-                    full: "999px"
-                },
-                fontFamily: {
-                    headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
-                    body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
-                }
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                primary: "#005d90",
+                "primary-strong": "#004b74",
+                "primary-soft": "#eef6fb",
+                "on-primary": "#ffffff",
+                surface: "#f5f5f7",
+                card: "#ffffff",
+                line: "rgba(120,133,150,0.16)",
+                muted: "#64748b",
+                ink: "#172033",
+                error: "#b42318",
+                tertiary: "#3454d1"
+            },
+            borderRadius: { DEFAULT: "8px", md: "10px", lg: "12px", xl: "16px", full: "999px" },
+            fontFamily: {
+                headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+                body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
             }
         }
-    };
+    }
+};
 </script>
 <style>
-    :root {
-        --publish-bg: #f5f5f7;
-        --publish-card: rgba(255, 255, 255, 0.82);
-        --publish-line: rgba(120, 133, 150, 0.18);
-        --publish-shadow: 0 22px 56px rgba(15, 23, 42, 0.08);
-        --publish-ease: cubic-bezier(0.2, 0, 0, 1);
-    }
     * { box-sizing: border-box; }
     html { text-rendering: optimizeLegibility; }
     body {
         margin: 0;
         min-height: 100vh;
-        color: #172033;
-        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        color: var(--cs-ink);
+        font-family: var(--cs-font-body);
         background:
             radial-gradient(circle at 14% 10%, rgba(0, 93, 144, 0.09), transparent 24rem),
             radial-gradient(circle at 86% 6%, rgba(52, 84, 209, 0.06), transparent 22rem),
-            linear-gradient(180deg, #ffffff 0%, var(--publish-bg) 42%);
+            linear-gradient(180deg, #ffffff 0%, var(--cs-surface) 42%);
         text-wrap: pretty;
     }
-    body[data-embedded="true"] {
-        background: transparent !important;
-    }
+    body[data-embedded="true"] { background: transparent !important; }
     h1, h2, h3, .headline-font {
-        font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        font-family: var(--cs-font-headline);
         letter-spacing: 0;
     }
     button, a, input, select, textarea {
-        transition: color 180ms var(--publish-ease), background-color 180ms var(--publish-ease),
-            border-color 180ms var(--publish-ease), box-shadow 180ms var(--publish-ease), transform 180ms var(--publish-ease);
+        transition: color 180ms var(--cs-ease), background-color 180ms var(--cs-ease),
+            border-color 180ms var(--cs-ease), box-shadow 180ms var(--cs-ease),
+            transform 180ms var(--cs-ease);
     }
     button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
         outline: 2px solid rgba(0, 93, 144, 0.34);
@@ -83,28 +71,23 @@
         font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
     }
     .publish-glass {
-        border: 1px solid var(--publish-line);
-        background: var(--publish-card);
+        border: 1px solid var(--cs-line);
+        background: var(--cs-card-glass);
         backdrop-filter: blur(20px);
-        box-shadow: var(--publish-shadow);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: var(--cs-shadow-md);
     }
     .publish-nav {
-        border-bottom: 1px solid rgba(120, 133, 150, 0.12);
+        border-bottom: 1px solid var(--cs-line);
         background: rgba(255, 255, 255, 0.78);
         backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
     }
     body[data-embedded="true"] .publish-nav,
     body[data-embedded="true"] footer,
-    body[data-embedded="true"] [data-publish-aside] {
-        display: none !important;
-    }
-    body[data-embedded="true"] main {
-        max-width: none !important;
-        padding: 0 !important;
-    }
-    body[data-embedded="true"] [data-publish-layout] {
-        display: block !important;
-    }
+    body[data-embedded="true"] [data-publish-aside] { display: none !important; }
+    body[data-embedded="true"] main { max-width: none !important; padding: 0 !important; }
+    body[data-embedded="true"] [data-publish-layout] { display: block !important; }
     body[data-embedded="true"] [data-publish-card] {
         border: 0 !important;
         background: transparent !important;
@@ -113,15 +96,16 @@
         padding: 0 !important;
     }
     input, select, textarea {
-        border: 1px solid rgba(120, 133, 150, 0.16) !important;
+        border: 1px solid var(--cs-line) !important;
         background: rgba(255, 255, 255, 0.86) !important;
+        color: var(--cs-ink);
     }
     input:hover, select:hover, textarea:hover {
         border-color: rgba(0, 93, 144, 0.24) !important;
     }
     input:focus, select:focus, textarea:focus {
         border-color: rgba(0, 93, 144, 0.44) !important;
-        box-shadow: 0 0 0 4px rgba(0, 93, 144, 0.10) !important;
+        box-shadow: var(--cs-shadow-focus) !important;
         outline: 0;
     }
     [data-role="publish-upload-panel"] {
@@ -299,7 +283,7 @@
         document.body.setAttribute("data-embedded", "true");
     }
 </script>
-<script src="/pages/assets/js/campusshare-api.js?v=20260512-apple-refine"></script>
-<script src="/pages/assets/js/publish-create.js?v=20260512-apple-refine"></script>
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/publish-create.js?v=20260515"></script>
 </body>
 </html>

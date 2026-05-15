@@ -7,6 +7,7 @@
 <script src="/pages/assets/vendor/tailwindcss.js"></script>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
+<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -18,14 +19,15 @@
                     "primary-soft": "#eef6fb",
                     surface: "#f5f5f7",
                     card: "#ffffff",
-                    line: "rgba(120,133,150,0.18)",
-                    muted: "#667085",
+                    line: "rgba(120,133,150,0.16)",
+                    muted: "#64748b",
                     ink: "#172033",
                     tertiary: "#3454d1"
                 },
                 borderRadius: {
                     DEFAULT: "8px",
-                    lg: "10px",
+                    md: "10px",
+                    lg: "12px",
                     xl: "16px",
                     full: "999px"
                 },
@@ -38,40 +40,26 @@
     };
 </script>
 <style>
-    :root {
-        --cs-primary: #005d90;
-        --cs-primary-strong: #004b74;
-        --cs-bg: #f5f5f7;
-        --cs-card: rgba(255,255,255,0.86);
-        --cs-line: rgba(120,133,150,0.18);
-        --cs-shadow: 0 22px 56px rgba(15,23,42,0.08);
-        --cs-ease: cubic-bezier(0.2, 0, 0, 1);
-    }
     * { box-sizing: border-box; }
     html { text-rendering: optimizeLegibility; }
+
     body {
         margin: 0;
         min-height: 100vh;
-        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif;
-        color: #172033;
+        font-family: var(--cs-font-body);
+        color: var(--cs-ink);
         background:
-            radial-gradient(circle at 18% 8%, rgba(0,93,144,0.10), transparent 25rem),
+            radial-gradient(circle at 18% 8%,  rgba(0,93,144,0.10), transparent 25rem),
             radial-gradient(circle at 84% 12%, rgba(52,84,209,0.08), transparent 24rem),
-            linear-gradient(180deg, #ffffff 0%, var(--cs-bg) 38%);
+            linear-gradient(180deg, #ffffff 0%, #f5f5f7 38%);
         text-wrap: pretty;
     }
+
     h1, h2, h3, .headline-font {
-        font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        font-family: var(--cs-font-headline);
         letter-spacing: 0;
     }
-    a, button, input {
-        transition: color 180ms var(--cs-ease), background-color 180ms var(--cs-ease),
-            border-color 180ms var(--cs-ease), box-shadow 180ms var(--cs-ease), transform 180ms var(--cs-ease);
-    }
-    a:focus-visible, button:focus-visible, input:focus-visible {
-        outline: 2px solid rgba(0,93,144,0.34);
-        outline-offset: 3px;
-    }
+
     .material-symbols-outlined {
         display: inline-flex;
         align-items: center;
@@ -80,168 +68,150 @@
         font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
     }
 
-    /* ── Glass System ── */
+    /* ----- Glass card ----- */
     .apple-glass {
         border: 1px solid var(--cs-line);
-        background: var(--cs-card);
+        background: var(--cs-card-glass);
         backdrop-filter: blur(20px);
-        box-shadow: var(--cs-shadow);
-    }
-    .apple-nav {
-        border-bottom: 1px solid rgba(120,133,150,0.12);
-        background: rgba(255,255,255,0.78);
-        backdrop-filter: blur(18px);
-    }
-    .apple-link-active {
-        color: var(--cs-primary);
-        background: rgba(0,93,144,0.08);
-    }
-    .apple-button {
-        background: var(--cs-primary);
-        color: #fff;
-    }
-    .apple-button:hover {
-        background: var(--cs-primary-strong);
-        transform: translateY(-1px);
-    }
-    .apple-card-hover:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 26px 64px rgba(15,23,42,0.10);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: var(--cs-shadow-sm);
     }
 
-    /* ── Sidebar: unified panel ── */
+    /* ----- Top nav ----- */
+    .apple-nav {
+        border-bottom: 1px solid var(--cs-line);
+        background: rgba(255,255,255,0.86);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .apple-link-active {
+        color: var(--cs-primary);
+        background: var(--cs-primary-soft);
+    }
+
+    /* ----- Sidebar ----- */
+    .overview-sidebar {
+        position: sticky;
+        top: 80px;
+        height: calc(100vh - 6rem);
+        width: 240px;
+    }
+
     .overview-sidebar nav {
         display: flex;
         flex-direction: column;
         gap: 2px;
     }
+
     .overview-sidebar nav a {
         display: grid !important;
         grid-template-columns: 24px minmax(0, 1fr);
         align-items: center;
         width: 100%;
         min-height: 40px;
-        column-gap: 0.625rem;
-        padding: 0 0.75rem;
-        border-radius: 10px;
+        column-gap: 10px;
+        padding: 0 10px;
+        border-radius: var(--cs-radius-md);
         font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        color: var(--cs-muted);
+        transition: background-color 180ms var(--cs-ease), color 180ms var(--cs-ease);
     }
-    .overview-sidebar nav a.hidden {
-        display: none !important;
+
+    .overview-sidebar nav a.hidden { display: none !important; }
+
+    .overview-sidebar nav a:hover {
+        background: rgba(255,255,255,0.72);
+        color: var(--cs-ink);
     }
+
+    .overview-sidebar nav a.is-active,
+    .overview-sidebar nav a[data-active="true"] {
+        background: var(--cs-primary-soft);
+        color: var(--cs-primary);
+    }
+
     .overview-sidebar nav a .material-symbols-outlined {
         width: 24px;
         min-width: 24px;
-        max-width: 24px;
         height: 24px;
-        font-size: 20px;
-        line-height: 1;
+        font-size: 19px;
         text-align: center;
     }
+
     .overview-sidebar nav a > span:last-child {
         display: block;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        line-height: 1.25;
     }
-    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] {
-        grid-template-columns: 24px minmax(0, 1fr);
-    }
-    .overview-sidebar nav a[data-nav-target="/pages/notification_center.html"] > span:last-child {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        color: inherit;
-    }
-    /* ── Fix: JS injects campusshare-notification-trigger class ── */
+
+    /* Notification trigger fix */
     .overview-sidebar nav a.campusshare-notification-trigger {
         display: grid !important;
         grid-template-columns: 24px minmax(0, 1fr) !important;
         align-items: center !important;
-        width: 100% !important;
-        height: auto !important;
         min-height: 40px !important;
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-        border-radius: 10px !important;
-        line-height: 1.25 !important;
+        padding: 0 10px !important;
+        border-radius: var(--cs-radius-md) !important;
     }
+
     .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         width: 24px !important;
         min-width: 24px !important;
-        max-width: 24px !important;
         height: 24px !important;
         flex: none !important;
     }
-    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell .material-symbols-outlined {
-        width: 24px !important;
-        min-width: 24px !important;
-        max-width: 24px !important;
-        height: 24px !important;
-        font-size: 20px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
+
     .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-badge {
         position: absolute !important;
         top: -3px !important;
         right: -5px !important;
         display: inline-flex !important;
         width: 16px !important;
-        min-width: 16px !important;
-        max-width: 16px !important;
         height: 16px !important;
-        min-height: 16px !important;
-        padding: 0 !important;
         border-radius: 999px !important;
         align-items: center !important;
         justify-content: center !important;
         font-size: 9px !important;
-        overflow: visible !important;
-        white-space: nowrap !important;
-        line-height: 1 !important;
-        text-overflow: clip !important;
-    }
-    /* Override JS-injected hover background — match other nav items: color-only change */
-    .overview-sidebar nav a.campusshare-notification-trigger:hover {
-        background-color: rgba(255,255,255,0.7) !important;
-        color: #005d90 !important;
     }
 
-    /* ── Sidebar divider ── */
+    /* ----- Sidebar divider ----- */
     .sidebar-divider {
         height: 1px;
-        background: rgba(120,133,150,0.12);
-        margin: 0.5rem 0.75rem;
+        background: var(--cs-line);
+        margin: 8px 10px;
     }
 
-    /* ── Hero ── */
+    /* ----- Hero ----- */
     [data-overview-hero] {
-        min-height: 280px;
+        min-height: 260px;
         background:
             linear-gradient(100deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.86) 46%, rgba(255,255,255,0.18) 100%),
             url("/pages/assets/img/campus-hero.svg") right center / contain no-repeat,
             #ffffff;
     }
+
     [data-overview-hero] h1 {
         max-width: 680px;
-        font-size: clamp(1.75rem, 2.8vw, 2.85rem);
-        line-height: 1.08;
+        font-size: clamp(1.6rem, 2.6vw, 2.55rem);
+        line-height: 1.1;
         letter-spacing: -0.01em;
     }
+
     [data-role="overview-search-input"] {
         box-shadow: none !important;
         border: 0 !important;
         outline: 0 !important;
     }
 
-    /* ── Empty States ── */
+    /* ----- Empty state ----- */
     .empty-state {
         display: flex;
         flex-direction: column;
@@ -250,54 +220,63 @@
         padding: 2.5rem 1rem;
         text-align: center;
     }
+
     .empty-state .material-symbols-outlined {
         font-size: 36px;
-        color: #c4cdd5;
-        margin-bottom: 0.75rem;
+        color: var(--cs-muted);
+        opacity: 0.4;
+        margin-bottom: 12px;
         font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 48;
     }
+
     .empty-state p {
         font-size: 13px;
-        color: #94a3b8;
+        color: var(--cs-muted);
         max-width: 240px;
         line-height: 1.5;
     }
 
-    /* ── Section Header ── */
+    /* ----- Section header ----- */
     .section-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        margin-bottom: 1rem;
+        margin-bottom: 14px;
     }
+
     .section-header h2 {
-        font-size: 1.125rem;
-        font-weight: 800;
-        color: #0f172a;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--cs-ink);
     }
+
     .section-link {
         font-size: 13px;
         font-weight: 600;
         color: var(--cs-primary);
-        padding: 0.25rem 0.75rem;
-        border-radius: 999px;
-    }
-    .section-link:hover {
-        background: rgba(0,93,144,0.06);
+        padding: 4px 12px;
+        border-radius: var(--cs-radius-full);
+        text-decoration: none;
+        transition: background-color 180ms var(--cs-ease);
+        background: transparent;
+        border: none;
+        cursor: pointer;
     }
 
-    /* ── Responsive ── */
+    .section-link:hover {
+        background: var(--cs-primary-soft);
+    }
+
+    /* ----- Responsive ----- */
     @media (max-width: 1180px) {
         .overview-shell { grid-template-columns: 1fr !important; }
         .overview-sidebar { position: static !important; width: auto !important; height: auto !important; }
-        [data-overview-hero] { min-height: auto; }
     }
-    @media (max-width: 760px) {
+
+    @media (max-width: 768px) {
         .desktop-nav, .overview-sidebar { display: none !important; }
         .overview-main { padding: 1rem !important; }
-        [data-overview-hero] h1 { font-size: 1.8rem; }
-        [data-overview-hero] { min-height: auto; }
     }
 </style>
 </head>
@@ -305,91 +284,145 @@
 
 <!-- ── Top Navigation ── -->
 <header class="apple-nav sticky top-0 z-50">
-    <nav class="mx-auto flex h-[72px] max-w-[1440px] items-center gap-6 px-6 lg:px-9">
-        <button class="headline-font shrink-0 text-xl font-extrabold text-[#005d90]" data-nav-target="/pages/market_overview.html" type="button">CampusShare</button>
-        <div class="hidden min-w-0 flex-1 items-center gap-3 rounded-full border border-[rgba(120,133,150,0.18)] bg-white/80 px-4 py-2 md:flex">
-            <span class="material-symbols-outlined text-slate-400">search</span>
-            <input class="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400" data-role="overview-search-input" placeholder="搜索二手商品、课程资料、团队项目" type="text"/>
-            <button class="min-w-[4.25rem] whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-bold text-[#005d90] hover:bg-[#eef6fb]" data-nav-target="/pages/market_listing.html" type="button">分类</button>
+    <nav class="mx-auto flex h-16 max-w-[1400px] items-center gap-5 px-6 lg:px-10">
+        <!-- Logo -->
+        <button class="headline-font shrink-0 text-xl font-extrabold" data-nav-target="/pages/market_overview.html"
+                style="color:var(--cs-primary);background:transparent;border:none;cursor:pointer;" type="button">
+            CampusShare
+        </button>
+
+        <!-- Search -->
+        <div class="hidden min-w-0 flex-1 items-center gap-3 rounded-full border px-4 py-2 md:flex"
+             style="border-color:var(--cs-line);background:rgba(255,255,255,0.80);">
+            <span class="material-symbols-outlined" style="color:var(--cs-muted);font-size:18px;">search</span>
+            <input class="w-full bg-transparent text-sm" data-role="overview-search-input"
+                   placeholder="搜索二手商品、课程资料、团队项目" style="color:var(--cs-ink);" type="text"/>
+            <button class="min-w-[4rem] whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold"
+                    data-nav-target="/pages/market_listing.html"
+                    style="color:var(--cs-primary);" type="button">分类</button>
         </div>
-        <div class="desktop-nav hidden items-center gap-1 text-sm font-bold lg:flex">
+
+        <!-- Main nav links -->
+        <div class="desktop-nav hidden items-center gap-1 text-sm font-semibold lg:flex">
             <a class="apple-link-active rounded-full px-4 py-2" data-nav-target="/pages/market_overview.html" href="#">主页</a>
-            <a class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100 hover:text-[#005d90]" data-nav-target="/pages/market_listing.html" href="#">交易市场</a>
-            <a class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100 hover:text-[#005d90]" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#">学术资源</a>
-            <a class="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100 hover:text-[#005d90]" data-nav-target="/pages/market_listing.html?view=FORUM" href="#">校园论坛</a>
+            <a class="rounded-full px-4 py-2 hover:bg-slate-100" data-nav-target="/pages/market_listing.html" href="#"
+               style="color:var(--cs-muted);">交易市场</a>
+            <a class="rounded-full px-4 py-2 hover:bg-slate-100" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#"
+               style="color:var(--cs-muted);">学术资源</a>
+            <a class="rounded-full px-4 py-2 hover:bg-slate-100" data-nav-target="/pages/market_listing.html?view=FORUM" href="#"
+               style="color:var(--cs-muted);">校园论坛</a>
         </div>
-        <button class="apple-button rounded-full px-5 py-2 text-sm font-bold" data-nav-target="/pages/publish_create.html" data-role="overview-primary-action" type="button">发布</button>
+
+        <!-- Primary action -->
+        <button class="cs-btn cs-btn--primary shrink-0" data-nav-target="/pages/publish_create.html"
+                data-role="overview-primary-action" type="button">发布</button>
     </nav>
 </header>
 
 <!-- ── Main Layout ── -->
-<main class="overview-main mx-auto grid max-w-[1440px] grid-cols-[240px_minmax(0,1fr)] gap-7 px-6 py-7 lg:px-9 overview-shell">
+<main class="overview-main overview-shell mx-auto grid max-w-[1400px] grid-cols-[240px_minmax(0,1fr)] gap-7 px-6 py-7 lg:px-10">
 
-    <!-- Sidebar: single unified glass panel -->
-    <aside class="overview-sidebar sticky top-24 flex h-[calc(100vh-7rem)] w-[240px] flex-col">
-        <section class="apple-glass rounded-2xl p-4 flex flex-col flex-1 min-h-0">
+    <!-- ── Left Sidebar ── -->
+    <aside class="overview-sidebar flex flex-col">
+        <div class="apple-glass flex flex-1 flex-col overflow-hidden rounded-2xl p-4">
 
             <!-- Profile -->
             <div class="mb-4 flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-[#eef6fb] text-sm font-bold text-[#005d90] shrink-0" data-role="overview-profile-avatar">未</div>
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold"
+                     data-role="overview-profile-avatar"
+                     style="background:var(--cs-primary-soft);color:var(--cs-primary);">未</div>
                 <div class="min-w-0">
-                    <p class="truncate text-sm font-extrabold text-slate-950" data-role="overview-profile-name">未登录用户</p>
-                    <p class="truncate text-[11px] text-slate-400" data-role="overview-profile-role">游客模式</p>
+                    <p class="truncate text-sm font-semibold" data-role="overview-profile-name"
+                       style="color:var(--cs-ink);">未登录用户</p>
+                    <p class="truncate text-xs" data-role="overview-profile-role"
+                       style="color:var(--cs-muted);">游客模式</p>
                 </div>
             </div>
 
             <div class="sidebar-divider"></div>
 
             <!-- Navigation -->
-            <nav class="py-1 text-sm font-semibold">
-                <a class="bg-white text-[#005d90] shadow-sm" data-nav-target="/pages/market_overview.html" href="#"><span class="material-symbols-outlined">home</span><span>主页</span></a>
-                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/my_publish.html" href="#"><span class="material-symbols-outlined">format_list_bulleted</span><span>我的发布</span></a>
-                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/order_center.html" href="#"><span class="material-symbols-outlined">receipt_long</span><span>订单中心</span></a>
-                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/recruitment_board.html" href="#"><span class="material-symbols-outlined">groups</span><span>团队招募</span></a>
-                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/notification_center.html" href="#"><span class="material-symbols-outlined">notifications</span><span>消息通知</span></a>
-                <a class="text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-nav-target="/pages/user_profile.html" href="#"><span class="material-symbols-outlined">settings</span><span>个人设置</span></a>
-                <a class="hidden text-slate-600 hover:bg-white/70 hover:text-[#005d90]" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#"><span class="material-symbols-outlined">admin_panel_settings</span><span>管理后台</span></a>
+            <nav class="py-1 flex-shrink-0">
+                <a class="is-active" data-nav-target="/pages/market_overview.html" href="#">
+                    <span class="material-symbols-outlined">home</span>
+                    <span>主页</span>
+                </a>
+                <a data-nav-target="/pages/my_publish.html" href="#">
+                    <span class="material-symbols-outlined">format_list_bulleted</span>
+                    <span>我的发布</span>
+                </a>
+                <a data-nav-target="/pages/order_center.html" href="#">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <span>订单中心</span>
+                </a>
+                <a data-nav-target="/pages/recruitment_board.html" href="#">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span>团队招募</span>
+                </a>
+                <a data-nav-target="/pages/notification_center.html" href="#">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span>消息通知</span>
+                </a>
+                <a data-nav-target="/pages/user_profile.html" href="#">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span>个人设置</span>
+                </a>
+                <a class="hidden" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    <span>管理后台</span>
+                </a>
             </nav>
 
             <div class="sidebar-divider"></div>
 
-            <!-- Messages (inline) -->
-            <div class="px-1 py-2">
-                <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">消息提醒</p>
+            <!-- Messages mini-panel -->
+            <div class="min-h-0 flex-1 overflow-hidden">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide" style="color:var(--cs-muted);">消息提醒</p>
                 <div data-role="overview-notice-list">
-                    <p class="text-[12px] text-slate-400 leading-relaxed">暂无新消息</p>
+                    <p class="text-xs leading-relaxed" style="color:var(--cs-muted);">暂无新消息</p>
                 </div>
             </div>
 
-            <!-- Bottom stats (pushed to bottom) -->
-            <div class="mt-auto pt-2">
+            <!-- Bottom stats -->
+            <div class="mt-auto flex-shrink-0">
                 <div class="sidebar-divider"></div>
-                <div class="grid grid-cols-2 gap-2 pt-3 px-1">
+                <div class="grid grid-cols-2 gap-3 pt-2">
                     <div>
-                        <p class="text-[11px] text-slate-400">收藏</p>
-                        <p class="text-sm font-extrabold text-slate-800 mt-0.5" data-role="overview-favorite-summary">0</p>
+                        <p class="text-xs" style="color:var(--cs-muted);">收藏</p>
+                        <p class="mt-0.5 text-sm font-bold cs-numeric" data-role="overview-favorite-summary"
+                           style="color:var(--cs-ink);">0</p>
                     </div>
                     <div>
-                        <p class="text-[11px] text-slate-400">积分</p>
-                        <p class="text-sm font-extrabold text-slate-800 mt-0.5" data-role="overview-point-balance">0</p>
+                        <p class="text-xs" style="color:var(--cs-muted);">积分</p>
+                        <p class="mt-0.5 text-sm font-bold cs-numeric" data-role="overview-point-balance"
+                           style="color:var(--cs-ink);">0</p>
                     </div>
                 </div>
             </div>
-        </section>
+
+        </div>
     </aside>
 
-    <!-- Content Area -->
-    <section class="min-w-0 flex-1 space-y-6">
+    <!-- ── Content Area ── -->
+    <section class="min-w-0 space-y-6">
 
         <!-- Hero -->
-        <section class="apple-glass relative overflow-hidden rounded-2xl px-8 py-8 lg:px-10 lg:py-10" data-overview-hero>
+        <section class="apple-glass relative overflow-hidden rounded-2xl px-8 py-9 lg:px-10" data-overview-hero>
             <div class="relative max-w-2xl">
-                <span class="mb-4 inline-flex rounded-full bg-[#eef6fb] px-3 py-1 text-[11px] font-bold text-[#005d90]">校园可信交易平台</span>
-                <h1 class="headline-font font-extrabold text-slate-950">把校园交易、资料共享和团队协作放进一个清爽入口。</h1>
-                <p class="mt-4 max-w-xl text-[15px] leading-7 text-slate-500">从二手商品发布到资料下载积分，从订单状态到招募申请，CampusShare 让每一步都有记录、有反馈、可追踪。</p>
-                <div class="mt-6 flex flex-wrap gap-3">
-                    <button class="apple-button rounded-full px-6 py-2.5 text-sm font-bold" data-nav-target="/pages/market_listing.html" type="button">浏览市场</button>
-                    <button class="rounded-full border border-[rgba(120,133,150,0.20)] bg-white px-6 py-2.5 text-sm font-bold text-slate-600 hover:text-[#005d90] hover:border-[rgba(0,93,144,0.2)]" data-nav-target="/pages/publish_create.html" type="button">开始发布</button>
+                <span class="mb-4 inline-flex rounded-full px-3 py-1 text-xs font-bold"
+                      style="background:var(--cs-primary-soft);color:var(--cs-primary);">
+                    校园可信交易平台
+                </span>
+                <h1 class="headline-font font-extrabold" style="color:var(--cs-ink);">
+                    把校园交易、资料共享和团队协作放进一个清爽入口。
+                </h1>
+                <p class="mt-3 max-w-xl text-sm leading-7" style="color:var(--cs-muted);"
+                   data-role="overview-recommended-summary">
+                    从二手商品发布到资料下载积分，从订单状态到招募申请，每一步都有记录、有反馈、可追踪。
+                </p>
+                <div class="mt-5 flex flex-wrap gap-3">
+                    <button class="cs-btn cs-btn--primary" data-nav-target="/pages/market_listing.html" type="button">浏览市场</button>
+                    <button class="cs-btn cs-btn--secondary" data-nav-target="/pages/publish_create.html" type="button">开始发布</button>
                 </div>
             </div>
         </section>
@@ -410,12 +443,14 @@
             </div>
         </section>
 
-        <!-- Bottom Grid: Materials + Recruitment -->
+        <!-- Materials + Recruitment -->
         <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+
+            <!-- Materials -->
             <div class="apple-glass rounded-xl p-5">
                 <div class="section-header">
                     <h2 class="headline-font">精选资料</h2>
-                    <button class="section-link" data-nav-target="/pages/publish_create.html?type=material" type="button">上传文档</button>
+                    <button class="section-link" data-nav-target="/pages/market_listing.html?view=MATERIAL" type="button">查看全部</button>
                 </div>
                 <div data-role="overview-material-list">
                     <div class="empty-state">
@@ -424,6 +459,8 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Recruitment -->
             <div class="apple-glass rounded-xl p-5">
                 <div class="section-header">
                     <h2 class="headline-font">招募精选</h2>
@@ -435,25 +472,32 @@
                         <p>暂无招募信息</p>
                     </div>
                 </div>
-                <button class="mt-3 w-full rounded-full bg-[#005d90] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#004b74] active:scale-[0.98]" data-nav-target="/pages/recruitment_board.html" type="button">浏览所有项目</button>
+                <button class="cs-btn cs-btn--primary mt-4 w-full" data-nav-target="/pages/recruitment_board.html" type="button">
+                    浏览所有项目
+                </button>
             </div>
+
         </section>
+
     </section>
+
 </main>
 
 <!-- Footer -->
-<footer class="mx-auto mt-4 max-w-[1440px] px-6 py-8 lg:px-9">
-    <div class="flex flex-col items-center justify-between gap-4 border-t border-[rgba(120,133,150,0.12)] pt-6 text-xs text-slate-400 md:flex-row">
-        <span class="headline-font font-extrabold text-slate-800">CampusShare</span>
+<footer class="mx-auto mt-4 max-w-[1400px] px-6 pb-8 lg:px-10">
+    <div class="flex flex-col items-center justify-between gap-4 border-t pt-6 text-xs md:flex-row"
+         style="border-color:var(--cs-line);color:var(--cs-muted);">
+        <span class="headline-font text-sm font-extrabold" style="color:var(--cs-ink);">CampusShare</span>
         <span>© 2026 CampusShare</span>
-        <div class="flex flex-wrap justify-center gap-5">
-            <a class="hover:text-[#005d90]" href="#">隐私政策</a>
-            <a class="hover:text-[#005d90]" href="#">服务条款</a>
-            <a class="hover:text-[#005d90]" href="#">支持</a>
+        <div class="flex gap-5">
+            <a href="#" style="color:var(--cs-muted);">隐私政策</a>
+            <a href="#" style="color:var(--cs-muted);">服务条款</a>
+            <a href="#" style="color:var(--cs-muted);">支持</a>
         </div>
     </div>
 </footer>
-<script src="/pages/assets/js/campusshare-api.js?v=20260512-apple-fix"></script>
-<script src="/pages/assets/js/market-overview.js?v=20260512-apple-fix"></script>
+
+<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
+<script src="/pages/assets/js/market-overview.js?v=20260515"></script>
 </body>
 </html>

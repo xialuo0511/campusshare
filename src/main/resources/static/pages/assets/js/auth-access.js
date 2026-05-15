@@ -206,7 +206,7 @@
         const registerFieldsContainer = document.createElement("div");
         registerFieldsContainer.className = "grid grid-cols-1 gap-4 md:grid-cols-2";
         registerFieldsContainer.setAttribute("data-register-fields", "true");
-        registerFieldsContainer.style.overflow = "hidden";
+        registerFieldsContainer.style.overflow = "visible";
         gridContainer.insertAdjacentElement("afterend", registerFieldsContainer);
         [userNameGroup, collegeGroup, gradeGroup, emailGroup, verifyCodeRow].forEach(function AppendGroup(group) {
             registerFieldsContainer.appendChild(group);

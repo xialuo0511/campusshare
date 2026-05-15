@@ -229,6 +229,7 @@
         registerFieldsContainer.setAttribute("data-register-fields", "true");
         registerFieldsContainer.style.overflow = "visible";
         gridContainer.insertAdjacentElement("afterend", registerFieldsContainer);
+        gridContainer.style.display = "none";
         const groupsToMove = [userNameGroup, collegeGroup, gradeGroup, emailGroup, verifyCodeRow];
         if (confirmPwGroup) {
             groupsToMove.unshift(confirmPwGroup);
@@ -302,7 +303,7 @@
         }
         registerFieldsContainer.style.height = visible ? "auto" : "0px";
         registerFieldsContainer.style.opacity = visible ? "1" : "0";
-        registerFieldsContainer.style.marginTop = visible ? "16px" : "0px";
+        registerFieldsContainer.style.marginTop = "0px";
         registerFieldsContainer.style.visibility = visible ? "visible" : "hidden";
         registerFieldsContainer.style.pointerEvents = visible ? "auto" : "none";
     }

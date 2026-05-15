@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="light" lang="zh-CN">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -41,428 +41,397 @@
     };
 </script>
 <style>
-    * { box-sizing: border-box; }
-    html { text-rendering: optimizeLegibility; }
+:root {
+    --cs-primary: #005d90;
+    --cs-primary-strong: #004b74;
+    --cs-primary-soft: #eef6fb;
+    --cs-accent: #3454d1;
+    --cs-ink: #0b1320;
+    --cs-ink-soft: #172033;
+    --cs-muted: #64748b;
+    --cs-line: rgba(120, 133, 150, 0.18);
+    --cs-line-strong: rgba(120, 133, 150, 0.32);
+    --cs-card-bg: rgba(255, 255, 255, 0.78);
+    --cs-card-border: rgba(255, 255, 255, 0.7);
+    --cs-shadow-card: 0 30px 80px -20px rgba(8, 25, 53, 0.28), 0 8px 30px -10px rgba(8, 25, 53, 0.18);
+    --cs-shadow-focus: 0 0 0 4px rgba(0, 93, 144, 0.18);
+    --cs-radius-sm: 10px;
+    --cs-radius-md: 14px;
+    --cs-radius-xl: 28px;
+    --cs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --bg-base: #f4f6fa;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg-base); color: var(--cs-ink);
+    font-family: 'Inter', 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+body { overflow-x: hidden; }
+@media (min-width: 1025px) { html, body { overflow: hidden; } }
 
-    body {
-        min-height: 100vh;
-        margin: 0;
-        font-family: var(--cs-font-body);
-        color: var(--cs-ink);
-        position: relative;
-        overflow-x: hidden;
-        background:
-            radial-gradient(circle at 18% 8%,  rgba(0,93,144,0.10), transparent 25rem),
-            radial-gradient(circle at 84% 12%, rgba(52,84,209,0.08), transparent 24rem),
-            linear-gradient(180deg, #ffffff 0%, #f5f5f7 45%);
-        text-wrap: pretty;
-    }
+/* ---------- Background ---------- */
+#bg-canvas {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+}
+#bg-overlay {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,255,255,0) 0%, var(--bg-base) 100%);
+    opacity: 0.55; transition: opacity 400ms var(--cs-ease);
+}
 
-    /* Ambient orbs — login page only */
-    body::before,
-    body::after {
-        content: "";
-        position: fixed;
-        z-index: -1;
-        width: 34rem;
-        height: 34rem;
-        border-radius: var(--cs-radius-full);
-        pointer-events: none;
-        filter: blur(2px);
-        will-change: transform;
-    }
-    body::before {
-        left: -7rem;
-        top: -8rem;
-        background: radial-gradient(circle, rgba(0,93,144,0.12) 0%, rgba(0,93,144,0.06) 38%, transparent 68%);
-        animation: authOrbDriftA 18s ease-in-out infinite alternate;
-    }
-    body::after {
-        right: -9rem;
-        top: -5rem;
-        background: radial-gradient(circle, rgba(52,84,209,0.10) 0%, rgba(0,93,144,0.04) 42%, transparent 70%);
-        animation: authOrbDriftB 23s ease-in-out infinite alternate;
-    }
+/* ---------- Shell ---------- */
+.shell {
+    position: relative; z-index: 2;
+    display: grid; grid-template-columns: 1fr 1fr;
+    width: 100%; height: 100vh; max-width: 1440px;
+    margin: 0 auto; padding: clamp(24px, 4vw, 56px);
+    gap: clamp(24px, 5vw, 80px); align-items: center;
+}
+@media (max-width: 1024px) {
+    .shell { grid-template-columns: 1fr; min-height: 100vh; height: auto; overflow: visible; padding: 24px; gap: 0; }
+    .brand-side { display: none !important; }
+    .auth-side { min-height: 100vh; padding: 16px 0 32px; }
+}
 
-    h1, h2, h3, .headline-font {
-        font-family: var(--cs-font-headline);
-        letter-spacing: 0;
-    }
+/* ---------- Brand side ---------- */
+.brand-side {
+    display: flex; flex-direction: column; justify-content: space-between;
+    height: 100%; padding: 16px 8px;
+}
+.brand-mark { display: inline-flex; align-items: center; gap: 12px; }
+.brand-mark .logo {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--cs-primary), var(--cs-accent));
+    display: grid; place-items: center; color: #fff;
+    box-shadow: 0 10px 24px -8px rgba(0,93,144,0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.brand-mark .logo .material-symbols-outlined { font-size: 22px; font-variation-settings: 'FILL' 1, 'wght' 500; }
+.brand-mark .name { font-family: 'Manrope', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; color: var(--cs-ink); }
+.brand-hero { margin-top: clamp(24px, 6vh, 60px); }
+.brand-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px 6px 8px; border-radius: 999px;
+    background: var(--cs-card-bg); border: 1px solid var(--cs-card-border);
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.18em; color: var(--cs-primary);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); text-transform: uppercase;
+}
+.brand-eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 999px;
+    background: var(--cs-primary); box-shadow: 0 0 0 4px rgba(0,93,144,0.15);
+}
+.brand-h1 {
+    font-family: 'Manrope', sans-serif; font-size: clamp(48px, 5.6vw, 84px);
+    font-weight: 900; line-height: 0.96; letter-spacing: -0.025em; color: var(--cs-ink); margin: 22px 0 0 0;
+}
+.brand-h1 .accent {
+    background: linear-gradient(120deg, var(--cs-primary) 0%, var(--cs-accent) 80%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.brand-tagline { margin-top: 22px; max-width: 480px; font-size: 17px; line-height: 1.6; color: var(--cs-muted); }
+.feature-strip { margin-top: 36px; display: flex; gap: 14px; flex-wrap: wrap; }
+.feature-pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 14px 10px 10px; border-radius: 999px;
+    background: var(--cs-card-bg); border: 1px solid var(--cs-card-border);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    font-size: 13px; font-weight: 600; color: var(--cs-ink-soft);
+}
+.feature-pill .icon {
+    width: 24px; height: 24px; border-radius: 8px;
+    display: grid; place-items: center; background: var(--cs-primary-soft); color: var(--cs-primary);
+}
+.feature-pill .icon .material-symbols-outlined { font-size: 16px; font-variation-settings: 'FILL' 1, 'wght' 500; }
+.brand-trust {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    padding-top: 20px; border-top: 1px solid var(--cs-line); margin-top: auto;
+}
+.brand-trust span {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; color: var(--cs-muted);
+}
+.brand-trust .material-symbols-outlined { font-size: 15px; color: var(--cs-primary); }
 
-    .material-symbols-outlined {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
-        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
-    }
+/* ---------- Auth side ---------- */
+.auth-side {
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; perspective: 1400px;
+}
 
-    /* ----- Auth card ----- */
-    .auth-card {
-        border: 1px solid var(--cs-line);
-        background: var(--cs-card-glass);
-        backdrop-filter: blur(22px);
-        -webkit-backdrop-filter: blur(22px);
-        box-shadow: var(--cs-shadow-lg);
-    }
+/* ---------- Auth card ---------- */
+.auth-card {
+    width: 100%; max-width: 460px; border-radius: var(--cs-radius-xl);
+    background: var(--cs-card-bg); border: 1px solid var(--cs-card-border);
+    backdrop-filter: blur(24px) saturate(140%); -webkit-backdrop-filter: blur(24px) saturate(140%);
+    box-shadow: var(--cs-shadow-card); padding: 32px;
+    transform-style: preserve-3d; will-change: transform;
+    transition: box-shadow 240ms var(--cs-ease);
+    position: relative; overflow: hidden;
+}
+.auth-card::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(450px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.55), transparent 60%);
+    opacity: 0; transition: opacity 300ms var(--cs-ease); pointer-events: none; mix-blend-mode: overlay;
+}
+.auth-card:hover::before { opacity: 1; }
+.corner-dec {
+    position: absolute; width: 80px; height: 80px;
+    border: 1px solid var(--cs-line-strong); pointer-events: none; opacity: 0.4;
+}
+.corner-dec.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; border-top-left-radius: var(--cs-radius-xl); }
+.corner-dec.br { bottom: -1px; right: -1px; border-left: none; border-top: none; border-bottom-right-radius: var(--cs-radius-xl); }
 
-    /* ----- Auth card gradient header ----- */
-    .auth-card-header {
-        background: linear-gradient(135deg, #005d90 0%, #0077b6 52%, #004b74 100%);
-    }
+/* ---------- Card header ---------- */
+.auth-head {
+    display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px;
+}
+.auth-head h2 {
+    font-family: 'Manrope', sans-serif; font-size: 26px; font-weight: 800;
+    letter-spacing: -0.015em; margin: 0; color: var(--cs-ink);
+}
+.auth-head .sub { margin-top: 4px; font-size: 13.5px; color: var(--cs-muted); }
 
-    /* ----- Field inputs ----- */
-    .auth-field input,
-    .auth-field select {
-        height: 44px;
-        border: 1px solid var(--cs-line);
-        background: rgba(255,255,255,0.88);
-        border-radius: var(--cs-radius-sm);
-        padding: 0 12px;
-        font-size: 15px;
-        color: var(--cs-ink);
-        width: 100%;
-        outline: none;
-        transition:
-            border-color 180ms var(--cs-ease),
-            box-shadow 180ms var(--cs-ease);
-    }
-    .auth-field input::placeholder {
-        color: var(--cs-muted);
-        font-size: 14px;
-    }
-    .auth-field input:hover,
-    .auth-field select:hover {
-        border-color: rgba(0,93,144,0.24);
-    }
-    .auth-field input:focus,
-    .auth-field select:focus {
-        border-color: var(--cs-primary);
-        box-shadow: var(--cs-shadow-focus);
-    }
-    .auth-field input.with-icon-left {
-        padding-left: 40px;
-    }
-    .auth-field input.with-icon-right {
-        padding-right: 44px;
-    }
+/* ---------- Badge pulse ---------- */
+.badge-pulse {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+    border-radius: 999px; background: rgba(16,185,129,0.1); color: #0a8a4f;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.05em; white-space: nowrap;
+}
+.badge-pulse .dot {
+    width: 6px; height: 6px; border-radius: 999px; background: #0a8a4f;
+    box-shadow: 0 0 0 0 rgba(10,138,79,0.5); animation: pulse-dot 1.8s infinite;
+}
+@keyframes pulse-dot {
+    0%   { box-shadow: 0 0 0 0   rgba(10,138,79,0.5); }
+    70%  { box-shadow: 0 0 0 8px rgba(10,138,79,0);   }
+    100% { box-shadow: 0 0 0 0   rgba(10,138,79,0);   }
+}
 
-    /* ----- Tab switcher ----- */
-    .auth-tabs {
-        display: flex;
-        background: rgba(0,93,144,0.07);
-        border-radius: var(--cs-radius-md);
-        padding: 4px;
-        gap: 3px;
-    }
-    .auth-tabs button {
-        flex: 1;
-        height: 42px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 700;
-        background: transparent;
-        color: var(--cs-muted);
-        border: none;
-        cursor: pointer;
-        letter-spacing: 0.01em;
-        transition:
-            background-color 180ms var(--cs-ease),
-            color 180ms var(--cs-ease),
-            box-shadow 180ms var(--cs-ease);
-    }
-    /* JS sets these classes dynamically; fallback active state */
-    .auth-tabs button.tab-active {
-        background: var(--cs-primary);
-        color: #ffffff;
-        box-shadow: 0 2px 10px rgba(0,93,144,0.28);
-    }
+/* ---------- Tab switcher ---------- */
+.tabs {
+    display: flex; position: relative; background: rgba(0,0,0,0.04);
+    border-radius: var(--cs-radius-md); padding: 4px; gap: 4px; margin-bottom: 22px;
+}
+.tabs button {
+    flex: 1; height: 42px; border: none; background: transparent; border-radius: 10px;
+    font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700; color: var(--cs-muted);
+    cursor: pointer; transition: color 220ms var(--cs-ease); position: relative; z-index: 1;
+}
+.tabs button.active { color: #fff; }
+.tab-indicator {
+    position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--cs-primary), var(--cs-accent));
+    box-shadow: 0 6px 18px -6px rgba(0,93,144,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: transform 300ms var(--cs-ease); z-index: 0;
+}
 
-    /* ----- Visual side ----- */
-    .auth-visual h1 {
-        font-size: clamp(3rem, 4.8vw, 4.55rem);
-        font-weight: 950;
-        line-height: 0.98;
-        letter-spacing: -0.01em;
-        text-shadow: 0 1px 0 rgba(255,255,255,0.72);
-    }
+/* ---------- Form ---------- */
+.form-stack { display: flex; flex-direction: column; gap: 14px; }
+.field { position: relative; }
+.field label {
+    display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 600;
+    color: var(--cs-muted); letter-spacing: 0.02em;
+}
+.input-wrap { position: relative; display: flex; align-items: center; }
+.input-wrap > .material-symbols-outlined {
+    position: absolute; left: 14px; color: var(--cs-muted); font-size: 18px;
+    transition: color 200ms var(--cs-ease); pointer-events: none;
+}
+.field:focus-within .input-wrap > .material-symbols-outlined { color: var(--cs-primary); }
+.field input, .field select {
+    width: 100%; height: 46px; border: 1px solid var(--cs-line);
+    background: rgba(255,255,255,0.72); border-radius: var(--cs-radius-sm);
+    padding: 0 14px 0 44px; font-family: 'Inter', sans-serif; font-size: 14.5px;
+    color: var(--cs-ink); outline: none;
+    transition: border-color 200ms var(--cs-ease), box-shadow 200ms var(--cs-ease), background-color 200ms var(--cs-ease);
+}
+.field select { padding-left: 14px; appearance: none; -webkit-appearance: none; }
+.field input::placeholder { color: var(--cs-muted); font-size: 14px; }
+.field input:hover, .field select:hover { border-color: var(--cs-line-strong); }
+.field input:focus, .field select:focus {
+    border-color: var(--cs-primary); box-shadow: var(--cs-shadow-focus); background: rgba(255,255,255,0.95);
+}
 
-    /* ----- Feature mini cards ----- */
-    .auth-feature-card {
-        border-radius: 16px;
-        background: rgba(255,255,255,0.78);
-        border: 1px solid rgba(120,133,150,0.12);
-        box-shadow: var(--cs-shadow-sm);
-        padding: 16px;
-    }
+/* ---------- Password toggle ---------- */
+[data-password-toggle] {
+    position: absolute; right: 6px; width: 36px; height: 36px;
+    border: none; background: transparent; color: var(--cs-muted);
+    cursor: pointer; border-radius: 8px; display: grid; place-items: center;
+}
+[data-password-toggle]:hover { color: var(--cs-primary); background: rgba(0,93,144,0.06); }
+[data-password-toggle-icon] { font-size: 18px; line-height: 1; }
 
-    /* ----- Password toggle ----- */
-    [data-password-toggle] {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.5rem;
-        height: 2.5rem;
-        line-height: 1;
-        color: var(--cs-muted);
-        border: none;
-        background: transparent;
-        cursor: pointer;
-    }
-    [data-password-toggle]:hover {
-        color: var(--cs-primary);
-    }
-    [data-password-toggle-icon] {
-        font-size: 20px;
-        line-height: 1;
-    }
+/* ---------- Submit ---------- */
+.submit-btn {
+    width: 100%; height: 50px; border: none; border-radius: var(--cs-radius-md);
+    background: linear-gradient(135deg, var(--cs-primary), var(--cs-accent));
+    color: #fff; font-family: 'Manrope', sans-serif; font-size: 15px;
+    font-weight: 700; letter-spacing: 0.01em; cursor: pointer;
+    position: relative; overflow: hidden;
+    box-shadow: 0 14px 32px -10px rgba(0,93,144,0.55), inset 0 1px 0 rgba(255,255,255,0.22);
+    transition: transform 140ms var(--cs-ease), box-shadow 240ms var(--cs-ease);
+}
+.submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 38px -10px rgba(0,93,144,0.65), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.submit-btn:active { transform: scale(0.985); }
+.submit-btn::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transform: skewX(-20deg); transition: left 700ms var(--cs-ease);
+}
+.submit-btn:hover::after { left: 140%; }
 
-    /* ----- Register container (JS builds this) ----- */
-    [data-register-fields] {
-        padding: 4px;
-        margin-left: -4px;
-        margin-right: -4px;
-    }
+/* ---------- Animations ---------- */
+.auth-field-shake { animation: auth-field-shake 360ms ease; }
+@keyframes auth-field-shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-7px); }
+    40%, 80% { transform: translateX(7px); }
+}
 
-    /* ----- Layout ----- */
-    main[data-auth-shell] {
-        grid-template-columns: minmax(0, 520px) 440px;
-        justify-content: center;
-    }
+/* ---------- Register fields (JS-built container) ---------- */
+[data-register-fields] { transition: opacity 260ms var(--cs-ease); }
 
-    /* ----- Submit button override ----- */
-    .auth-submit {
-        width: 100%;
-        height: 44px;
-        border-radius: var(--cs-radius-md);
-        background: var(--cs-primary);
-        color: #ffffff;
-        font-size: 15px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition:
-            background-color 180ms var(--cs-ease),
-            transform 120ms var(--cs-ease);
-        box-shadow: none;
-    }
-    .auth-submit:hover {
-        background: var(--cs-primary-strong);
-        transform: translateY(-1px);
-    }
-    .auth-submit:active {
-        transform: scale(0.97);
-    }
-
-    /* ----- Field label ----- */
-    .auth-field-label {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--cs-muted);
-        letter-spacing: 0.01em;
-    }
-
-    /* ----- Animations ----- */
-    @keyframes authModeSwitch {
-        0%   { opacity: 0.76; transform: translateY(8px) scale(0.992); }
-        100% { opacity: 1;    transform: translateY(0)   scale(1); }
-    }
-    @keyframes authFieldShake {
-        0%, 100% { transform: translateX(0); }
-        20%, 60% { transform: translateX(-7px); }
-        40%, 80% { transform: translateX(7px); }
-    }
-    @keyframes authOrbDriftA {
-        0%   { transform: translate3d(0, 0, 0) scale(1); }
-        37%  { transform: translate3d(3.5rem, 2rem, 0) scale(1.06); }
-        71%  { transform: translate3d(1rem, 5rem, 0) scale(0.96); }
-        100% { transform: translate3d(5rem, 1.5rem, 0) scale(1.08); }
-    }
-    @keyframes authOrbDriftB {
-        0%   { transform: translate3d(0, 0, 0) scale(1); }
-        29%  { transform: translate3d(-4rem, 2.5rem, 0) scale(1.04); }
-        64%  { transform: translate3d(-1rem, 6rem, 0) scale(0.97); }
-        100% { transform: translate3d(-5rem, 1rem, 0) scale(1.07); }
-    }
-
-    .auth-mode-switching { animation: authModeSwitch 260ms var(--cs-ease); }
-    .auth-field-shake    { animation: authFieldShake 360ms ease; }
-
-    @media (max-width: 1120px) {
-        main[data-auth-shell] {
-            max-width: 980px;
-            grid-template-columns: minmax(0, 500px) 420px;
-            gap: 2.5rem;
-        }
-        .auth-visual h1 {
-            font-size: clamp(3rem, 6.5vw, 4.25rem);
-        }
-    }
-    @media (max-width: 900px) {
-        .auth-visual { display: none; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
-            transition-duration: 0.01ms !important;
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-        }
-    }
+/* ---------- Credits ---------- */
+.credits {
+    position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%);
+    z-index: 3; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.18em; color: var(--cs-muted); opacity: 0.65;
+    text-transform: uppercase; pointer-events: none; white-space: nowrap;
+}
 </style>
 </head>
-<body class="flex min-h-screen flex-col">
+<body>
 
-<main class="mx-auto grid w-full max-w-[1100px] flex-1 grid-cols-1 items-center gap-14 px-5 py-10 lg:px-8"
-      data-auth-shell>
+<canvas id="bg-canvas"></canvas>
+<div id="bg-overlay"></div>
 
-    <!-- Left: Brand visual -->
-    <section class="auth-visual mx-auto w-full max-w-[520px]">
-        <p class="mb-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-extrabold tracking-[0.18em]"
-           style="background:var(--cs-primary-soft);color:var(--cs-primary);">
-            <span class="material-symbols-outlined" style="font-size:15px;">verified</span>
-            CAMPUS TRUSTED MARKET
-        </p>
-        <h1 class="headline-font max-w-full font-extrabold text-slate-950">CampusShare</h1>
-        <p class="mt-4 max-w-xl text-lg leading-8" style="color:var(--cs-muted);">
-            校园二手交易 · 学术资源共享 · 组队招募<br>
-            一站式校园资源共享平台
-        </p>
+<main class="shell" data-auth-shell>
 
-        <!-- Platform stats -->
-        <div class="mt-7 flex items-center gap-7">
-            <div>
-                <p class="headline-font text-3xl font-extrabold leading-none" style="color:var(--cs-ink);">3,000<span class="text-xl" style="color:var(--cs-primary);">+</span></p>
-                <p class="mt-1 text-xs font-medium" style="color:var(--cs-muted);">在校用户</p>
+    <!-- Left: Brand visual (hidden on mobile) -->
+    <section class="brand-side">
+        <div class="brand-mark">
+            <div class="logo">
+                <span class="material-symbols-outlined">school</span>
             </div>
-            <div class="h-8 w-px" style="background:var(--cs-line);"></div>
-            <div>
-                <p class="headline-font text-3xl font-extrabold leading-none" style="color:var(--cs-ink);">800<span class="text-xl" style="color:var(--cs-primary);">+</span></p>
-                <p class="mt-1 text-xs font-medium" style="color:var(--cs-muted);">学习资料</p>
+            <span class="name">CampusShare</span>
+        </div>
+
+        <div class="brand-hero">
+            <div class="brand-eyebrow">
+                <span class="dot"></span>
+                Campus Trusted Market
             </div>
-            <div class="h-8 w-px" style="background:var(--cs-line);"></div>
-            <div>
-                <p class="headline-font text-3xl font-extrabold leading-none" style="color:var(--cs-ink);">1,200<span class="text-xl" style="color:var(--cs-primary);">+</span></p>
-                <p class="mt-1 text-xs font-medium" style="color:var(--cs-muted);">在售商品</p>
+            <h1 class="brand-h1">
+                校园资源<br><span class="accent">共享平台</span>
+            </h1>
+            <p class="brand-tagline">
+                校园二手交易 · 学术资源共享 · 组队招募<br>
+                一站式校园资源共享平台
+            </p>
+            <div class="feature-strip">
+                <div class="feature-pill">
+                    <div class="icon"><span class="material-symbols-outlined">verified_user</span></div>
+                    身份审核
+                </div>
+                <div class="feature-pill">
+                    <div class="icon"><span class="material-symbols-outlined">receipt_long</span></div>
+                    订单追踪
+                </div>
+                <div class="feature-pill">
+                    <div class="icon"><span class="material-symbols-outlined">school</span></div>
+                    资料积分
+                </div>
+                <div class="feature-pill">
+                    <div class="icon"><span class="material-symbols-outlined">shield</span></div>
+                    数据安全
+                </div>
             </div>
         </div>
 
-        <!-- Feature cards with colored icon backgrounds -->
-        <div class="mt-7 grid max-w-xl grid-cols-3 gap-3">
-            <div class="auth-feature-card">
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl"
-                     style="background:var(--cs-primary-soft);">
-                    <span class="material-symbols-outlined" style="color:var(--cs-primary);font-size:18px;">verified_user</span>
-                </div>
-                <p class="mt-3 text-sm font-bold" style="color:var(--cs-ink);">身份审核</p>
-                <p class="mt-1 text-xs leading-relaxed" style="color:var(--cs-muted);">实名认证体系</p>
-            </div>
-            <div class="auth-feature-card">
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl"
-                     style="background:#fff7ed;">
-                    <span class="material-symbols-outlined" style="color:#b45309;font-size:18px;">receipt_long</span>
-                </div>
-                <p class="mt-3 text-sm font-bold" style="color:var(--cs-ink);">订单追踪</p>
-                <p class="mt-1 text-xs leading-relaxed" style="color:var(--cs-muted);">全流程透明</p>
-            </div>
-            <div class="auth-feature-card">
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl"
-                     style="background:#f0fdf4;">
-                    <span class="material-symbols-outlined" style="color:#16a34a;font-size:18px;">school</span>
-                </div>
-                <p class="mt-3 text-sm font-bold" style="color:var(--cs-ink);">资料积分</p>
-                <p class="mt-1 text-xs leading-relaxed" style="color:var(--cs-muted);">共享换积分</p>
-            </div>
-        </div>
-
-        <!-- Trust strip -->
-        <div class="mt-6 flex flex-wrap items-center gap-5">
-            <span class="flex items-center gap-1.5 text-xs font-semibold" style="color:var(--cs-muted);">
-                <span class="material-symbols-outlined" style="font-size:14px;color:var(--cs-primary);">shield</span>
+        <div class="brand-trust">
+            <span>
+                <span class="material-symbols-outlined">shield</span>
                 数据安全加密
             </span>
-            <span class="flex items-center gap-1.5 text-xs font-semibold" style="color:var(--cs-muted);">
-                <span class="material-symbols-outlined" style="font-size:14px;color:var(--cs-primary);">admin_panel_settings</span>
+            <span>
+                <span class="material-symbols-outlined">admin_panel_settings</span>
                 实名审核准入
             </span>
-            <span class="flex items-center gap-1.5 text-xs font-semibold" style="color:var(--cs-muted);">
-                <span class="material-symbols-outlined" style="font-size:14px;color:var(--cs-primary);">support_agent</span>
+            <span>
+                <span class="material-symbols-outlined">support_agent</span>
                 平台纠纷保障
             </span>
         </div>
     </section>
 
     <!-- Right: Auth card -->
-    <section class="auth-card mx-auto w-full max-w-[440px] overflow-hidden rounded-2xl">
-        <!-- Card header — gradient banner -->
-        <div class="auth-card-header relative overflow-hidden px-8 pb-6 pt-7">
-            <div class="absolute -right-5 -top-5 h-24 w-24 rounded-full"
-                 style="background:rgba(255,255,255,0.12);"></div>
-            <div class="absolute right-12 bottom-0 h-14 w-14 rounded-full"
-                 style="background:rgba(255,255,255,0.07);"></div>
-            <div class="absolute -left-3 bottom-3 h-10 w-10 rounded-full"
-                 style="background:rgba(255,255,255,0.06);"></div>
-            <div class="relative z-10 text-center">
-                <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-                     style="background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);">
-                    <span class="material-symbols-outlined text-white"
-                          style="font-size:26px;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">school</span>
+    <section class="auth-side">
+        <div class="auth-card">
+            <div class="corner-dec tl"></div>
+            <div class="corner-dec br"></div>
+
+            <!-- Card header -->
+            <div class="auth-head">
+                <div>
+                    <h2>欢迎使用</h2>
+                    <p class="sub">校园资源共享平台</p>
                 </div>
-                <h2 class="headline-font text-2xl font-extrabold tracking-tight text-white">CampusShare</h2>
-                <p class="mt-1 text-xs font-medium" style="color:rgba(255,255,255,0.70);">校园资源共享平台</p>
+                <div class="badge-pulse">
+                    <span class="dot"></span>
+                    安全认证
+                </div>
             </div>
-        </div>
 
-        <!-- Tab switcher — JS relies on: querySelectorAll("main .border-b button")[0/1] -->
-        <div class="border-b px-8 py-5" style="border-color:var(--cs-line);">
-            <div class="auth-tabs">
-                <button type="button">登录</button>
+            <!-- Tab switcher — JS: querySelectorAll("main .tabs button")[0/1] -->
+            <div class="tabs">
+                <button type="button" class="active">登录</button>
                 <button type="button">注册</button>
+                <div class="tab-indicator"></div>
             </div>
-        </div>
 
-        <!-- Form body -->
-        <div class="px-8 pb-7 pt-6">
-            <form class="space-y-4">
+            <!-- Form body -->
+            <form class="form-stack">
+
+                <!-- 学号 — JS: textInputs[0] / accountInput -->
+                <div class="field space-y-1">
+                    <label for="auth-account">学号</label>
+                    <div class="input-wrap">
+                        <span class="material-symbols-outlined">person</span>
+                        <input id="auth-account" type="text" maxlength="11" placeholder="请输入 11 位学号"/>
+                    </div>
+                </div>
+
+                <!-- 密码 — JS: passwordInput -->
+                <div class="field space-y-1">
+                    <label for="auth-password">密码</label>
+                    <div class="input-wrap">
+                        <span class="material-symbols-outlined">lock</span>
+                        <input id="auth-password" type="password" placeholder="请输入密码（至少 8 位）" style="padding-right:46px;"/>
+                        <button type="button" data-password-toggle="" aria-label="显示密码">
+                            <span class="material-symbols-outlined" data-password-toggle-icon="">visibility_off</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Register-only fields — JS uses this div as gridContainer anchor -->
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 
-                    <!-- 学号 — JS: textInputs[0] / accountInput -->
-                    <div class="auth-field space-y-1 md:col-span-2">
-                        <label class="auth-field-label" for="auth-account">学号</label>
-                        <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm"
-                                  style="color:var(--cs-muted);font-size:18px;">person</span>
-                            <input class="with-icon-left" id="auth-account"
-                                   maxlength="11" placeholder="请输入 11 位学号" type="text"/>
-                        </div>
-                    </div>
-
-                    <!-- 密码 — JS: passwordInput -->
-                    <div class="auth-field space-y-1 md:col-span-2">
-                        <label class="auth-field-label" for="auth-password">密码</label>
-                        <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2"
-                                  style="color:var(--cs-muted);font-size:18px;">lock</span>
-                            <input class="with-icon-left with-icon-right" id="auth-password"
-                                   placeholder="请输入密码（至少 8 位）" type="password"/>
-                            <button aria-label="显示密码" class="absolute right-2 top-1/2 -translate-y-1/2"
-                                    data-password-toggle="" type="button">
-                                <span class="material-symbols-outlined" data-password-toggle-icon="">visibility_off</span>
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- 用户名 — JS: textInputs[1] / userNameInput -->
-                    <div class="auth-field space-y-1 md:col-span-2">
-                        <label class="auth-field-label" for="auth-username">用户名</label>
-                        <input id="auth-username" placeholder="请输入用户名（2-20字符）" type="text"/>
+                    <div class="field space-y-1 md:col-span-2">
+                        <label for="auth-username">用户名</label>
+                        <input id="auth-username" type="text" placeholder="请输入用户名（2-20字符）" style="padding-left:14px;"/>
                     </div>
 
                     <!-- 学院 — JS: selects[0] / collegeSelect -->
-                    <div class="auth-field space-y-1">
-                        <label class="auth-field-label" for="auth-college">学院</label>
-                        <select class="appearance-none" id="auth-college">
+                    <div class="field space-y-1">
+                        <label for="auth-college">学院</label>
+                        <select id="auth-college">
                             <option value="">请选择学院</option>
                             <option>工程学院</option>
                             <option>理学院</option>
@@ -473,9 +442,9 @@
                     </div>
 
                     <!-- 年级 — JS: selects[1] / gradeSelect -->
-                    <div class="auth-field space-y-1">
-                        <label class="auth-field-label" for="auth-grade">年级</label>
-                        <select class="appearance-none" id="auth-grade">
+                    <div class="field space-y-1">
+                        <label for="auth-grade">年级</label>
+                        <select id="auth-grade">
                             <option value="">请选择年级</option>
                             <option>本科生</option>
                             <option>研究生</option>
@@ -486,33 +455,30 @@
                     </div>
 
                     <!-- 邮箱 — JS: emailInput -->
-                    <div class="auth-field space-y-1 md:col-span-2">
-                        <label class="auth-field-label" for="auth-email">邮箱</label>
-                        <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2"
-                                  style="color:var(--cs-muted);font-size:18px;">mail</span>
-                            <input class="with-icon-left" id="auth-email"
-                                   placeholder="name@campus.edu.cn" type="email"/>
+                    <div class="field space-y-1 md:col-span-2">
+                        <label for="auth-email">邮箱</label>
+                        <div class="input-wrap">
+                            <span class="material-symbols-outlined">mail</span>
+                            <input id="auth-email" type="email" placeholder="name@campus.edu.cn"/>
                         </div>
                     </div>
 
                 </div><!-- /grid -->
 
                 <!-- Submit — JS: button[type='submit'] -->
-                <button class="auth-submit mt-2" type="submit">登录</button>
+                <button class="submit-btn" type="submit">登录</button>
 
                 <!-- Security notice -->
-                <div class="flex items-center gap-3 py-1">
-                    <div class="h-px flex-1" style="background:var(--cs-line);"></div>
-                    <span class="text-[10px] font-extrabold uppercase tracking-[0.18em]"
-                          style="color:var(--cs-muted);">安全网关</span>
-                    <div class="h-px flex-1" style="background:var(--cs-line);"></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:2px 0;">
+                    <div style="flex:1;height:1px;background:var(--cs-line);"></div>
+                    <span style="font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--cs-muted);">安全网关</span>
+                    <div style="flex:1;height:1px;background:var(--cs-line);"></div>
                 </div>
-                <div class="flex justify-center gap-6">
-                    <span class="flex items-center gap-1.5 text-xs font-medium" style="color:var(--cs-muted);">
+                <div style="display:flex;justify-content:center;gap:20px;">
+                    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--cs-muted);">
                         <span class="material-symbols-outlined" style="font-size:15px;">shield</span>SSL 加密
                     </span>
-                    <span class="flex items-center gap-1.5 text-xs font-medium" style="color:var(--cs-muted);">
+                    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--cs-muted);">
                         <span class="material-symbols-outlined" style="font-size:15px;">verified_user</span>审核准入
                     </span>
                 </div>
@@ -523,15 +489,23 @@
 
 </main>
 
-<footer class="px-6 py-6">
-    <div class="mx-auto flex max-w-[1100px] items-center justify-between border-t pt-5"
-         style="border-color:var(--cs-line);">
-        <span class="headline-font text-sm font-extrabold" style="color:var(--cs-ink);">CampusShare</span>
-        <span class="text-xs" style="color:var(--cs-muted);">© 2026 CampusShare</span>
-        <span class="text-xs font-medium" style="color:var(--cs-muted);">校园资源共享平台</span>
-    </div>
-</footer>
+<div class="credits">CampusShare · v1.0 · Trusted Campus Market</div>
 
+<script src="/pages/assets/js/bg-engine.js"></script>
+<script>
+(function InitPage() {
+    if (window.BGEngine) {
+        BGEngine.setMode('spotlight');
+    }
+    var card = document.querySelector('.auth-card');
+    if (!card) { return; }
+    card.addEventListener('mousemove', function(e) {
+        var r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+        card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+    });
+})();
+</script>
 <script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
 <script src="/pages/assets/js/auth-access.js?v=20260515"></script>
 </body>

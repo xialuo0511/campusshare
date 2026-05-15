@@ -8,7 +8,7 @@
 
     function BindAuthPage() {
         const authForm = document.querySelector("main form");
-        const tabButtons = document.querySelectorAll("main .border-b button");
+        const tabButtons = document.querySelectorAll("main .tabs button");
         const campusShareApi = window.CampusShareApi || null;
         if (!authForm || tabButtons.length < 2) {
             return;
@@ -232,12 +232,13 @@
 
     function SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton) {
         const isLogin = currentMode === AUTH_MODE_LOGIN;
-        tabButtons[0].className = isLogin
-            ? "flex-1 rounded-full bg-[#005d90] py-3 text-sm font-extrabold text-white shadow-md"
-            : "flex-1 rounded-full py-3 text-sm font-extrabold text-slate-400 hover:text-[#005d90] transition-colors";
-        tabButtons[1].className = isLogin
-            ? "flex-1 rounded-full py-3 text-sm font-extrabold text-slate-400 hover:text-[#005d90] transition-colors"
-            : "flex-1 rounded-full bg-[#005d90] py-3 text-sm font-extrabold text-white shadow-md";
+        tabButtons[0].classList.toggle("active", isLogin);
+        tabButtons[1].classList.toggle("active", !isLogin);
+        const tabsContainer = tabButtons[0].closest(".tabs");
+        const indicator = tabsContainer && tabsContainer.querySelector(".tab-indicator");
+        if (indicator) {
+            indicator.style.transform = isLogin ? "translateX(0)" : "translateX(calc(100% + 4px))";
+        }
         SetRegisterContainerVisible(registerFieldsContainer, !isLogin);
         submitButton.textContent = isLogin ? "登录" : "注册";
     }

@@ -5,6 +5,8 @@
     const AUTH_MODE_LOGIN = "login";
     const AUTH_MODE_REGISTER = "register";
     const STUDENT_ACCOUNT_PATTERN = /^\d{11}$/;
+    const STRENGTH_COLORS = ["#cbd5e1", "#ef4444", "#f59e0b", "#0a8a4f", "#005d90"];
+    const STRENGTH_LABELS = ["—", "弱", "一般", "良好", "极强"];
 
     function BindAuthPage() {
         const authForm = document.querySelector("main form");
@@ -20,6 +22,9 @@
         const passwordInput = authForm.querySelector("input[type='password']");
         const passwordToggleButton = authForm.querySelector("[data-password-toggle]");
         const passwordToggleIcon = authForm.querySelector("[data-password-toggle-icon]");
+        const confirmPwInput = authForm.querySelector("[data-confirm-pw]");
+        const confirmPwToggleButton = authForm.querySelector("[data-confirm-pw-toggle]");
+        const confirmPwToggleIcon = authForm.querySelector("[data-confirm-pw-toggle-icon]");
         const emailInput = authForm.querySelector("input[type='email']");
         const collegeSelect = authForm.querySelectorAll("select")[0];
         const gradeSelect = authForm.querySelectorAll("select")[1];
@@ -32,6 +37,13 @@
         const passwordGroup = passwordInput.closest(".space-y-1");
         const userNameGroup = userNameInput.closest(".space-y-1");
         const emailGroup = emailInput.closest(".space-y-1");
+        const confirmPwGroup = confirmPwInput ? confirmPwInput.closest(".space-y-1") : null;
+        const strengthMeter = passwordGroup ? passwordGroup.querySelector("[data-strength-meter]") : null;
+        const strengthBars = strengthMeter ? Array.from(strengthMeter.querySelectorAll("[data-bar]")) : [];
+        const strengthLabel = strengthMeter ? strengthMeter.querySelector("[data-strength-label]") : null;
+        const authHeadTitle = document.querySelector(".auth-head h2");
+        const authHeadSub = document.querySelector(".auth-head .sub");
+
         const messageBar = BuildMessageBar(authForm);
         const verifyCodeRow = BuildVerifyCodeRow(emailInput);
         const verificationCodeInput = verifyCodeRow.querySelector("input");
@@ -41,10 +53,16 @@
             collegeSelect,
             gradeSelect,
             emailInput,
-            verifyCodeRow
+            verifyCodeRow,
+            confirmPwInput
         );
 
         BindPasswordToggle(passwordInput, passwordToggleButton, passwordToggleIcon);
+        BindPasswordToggle(confirmPwInput, confirmPwToggleButton, confirmPwToggleIcon);
+
+        passwordInput.addEventListener("input", function HandlePasswordInput() {
+            UpdateStrengthMeter(passwordInput.value, strengthBars, strengthLabel);
+        });
 
         const authNoticeText = campusShareApi && campusShareApi.ConsumeAuthNotice ? campusShareApi.ConsumeAuthNotice() : "";
         if (authNoticeText) {
@@ -54,12 +72,12 @@
         let currentMode = AUTH_MODE_LOGIN;
         tabButtons[0].addEventListener("click", function HandleLoginModeClick() {
             currentMode = AUTH_MODE_LOGIN;
-            SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton);
+            SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton, authHeadTitle, authHeadSub, strengthMeter);
             HideMessage(messageBar);
         });
         tabButtons[1].addEventListener("click", function HandleRegisterModeClick() {
             currentMode = AUTH_MODE_REGISTER;
-            SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton);
+            SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton, authHeadTitle, authHeadSub, strengthMeter);
             HideMessage(messageBar);
         });
 
@@ -118,11 +136,13 @@
                 {
                     accountInput,
                     passwordInput,
+                    confirmPwInput,
                     userNameInput,
                     emailInput,
                     verificationCodeInput,
                     accountGroup,
                     passwordGroup,
+                    confirmPwGroup,
                     userNameGroup,
                     emailGroup,
                     verificationCodeGroup: verifyCodeRow
@@ -168,7 +188,7 @@
             }
         });
 
-        SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton);
+        SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton, authHeadTitle, authHeadSub, strengthMeter);
     }
 
     function BuildMessageBar(authForm) {
@@ -194,11 +214,12 @@
         return verifyCodeRow;
     }
 
-    function BuildRegisterFieldsContainer(userNameInput, collegeSelect, gradeSelect, emailInput, verifyCodeRow) {
+    function BuildRegisterFieldsContainer(userNameInput, collegeSelect, gradeSelect, emailInput, verifyCodeRow, confirmPwInput) {
         const userNameGroup = userNameInput.closest(".space-y-1");
         const collegeGroup = collegeSelect.closest(".space-y-1");
         const gradeGroup = gradeSelect.closest(".space-y-1");
         const emailGroup = emailInput.closest(".space-y-1");
+        const confirmPwGroup = confirmPwInput ? confirmPwInput.closest(".space-y-1") : null;
         const gridContainer = userNameGroup ? userNameGroup.parentElement : null;
         if (!gridContainer || !userNameGroup || !collegeGroup || !gradeGroup || !emailGroup || !verifyCodeRow) {
             return null;
@@ -208,7 +229,11 @@
         registerFieldsContainer.setAttribute("data-register-fields", "true");
         registerFieldsContainer.style.overflow = "visible";
         gridContainer.insertAdjacentElement("afterend", registerFieldsContainer);
-        [userNameGroup, collegeGroup, gradeGroup, emailGroup, verifyCodeRow].forEach(function AppendGroup(group) {
+        const groupsToMove = [userNameGroup, collegeGroup, gradeGroup, emailGroup, verifyCodeRow];
+        if (confirmPwGroup) {
+            groupsToMove.unshift(confirmPwGroup);
+        }
+        groupsToMove.forEach(function AppendGroup(group) {
             registerFieldsContainer.appendChild(group);
         });
         return registerFieldsContainer;
@@ -230,7 +255,7 @@
         });
     }
 
-    function SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton) {
+    function SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton, authHeadTitle, authHeadSub, strengthMeter) {
         const isLogin = currentMode === AUTH_MODE_LOGIN;
         tabButtons[0].classList.toggle("active", isLogin);
         tabButtons[1].classList.toggle("active", !isLogin);
@@ -239,8 +264,36 @@
         if (indicator) {
             indicator.style.transform = isLogin ? "translateX(0)" : "translateX(calc(100% + 4px))";
         }
+        if (authHeadTitle) {
+            authHeadTitle.textContent = isLogin ? "欢迎回来" : "加入 CampusShare";
+        }
+        if (authHeadSub) {
+            authHeadSub.textContent = isLogin ? "使用学号登录校园资源共享平台" : "完成实名信息以加入校内可信交易";
+        }
+        if (strengthMeter) {
+            strengthMeter.style.display = isLogin ? "none" : "flex";
+        }
         SetRegisterContainerVisible(registerFieldsContainer, !isLogin);
-        submitButton.textContent = isLogin ? "登录" : "注册";
+        submitButton.innerHTML = isLogin
+            ? "登录账号&nbsp;<span class=\"material-symbols-outlined\" style=\"font-size:18px;vertical-align:-4px;\">arrow_forward</span>"
+            : "提交注册申请&nbsp;<span class=\"material-symbols-outlined\" style=\"font-size:18px;vertical-align:-4px;\">arrow_forward</span>";
+    }
+
+    function UpdateStrengthMeter(value, strengthBars, strengthLabel) {
+        if (!strengthBars || !strengthBars.length || !strengthLabel) {
+            return;
+        }
+        let score = 0;
+        if (value.length >= 8) { score++; }
+        if (/[A-Z]/.test(value) && /[a-z]/.test(value)) { score++; }
+        if (/\d/.test(value)) { score++; }
+        if (/[^A-Za-z0-9]/.test(value)) { score++; }
+        const activeColor = STRENGTH_COLORS[score];
+        strengthBars.forEach(function UpdateBar(bar, idx) {
+            bar.style.background = idx < score ? activeColor : "var(--cs-line)";
+        });
+        strengthLabel.textContent = STRENGTH_LABELS[score];
+        strengthLabel.style.color = score >= 3 ? activeColor : "var(--cs-muted)";
     }
 
     function SetRegisterContainerVisible(registerFieldsContainer, visible) {
@@ -283,6 +336,17 @@
         }
         if (currentMode === AUTH_MODE_LOGIN) {
             return true;
+        }
+        const confirmPwValue = fieldContext.confirmPwInput ? fieldContext.confirmPwInput.value : "";
+        if (!confirmPwValue) {
+            ShowError(messageBar, "请确认密码");
+            MarkFieldError(fieldContext.confirmPwGroup, fieldContext.confirmPwInput);
+            return false;
+        }
+        if (confirmPwValue !== (fieldContext.passwordInput ? fieldContext.passwordInput.value : "")) {
+            ShowError(messageBar, "两次密码输入不一致");
+            MarkFieldError(fieldContext.confirmPwGroup, fieldContext.confirmPwInput);
+            return false;
         }
         if (!displayNameValue) {
             ShowError(messageBar, "用户名不能为空");

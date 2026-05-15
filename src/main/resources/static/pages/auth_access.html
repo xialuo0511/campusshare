@@ -297,6 +297,20 @@ body { overflow-x: hidden; }
 /* ---------- Register fields (JS-built container) ---------- */
 [data-register-fields] { transition: opacity 260ms var(--cs-ease); }
 
+/* ---------- Password strength ---------- */
+.strength {
+    display: flex; align-items: center; gap: 8px; margin-top: 8px;
+}
+.strength-bars { display: flex; gap: 4px; flex: 1; }
+.strength-bar {
+    height: 4px; flex: 1; border-radius: 999px;
+    background: var(--cs-line); transition: background 300ms var(--cs-ease);
+}
+.strength-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--cs-muted); min-width: 32px; text-align: right;
+}
+
 /* ---------- Credits ---------- */
 .credits {
     position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%);
@@ -379,8 +393,8 @@ body { overflow-x: hidden; }
             <!-- Card header -->
             <div class="auth-head">
                 <div>
-                    <h2>欢迎使用</h2>
-                    <p class="sub">校园资源共享平台</p>
+                    <h2>欢迎回来</h2>
+                    <p class="sub">使用学号登录校园资源共享平台</p>
                 </div>
                 <div class="badge-pulse">
                     <span class="dot"></span>
@@ -417,10 +431,31 @@ body { overflow-x: hidden; }
                             <span class="material-symbols-outlined" data-password-toggle-icon="">visibility_off</span>
                         </button>
                     </div>
+                    <div class="strength" data-strength-meter style="display:none;">
+                        <div class="strength-bars">
+                            <div class="strength-bar" data-bar="1"></div>
+                            <div class="strength-bar" data-bar="2"></div>
+                            <div class="strength-bar" data-bar="3"></div>
+                            <div class="strength-bar" data-bar="4"></div>
+                        </div>
+                        <div class="strength-label" data-strength-label>—</div>
+                    </div>
                 </div>
 
                 <!-- Register-only fields — JS uses this div as gridContainer anchor -->
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                    <!-- 确认密码 — register only, JS: confirmPwInput -->
+                    <div class="field space-y-1 md:col-span-2">
+                        <label for="auth-confirm-pw">确认密码</label>
+                        <div class="input-wrap">
+                            <span class="material-symbols-outlined">lock</span>
+                            <input id="auth-confirm-pw" type="password" placeholder="请再次输入密码" data-confirm-pw="" style="padding-right:46px;"/>
+                            <button type="button" data-confirm-pw-toggle="" aria-label="显示确认密码">
+                                <span class="material-symbols-outlined" data-confirm-pw-toggle-icon="">visibility_off</span>
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- 用户名 — JS: textInputs[1] / userNameInput -->
                     <div class="field space-y-1 md:col-span-2">

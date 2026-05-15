@@ -233,11 +233,11 @@
     function SetModeUi(currentMode, tabButtons, registerFieldsContainer, submitButton) {
         const isLogin = currentMode === AUTH_MODE_LOGIN;
         tabButtons[0].className = isLogin
-            ? "flex-1 rounded-full bg-white py-3 text-sm font-extrabold text-[#005d90] shadow-sm"
-            : "flex-1 rounded-full py-3 text-sm font-extrabold text-slate-500 hover:text-[#005d90]";
+            ? "flex-1 rounded-full bg-[#005d90] py-3 text-sm font-extrabold text-white shadow-md"
+            : "flex-1 rounded-full py-3 text-sm font-extrabold text-slate-400 hover:text-[#005d90] transition-colors";
         tabButtons[1].className = isLogin
-            ? "flex-1 rounded-full py-3 text-sm font-extrabold text-slate-500 hover:text-[#005d90]"
-            : "flex-1 rounded-full bg-white py-3 text-sm font-extrabold text-[#005d90] shadow-sm";
+            ? "flex-1 rounded-full py-3 text-sm font-extrabold text-slate-400 hover:text-[#005d90] transition-colors"
+            : "flex-1 rounded-full bg-[#005d90] py-3 text-sm font-extrabold text-white shadow-md";
         SetRegisterContainerVisible(registerFieldsContainer, !isLogin);
         submitButton.textContent = isLogin ? "登录" : "注册";
     }

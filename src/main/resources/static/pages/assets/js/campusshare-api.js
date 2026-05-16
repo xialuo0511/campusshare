@@ -1853,9 +1853,17 @@
             imageElement.src = avatarUrl;
             imageElement.alt = "用户头像";
             imageElement.className = "h-full w-full object-cover";
+            imageElement.style.width = "100%";
+            imageElement.style.height = "100%";
+            imageElement.style.display = "block";
+            imageElement.style.objectFit = "cover";
+            imageElement.style.borderRadius = "inherit";
+            imageElement.style.maxWidth = "none";
+            element.style.overflow = "hidden";
             element.appendChild(imageElement);
             return;
         }
+        element.style.overflow = "";
         element.textContent = ResolveUserInitial(safeProfile, fallbackName);
     }
 

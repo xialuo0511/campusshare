@@ -73,7 +73,7 @@ body{min-height:100vh;background:radial-gradient(900px 480px at 8% -10%,rgba(0,9
 .primary-btn:hover{transform:translateY(-1px);box-shadow:0 14px 28px -10px rgba(0,93,144,0.7);}
 .primary-btn:active{transform:scale(0.98);}
 .primary-btn .material-symbols-outlined{font-size:17px;}
-.avatar-btn{width:38px;height:38px;border-radius:999px;background:linear-gradient(135deg,#ffd089,#f0a35a);color:#fff;font-family:'Manrope',sans-serif;font-weight:700;font-size:14px;display:grid;place-items:center;cursor:pointer;border:2px solid #fff;box-shadow:var(--cs-shadow-sm);}
+.avatar-btn{width:38px;height:38px;border-radius:999px;background:linear-gradient(135deg,#ffd089,#f0a35a);color:#fff;font-family:'Manrope',sans-serif;font-weight:700;font-size:14px;display:grid;place-items:center;cursor:pointer;border:2px solid #fff;box-shadow:var(--cs-shadow-sm);overflow:hidden;}
 .ghost-btn{height:38px;padding:0 16px;border-radius:999px;border:1px solid var(--cs-line);background:rgba(255,255,255,0.6);color:var(--cs-ink-soft);font-family:'Manrope',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer;transition:all 180ms var(--cs-ease);}
 .ghost-btn:hover{border-color:var(--cs-line-strong);background:#fff;}
 
@@ -90,7 +90,7 @@ body{min-height:100vh;background:radial-gradient(900px 480px at 8% -10%,rgba(0,9
 .left-rail{position:sticky;top:88px;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 104px);}
 .profile-card{padding:18px;}
 .profile-row{display:flex;align-items:center;gap:12px;}
-.profile-avatar{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#ffd089,#f0a35a);color:#fff;font-family:'Manrope',sans-serif;font-weight:800;font-size:18px;display:grid;place-items:center;flex-shrink:0;}
+.profile-avatar{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#ffd089,#f0a35a);color:#fff;font-family:'Manrope',sans-serif;font-weight:800;font-size:18px;display:grid;place-items:center;flex-shrink:0;overflow:hidden;}
 .profile-avatar.guest{background:var(--cs-primary-soft);color:var(--cs-primary);font-size:22px;}
 .profile-info{min-width:0;flex:1;}
 .profile-info .name{font-family:'Manrope',sans-serif;font-weight:700;font-size:14.5px;color:var(--cs-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

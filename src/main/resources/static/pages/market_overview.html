@@ -1,500 +1,582 @@
 <!DOCTYPE html>
-<html class="light" lang="zh-CN">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>CampusShare | 校园资源共享</title>
-<script src="/pages/assets/vendor/tailwindcss.js"></script>
+<title>CampusShare · 主页</title>
 <link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
 <link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
-<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
-<script id="tailwind-config">
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: {
-                    primary: "#005d90",
-                    "primary-strong": "#004b74",
-                    "primary-soft": "#eef6fb",
-                    surface: "#f5f5f7",
-                    card: "#ffffff",
-                    line: "rgba(120,133,150,0.16)",
-                    muted: "#64748b",
-                    ink: "#172033",
-                    tertiary: "#3454d1"
-                },
-                borderRadius: {
-                    DEFAULT: "8px",
-                    md: "10px",
-                    lg: "12px",
-                    xl: "16px",
-                    full: "999px"
-                },
-                fontFamily: {
-                    headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
-                    body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
-                }
-            }
-        }
-    };
-</script>
 <style>
-    * { box-sizing: border-box; }
-    html { text-rendering: optimizeLegibility; }
+:root {
+  --cs-primary: #005d90;
+  --cs-primary-strong: #004b74;
+  --cs-primary-soft: #eef6fb;
+  --cs-accent: #3454d1;
+  --cs-ink: #0b1320;
+  --cs-ink-soft: #172033;
+  --cs-muted: #64748b;
+  --cs-muted-2: #94a3b8;
+  --cs-line: rgba(120,133,150,0.18);
+  --cs-line-strong: rgba(120,133,150,0.32);
+  --cs-card-bg: rgba(255,255,255,0.78);
+  --cs-card-solid: #ffffff;
+  --cs-shadow-sm: 0 1px 2px rgba(15,23,42,0.04),0 6px 18px -8px rgba(15,23,42,0.08);
+  --cs-shadow-md: 0 14px 36px -16px rgba(8,25,53,0.18);
+  --cs-shadow-lg: 0 30px 60px -24px rgba(8,25,53,0.22);
+  --cs-shadow-focus: 0 0 0 4px rgba(0,93,144,0.16);
+  --cs-r-sm: 10px;
+  --cs-r-md: 14px;
+  --cs-r-lg: 18px;
+  --cs-r-xl: 24px;
+  --cs-ease: cubic-bezier(0.22,1,0.36,1);
+  --green: #0a8a4f;
+  --green-soft: #e7f6ee;
+  --amber: #b45309;
+  --amber-soft: #fff4e0;
+  --rose: #be123c;
+  --rose-soft: #ffe4e9;
+  --violet: #7c3aed;
+  --violet-soft: #f1ebff;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;color:var(--cs-ink);font-family:'Inter','Noto Sans SC','Microsoft YaHei',system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+body{min-height:100vh;background:radial-gradient(900px 480px at 8% -10%,rgba(0,93,144,0.10),transparent 60%),radial-gradient(900px 480px at 110% 0%,rgba(52,84,209,0.08),transparent 60%),linear-gradient(180deg,#ffffff 0%,#f4f6fa 280px);text-wrap:pretty;}
+.headline{font-family:'Manrope','Noto Sans SC',sans-serif;letter-spacing:-0.01em;}
+.material-symbols-outlined{font-family:'Material Symbols Outlined';font-variation-settings:'FILL' 0,'wght' 430,'GRAD' 0,'opsz' 24;user-select:none;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
 
-    body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: var(--cs-font-body);
-        color: var(--cs-ink);
-        background:
-            radial-gradient(circle at 18% 8%,  rgba(0,93,144,0.10), transparent 25rem),
-            radial-gradient(circle at 84% 12%, rgba(52,84,209,0.08), transparent 24rem),
-            linear-gradient(180deg, #ffffff 0%, #f5f5f7 38%);
-        text-wrap: pretty;
-    }
+/* ── Top Nav ── */
+.nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);background:rgba(255,255,255,0.78);border-bottom:1px solid var(--cs-line);}
+.nav-inner{max-width:1440px;margin:0 auto;height:64px;padding:0 clamp(16px,3vw,32px);display:flex;align-items:center;gap:20px;}
+.brand{display:inline-flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;background:none;border:none;padding:0;}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--cs-primary),var(--cs-accent));display:grid;place-items:center;color:#fff;box-shadow:0 8px 20px -8px rgba(0,93,144,0.55),inset 0 1px 0 rgba(255,255,255,0.3);}
+.brand .logo .material-symbols-outlined{font-size:19px;font-variation-settings:'FILL' 1;}
+.brand .name{font-family:'Manrope',sans-serif;font-weight:800;font-size:19px;color:var(--cs-ink);letter-spacing:-0.01em;}
+.search-row{flex:1;max-width:560px;position:relative;}
+.search-wrap{height:40px;border:1px solid var(--cs-line);background:rgba(255,255,255,0.78);border-radius:999px;display:flex;align-items:center;padding:0 6px 0 14px;gap:10px;transition:all 200ms var(--cs-ease);cursor:text;}
+.search-wrap:hover{border-color:var(--cs-line-strong);}
+.search-wrap:focus-within{border-color:var(--cs-primary);box-shadow:var(--cs-shadow-focus);background:#fff;}
+.search-wrap .material-symbols-outlined{font-size:18px;color:var(--cs-muted);}
+.search-wrap input{flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:var(--cs-ink);min-width:0;}
+.search-wrap input::placeholder{color:var(--cs-muted);}
+.kbd{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,0.04);color:var(--cs-muted);font-family:monospace;font-size:10.5px;font-weight:600;border:1px solid var(--cs-line);box-shadow:0 1px 0 var(--cs-line);pointer-events:none;user-select:none;flex-shrink:0;}
+.kbd kbd{font:inherit;background:none;border:none;padding:0;}
+.nav-links{display:flex;gap:2px;}
+.nav-link{padding:8px 14px;border-radius:999px;font-size:14px;font-weight:600;color:var(--cs-muted);text-decoration:none;border:none;background:transparent;cursor:pointer;font-family:inherit;transition:all 180ms var(--cs-ease);}
+.nav-link:hover{background:rgba(0,0,0,0.04);color:var(--cs-ink-soft);}
+.nav-link.active{background:var(--cs-primary-soft);color:var(--cs-primary);}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--cs-line);background:rgba(255,255,255,0.6);cursor:pointer;display:grid;place-items:center;position:relative;transition:all 180ms var(--cs-ease);color:var(--cs-ink-soft);}
+.icon-btn:hover{border-color:var(--cs-line-strong);background:#fff;transform:translateY(-1px);}
+.icon-btn .material-symbols-outlined{font-size:19px;}
+.dot-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;line-height:1;border:2px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+.primary-btn{height:38px;padding:0 18px 0 14px;border-radius:999px;border:none;background:linear-gradient(135deg,var(--cs-primary),var(--cs-accent));color:#fff;font-family:'Manrope',sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 10px 22px -10px rgba(0,93,144,0.55),inset 0 1px 0 rgba(255,255,255,0.22);transition:transform 140ms var(--cs-ease),box-shadow 220ms var(--cs-ease);}
+.primary-btn:hover{transform:translateY(-1px);box-shadow:0 14px 28px -10px rgba(0,93,144,0.7);}
+.primary-btn:active{transform:scale(0.98);}
+.primary-btn .material-symbols-outlined{font-size:17px;}
+.avatar-btn{width:38px;height:38px;border-radius:999px;background:linear-gradient(135deg,#ffd089,#f0a35a);color:#fff;font-family:'Manrope',sans-serif;font-weight:700;font-size:14px;display:grid;place-items:center;cursor:pointer;border:2px solid #fff;box-shadow:var(--cs-shadow-sm);}
+.ghost-btn{height:38px;padding:0 16px;border-radius:999px;border:1px solid var(--cs-line);background:rgba(255,255,255,0.6);color:var(--cs-ink-soft);font-family:'Manrope',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer;transition:all 180ms var(--cs-ease);}
+.ghost-btn:hover{border-color:var(--cs-line-strong);background:#fff;}
 
-    h1, h2, h3, .headline-font {
-        font-family: var(--cs-font-headline);
-        letter-spacing: 0;
-    }
+/* ── Layout ── */
+.shell{max-width:1440px;margin:0 auto;padding:clamp(16px,2.5vw,32px);display:grid;grid-template-columns:260px minmax(0,1fr) 320px;gap:24px;align-items:start;}
+@media(max-width:1280px){.shell{grid-template-columns:240px minmax(0,1fr);}.right-rail{display:none;}}
+@media(max-width:960px){.shell{grid-template-columns:1fr;}.left-rail{display:none;}.nav-links{display:none;}}
 
-    .material-symbols-outlined {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
-        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
-    }
+/* ── Cards ── */
+.glass{background:var(--cs-card-bg);border:1px solid var(--cs-line);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-radius:var(--cs-r-lg);box-shadow:var(--cs-shadow-sm);}
+.card{background:var(--cs-card-solid);border:1px solid var(--cs-line);border-radius:var(--cs-r-lg);box-shadow:var(--cs-shadow-sm);}
 
-    /* ----- Glass card ----- */
-    .apple-glass {
-        border: 1px solid var(--cs-line);
-        background: var(--cs-card-glass);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        box-shadow: var(--cs-shadow-sm);
-    }
+/* ── Left Rail ── */
+.left-rail{position:sticky;top:88px;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 104px);}
+.profile-card{padding:18px;}
+.profile-row{display:flex;align-items:center;gap:12px;}
+.profile-avatar{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#ffd089,#f0a35a);color:#fff;font-family:'Manrope',sans-serif;font-weight:800;font-size:18px;display:grid;place-items:center;flex-shrink:0;}
+.profile-avatar.guest{background:var(--cs-primary-soft);color:var(--cs-primary);font-size:22px;}
+.profile-info{min-width:0;flex:1;}
+.profile-info .name{font-family:'Manrope',sans-serif;font-weight:700;font-size:14.5px;color:var(--cs-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.profile-info .role{margin-top:2px;font-size:12px;color:var(--cs-muted);display:inline-flex;align-items:center;gap:4px;}
+.profile-info .role .material-symbols-outlined{font-size:13px;}
+.profile-stats{margin-top:16px;padding-top:14px;border-top:1px dashed var(--cs-line);display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+.profile-stat{text-align:left;}
+.profile-stat:not(:last-child){border-right:1px solid var(--cs-line);padding-right:8px;}
+.profile-stat:not(:first-child){padding-left:12px;}
+.profile-stat .n{font-family:'Manrope',sans-serif;font-weight:800;font-size:18px;color:var(--cs-ink);line-height:1;}
+.profile-stat .n sup{font-size:11px;color:var(--cs-primary);margin-left:1px;}
+.profile-stat .l{margin-top:6px;font-size:11px;color:var(--cs-muted);}
+.login-cta{margin-top:14px;padding-top:14px;border-top:1px dashed var(--cs-line);}
+.login-cta button{width:100%;height:36px;border-radius:999px;border:none;background:linear-gradient(135deg,var(--cs-primary),var(--cs-accent));color:#fff;font-family:'Manrope',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
+.side-nav{padding:8px;}
+.side-link{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--cs-r-sm);font-size:13.5px;font-weight:600;color:var(--cs-muted);cursor:pointer;text-decoration:none;transition:all 160ms var(--cs-ease);border:none;background:transparent;width:100%;font-family:inherit;text-align:left;}
+.side-link:hover{background:rgba(0,0,0,0.035);color:var(--cs-ink-soft);}
+.side-link.active{background:var(--cs-primary-soft);color:var(--cs-primary);}
+.side-link.active .material-symbols-outlined{font-variation-settings:'FILL' 1,'wght' 500;}
+.side-link .material-symbols-outlined{font-size:18px;}
+.side-badge{background:rgba(0,93,144,0.10);color:var(--cs-primary);font-family:monospace;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;}
+.side-badge.red{background:rgba(239,68,68,0.10);color:#ef4444;}
+.side-divider{height:1px;background:var(--cs-line);margin:8px 12px;}
+.side-label{padding:6px 16px 4px;font-size:10.5px;font-weight:700;letter-spacing:0.14em;color:var(--cs-muted-2);text-transform:uppercase;}
 
-    /* ----- Top nav ----- */
-    .apple-nav {
-        border-bottom: 1px solid var(--cs-line);
-        background: rgba(255,255,255,0.86);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-    }
+/* ── Hero ── */
+.hero{position:relative;overflow:hidden;border-radius:var(--cs-r-xl);border:1px solid var(--cs-line);background:radial-gradient(circle at 100% 0%,rgba(52,84,209,0.06),transparent 50%),radial-gradient(circle at 0% 100%,rgba(0,93,144,0.05),transparent 50%),#fff;padding:36px 36px 28px;}
+@media(max-width:720px){.hero{padding:24px 20px;}}
+.hero-meta{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;color:var(--cs-muted);}
+.hero-meta .day{font-family:'Manrope',sans-serif;font-weight:700;color:var(--cs-ink-soft);}
+.hero-meta .sep{width:3px;height:3px;border-radius:999px;background:var(--cs-muted-2);}
+.hero-meta .weather{display:inline-flex;align-items:center;gap:4px;}
+.hero-meta .weather .material-symbols-outlined{font-size:14px;color:#f59e0b;}
+.hero-greet{font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(26px,3vw,40px);color:var(--cs-ink);letter-spacing:-0.025em;line-height:1.1;margin:14px 0 10px;}
+.hero-summary{margin:0;font-size:15px;color:var(--cs-muted);line-height:1.55;max-width:640px;}
+.hero-summary strong{color:var(--cs-ink-soft);font-weight:700;}
+.hero-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.hero-actions .ha-btn{height:38px;padding:0 20px;border-radius:999px;font-family:'Manrope',sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;border:none;transition:all 160ms var(--cs-ease);}
+.hero-actions .ha-btn.primary{background:linear-gradient(135deg,var(--cs-primary),var(--cs-accent));color:#fff;box-shadow:0 10px 22px -10px rgba(0,93,144,0.55);}
+.hero-actions .ha-btn.primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px -10px rgba(0,93,144,0.7);}
+.hero-actions .ha-btn.secondary{background:rgba(0,0,0,0.04);color:var(--cs-ink-soft);border:1px solid var(--cs-line);}
+.hero-actions .ha-btn.secondary:hover{background:#fff;border-color:var(--cs-line-strong);}
+.todo-row-grid{margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:880px){.todo-row-grid{grid-template-columns:1fr;}}
+.todo-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--cs-r-md);background:rgba(0,0,0,0.025);cursor:pointer;transition:all 200ms var(--cs-ease);border:1px solid transparent;}
+.todo-card:hover{background:#fff;border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);transform:translateY(-1px);}
+.todo-card .icn{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;}
+.todo-card .icn .material-symbols-outlined{font-size:19px;font-variation-settings:'FILL' 1;}
+.todo-card .body{min-width:0;flex:1;}
+.todo-card .tag{font-size:11px;font-weight:700;letter-spacing:0.04em;color:var(--cs-muted);display:inline-flex;align-items:center;gap:5px;}
+.todo-card .tag .when{font-family:monospace;font-size:10.5px;color:var(--cs-muted-2);}
+.todo-card .ttl{margin-top:4px;font-family:'Manrope',sans-serif;font-weight:600;font-size:13.5px;color:var(--cs-ink);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.todo-empty{margin-top:28px;display:flex;align-items:center;gap:18px;padding:22px;border-radius:var(--cs-r-md);background:linear-gradient(135deg,rgba(10,138,79,0.07) 0%,rgba(10,138,79,0.015) 60%),rgba(255,255,255,0.6);border:1px solid rgba(10,138,79,0.18);}
+.todo-empty .icn{width:44px;height:44px;border-radius:12px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;flex-shrink:0;}
+.todo-empty .icn .material-symbols-outlined{font-size:24px;font-variation-settings:'FILL' 1,'wght' 500;}
+.todo-empty .empty-body{flex:1;min-width:0;}
+.todo-empty .empty-t{font-family:'Manrope',sans-serif;font-weight:700;font-size:14.5px;color:var(--cs-ink);}
+.todo-empty .empty-s{margin-top:2px;font-size:12.5px;color:var(--cs-muted);line-height:1.5;}
+.todo-empty .empty-actions{display:flex;gap:8px;flex-shrink:0;}
+.todo-empty .empty-actions button{height:34px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,0.85);border:1px solid var(--cs-line);font-family:inherit;font-size:12.5px;font-weight:600;color:var(--cs-ink-soft);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all 160ms var(--cs-ease);}
+.todo-empty .empty-actions button:hover{border-color:var(--cs-primary);color:var(--cs-primary);background:#fff;transform:translateY(-1px);}
+.todo-empty .empty-actions .material-symbols-outlined{font-size:15px;}
+@media(max-width:720px){.todo-empty{flex-direction:column;align-items:flex-start;}.todo-empty .empty-actions{width:100%;}.todo-empty .empty-actions button{flex:1;justify-content:center;}}
 
-    .apple-link-active {
-        color: var(--cs-primary);
-        background: var(--cs-primary-soft);
-    }
+/* ── Categories ── */
+.cats{display:flex;gap:8px;overflow-x:auto;padding:4px 0;scrollbar-width:none;}
+.cats::-webkit-scrollbar{display:none;}
+.cat{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--cs-line);background:rgba(255,255,255,0.6);border-radius:999px;font-size:13px;font-weight:600;color:var(--cs-ink-soft);cursor:pointer;transition:all 180ms var(--cs-ease);font-family:inherit;}
+.cat:hover{border-color:var(--cs-primary);color:var(--cs-primary);}
+.cat.active{background:var(--cs-ink);color:#fff;border-color:var(--cs-ink);}
+.cat .material-symbols-outlined{font-size:16px;}
 
-    /* ----- Sidebar ----- */
-    .overview-sidebar {
-        position: sticky;
-        top: 80px;
-        height: calc(100vh - 6rem);
-        width: 240px;
-    }
+/* ── Section header ── */
+.section-h{display:flex;align-items:end;justify-content:space-between;margin:28px 0 14px;gap:16px;}
+.section-h .ttl{display:flex;align-items:baseline;gap:10px;font-family:'Manrope',sans-serif;font-weight:800;font-size:20px;color:var(--cs-ink);letter-spacing:-0.01em;}
+.section-h .ttl .sub{font-family:'Inter',sans-serif;font-weight:500;font-size:13px;color:var(--cs-muted);}
+.see-all{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:999px;background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--cs-primary);transition:background 160ms var(--cs-ease);}
+.see-all:hover{background:var(--cs-primary-soft);}
+.see-all .material-symbols-outlined{font-size:16px;}
 
-    .overview-sidebar nav {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
+/* ── Product grid ── */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+.product{overflow:hidden;cursor:pointer;transition:all 220ms var(--cs-ease);position:relative;}
+.product:hover{transform:translateY(-3px);box-shadow:var(--cs-shadow-md);border-color:var(--cs-line-strong);}
+.product .thumb{position:relative;aspect-ratio:4/3;overflow:hidden;}
+.product .thumb .ph{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,0.85);font-family:'Manrope',sans-serif;font-weight:800;font-size:36px;letter-spacing:-0.02em;mix-blend-mode:overlay;}
+.product .thumb .badge{position:absolute;top:10px;left:10px;background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.06);color:var(--cs-ink);font-family:'Manrope',sans-serif;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;backdrop-filter:blur(6px);}
+.product .thumb .badge.hot{background:#ef4444;color:#fff;border-color:transparent;}
+.product .thumb .fav{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,0.95);border:none;cursor:pointer;display:grid;place-items:center;color:var(--cs-muted);transition:all 160ms var(--cs-ease);}
+.product .thumb .fav:hover{color:var(--rose);transform:scale(1.08);}
+.product .thumb .fav.on{color:var(--rose);}
+.product .thumb .fav.on .material-symbols-outlined{font-variation-settings:'FILL' 1;}
+.product .thumb .fav .material-symbols-outlined{font-size:18px;}
+.product-body{padding:14px;}
+.product .title{font-family:'Manrope',sans-serif;font-weight:700;font-size:14.5px;color:var(--cs-ink);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:40px;}
+.product .meta{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.product .price{font-family:'Manrope',sans-serif;font-weight:800;font-size:17px;color:var(--cs-ink);letter-spacing:-0.01em;}
+.product .price .y{font-family:'Inter',sans-serif;font-size:12px;color:var(--cs-muted);font-weight:600;margin-right:1px;}
+.product .seller{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--cs-muted);}
+.product .seller .av{width:18px;height:18px;border-radius:999px;background:var(--cs-primary-soft);color:var(--cs-primary);font-size:9.5px;font-weight:700;display:grid;place-items:center;font-family:'Manrope',sans-serif;}
+.product .tags{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;}
+.tag-mini{font-size:10.5px;color:var(--cs-muted);background:rgba(0,0,0,0.04);padding:2px 7px;border-radius:999px;font-weight:500;}
+.tag-mini.cond{color:var(--cs-primary);background:var(--cs-primary-soft);}
 
-    .overview-sidebar nav a {
-        display: grid !important;
-        grid-template-columns: 24px minmax(0, 1fr);
-        align-items: center;
-        width: 100%;
-        min-height: 40px;
-        column-gap: 10px;
-        padding: 0 10px;
-        border-radius: var(--cs-radius-md);
-        font-size: 13px;
-        font-weight: 500;
-        text-decoration: none;
-        color: var(--cs-muted);
-        transition: background-color 180ms var(--cs-ease), color 180ms var(--cs-ease);
-    }
+/* ── Two-col panels ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:1024px){.two-col{grid-template-columns:1fr;}}
+.panel{padding:20px;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.panel-head .ttl{font-family:'Manrope',sans-serif;font-weight:800;font-size:16px;color:var(--cs-ink);}
+.material-list{display:flex;flex-direction:column;gap:4px;}
+.material-item{display:grid;grid-template-columns:40px 1fr auto;gap:14px;align-items:center;padding:10px;border-radius:var(--cs-r-md);cursor:pointer;transition:background 160ms var(--cs-ease);}
+.material-item:hover{background:rgba(0,0,0,0.025);}
+.material-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;}
+.material-icon .material-symbols-outlined{font-size:20px;font-variation-settings:'FILL' 1;}
+.material-meta{min-width:0;}
+.material-meta .t{font-family:'Manrope',sans-serif;font-weight:700;font-size:13.5px;color:var(--cs-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.material-meta .s{margin-top:3px;font-size:11.5px;color:var(--cs-muted);display:flex;gap:10px;}
+.material-meta .s span{display:inline-flex;align-items:center;gap:3px;}
+.material-meta .s .material-symbols-outlined{font-size:12px;}
+.material-cost{display:inline-flex;align-items:center;gap:3px;font-family:monospace;font-size:12px;font-weight:700;color:var(--amber);background:var(--amber-soft);padding:4px 9px;border-radius:999px;}
+.material-cost .material-symbols-outlined{font-size:13px;}
+.recruit-item{padding:14px;border:1px solid var(--cs-line);border-radius:var(--cs-r-md);background:rgba(255,255,255,0.6);cursor:pointer;transition:all 180ms var(--cs-ease);}
+.recruit-item+.recruit-item{margin-top:10px;}
+.recruit-item:hover{border-color:var(--cs-primary);background:#fff;transform:translateY(-1px);box-shadow:var(--cs-shadow-sm);}
+.recruit-top{display:flex;align-items:start;justify-content:space-between;gap:10px;}
+.recruit-title{font-family:'Manrope',sans-serif;font-weight:700;font-size:14px;color:var(--cs-ink);line-height:1.4;flex:1;}
+.recruit-status{flex-shrink:0;font-size:10.5px;font-weight:700;letter-spacing:0.06em;padding:3px 8px;border-radius:999px;text-transform:uppercase;}
+.recruit-status.open{background:var(--green-soft);color:var(--green);}
+.recruit-status.few{background:var(--amber-soft);color:var(--amber);}
+.recruit-meta{margin-top:10px;display:flex;flex-wrap:wrap;gap:14px;font-size:11.5px;color:var(--cs-muted);}
+.recruit-meta span{display:inline-flex;align-items:center;gap:4px;}
+.recruit-meta .material-symbols-outlined{font-size:13px;}
+.recruit-progress{margin-top:10px;display:flex;align-items:center;gap:10px;}
+.recruit-progress .bar{flex:1;height:5px;border-radius:999px;background:rgba(0,0,0,0.06);overflow:hidden;}
+.recruit-progress .bar .fill{height:100%;background:linear-gradient(90deg,var(--cs-primary),var(--cs-accent));border-radius:999px;}
+.recruit-progress .pct{font-family:monospace;font-size:11px;font-weight:700;color:var(--cs-muted);}
 
-    .overview-sidebar nav a.hidden { display: none !important; }
+/* ── Right Rail ── */
+.right-rail{position:sticky;top:88px;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 104px);}
+.notif-card{padding:18px;}
+.notif-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.notif-head .ttl{font-family:'Manrope',sans-serif;font-weight:800;font-size:14.5px;color:var(--cs-ink);display:flex;align-items:center;gap:8px;}
+.notif-head .ttl .count{font-family:monospace;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:#ef4444;color:#fff;}
+.notif-mark{font-size:11.5px;color:var(--cs-primary);background:none;border:none;cursor:pointer;font-weight:600;font-family:inherit;}
+.notif-list{display:flex;flex-direction:column;gap:2px;}
+.notif-item{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:10px 8px;border-radius:var(--cs-r-sm);cursor:pointer;transition:background 160ms var(--cs-ease);}
+.notif-item:hover{background:rgba(0,0,0,0.03);}
+.notif-item.unread{background:rgba(0,93,144,0.045);}
+.notif-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;}
+.notif-icon .material-symbols-outlined{font-size:15px;font-variation-settings:'FILL' 1;}
+.notif-body{min-width:0;}
+.notif-body .t{font-size:12.5px;color:var(--cs-ink);line-height:1.4;}
+.notif-body .t strong{font-weight:700;}
+.notif-body .when{margin-top:4px;font-size:10.5px;color:var(--cs-muted);font-family:monospace;}
+.points-card{padding:20px;background:linear-gradient(135deg,var(--cs-primary) 0%,var(--cs-accent) 100%);color:#fff;border-radius:var(--cs-r-lg);position:relative;overflow:hidden;border:none;}
+.points-card::before{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:999px;background:rgba(255,255,255,0.10);}
+.points-card::after{content:'';position:absolute;right:30px;bottom:-30px;width:100px;height:100px;border-radius:999px;background:rgba(255,255,255,0.08);}
+.points-card .lbl{font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.7);position:relative;z-index:1;}
+.points-card .v{margin-top:10px;font-family:'Manrope',sans-serif;font-weight:900;font-size:36px;letter-spacing:-0.02em;line-height:1;position:relative;z-index:1;}
+.points-card .v .u{font-family:'Inter',sans-serif;font-size:14px;margin-left:4px;font-weight:600;opacity:0.8;}
+.points-card .delta{margin-top:8px;font-size:12px;color:rgba(255,255,255,0.8);display:inline-flex;align-items:center;gap:4px;position:relative;z-index:1;}
+.points-actions{margin-top:16px;display:flex;gap:8px;position:relative;z-index:1;}
+.points-actions button{flex:1;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:background 160ms var(--cs-ease);backdrop-filter:blur(4px);}
+.points-actions button:hover{background:rgba(255,255,255,0.22);}
+.points-actions button.solid{background:#fff;color:var(--cs-primary);border-color:transparent;}
+.points-actions button.solid:hover{background:rgba(255,255,255,0.92);}
 
-    .overview-sidebar nav a:hover {
-        background: rgba(255,255,255,0.72);
-        color: var(--cs-ink);
-    }
+/* ── Footer ── */
+footer{max-width:1440px;margin:16px auto 0;padding:20px clamp(16px,3vw,32px) 32px;border-top:1px solid var(--cs-line);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;font-size:12px;color:var(--cs-muted);}
+footer .links{display:flex;gap:18px;}
+footer a{color:var(--cs-muted);text-decoration:none;}
+footer a:hover{color:var(--cs-primary);}
 
-    .overview-sidebar nav a.is-active,
-    .overview-sidebar nav a[data-active="true"] {
-        background: var(--cs-primary-soft);
-        color: var(--cs-primary);
-    }
+/* ── Search Dropdown ── */
+.search-dropdown{position:absolute;top:100%;left:0;right:0;margin-top:6px;background:#fff;border:1px solid var(--cs-line);border-radius:var(--cs-r-md);box-shadow:var(--cs-shadow-lg);padding:12px;z-index:50;}
+.sd-label{padding:4px 8px 6px;font-size:10.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--cs-muted-2);}
+.sd-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--cs-r-sm);font-size:13px;color:var(--cs-ink-soft);cursor:pointer;}
+.sd-item:hover{background:var(--cs-primary-soft);color:var(--cs-primary);}
+.sd-item .material-symbols-outlined{font-size:16px;color:var(--cs-muted);}
+.sd-item:hover .material-symbols-outlined{color:var(--cs-primary);}
 
-    .overview-sidebar nav a .material-symbols-outlined {
-        width: 24px;
-        min-width: 24px;
-        height: 24px;
-        font-size: 19px;
-        text-align: center;
-    }
+/* ── Loading skeletons ── */
+.skeleton{background:linear-gradient(90deg,rgba(120,133,150,0.08) 25%,rgba(120,133,150,0.16) 50%,rgba(120,133,150,0.08) 75%);background-size:200% 100%;animation:skeleton-sweep 1.6s ease-in-out infinite;border-radius:6px;}
+@keyframes skeleton-sweep{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.skeleton-line{height:14px;border-radius:4px;}
 
-    .overview-sidebar nav a > span:last-child {
-        display: block;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    /* Notification trigger fix */
-    .overview-sidebar nav a.campusshare-notification-trigger {
-        display: grid !important;
-        grid-template-columns: 24px minmax(0, 1fr) !important;
-        align-items: center !important;
-        min-height: 40px !important;
-        padding: 0 10px !important;
-        border-radius: var(--cs-radius-md) !important;
-    }
-
-    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-icon-shell {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 24px !important;
-        min-width: 24px !important;
-        height: 24px !important;
-        flex: none !important;
-    }
-
-    .overview-sidebar nav a.campusshare-notification-trigger .campusshare-notification-badge {
-        position: absolute !important;
-        top: -3px !important;
-        right: -5px !important;
-        display: inline-flex !important;
-        width: 16px !important;
-        height: 16px !important;
-        border-radius: 999px !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 9px !important;
-    }
-
-    /* ----- Sidebar divider ----- */
-    .sidebar-divider {
-        height: 1px;
-        background: var(--cs-line);
-        margin: 8px 10px;
-    }
-
-    /* ----- Hero ----- */
-    [data-overview-hero] {
-        min-height: 260px;
-        background:
-            linear-gradient(100deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.86) 46%, rgba(255,255,255,0.18) 100%),
-            url("/pages/assets/img/campus-hero.svg") right center / contain no-repeat,
-            #ffffff;
-    }
-
-    [data-overview-hero] h1 {
-        max-width: 680px;
-        font-size: clamp(1.6rem, 2.6vw, 2.55rem);
-        line-height: 1.1;
-        letter-spacing: -0.01em;
-    }
-
-    [data-role="overview-search-input"] {
-        box-shadow: none !important;
-        border: 0 !important;
-        outline: 0 !important;
-    }
-
-    /* ----- Empty state ----- */
-    .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 2.5rem 1rem;
-        text-align: center;
-    }
-
-    .empty-state .material-symbols-outlined {
-        font-size: 36px;
-        color: var(--cs-muted);
-        opacity: 0.4;
-        margin-bottom: 12px;
-        font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 48;
-    }
-
-    .empty-state p {
-        font-size: 13px;
-        color: var(--cs-muted);
-        max-width: 240px;
-        line-height: 1.5;
-    }
-
-    /* ----- Section header ----- */
-    .section-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 14px;
-    }
-
-    .section-header h2 {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--cs-ink);
-    }
-
-    .section-link {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--cs-primary);
-        padding: 4px 12px;
-        border-radius: var(--cs-radius-full);
-        text-decoration: none;
-        transition: background-color 180ms var(--cs-ease);
-        background: transparent;
-        border: none;
-        cursor: pointer;
-    }
-
-    .section-link:hover {
-        background: var(--cs-primary-soft);
-    }
-
-    /* ----- Responsive ----- */
-    @media (max-width: 1180px) {
-        .overview-shell { grid-template-columns: 1fr !important; }
-        .overview-sidebar { position: static !important; width: auto !important; height: auto !important; }
-    }
-
-    @media (max-width: 768px) {
-        .desktop-nav, .overview-sidebar { display: none !important; }
-        .overview-main { padding: 1rem !important; }
-    }
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0.01ms!important;animation-duration:0.01ms!important;}}
 </style>
 </head>
 <body data-page="market-overview">
 
-<!-- ── Top Navigation ── -->
-<header class="apple-nav sticky top-0 z-50">
-    <nav class="mx-auto flex h-16 max-w-[1400px] items-center gap-5 px-6 lg:px-10">
-        <!-- Logo -->
-        <button class="headline-font shrink-0 text-xl font-extrabold" data-nav-target="/pages/market_overview.html"
-                style="color:var(--cs-primary);background:transparent;border:none;cursor:pointer;" type="button">
-            CampusShare
-        </button>
+<!-- Top Nav -->
+<header class="nav">
+  <div class="nav-inner">
+    <button class="brand" id="hp-btn-brand" type="button">
+      <div class="logo"><span class="material-symbols-outlined">school</span></div>
+      <span class="name headline">CampusShare</span>
+    </button>
 
-        <!-- Search -->
-        <div class="hidden min-w-0 flex-1 items-center gap-3 rounded-full border px-4 py-2 md:flex"
-             style="border-color:var(--cs-line);background:rgba(255,255,255,0.80);">
-            <span class="material-symbols-outlined" style="color:var(--cs-muted);font-size:18px;">search</span>
-            <input class="w-full bg-transparent text-sm" data-role="overview-search-input"
-                   placeholder="搜索二手商品、课程资料、团队项目" style="color:var(--cs-ink);" type="text"/>
-            <button class="min-w-[4rem] whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold"
-                    data-nav-target="/pages/market_listing.html"
-                    style="color:var(--cs-primary);" type="button">分类</button>
-        </div>
+    <div class="search-row" id="hp-search-row">
+      <div class="search-wrap" id="hp-search-wrap">
+        <span class="material-symbols-outlined">search</span>
+        <input id="hp-search-input" type="text" placeholder="搜索二手商品、学习资料、组队项目…" autocomplete="off"/>
+        <span class="kbd" aria-hidden="true"><kbd>Ctrl</kbd><kbd>K</kbd></span>
+      </div>
+      <div class="search-dropdown" id="hp-search-dropdown" style="display:none;">
+        <div class="sd-label">热门搜索</div>
+        <div class="sd-item" data-search-hint="六级真题"><span class="material-symbols-outlined">trending_up</span>六级真题</div>
+        <div class="sd-item" data-search-hint="iPad Air"><span class="material-symbols-outlined">trending_up</span>iPad Air</div>
+        <div class="sd-item" data-search-hint="组队招募"><span class="material-symbols-outlined">trending_up</span>组队招募</div>
+        <div class="sd-item" data-search-hint="九成新教材"><span class="material-symbols-outlined">trending_up</span>九成新教材</div>
+        <div class="sd-label" style="margin-top:6px;">最近搜索</div>
+        <div class="sd-item" data-search-hint="操作系统第八版"><span class="material-symbols-outlined">history</span>操作系统第八版</div>
+        <div class="sd-item" data-search-hint="高数笔记"><span class="material-symbols-outlined">history</span>高数笔记</div>
+      </div>
+    </div>
 
-        <!-- Main nav links -->
-        <div class="desktop-nav hidden items-center gap-1 text-sm font-semibold lg:flex">
-            <a class="apple-link-active rounded-full px-4 py-2" data-nav-target="/pages/market_overview.html" href="#">主页</a>
-            <a class="rounded-full px-4 py-2 hover:bg-slate-100" data-nav-target="/pages/market_listing.html" href="#"
-               style="color:var(--cs-muted);">交易市场</a>
-            <a class="rounded-full px-4 py-2 hover:bg-slate-100" data-nav-target="/pages/market_listing.html?view=MATERIAL" href="#"
-               style="color:var(--cs-muted);">学术资源</a>
-            <a class="rounded-full px-4 py-2 hover:bg-slate-100" data-nav-target="/pages/market_listing.html?view=FORUM" href="#"
-               style="color:var(--cs-muted);">校园论坛</a>
-        </div>
-
-        <!-- Primary action -->
-        <button class="cs-btn cs-btn--primary shrink-0" data-nav-target="/pages/publish_create.html"
-                data-role="overview-primary-action" type="button">发布</button>
+    <nav class="nav-links">
+      <button class="nav-link active" type="button">主页</button>
+      <button class="nav-link" data-nav-path="/pages/market_listing.html" type="button">交易市场</button>
+      <button class="nav-link" data-nav-path="/pages/market_listing.html?view=MATERIAL" type="button">学术资源</button>
+      <button class="nav-link" data-nav-path="/pages/market_listing.html?view=FORUM" type="button">校园论坛</button>
     </nav>
+
+    <div class="nav-right">
+      <button class="icon-btn" id="hp-btn-notify" title="消息通知" type="button" style="display:none;">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="dot-badge" id="hp-notif-badge" style="display:none;"></span>
+      </button>
+      <button class="icon-btn" id="hp-btn-fav" title="我的收藏" type="button" style="display:none;">
+        <span class="material-symbols-outlined">favorite</span>
+      </button>
+      <button class="primary-btn" id="hp-btn-primary" type="button">
+        <span class="material-symbols-outlined">login</span>
+        登录
+      </button>
+      <button class="avatar-btn" id="hp-avatar-nav" title="个人资料" type="button" style="display:none;">用</button>
+    </div>
+  </div>
 </header>
 
-<!-- ── Main Layout ── -->
-<main class="overview-main overview-shell mx-auto grid max-w-[1400px] grid-cols-[240px_minmax(0,1fr)] gap-7 px-6 py-7 lg:px-10">
+<!-- Three-column shell -->
+<div class="shell">
 
-    <!-- ── Left Sidebar ── -->
-    <aside class="overview-sidebar flex flex-col">
-        <div class="apple-glass flex flex-1 flex-col overflow-hidden rounded-2xl p-4">
-
-            <!-- Profile -->
-            <div class="mb-4 flex items-center gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold"
-                     data-role="overview-profile-avatar"
-                     style="background:var(--cs-primary-soft);color:var(--cs-primary);">未</div>
-                <div class="min-w-0">
-                    <p class="truncate text-sm font-semibold" data-role="overview-profile-name"
-                       style="color:var(--cs-ink);">未登录用户</p>
-                    <p class="truncate text-xs" data-role="overview-profile-role"
-                       style="color:var(--cs-muted);">游客模式</p>
-                </div>
-            </div>
-
-            <div class="sidebar-divider"></div>
-
-            <!-- Navigation -->
-            <nav class="py-1 flex-shrink-0">
-                <a class="is-active" data-nav-target="/pages/market_overview.html" href="#">
-                    <span class="material-symbols-outlined">home</span>
-                    <span>主页</span>
-                </a>
-                <a data-nav-target="/pages/my_publish.html" href="#">
-                    <span class="material-symbols-outlined">format_list_bulleted</span>
-                    <span>我的发布</span>
-                </a>
-                <a data-nav-target="/pages/order_center.html" href="#">
-                    <span class="material-symbols-outlined">receipt_long</span>
-                    <span>订单中心</span>
-                </a>
-                <a data-nav-target="/pages/recruitment_board.html" href="#">
-                    <span class="material-symbols-outlined">groups</span>
-                    <span>团队招募</span>
-                </a>
-                <a data-nav-target="/pages/notification_center.html" href="#">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span>消息通知</span>
-                </a>
-                <a data-nav-target="/pages/user_profile.html" href="#">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>个人设置</span>
-                </a>
-                <a class="hidden" data-admin-only="true" data-nav-target="/pages/admin_dashboard.html" href="#">
-                    <span class="material-symbols-outlined">admin_panel_settings</span>
-                    <span>管理后台</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-divider"></div>
-
-            <!-- Messages mini-panel -->
-            <div class="min-h-0 flex-1 overflow-hidden">
-                <p class="mb-2 text-xs font-semibold uppercase tracking-wide" style="color:var(--cs-muted);">消息提醒</p>
-                <div data-role="overview-notice-list">
-                    <p class="text-xs leading-relaxed" style="color:var(--cs-muted);">暂无新消息</p>
-                </div>
-            </div>
-
-            <!-- Bottom stats -->
-            <div class="mt-auto flex-shrink-0">
-                <div class="sidebar-divider"></div>
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">收藏</p>
-                        <p class="mt-0.5 text-sm font-bold cs-numeric" data-role="overview-favorite-summary"
-                           style="color:var(--cs-ink);">0</p>
-                    </div>
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">积分</p>
-                        <p class="mt-0.5 text-sm font-bold cs-numeric" data-role="overview-point-balance"
-                           style="color:var(--cs-ink);">0</p>
-                    </div>
-                </div>
-            </div>
-
+  <!-- Left Rail -->
+  <aside class="left-rail">
+    <div class="glass profile-card">
+      <div class="profile-row">
+        <div class="profile-avatar guest" id="hp-avatar-left">
+          <span class="material-symbols-outlined" style="font-size:22px;">person</span>
         </div>
-    </aside>
+        <div class="profile-info">
+          <div class="name" id="hp-profile-name">未登录用户</div>
+          <div class="role" id="hp-cert-badge" style="color:var(--cs-muted);">
+            <span class="material-symbols-outlined" style="font-size:13px;">info</span>
+            游客模式
+          </div>
+        </div>
+      </div>
+      <!-- Logged-in stats (hidden for guests) -->
+      <div class="profile-stats" id="hp-profile-stats" style="display:none;">
+        <div class="profile-stat">
+          <div class="n" id="hp-stat-publish">—</div>
+          <div class="l">发布中</div>
+        </div>
+        <div class="profile-stat">
+          <div class="n" id="hp-stat-fav">—</div>
+          <div class="l">收藏</div>
+        </div>
+        <div class="profile-stat">
+          <div class="n">5<sup>★</sup></div>
+          <div class="l">信誉</div>
+        </div>
+      </div>
+      <!-- Guest login CTA -->
+      <div class="login-cta" id="hp-login-cta">
+        <button type="button" id="hp-btn-login-cta">登录 / 注册</button>
+      </div>
+    </div>
 
-    <!-- ── Content Area ── -->
-    <section class="min-w-0 space-y-6">
+    <div class="glass side-nav">
+      <button class="side-link active" type="button">
+        <span class="material-symbols-outlined">home</span>
+        <span>主页</span>
+        <span></span>
+      </button>
+      <button class="side-link" data-nav-path="/pages/market_listing.html" type="button">
+        <span class="material-symbols-outlined">storefront</span>
+        <span>交易市场</span>
+        <span></span>
+      </button>
+      <button class="side-link" data-nav-path="/pages/market_listing.html?view=MATERIAL" type="button">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span>学术资源</span>
+        <span></span>
+      </button>
+      <button class="side-link" data-nav-path="/pages/recruitment_board.html" type="button">
+        <span class="material-symbols-outlined">groups</span>
+        <span>组队招募</span>
+        <span></span>
+      </button>
+      <!-- Logged-in-only section -->
+      <div id="hp-auth-nav" style="display:none;">
+        <div class="side-divider"></div>
+        <div class="side-label">我的</div>
+        <button class="side-link" data-nav-path="/pages/my_publish.html" type="button">
+          <span class="material-symbols-outlined">format_list_bulleted</span>
+          <span>我的发布</span>
+          <span></span>
+        </button>
+        <button class="side-link" data-nav-path="/pages/order_center.html" type="button">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>订单中心</span>
+          <span id="hp-order-badge"></span>
+        </button>
+        <button class="side-link" data-nav-path="/pages/notification_center.html" type="button">
+          <span class="material-symbols-outlined">forum</span>
+          <span>消息通知</span>
+          <span id="hp-msg-badge"></span>
+        </button>
+        <button class="side-link" id="hp-btn-favorites" type="button">
+          <span class="material-symbols-outlined">favorite</span>
+          <span>收藏夹</span>
+          <span></span>
+        </button>
+        <button class="side-link" data-nav-path="/pages/user_profile.html" type="button">
+          <span class="material-symbols-outlined">settings</span>
+          <span>个人设置</span>
+          <span></span>
+        </button>
+        <button class="side-link" id="hp-btn-admin" data-nav-path="/pages/admin_dashboard.html" type="button" style="display:none;">
+          <span class="material-symbols-outlined">admin_panel_settings</span>
+          <span>管理后台</span>
+          <span></span>
+        </button>
+      </div>
+      <div class="side-divider" id="hp-logout-divider" style="display:none;"></div>
+      <button class="side-link" id="hp-btn-logout" type="button" style="display:none;color:var(--rose);">
+        <span class="material-symbols-outlined" style="color:var(--rose);">logout</span>
+        <span>退出登录</span>
+        <span></span>
+      </button>
+    </div>
+  </aside>
 
-        <!-- Hero -->
-        <section class="apple-glass relative overflow-hidden rounded-2xl px-8 py-9 lg:px-10" data-overview-hero>
-            <div class="relative max-w-2xl">
-                <span class="mb-4 inline-flex rounded-full px-3 py-1 text-xs font-bold"
-                      style="background:var(--cs-primary-soft);color:var(--cs-primary);">
-                    校园可信交易平台
-                </span>
-                <h1 class="headline-font font-extrabold" style="color:var(--cs-ink);">
-                    把校园交易、资料共享和团队协作放进一个清爽入口。
-                </h1>
-                <p class="mt-3 max-w-xl text-sm leading-7" style="color:var(--cs-muted);"
-                   data-role="overview-recommended-summary">
-                    从二手商品发布到资料下载积分，从订单状态到招募申请，每一步都有记录、有反馈、可追踪。
-                </p>
-                <div class="mt-5 flex flex-wrap gap-3">
-                    <button class="cs-btn cs-btn--primary" data-nav-target="/pages/market_listing.html" type="button">浏览市场</button>
-                    <button class="cs-btn cs-btn--secondary" data-nav-target="/pages/publish_create.html" type="button">开始发布</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Recommended Products -->
-        <section>
-            <div class="section-header">
-                <h2 class="headline-font">推荐交易</h2>
-                <a class="section-link" data-nav-target="/pages/market_listing.html" href="#">查看全部</a>
-            </div>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" data-role="overview-product-grid">
-                <div class="col-span-full apple-glass rounded-xl">
-                    <div class="empty-state">
-                        <span class="material-symbols-outlined">storefront</span>
-                        <p>还没有推荐交易，去市场看看吧</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Materials + Recruitment -->
-        <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-
-            <!-- Materials -->
-            <div class="apple-glass rounded-xl p-5">
-                <div class="section-header">
-                    <h2 class="headline-font">精选资料</h2>
-                    <button class="section-link" data-nav-target="/pages/market_listing.html?view=MATERIAL" type="button">查看全部</button>
-                </div>
-                <div data-role="overview-material-list">
-                    <div class="empty-state">
-                        <span class="material-symbols-outlined">description</span>
-                        <p>精选资料即将上线</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recruitment -->
-            <div class="apple-glass rounded-xl p-5">
-                <div class="section-header">
-                    <h2 class="headline-font">招募精选</h2>
-                    <a class="section-link" data-nav-target="/pages/recruitment_board.html" href="#">查看全部</a>
-                </div>
-                <div data-role="overview-recruitment-list">
-                    <div class="empty-state">
-                        <span class="material-symbols-outlined">groups</span>
-                        <p>暂无招募信息</p>
-                    </div>
-                </div>
-                <button class="cs-btn cs-btn--primary mt-4 w-full" data-nav-target="/pages/recruitment_board.html" type="button">
-                    浏览所有项目
-                </button>
-            </div>
-
-        </section>
-
+  <!-- Main column -->
+  <main>
+    <!-- Hero -->
+    <section class="hero" id="hp-hero">
+      <!-- Content rendered by JS -->
+      <div class="hero-meta">
+        <span class="day" id="hp-weekday">加载中</span>
+        <span class="sep"></span>
+        <span class="weather">
+          <span class="material-symbols-outlined">wb_sunny</span>
+          <span>校园晴好</span>
+        </span>
+      </div>
+      <h2 class="hero-greet headline" id="hp-greet">欢迎来到 CampusShare</h2>
+      <p class="hero-summary" id="hp-summary">把校园交易、资料共享和团队协作放进一个清爽入口。</p>
+      <div class="hero-actions" id="hp-hero-actions">
+        <button class="ha-btn primary" id="hp-btn-hero-browse" type="button">浏览市场</button>
+        <button class="ha-btn secondary" id="hp-btn-hero-secondary" type="button">登录 / 注册</button>
+      </div>
+      <div id="hp-todos-area"></div>
     </section>
 
-</main>
-
-<!-- Footer -->
-<footer class="mx-auto mt-4 max-w-[1400px] px-6 pb-8 lg:px-10">
-    <div class="flex flex-col items-center justify-between gap-4 border-t pt-6 text-xs md:flex-row"
-         style="border-color:var(--cs-line);color:var(--cs-muted);">
-        <span class="headline-font text-sm font-extrabold" style="color:var(--cs-ink);">CampusShare</span>
-        <span>© 2026 CampusShare</span>
-        <div class="flex gap-5">
-            <a href="#" style="color:var(--cs-muted);">隐私政策</a>
-            <a href="#" style="color:var(--cs-muted);">服务条款</a>
-            <a href="#" style="color:var(--cs-muted);">支持</a>
-        </div>
+    <!-- Categories -->
+    <div class="cats" id="hp-cats" style="margin-top:28px;">
+      <button class="cat active" data-cat-id="all" type="button"><span class="material-symbols-outlined">apps</span>全部</button>
+      <button class="cat" data-cat-id="book" type="button"><span class="material-symbols-outlined">menu_book</span>教材书籍</button>
+      <button class="cat" data-cat-id="digital" type="button"><span class="material-symbols-outlined">devices</span>电子产品</button>
+      <button class="cat" data-cat-id="life" type="button"><span class="material-symbols-outlined">chair</span>生活用品</button>
+      <button class="cat" data-cat-id="cloth" type="button"><span class="material-symbols-outlined">checkroom</span>服饰鞋包</button>
+      <button class="cat" data-cat-id="sport" type="button"><span class="material-symbols-outlined">sports_tennis</span>运动器材</button>
+      <button class="cat" data-cat-id="note" type="button"><span class="material-symbols-outlined">edit_note</span>学习笔记</button>
     </div>
+
+    <!-- Products -->
+    <div class="section-h">
+      <div class="ttl headline">近期上架<span class="sub">最新发布</span></div>
+      <button class="see-all" data-nav-path="/pages/market_listing.html" type="button">查看全部<span class="material-symbols-outlined">chevron_right</span></button>
+    </div>
+    <div class="product-grid" id="hp-products">
+      <div class="card skeleton" style="height:280px;"></div>
+      <div class="card skeleton" style="height:280px;"></div>
+      <div class="card skeleton" style="height:280px;"></div>
+      <div class="card skeleton" style="height:280px;"></div>
+    </div>
+
+    <!-- Materials + Recruits -->
+    <div class="two-col" style="margin-top:24px;">
+      <div class="glass panel">
+        <div class="panel-head">
+          <div class="ttl headline">学术资源</div>
+          <button class="see-all" data-nav-path="/pages/market_listing.html?view=MATERIAL" type="button">更多<span class="material-symbols-outlined">chevron_right</span></button>
+        </div>
+        <div class="material-list" id="hp-materials">
+          <div class="skeleton skeleton-line" style="margin-bottom:8px;"></div>
+          <div class="skeleton skeleton-line" style="margin-bottom:8px;"></div>
+          <div class="skeleton skeleton-line"></div>
+        </div>
+      </div>
+
+      <div class="glass panel">
+        <div class="panel-head">
+          <div class="ttl headline">组队招募</div>
+          <button class="see-all" data-nav-path="/pages/recruitment_board.html" type="button">更多<span class="material-symbols-outlined">chevron_right</span></button>
+        </div>
+        <div id="hp-recruits">
+          <div class="skeleton skeleton-line" style="margin-bottom:8px;"></div>
+          <div class="skeleton skeleton-line" style="margin-bottom:8px;"></div>
+          <div class="skeleton skeleton-line"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Right Rail -->
+  <aside class="right-rail">
+    <!-- Points card -->
+    <div class="points-card" id="hp-points-card">
+      <div class="lbl">我的积分</div>
+      <div class="v" id="hp-points-val">—<span class="u">积分</span></div>
+      <div class="delta">
+        <span class="material-symbols-outlined" style="font-size:14px;">auto_graph</span>
+        <span id="hp-points-hint">登录后查看积分余额</span>
+      </div>
+      <div class="points-actions">
+        <button id="hp-btn-points-detail" type="button">积分明细</button>
+        <button class="solid" id="hp-btn-points-redeem" type="button">兑换</button>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="glass notif-card" id="hp-notif-card">
+      <div class="notif-head">
+        <div class="ttl headline">
+          消息
+          <span class="count" id="hp-notif-count" style="display:none;"></span>
+        </div>
+        <button class="notif-mark" id="hp-btn-mark-all" type="button">全部标为已读</button>
+      </div>
+      <div class="notif-list" id="hp-notif-list">
+        <div style="padding:12px 8px;font-size:13px;color:var(--cs-muted);">登录后查看消息</div>
+      </div>
+    </div>
+
+    <!-- Quick links for guests -->
+    <div class="glass panel" id="hp-quick-links">
+      <div class="panel-head"><div class="ttl headline">快速入口</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="side-link" data-nav-path="/pages/market_listing.html" type="button" style="border:1px solid var(--cs-line);border-radius:var(--cs-r-md);">
+          <span class="material-symbols-outlined">storefront</span>
+          <span>浏览交易市场</span>
+          <span class="material-symbols-outlined" style="font-size:16px;color:var(--cs-muted-2);">chevron_right</span>
+        </button>
+        <button class="side-link" data-nav-path="/pages/market_listing.html?view=MATERIAL" type="button" style="border:1px solid var(--cs-line);border-radius:var(--cs-r-md);">
+          <span class="material-symbols-outlined">menu_book</span>
+          <span>学术资源</span>
+          <span class="material-symbols-outlined" style="font-size:16px;color:var(--cs-muted-2);">chevron_right</span>
+        </button>
+        <button class="side-link" data-nav-path="/pages/recruitment_board.html" type="button" style="border:1px solid var(--cs-line);border-radius:var(--cs-r-md);">
+          <span class="material-symbols-outlined">groups</span>
+          <span>组队招募</span>
+          <span class="material-symbols-outlined" style="font-size:16px;color:var(--cs-muted-2);">chevron_right</span>
+        </button>
+        <button class="side-link" data-nav-path="/pages/auth_access.html" type="button" style="border:1px solid var(--cs-primary);border-radius:var(--cs-r-md);color:var(--cs-primary);background:var(--cs-primary-soft);">
+          <span class="material-symbols-outlined">login</span>
+          <span>登录 / 注册</span>
+          <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<footer>
+  <span>© 2026 CampusShare · 校园资源共享平台</span>
+  <div class="links">
+    <a href="#">隐私政策</a>
+    <a href="#">服务条款</a>
+    <a href="#">技术支持</a>
+  </div>
 </footer>
 
 <script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>

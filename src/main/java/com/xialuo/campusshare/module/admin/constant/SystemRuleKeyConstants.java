@@ -18,6 +18,8 @@ public final class SystemRuleKeyConstants {
     public static final String MATERIAL_FILE_MAX_SIZE_MB = "MATERIAL_FILE_MAX_SIZE_MB";
     /** 资料文件扩展名白名单 */
     public static final String MATERIAL_FILE_ALLOWED_EXTENSIONS = "MATERIAL_FILE_ALLOWED_EXTENSIONS";
+    /** 商品图片大小上限 */
+    public static final String PRODUCT_IMAGE_MAX_SIZE_MB = "PRODUCT_IMAGE_MAX_SIZE_MB";
 
     /** 订单超时自动关闭开关 */
     public static final String ORDER_AUTO_CLOSE_ENABLED = "ORDER_AUTO_CLOSE_ENABLED";

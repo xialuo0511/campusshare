@@ -167,7 +167,7 @@
             const browseBtn = document.getElementById("hp-todo-empty-browse");
             if (publishBtn) {
                 publishBtn.addEventListener("click", function () {
-                    Api.NavigateToPage("/pages/publish_create.html");
+                    Api.NavigateToPage("/pages/publish_center.html");
                 });
             }
             if (browseBtn) {
@@ -552,7 +552,7 @@
             const browseBtn = document.getElementById("hp-btn-hero-browse");
             if (publishBtn) {
                 publishBtn.addEventListener("click", function () {
-                    Api.NavigateToPage("/pages/publish_create.html");
+                    Api.NavigateToPage("/pages/publish_center.html");
                 });
             }
             if (browseBtn) {
@@ -641,7 +641,7 @@
         }
         try {
             const result = await Api.GetPointBalance();
-            const balance = result && (result.currentPointBalance != null ? result.currentPointBalance : (result.pointBalance || result.balance || 0));
+            const balance = result && (result.availablePoints != null ? result.availablePoints : (result.currentPointBalance != null ? result.currentPointBalance : (result.pointBalance || result.balance || 0)));
             const pointsVal = document.getElementById("hp-points-val");
             if (pointsVal) {
                 pointsVal.innerHTML = `${Number(balance).toFixed(0)}<span class="u">积分</span>`;
@@ -765,7 +765,7 @@
         const favBtn = document.getElementById("hp-btn-fav");
         if (favBtn) {
             favBtn.addEventListener("click", function () {
-                Api.NavigateToPage("/pages/my_publish.html");
+                Api.NavigateToPage("/pages/user_workspace.html?tab=favs");
             });
         }
 
@@ -819,7 +819,7 @@
         const favoritesBtn = document.getElementById("hp-btn-favorites");
         if (favoritesBtn) {
             favoritesBtn.addEventListener("click", function () {
-                Api.NavigateToPage("/pages/my_publish.html");
+                Api.NavigateToPage("/pages/user_workspace.html?tab=favs");
             });
         }
     }

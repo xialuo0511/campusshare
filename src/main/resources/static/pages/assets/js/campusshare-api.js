@@ -128,22 +128,19 @@
         DETAIL: "/pages/market_item_detail.html",
         ORDER: "/pages/order_center.html",
         ORDER_DETAIL: "/pages/order_detail.html",
-        PUBLISH: "/pages/publish_create.html",
+        PUBLISH: "/pages/publish_center.html",
         RECRUITMENT: "/pages/recruitment_board.html",
         NOTIFICATION: "/pages/notification_center.html",
         PROFILE: "/pages/user_profile.html",
         MY_PUBLISH: "/pages/my_publish.html",
-        ADMIN: "/pages/admin_dashboard.html",
+        ADMIN: "/pages/admin_console.html",
+        ADMIN_DASHBOARD: "/pages/admin_dashboard.html",
         ADMIN_BATCH_REVIEW: "/pages/admin_batch_review.html"
     };
     const USER_WORKSPACE_CHILD_PATH_SET = new Set([
-        PAGE_PATH_MAP.LISTING,
-        PAGE_PATH_MAP.FORUM_SUBVIEW,
-        PAGE_PATH_MAP.MATERIAL_LISTING,
         PAGE_PATH_MAP.ORDER,
         PAGE_PATH_MAP.ORDER_DETAIL,
         PAGE_PATH_MAP.PUBLISH,
-        PAGE_PATH_MAP.RECRUITMENT,
         PAGE_PATH_MAP.NOTIFICATION,
         PAGE_PATH_MAP.PROFILE,
         PAGE_PATH_MAP.MY_PUBLISH
@@ -402,6 +399,7 @@
             email: loginData.email || loginData.contact || "",
             contact: loginData.contact || loginData.email || "",
             college: loginData.college || "",
+            major: loginData.major || "",
             grade: loginData.grade || "",
             avatarUrl: loginData.avatarUrl || "",
             pendingAvatarUrl: loginData.pendingAvatarUrl || "",
@@ -597,7 +595,9 @@
      */
     function ResolveLoginSuccessRedirect(loginData) {
         const redirectPath = ResolveRedirectPathFromQuery();
-        if (redirectPath && !redirectPath.startsWith(PAGE_PATH_MAP.AUTH)) {
+        if (redirectPath
+            && !redirectPath.startsWith(PAGE_PATH_MAP.AUTH)
+            && !redirectPath.startsWith(PAGE_PATH_MAP.LISTING)) {
             return redirectPath;
         }
         const currentProfile = GetCurrentUserProfile();
@@ -1262,6 +1262,9 @@
      * 鏇存柊閾冮摏瑙掓爣
      */
     function UpdateNotificationBadge(unreadCount) {
+        if (document.getElementById("hp-notif-badge")) {
+            return;
+        }
         const notificationIcon = FindMaterialIconElement("notifications");
         const notificationTrigger = EnsureNotificationTriggerStyle(ResolveIconTriggerElement(notificationIcon));
         if (!notificationTrigger) {
@@ -1314,13 +1317,79 @@
         });
     }
 
+    function ResolveNotificationDisplayText(notificationItem, fieldNameList) {
+        if (!notificationItem) {
+            return "";
+        }
+        for (let index = 0; index < fieldNameList.length; index += 1) {
+            const fieldValue = notificationItem[fieldNameList[index]];
+            if (fieldValue !== undefined && fieldValue !== null && String(fieldValue).trim()) {
+                return String(fieldValue);
+            }
+        }
+        const nestedPayload = notificationItem.payload || notificationItem.extra || notificationItem.ext || notificationItem.bizData || notificationItem.data;
+        if (nestedPayload) {
+            if (typeof nestedPayload === "string") {
+                try {
+                    return ResolveNotificationDisplayText(JSON.parse(nestedPayload), fieldNameList) || nestedPayload;
+                } catch (error) {
+                    return nestedPayload;
+                }
+            }
+            return ResolveNotificationDisplayText(nestedPayload, fieldNameList);
+        }
+        return "";
+    }
+
+    function ResolveNotificationDataList(notificationResult) {
+        if (Array.isArray(notificationResult)) {
+            return notificationResult;
+        }
+        if (!notificationResult || typeof notificationResult !== "object") {
+            return [];
+        }
+        const directList = notificationResult.items
+            || notificationResult.records
+            || notificationResult.notificationList
+            || notificationResult.notifications
+            || notificationResult.noticeList
+            || notificationResult.list
+            || notificationResult.rows;
+        if (Array.isArray(directList)) {
+            return directList;
+        }
+        if (notificationResult.data) {
+            return ResolveNotificationDataList(notificationResult.data);
+        }
+        return Object.keys(notificationResult).reduce(function FlattenNotificationData(accumulator, key) {
+            const value = notificationResult[key];
+            return Array.isArray(value) ? accumulator.concat(value) : accumulator;
+        }, []);
+    }
+
+    function ResolveNotificationReadFlag(notificationItem) {
+        if (!notificationItem) {
+            return false;
+        }
+        if (notificationItem.readFlag !== undefined) {
+            return notificationItem.readFlag === true || notificationItem.readFlag === 1 || notificationItem.readFlag === "1" || notificationItem.readFlag === "true";
+        }
+        if (notificationItem.readStatus !== undefined) {
+            return notificationItem.readStatus === true || notificationItem.readStatus === 1 || notificationItem.readStatus === "1" || notificationItem.readStatus === "READ";
+        }
+        if (notificationItem.isRead !== undefined) {
+            return notificationItem.isRead === true || notificationItem.isRead === 1 || notificationItem.isRead === "1" || notificationItem.isRead === "true";
+        }
+        return false;
+    }
+
     /**
      * 娓叉煋閫氱煡鍒楄〃
      */
     function RenderNotificationList() {
         const limitedNotificationList = (notificationDataList || []).slice(0, NOTIFICATION_MAX_RENDER_COUNT);
         const unreadCount = limitedNotificationList.filter(function CountUnread(notificationItem) {
-            return !notificationItem.readFlag;
+            return !ResolveNotificationReadFlag(notificationItem);
         }).length;
         UpdateNotificationBadge(unreadCount);
         if (!notificationListElement) {
@@ -1339,15 +1408,37 @@
             return;
         }
         limitedNotificationList.forEach(function RenderNotificationItem(notificationItem) {
+            const isRead = ResolveNotificationReadFlag(notificationItem);
             const itemElement = document.createElement("div");
-            itemElement.className = `campusshare-notification-item${notificationItem.readFlag ? "" : " is-unread"}`;
+            itemElement.className = `campusshare-notification-item${isRead ? "" : " is-unread"}`;
             const titleElement = document.createElement("span");
             titleElement.className = "campusshare-notification-item-title";
-            titleElement.textContent = notificationItem.title || "系统通知";
+            titleElement.textContent = ResolveNotificationDisplayText(notificationItem, [
+                "title",
+                "notificationTitle",
+                "noticeTitle",
+                "announcementTitle",
+                "subject"
+            ]) || "系统通知";
 
             const contentElement = document.createElement("div");
             contentElement.className = "campusshare-notification-item-content";
-            contentElement.textContent = notificationItem.content || "";
+            contentElement.textContent = ResolveNotificationDisplayText(notificationItem, [
+                "content",
+                "notificationContent",
+                "noticeContent",
+                "announcementContent",
+                "contentText",
+                "message",
+                "messageContent",
+                "messageText",
+                "body",
+                "description",
+                "detail",
+                "details",
+                "remark",
+                "summary"
+            ]) || titleElement.textContent;
 
             const footerElement = document.createElement("div");
             footerElement.className = "campusshare-notification-item-footer";
@@ -1359,10 +1450,10 @@
             const readButton = document.createElement("button");
             readButton.type = "button";
             readButton.className = "campusshare-notification-item-action";
-            readButton.textContent = notificationItem.readFlag ? "已读" : "标记已读";
-            readButton.disabled = !!notificationItem.readFlag;
+            readButton.textContent = isRead ? "已读" : "标记已读";
+            readButton.disabled = isRead;
             readButton.addEventListener("click", function HandleReadNotification() {
-                MarkSingleNotificationRead(notificationItem.notificationId);
+                MarkSingleNotificationRead(notificationItem.notificationId || notificationItem.id || notificationItem.noticeId);
             });
             footerElement.appendChild(readButton);
 
@@ -1386,7 +1477,7 @@
             if (currentSequence !== notificationRequestSequence) {
                 return;
             }
-            notificationDataList = Array.isArray(notificationList) ? notificationList : [];
+            notificationDataList = ResolveNotificationDataList(notificationList);
             RenderNotificationList();
         } catch (error) {
             if (currentSequence !== notificationRequestSequence) {
@@ -2008,6 +2099,7 @@
             email: profileResponse.email || profileResponse.contact || "",
             contact: profileResponse.contact || profileResponse.email || "",
             college: profileResponse.college || "",
+            major: profileResponse.major || "",
             grade: profileResponse.grade || "",
             userStatus: profileResponse.userStatus || "",
             phone: profileResponse.phone || "",
@@ -2220,6 +2312,11 @@
             formData.append("file", file);
             return RequestMultipartApi("/api/v1/materials/files/upload", "POST", formData, true);
         },
+        UploadProductImage(file) {
+            const formData = new FormData();
+            formData.append("file", file);
+            return RequestMultipartApi("/api/v1/products/images", "POST", formData, true);
+        },
         DownloadMaterial(materialId) {
             return RequestApi(`/api/v1/materials/${materialId}/download`, "POST", {}, true);
         },
@@ -2368,6 +2465,9 @@
         },
         ListPointLedger(pageNo, pageSize) {
             return RequestApi(`/api/v1/points/ledger?pageNo=${pageNo}&pageSize=${pageSize}`, "GET", null, true);
+        },
+        GetPointBalance() {
+            return RequestApi("/api/v1/points/ledger?pageNo=1&pageSize=1", "GET", null, true);
         },
         ListTeamRecruitments(query) {
             const searchQuery = query || {};

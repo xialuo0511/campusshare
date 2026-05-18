@@ -11,12 +11,15 @@ import com.xialuo.campusshare.module.resource.dto.ProductDetailResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductListResponseDto;
 import com.xialuo.campusshare.module.resource.dto.ProductOfflineRequestDto;
 import com.xialuo.campusshare.module.resource.dto.PublishProductRequestDto;
+import com.xialuo.campusshare.module.resource.dto.ProductImageUploadResponseDto;
 import com.xialuo.campusshare.module.resource.service.ProductCommentService;
+import com.xialuo.campusshare.module.resource.service.ProductImageStorageService;
 import com.xialuo.campusshare.module.resource.service.ProductPublishService;
 import com.xialuo.campusshare.module.resource.service.ProductQueryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 商品接口
@@ -38,15 +42,31 @@ public class ProductController {
     private final ProductPublishService productPublishService;
     /** 商品评论服务 */
     private final ProductCommentService productCommentService;
+    /** 商品图片存储服务 */
+    private final ProductImageStorageService productImageStorageService;
 
     public ProductController(
         ProductQueryService productQueryService,
         ProductPublishService productPublishService,
-        ProductCommentService productCommentService
+        ProductCommentService productCommentService,
+        ProductImageStorageService productImageStorageService
     ) {
         this.productQueryService = productQueryService;
         this.productPublishService = productPublishService;
         this.productCommentService = productCommentService;
+        this.productImageStorageService = productImageStorageService;
+    }
+
+    /**
+     * 上传商品图片
+     */
+    @PostMapping(value = "/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<ProductImageUploadResponseDto> UploadProductImage(
+        @RequestParam("file") MultipartFile multipartFile,
+        HttpServletRequest httpServletRequest
+    ) {
+        ProductImageUploadResponseDto responseDto = productImageStorageService.UploadProductImage(multipartFile);
+        return ApiResponse.Success(responseDto, GetRequestId(httpServletRequest));
     }
 
     /**

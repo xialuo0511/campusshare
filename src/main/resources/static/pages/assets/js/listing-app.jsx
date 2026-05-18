@@ -13,6 +13,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 // ─── API config ───
 const API_BASE = '/api/v1';
 const PAGE_SIZE = 12;
+const AUTH_TOKEN_STORAGE_KEY = 'campusshare.authToken';
 
 // ─── Palettes & value maps ───
 const CATEGORY_PALETTE = {
@@ -67,10 +68,44 @@ function adaptProduct(dto) {
     ph: (dto.category || '品')[0],
     seller: dto.sellerDisplayName || '卖家',
     badge: dto.conditionLevel || '',
-    tags: [dto.category, dto.tradeLocation].filter(Boolean),
+    tags: ['交易市场', dto.tradeLocation].filter(Boolean),
     fav: false,
     imageFileId: dto.imageFileIds?.[0] || null,
   };
+}
+
+function getAuthToken() {
+  return window.sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+    || window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+    || '';
+}
+
+function resolveInitialModeFromUrl() {
+  const searchParams = new URLSearchParams(window.location.search || '');
+  const viewText = String(searchParams.get('view') || '').toUpperCase();
+  if (viewText === 'MATERIAL' || viewText === 'RESOURCE' || viewText === 'RESOURCES') {
+    return 'materials';
+  }
+  return '';
+}
+
+async function fetchNotificationUnreadCount() {
+  const token = getAuthToken();
+  if (!token) {
+    return 0;
+  }
+  const res = await fetch(`${API_BASE}/notifications`, {
+    headers: { 'X-Auth-Token': token },
+  });
+  const json = await res.json();
+  if (json.code !== 0) {
+    return 0;
+  }
+  const data = json.data;
+  const notifList = Array.isArray(data)
+    ? data
+    : (data && Array.isArray(data.list) ? data.list : []);
+  return notifList.filter(n => n.readFlag !== true).length;
 }
 
 function adaptMaterial(dto) {
@@ -147,7 +182,7 @@ function buildRecruitUrl(filters, keyword, page) {
 
 // ─── Mode metadata ───
 const MODE_META = {
-  products:     { label: '商品',     icon: 'storefront', sub: '来自校内同学的闲置 · 实名审核 · 平台担保交易' },
+  products:     { label: '交易市场', icon: 'storefront', sub: '来自校内同学的闲置 · 实名审核 · 平台担保交易' },
   materials:    { label: '学习资料', icon: 'menu_book',  sub: '积分下载 · 上传可赚积分 · 涵盖各院系课程' },
   recruitments: { label: '组队招募', icon: 'groups',     sub: '科研 · 竞赛 · 项目 · 实习 — 校内可信组队' },
 };
@@ -216,7 +251,7 @@ const SORT_OPTIONS = {
 };
 
 // ─── Nav ───
-function Nav({ keyword, onKeyword }) {
+function Nav({ keyword, onKeyword, unreadCount, mode, onMode }) {
   const searchRef = useRef(null);
   const isMac = useMemo(
     () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent),
@@ -259,15 +294,15 @@ function Nav({ keyword, onKeyword }) {
 
         <nav className="nav-links">
           <button className="nav-link" onClick={() => window.location.href = '/pages/market_overview.html'}>主页</button>
-          <button className="nav-link active">交易市场</button>
-          <button className="nav-link">学术资源</button>
-          <button className="nav-link">校园论坛</button>
+          <button className={'nav-link' + (mode === 'products' ? ' active' : '')} onClick={() => onMode('products')}>交易市场</button>
+          <button className={'nav-link' + (mode === 'materials' ? ' active' : '')} onClick={() => onMode('materials')}>学习资料</button>
+          <button className={'nav-link' + (mode === 'recruitments' ? ' active' : '')} onClick={() => onMode('recruitments')}>组队招募</button>
         </nav>
 
         <div className="nav-right">
-          <button className="icon-btn" title="消息">
+          <button className="icon-btn" title="消息" onClick={() => window.location.href = '/pages/notification_center.html'}>
             <span className="material-symbols-outlined">notifications</span>
-            <span className="dot-badge">3</span>
+            {unreadCount > 0 && <span className="dot-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>}
           </button>
           <button className="icon-btn" title="收藏">
             <span className="material-symbols-outlined">favorite</span>
@@ -700,6 +735,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const abortRef = useRef(null);
   const debounceRef = useRef(null);
@@ -714,6 +750,24 @@ function App() {
     setPage(1);
     setTotalCount(0);
   }, [mode]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchNotificationUnreadCount()
+      .then(count => {
+        if (mounted) {
+          setUnreadCount(count);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setUnreadCount(0);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Fetch function
   const fetchPage = useCallback(async (pageNo, append) => {
@@ -785,9 +839,16 @@ function App() {
   const setView = (v) => setTweak('view', v);
   const meta = MODE_META[mode];
 
+  useEffect(() => {
+    const initialMode = resolveInitialModeFromUrl();
+    if (initialMode && initialMode !== mode) {
+      setMode(initialMode);
+    }
+  }, []);
+
   return (
     <>
-      <Nav keyword={keyword} onKeyword={setKeyword} />
+      <Nav keyword={keyword} onKeyword={setKeyword} unreadCount={unreadCount} mode={mode} onMode={setMode} />
 
       <div className="page-header">
         <div className="crumb">

@@ -450,7 +450,7 @@
         }
         const userRole = loginResult && loginResult.userRole ? loginResult.userRole : "";
         if (userRole === "ADMINISTRATOR") {
-            return "/pages/admin_dashboard.html";
+            return "/pages/admin_console.html";
         }
         return "/pages/user_workspace.html";
     }

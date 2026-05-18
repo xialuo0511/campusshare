@@ -71,7 +71,7 @@
                 try {
                     await window.CampusShareApi.MarkNotificationRead(notificationId);
                     state.notificationList = state.notificationList.map(function PatchReadFlag(notificationItem) {
-                        if (Number(notificationItem.notificationId) === notificationId) {
+                        if (Number(notificationItem.notificationId || notificationItem.id || notificationItem.noticeId || 0) === notificationId) {
                             return Object.assign({}, notificationItem, { readFlag: true });
                         }
                         return notificationItem;
@@ -106,7 +106,7 @@
     async function RefreshNotifications(state, listContainer, messageBar) {
         try {
             const listResult = await window.CampusShareApi.ListMyNotifications();
-            state.notificationList = SortNotificationsBySendTime(Array.isArray(listResult) ? listResult : []);
+            state.notificationList = SortNotificationsBySendTime(ResolveNotificationList(listResult));
             RenderNotificationList(state, listContainer);
             HideMessage(messageBar);
         } catch (error) {
@@ -115,12 +115,52 @@
         }
     }
 
+    function ResolveNotificationList(listResult) {
+        if (Array.isArray(listResult)) {
+            return listResult;
+        }
+        if (!listResult) {
+            return [];
+        }
+        if (Array.isArray(listResult.list)) {
+            return listResult.list;
+        }
+        if (Array.isArray(listResult.items)) {
+            return listResult.items;
+        }
+        if (Array.isArray(listResult.records)) {
+            return listResult.records;
+        }
+        if (Array.isArray(listResult.notificationList)) {
+            return listResult.notificationList;
+        }
+        if (Array.isArray(listResult.notifications)) {
+            return listResult.notifications;
+        }
+        if (Array.isArray(listResult.noticeList)) {
+            return listResult.noticeList;
+        }
+        if (Array.isArray(listResult.rows)) {
+            return listResult.rows;
+        }
+        if (listResult.data) {
+            return ResolveNotificationList(listResult.data);
+        }
+        if (typeof listResult === "object") {
+            return Object.keys(listResult).reduce(function FlattenNotificationList(accumulator, key) {
+                const value = listResult[key];
+                return Array.isArray(value) ? accumulator.concat(value) : accumulator;
+            }, []);
+        }
+        return [];
+    }
+
     /**
      * 全部已读
      */
     async function MarkAllAsRead(state, listContainer, messageBar) {
         const unreadList = state.notificationList.filter(function FilterUnread(notificationItem) {
-            return !notificationItem.readFlag;
+            return !ResolveNotificationReadFlag(notificationItem);
         });
         if (unreadList.length === 0) {
             ShowSuccess(messageBar, "当前没有未读消息");
@@ -205,36 +245,59 @@
             return;
         }
         listContainer.innerHTML = filteredList.map(function BuildNotificationItem(notificationItem) {
-            const titleText = notificationItem.title || ResolveNotificationTypeText(notificationItem.notificationType);
-            const contentText = notificationItem.content || "-";
+            const titleText = ResolveNotificationText(notificationItem, [
+                "title",
+                "notificationTitle",
+                "noticeTitle",
+                "announcementTitle",
+                "subject"
+            ]) || ResolveNotificationTypeText(notificationItem.notificationType);
+            const contentText = ResolveNotificationText(notificationItem, [
+                "content",
+                "notificationContent",
+                "noticeContent",
+                "announcementContent",
+                "contentText",
+                "message",
+                "messageContent",
+                "messageText",
+                "body",
+                "description",
+                "detail",
+                "details",
+                "remark",
+                "summary"
+            ]) || titleText || "-";
             const typeText = ResolveNotificationTypeText(notificationItem.notificationType);
             const iconName = ResolveNotificationIcon(notificationItem.notificationType);
             const toneClass = ResolveNotificationToneClass(notificationItem.notificationType);
-            const statusClass = notificationItem.readFlag
+            const isRead = ResolveNotificationReadFlag(notificationItem);
+            const notificationId = notificationItem.notificationId || notificationItem.id || notificationItem.noticeId || "";
+            const statusClass = isRead
                 ? "border-outline-variant bg-surface-container text-on-surface-variant"
                 : "border-primary/20 bg-primary/10 text-primary";
-            const statusText = notificationItem.readFlag ? "已读" : "未读";
+            const statusText = isRead ? "已读" : "未读";
             const navTarget = ResolveNotificationTarget(notificationItem);
             return [
                 `<article class=\"group relative overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md\">`,
-                notificationItem.readFlag ? "" : "<div class=\"absolute inset-y-0 left-0 w-1 bg-primary\"></div>",
+                isRead ? "" : "<div class=\"absolute inset-y-0 left-0 w-1 bg-primary\"></div>",
                 "<div class=\"flex flex-col gap-4 md:flex-row md:items-start\">",
                 `<div class=\"flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${toneClass}\"><span class=\"material-symbols-outlined text-2xl\">${iconName}</span></div>`,
                 "<div class=\"min-w-0 flex-1\">",
                 "<div class=\"mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between\">",
                 "<div class=\"min-w-0\">",
-                `<div class=\"mb-1 flex flex-wrap items-center gap-2\"><span class=\"rounded-full bg-surface-container px-2.5 py-1 text-[11px] font-bold text-on-surface-variant\">${EscapeHtml(typeText)}</span>${notificationItem.readFlag ? "" : "<span class=\"h-2 w-2 rounded-full bg-primary\"></span>"}</div>`,
+                `<div class=\"mb-1 flex flex-wrap items-center gap-2\"><span class=\"rounded-full bg-surface-container px-2.5 py-1 text-[11px] font-bold text-on-surface-variant\">${EscapeHtml(typeText)}</span>${isRead ? "" : "<span class=\"h-2 w-2 rounded-full bg-primary\"></span>"}</div>`,
                 `<h3 class=\"truncate text-base font-extrabold text-on-surface\">${EscapeHtml(titleText)}</h3>`,
                 "</div>",
-                `<span class=\"shrink-0 text-xs font-semibold text-outline\">${EscapeHtml(FormatTime(notificationItem.sendTime))}</span>`,
+                `<span class=\"shrink-0 text-xs font-semibold text-outline\">${EscapeHtml(FormatTime(notificationItem.sendTime || notificationItem.createTime))}</span>`,
                 "</div>",
                 `<p class=\"mb-4 text-sm leading-6 text-on-surface-variant\">${EscapeHtml(contentText)}</p>`,
                 "<div class=\"flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between\">",
                 `<span class=\"w-fit rounded-full border px-2.5 py-1 text-[11px] font-bold ${statusClass}\">${EscapeHtml(statusText)}</span>`,
                 "<div class=\"flex flex-wrap items-center gap-2\">",
-                notificationItem.readFlag
+                isRead
                     ? ""
-                    : `<button data-action=\"mark-read\" data-id=\"${EscapeHtml(String(notificationItem.notificationId || ""))}\" class=\"inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-1.5 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary/5\"><span class=\"material-symbols-outlined text-base\">done</span>标记已读</button>`,
+                    : `<button data-action=\"mark-read\" data-id=\"${EscapeHtml(String(notificationId))}\" class=\"inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-1.5 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary/5\"><span class=\"material-symbols-outlined text-base\">done</span>标记已读</button>`,
                 navTarget
                     ? `<button data-action=\"jump\" data-target=\"${EscapeHtml(navTarget)}\" class=\"inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary transition hover:bg-primary-container\"><span class=\"material-symbols-outlined text-base\">open_in_new</span>查看详情</button>`
                     : "",
@@ -250,7 +313,7 @@
     function UpdateNotificationSummary(notificationList) {
         const totalCount = notificationList.length;
         const unreadCount = notificationList.filter(function CountUnread(notificationItem) {
-            return !notificationItem.readFlag;
+            return !ResolveNotificationReadFlag(notificationItem);
         }).length;
         const readCount = totalCount - unreadCount;
         PatchSummaryText("[data-notification-total]", totalCount);
@@ -271,15 +334,55 @@
     function FilterNotifications(notificationList, filterType) {
         if (filterType === FILTER_TYPE_UNREAD) {
             return notificationList.filter(function FilterUnread(notificationItem) {
-                return !notificationItem.readFlag;
+                return !ResolveNotificationReadFlag(notificationItem);
             });
         }
         if (filterType === FILTER_TYPE_READ) {
             return notificationList.filter(function FilterRead(notificationItem) {
-                return !!notificationItem.readFlag;
+                return ResolveNotificationReadFlag(notificationItem);
             });
         }
         return notificationList;
+    }
+
+    function ResolveNotificationReadFlag(notificationItem) {
+        if (!notificationItem) {
+            return false;
+        }
+        if (notificationItem.readFlag !== undefined) {
+            return notificationItem.readFlag === true || notificationItem.readFlag === 1 || notificationItem.readFlag === "1" || notificationItem.readFlag === "true";
+        }
+        if (notificationItem.readStatus !== undefined) {
+            return notificationItem.readStatus === true || notificationItem.readStatus === 1 || notificationItem.readStatus === "1" || notificationItem.readStatus === "READ";
+        }
+        if (notificationItem.isRead !== undefined) {
+            return notificationItem.isRead === true || notificationItem.isRead === 1 || notificationItem.isRead === "1" || notificationItem.isRead === "true";
+        }
+        return false;
+    }
+
+    function ResolveNotificationText(notificationItem, fieldNameList) {
+        if (!notificationItem) {
+            return "";
+        }
+        for (let index = 0; index < fieldNameList.length; index += 1) {
+            const value = notificationItem[fieldNameList[index]];
+            if (value !== undefined && value !== null && String(value).trim()) {
+                return String(value);
+            }
+        }
+        const nestedPayload = notificationItem.payload || notificationItem.extra || notificationItem.ext || notificationItem.bizData || notificationItem.data;
+        if (nestedPayload) {
+            if (typeof nestedPayload === "string") {
+                try {
+                    return ResolveNotificationText(JSON.parse(nestedPayload), fieldNameList) || nestedPayload;
+                } catch (error) {
+                    return nestedPayload;
+                }
+            }
+            return ResolveNotificationText(nestedPayload, fieldNameList);
+        }
+        return "";
     }
 
     /**
@@ -365,8 +468,8 @@
      */
     function SortNotificationsBySendTime(notificationList) {
         return notificationList.slice().sort(function CompareNotificationTime(leftItem, rightItem) {
-            const leftTime = ResolveTimeValue(leftItem.sendTime);
-            const rightTime = ResolveTimeValue(rightItem.sendTime);
+            const leftTime = ResolveTimeValue(leftItem.sendTime || leftItem.createTime);
+            const rightTime = ResolveTimeValue(rightItem.sendTime || rightItem.createTime);
             return rightTime - leftTime;
         });
     }

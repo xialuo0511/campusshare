@@ -6,6 +6,17 @@
     const DEFAULT_TARGET = "/pages/my_publish.html";
     const ADMINISTRATOR_ROLE = "ADMINISTRATOR";
     const TARGET_ATTRIBUTE = "data-workspace-target";
+    const TITLE_BY_PATH = {
+        "/pages/my_publish.html": "我的发布",
+        "/pages/order_center.html": "订单中心",
+        "/pages/recruitment_board.html": "组队招募",
+        "/pages/notification_center.html": "消息通知",
+        "/pages/user_profile.html": "个人设置",
+        "/pages/publish_create.html": "发布内容",
+        "/pages/publish_center.html": "发布内容",
+        "/pages/market_overview.html": "首页",
+        "/pages/market_listing.html": "交易市场"
+    };
 
     /**
      * Bind workspace behavior.
@@ -25,6 +36,7 @@
         }
 
         await SyncWorkspaceProfile();
+        RefreshWorkspaceSummary();
         BindWorkspaceNavigation(frameElement);
         BindWorkspaceActions(frameElement);
         frameElement.addEventListener("load", function HandleFrameLoad() {
@@ -45,14 +57,18 @@
             profile = profile || null;
         }
         const displayNameNode = document.querySelector("[data-role='workspace-display-name']");
-        const roleNode = document.querySelector("[data-role='workspace-role']");
+        const roleNode = document.querySelector("[data-role='workspace-role-text']");
         const avatarNode = document.querySelector("[data-role='workspace-avatar']");
+        const avatarMiniNode = document.querySelector("[data-role='workspace-avatar-mini']");
         const displayName = profile && profile.displayName ? String(profile.displayName) : "个人中心";
         if (displayNameNode) {
             displayNameNode.textContent = displayName;
         }
         if (roleNode) {
             roleNode.textContent = profile && profile.userRole === ADMINISTRATOR_ROLE ? "管理员" : "校园认证用户";
+        }
+        if (avatarMiniNode) {
+            avatarMiniNode.textContent = displayName.slice(0, 1) || "用";
         }
         if (avatarNode) {
             avatarNode.textContent = displayName.slice(0, 1) || "用";
@@ -84,6 +100,13 @@
                 NavigateWorkspaceFrame(frameElement, targetPath);
             });
         });
+        const homeButton = document.querySelector("[data-workspace-home]");
+        if (homeButton) {
+            homeButton.addEventListener("click", function HandleHomeClick(event) {
+                event.preventDefault();
+                window.location.href = HOME_TARGET;
+            });
+        }
         const brandButton = document.querySelector("[data-workspace-brand]");
         if (brandButton) {
             brandButton.addEventListener("click", function HandleBrandClick(event) {
@@ -101,7 +124,7 @@
         if (adminButton) {
             adminButton.addEventListener("click", function HandleAdminClick(event) {
                 event.preventDefault();
-                window.location.href = "/pages/admin_dashboard.html";
+                window.location.href = "/pages/admin_console.html";
             });
         }
         const logoutButton = document.querySelector("[data-workspace-logout]");
@@ -157,12 +180,17 @@
         const styleElement = childDocument.createElement("style");
         styleElement.id = "campusshare-workspace-child-style";
         styleElement.textContent = [
-            "html,body{min-height:100%!important;background:transparent!important;}",
+            "html,body{width:100%!important;height:100%!important;min-height:0!important;background:transparent!important;overflow:hidden!important;}",
             "body>header,[data-user-topbar],[data-user-sidebar],footer{display:none!important;}",
-            "body>main{display:block!important;width:100%!important;max-width:none!important;min-height:100vh!important;margin:0!important;padding:2rem!important;background:transparent!important;}",
+            "body>main,[data-user-shell]{display:block!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;margin:0!important;background:transparent!important;overflow:hidden!important;}",
+            "[data-user-main],body>main{height:100%!important;min-height:0!important;margin:0!important;padding:1.5rem!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-gutter:stable!important;}",
             "body>main>aside:first-child{display:none!important;}",
             "body>main>section{width:100%!important;max-width:none!important;}",
-            ".bg-surface-container-lowest:first-child,body>main>section>div:first-child{background:rgba(255,255,255,.72)!important;}"
+            ".mx-auto.max-w-6xl,.mx-auto.max-w-7xl{max-width:none!important;}",
+            ".overflow-x-auto{max-width:100%!important;}",
+            "table{min-width:max-content;}",
+            ".bg-surface-container-lowest:first-child,body>main>section>div:first-child{background:rgba(255,255,255,.72)!important;}",
+            "@media(max-width:760px){[data-user-main],body>main{padding:1rem!important;}.cs-page-header{flex-direction:column!important;align-items:flex-start!important;}.grid{min-width:0!important;}}"
         ].join("");
         childDocument.head.appendChild(styleElement);
     }
@@ -187,6 +215,7 @@
      */
     function SyncActiveState(targetPath) {
         const normalizedTarget = NormalizeWorkspaceTarget(targetPath);
+        SyncCurrentTitle(normalizedTarget);
         const navigationElementList = Array.from(document.querySelectorAll(`[${TARGET_ATTRIBUTE}]`));
         navigationElementList.forEach(function ToggleNavigation(element) {
             const itemTarget = NormalizeWorkspaceTarget(element.getAttribute(TARGET_ATTRIBUTE) || "");
@@ -197,6 +226,17 @@
             }
         });
         SyncTopNavigationState(normalizedTarget);
+    }
+
+    /**
+     * Sync title in top breadcrumb.
+     */
+    function SyncCurrentTitle(normalizedTarget) {
+        const titleNode = document.querySelector("[data-workspace-current-title]");
+        if (!titleNode) {
+            return;
+        }
+        titleNode.textContent = TITLE_BY_PATH[normalizedTarget] || "个人工作台";
     }
 
     /**
@@ -237,6 +277,136 @@
             return "/pages/market_listing.html";
         }
         return pathname;
+    }
+
+    /**
+     * Fill lightweight workspace counters without blocking navigation.
+     */
+    async function RefreshWorkspaceSummary() {
+        if (!window.CampusShareApi) {
+            return;
+        }
+        SetWorkspaceNumber("workspace-order-badge", 0);
+        SetWorkspaceNumber("workspace-message-badge", 0);
+        SetWorkspaceNumber("workspace-notification-badge", 0);
+        const requestList = [];
+        if (window.CampusShareApi.ListMyProducts) {
+            requestList.push(
+                window.CampusShareApi.ListMyProducts({ pageNo: 1, pageSize: 1 })
+                    .then(function HandleProducts(result) {
+                        SetWorkspaceNumber("workspace-product-count", ResolveTotalCount(result));
+                    })
+                    .catch(function IgnoreProducts() {})
+            );
+        }
+        if (window.CampusShareApi.ListMyMaterials) {
+            requestList.push(
+                window.CampusShareApi.ListMyMaterials({ pageNo: 1, pageSize: 1 })
+                    .then(function HandleMaterials(result) {
+                        SetWorkspaceNumber("workspace-material-count", ResolveTotalCount(result));
+                    })
+                    .catch(function IgnoreMaterials() {})
+            );
+        }
+        if (window.CampusShareApi.ListMyOrders) {
+            requestList.push(
+                window.CampusShareApi.ListMyOrders(1, 1)
+                    .then(function HandleOrders(result) {
+                        const totalCount = ResolveTotalCount(result);
+                        SetWorkspaceNumber("workspace-order-count", totalCount);
+                        SetWorkspaceNumber("workspace-order-badge", totalCount);
+                    })
+                    .catch(function IgnoreOrders() {})
+            );
+        }
+        if (window.CampusShareApi.ListMyNotifications) {
+            requestList.push(
+                window.CampusShareApi.ListMyNotifications()
+                    .then(function HandleNotifications(result) {
+                        const list = ResolveList(result);
+                        const unreadCount = list.filter(function CountUnread(item) {
+                            return item && item.readFlag !== true && item.readStatus !== true && item.isRead !== true;
+                        }).length;
+                        SetWorkspaceNumber("workspace-message-badge", unreadCount);
+                        SetWorkspaceNumber("workspace-notification-badge", unreadCount);
+                    })
+                    .catch(function IgnoreNotifications() {})
+            );
+        }
+        if (window.CampusShareApi.GetPointBalance) {
+            requestList.push(
+                window.CampusShareApi.GetPointBalance()
+                    .then(function HandlePoints(result) {
+                        const balance = result && result.pointBalance != null
+                            ? result.pointBalance
+                            : result && result.balance != null
+                                ? result.balance
+                                : result && result.currentBalance != null
+                                    ? result.currentBalance
+                                    : result && result.availablePoints != null
+                                        ? result.availablePoints
+                                        : 0;
+                        SetWorkspaceNumber("workspace-point-balance", balance);
+                    })
+                    .catch(function IgnorePoints() {})
+            );
+        }
+        await Promise.allSettled(requestList);
+    }
+
+    function ResolveTotalCount(result) {
+        if (!result) {
+            return 0;
+        }
+        if (typeof result.totalCount === "number") {
+            return result.totalCount;
+        }
+        if (typeof result.total === "number") {
+            return result.total;
+        }
+        if (typeof result.count === "number") {
+            return result.count;
+        }
+        const list = ResolveList(result);
+        return list.length;
+    }
+
+    function ResolveList(result) {
+        if (!result) {
+            return [];
+        }
+        if (Array.isArray(result)) {
+            return result;
+        }
+        if (Array.isArray(result.records)) {
+            return result.records;
+        }
+        if (Array.isArray(result.list)) {
+            return result.list;
+        }
+        if (Array.isArray(result.items)) {
+            return result.items;
+        }
+        if (Array.isArray(result.data)) {
+            return result.data;
+        }
+        return [];
+    }
+
+    function SetWorkspaceNumber(roleName, value) {
+        const numericValue = Number(value);
+        const displayValue = Number.isFinite(numericValue) ? numericValue : 0;
+        document.querySelectorAll(`[data-role='${roleName}']`).forEach(function SetText(element) {
+            element.textContent = String(displayValue);
+            if ((roleName === "workspace-order-badge"
+                || roleName === "workspace-message-badge"
+                || roleName === "workspace-notification-badge")
+                && displayValue <= 0) {
+                element.style.display = "none";
+            } else {
+                element.style.display = "";
+            }
+        });
     }
 
     /**

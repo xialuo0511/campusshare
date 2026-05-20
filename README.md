@@ -145,8 +145,7 @@ http://localhost:8080/
 | 发布页面 | `/pages/publish_create.html` |
 | 订单中心 | `/pages/user_workspace.html?target=%2Fpages%2Forder_center.html` |
 | 消息中心 | `/pages/user_workspace.html?target=%2Fpages%2Fnotification_center.html` |
-| 后台仪表盘 | `/pages/admin_dashboard.html` |
-| 后台批量审核 | `/pages/admin_batch_review.html` |
+| 后台管理控制台 | `/pages/admin_console.html` |
 
 ## Docker 部署
 

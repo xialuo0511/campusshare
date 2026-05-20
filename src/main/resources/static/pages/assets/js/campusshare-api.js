@@ -133,9 +133,7 @@
         NOTIFICATION: "/pages/notification_center.html",
         PROFILE: "/pages/user_profile.html",
         MY_PUBLISH: "/pages/my_publish.html",
-        ADMIN: "/pages/admin_console.html",
-        ADMIN_DASHBOARD: "/pages/admin_dashboard.html",
-        ADMIN_BATCH_REVIEW: "/pages/admin_batch_review.html"
+        ADMIN: "/pages/admin_console.html"
     };
     const USER_WORKSPACE_CHILD_PATH_SET = new Set([
         PAGE_PATH_MAP.ORDER,

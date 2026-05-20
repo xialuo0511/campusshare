@@ -458,7 +458,7 @@
             return "/pages/recruitment_board.html";
         }
         if (bizType === "REPORT") {
-            return "/pages/admin_batch_review.html";
+            return "/pages/admin_console.html#reports";
         }
         return "";
     }

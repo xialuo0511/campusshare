@@ -1,4 +1,4 @@
-﻿// CampusShare Admin 鈥?page renderers
+// CampusShare Admin page renderers
 const { useState: useStateAdm, useMemo: useMemoAdm, useEffect: useEffectAdm } = React;
 
 function adminPageListOf(result) {
@@ -77,7 +77,7 @@ function adminPageMapUser(item) {
   return { id: adminPageFirst(item.userId, adminPageFirst(item.id, '-')), name, letter: adminPageFirst(name[0], 'U'), av1: '#9ec5e8', av2: '#5b87c0', school: adminPageFirst(item.schoolName, adminPageFirst(item.school, '')), level: adminPageFirst(item.userRole, adminPageFirst(item.role, 'USER')), verified: !!(item.verified || item.sellerVerified || item.realNameVerified), posts: adminPageFirst(item.postCount, 0), sold: adminPageFirst(item.soldCount, 0), rating: adminPageFirst(item.rating, 0), reports: adminPageFirst(item.reportCount, 0), joined: adminPageFirst(item.createTime, '-'), status: String(adminPageFirst(item.userStatus, adminPageFirst(item.status, 'active'))).toLowerCase(), raw: item };
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Reusable bits 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// Reusable bits
 function KpiCard({ k, label, value, delta, up, hint, icon, tone }) {
   return (
     <div className="card kpi-card">
@@ -100,17 +100,17 @@ function KpiCard({ k, label, value, delta, up, hint, icon, tone }) {
 }
 
 function RiskTag({ risk }) {
-  const map = { low: ['浣?, 'green'], med: ['涓?, 'amber'], high: ['楂?, 'rose'] };
+  const map = { low: ['低', 'green'], med: ['中', 'amber'], high: ['高', 'rose'] };
   const [t, c] = map[risk] || map.low;
-  return <span className={'risk-tag ' + c}>椋庨櫓 路 {t}</span>;
+  return <span className={'risk-tag ' + c}>风险 · {t}</span>;
 }
 
 function KindTag({ kind }) {
   const map = {
-    goods: ['鍟嗗搧', 'storefront', 'blue'],
-    notes: ['璧勬枡', 'menu_book', 'violet'],
-    team:  ['鎷涘嫙', 'groups',  'green'],
-    cmt:   ['璇勮', 'forum',   'amber']
+    goods: ['商品', 'storefront', 'blue'],
+    notes: ['资料', 'menu_book', 'violet'],
+    team:  ['招募', 'groups',  'green'],
+    cmt:   ['\u8bc4\u8bba', 'forum',   'amber']
   };
   const [label, icon, tone] = map[kind] || map.goods;
   return (
@@ -120,7 +120,7 @@ function KindTag({ kind }) {
   );
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Activity chart 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// Activity chart
 function ActivityChart() {
   const data = ADM_TREND;
   const W = 720, H = 220, P = { l: 36, r: 16, t: 16, b: 28 };
@@ -168,20 +168,20 @@ function ActivityChart() {
         </defs>
       </svg>
       <div className="chart-legend">
-        <span><i style={{background:'#005d90'}} />鍟嗗搧</span>
-        <span><i style={{background:'#7c3aed'}} />璧勬枡</span>
-        <span><i style={{background:'#0a8a4f'}} />鎷涘嫙</span>
+        <span><i style={{background:'#005d90'}} />商品</span>
+        <span><i style={{background:'#7c3aed'}} />资料</span>
+        <span><i style={{background:'#0a8a4f'}} />招募</span>
       </div>
     </div>
   );
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Review queue row 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// Review queue row
 function ReviewRow({ item, compact }) {
   const reviewItem = async (approved) => {
     const Api = window.CampusShareApi;
     if (!Api) return;
-    const remark = approved ? '閫氳繃' : (window.prompt('璇疯緭鍏ラ┏鍥炲師鍥?, '鍐呭涓嶇鍚堝彂甯冭鑼?) || '');
+    const remark = approved ? '通过' : (window.prompt('请输入驳回原因', '内容不符合发布规范') || '');
     if (!approved && !remark) return;
     const raw = item.raw || {};
     const numericId = raw.productId || raw.materialId || raw.recruitmentId || raw.id || String(item.id).replace(/^[A-Z]-/, '');
@@ -192,7 +192,7 @@ function ReviewRow({ item, compact }) {
     } else if (item.kind === 'team' && Api.ReviewTeamRecruitmentByAdmin) {
       await Api.ReviewTeamRecruitmentByAdmin(numericId, approved, remark);
     } else {
-      window.alert('褰撳墠绫诲瀷鏆傛湭閰嶇疆瀹℃牳鎺ュ彛');
+      window.alert('\u5f53\u524d\u7c7b\u578b\u6682\u672a\u914d\u7f6e\u5ba1\u6838\u63a5\u53e3');
       return;
     }
     window.location.reload();
@@ -204,7 +204,7 @@ function ReviewRow({ item, compact }) {
       <div className="rv-body">
         <div className="rv-top">
           <KindTag kind={item.kind} />
-          {item.flags.map((f, i) => <span key={i} className="flag-tag">鈿?{f}</span>)}
+          {item.flags.map((f, i) => <span key={i} className="flag-tag">&#x63D0;&#x793A; &#x00B7; {f}</span>)}
           <RiskTag risk={item.risk} />
         </div>
         <div className="rv-title">{item.title}</div>
@@ -212,7 +212,7 @@ function ReviewRow({ item, compact }) {
         <div className="rv-meta">
           <span className="rv-user">
             <span className="rv-av" style={{background: `linear-gradient(135deg, ${item.user.av1}, ${item.user.av2})`}}>{item.user.letter}</span>
-            {item.user.name} 路 {item.user.school}
+            {item.user.name} &#x00B7; {item.user.school}
           </span>
           <span className="rv-dot" />
           <span>{item.meta}</span>
@@ -225,20 +225,20 @@ function ReviewRow({ item, compact }) {
       <div className="rv-side">
         <div className="rv-waited">
           <span className="material-symbols-outlined">schedule</span>
-          宸茬瓑寰?<b>{item.waited}</b>
+          &#x5DF2;&#x7B49;&#x5F85; <b>{item.waited}</b>
         </div>
         <div className="rv-actions">
-          <button className="btn-sm danger" onClick={() => reviewItem(false)}><span className="material-symbols-outlined">close</span>椹冲洖</button>
-          <button className="btn-sm"><span className="material-symbols-outlined">flag</span>闇€淇敼</button>
-          <button className="btn-sm primary" onClick={() => reviewItem(true)}><span className="material-symbols-outlined">check</span>閫氳繃</button>
+          <button className="btn-sm danger" onClick={() => reviewItem(false)}><span className="material-symbols-outlined">close</span>驳回</button>
+          <button className="btn-sm"><span className="material-symbols-outlined">flag</span>&#x9700;&#x4FEE;&#x6539;</button>
+          <button className="btn-sm primary" onClick={() => reviewItem(true)}><span className="material-symbols-outlined">check</span>通过</button>
         </div>
       </div>
     </div>
   );
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-// 1) Overview
+// Pages
+// -----------------------------------------------------------------------------
 function OverviewPage({ goReview, goReports }) {
   const [loading, setLoading] = useStateAdm(true);
   const [kpis, setKpis] = useStateAdm(ADM_KPIS);
@@ -264,12 +264,12 @@ function OverviewPage({ goReview, goReports }) {
     <div className="page-fade">
       <div className="page-head">
         <div className="ttl-block">
-          <div className="ttl">杩愯惀鎬昏</div>
-          <div className="sub">CampusShare 骞冲彴鍋ュ悍搴?路 2026-05-16 路 14:24 鏇存柊</div>
+          <div className="ttl">&#x8FD0;&#x8425;&#x603B;&#x89C8;</div>
+          <div className="sub">CampusShare &#x5E73;&#x53F0;&#x5065;&#x5EB7;&#x5EA6; &#x00B7; 2026-05-16 &#x00B7; 14:24 &#x66F4;&#x65B0;</div>
         </div>
         <div className="actions">
-          <button className="ghost-btn"><span className="material-symbols-outlined">download</span>瀵煎嚭鏃ユ姤</button>
-          <button className="primary-btn"><span className="material-symbols-outlined">campaign</span>鍙戝竷鍏憡</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">download</span>&#x5BFC;&#x51FA;&#x65E5;&#x62A5;</button>
+          <button className="primary-btn"><span className="material-symbols-outlined">campaign</span>&#x53D1;&#x5E03;&#x516C;&#x544A;</button>
         </div>
       </div>
 
@@ -281,48 +281,48 @@ function OverviewPage({ goReview, goReports }) {
         <div className="card panel">
           <div className="panel-head">
             <div>
-              <div className="panel-t">杩?7 鏃ュ唴瀹瑰彂甯冭秼鍔?/div>
-              <div className="panel-s">鍟嗗搧 路 璧勬枡 路 鎷涘嫙 涓夌被鍫嗗彔</div>
+              <div className="panel-t">近 7 日内容发布趋势</div>
+              <div className="panel-s">&#x5546;&#x54C1; &#x00B7; &#x8D44;&#x6599; &#x00B7; &#x62DB;&#x52DF; &#x4E09;&#x7C7B;&#x5806;&#x53E0;</div>
             </div>
             <div className="seg" style={{padding:3}}>
-              <button className="on">鏃?/button>
-              <button>鍛?/button>
-              <button>鏈?/button>
+              <button className="on">日</button>
+              <button>周</button>
+              <button>月</button>
             </div>
           </div>
           <ActivityChart />
           <div className="trend-stats">
-            <div><span className="lab">鏈懆鏂板</span><span className="val">1,612</span><span className="dlt up">+18.3%</span></div>
-            <div><span className="lab">鏈懆鎴愪氦</span><span className="val">楼284k</span><span className="dlt up">+22.1%</span></div>
-            <div><span className="lab">娲昏穬涔板</span><span className="val">3,284</span><span className="dlt up">+6.1%</span></div>
-            <div><span className="lab">浜哄潎浼氳瘽</span><span className="val">4.8</span><span className="dlt up">+0.4</span></div>
+            <div><span className="lab">&#x672C;&#x5468;&#x65B0;&#x589E;</span><span className="val">1,612</span><span className="dlt up">+18.3%</span></div>
+            <div><span className="lab">&#x672C;&#x5468;&#x6210;&#x4EA4;</span><span className="val">&#x00A5;284k</span><span className="dlt up">+22.1%</span></div>
+            <div><span className="lab">&#x6D3B;&#x8DC3;&#x4E70;&#x5BB6;</span><span className="val">3,284</span><span className="dlt up">+6.1%</span></div>
+            <div><span className="lab">人均会话</span><span className="val">4.8</span><span className="dlt up">+0.4</span></div>
           </div>
         </div>
 
         <div className="card panel quick-actions">
           <div className="panel-head">
             <div>
-              <div className="panel-t">蹇嵎鎿嶄綔</div>
-              <div className="panel-s">鏃ュ父杩愯惀甯哥敤鍔ㄤ綔</div>
+              <div className="panel-t">&#x5FEB;&#x6377;&#x64CD;&#x4F5C;</div>
+              <div className="panel-s">&#x65E5;&#x5E38;&#x8FD0;&#x8425;&#x5E38;&#x7528;&#x52A8;&#x4F5C;</div>
             </div>
           </div>
           <div className="qa-grid">
-            <button className="qa-btn"><span className="material-symbols-outlined">verified</span><b>鎵归噺瀹℃牳</b><i>38 椤瑰緟澶勭悊</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">flag</span><b>澶勭悊涓炬姤</b><i>7 椤瑰緟澶勭悊</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">block</span><b>杩濈璇嶈瘝搴?/b><i>褰撳墠 184 涓?/i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">campaign</span><b>鍙戝竷鍏憡</b><i>宸插彂甯?12 鏉?/i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">redeem</span><b>绉垎娲诲姩</b><i>2 涓繘琛屼腑</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">support_agent</span><b>瀹㈡湇宸ュ崟</b><i>4 涓緟鍥炲</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">verified</span><b>&#x6279;&#x91CF;&#x5BA1;&#x6838;</b><i>38 &#x9879;&#x5F85;&#x5904;&#x7406;</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">flag</span><b>处理举报</b><i>7 项待处理</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">block</span><b>违禁词词库</b><i>当前 184 条</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">campaign</span><b>发布公告</b><i>已发布 12 条</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">redeem</span><b>&#x79EF;&#x5206;&#x6D3B;&#x52A8;</b><i>2 &#x4E2A;&#x8FDB;&#x884C;&#x4E2D;</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">support_agent</span><b>&#x5BA2;&#x670D;&#x5DE5;&#x5355;</b><i>4 &#x4E2A;&#x5F85;&#x56DE;&#x590D;</i></button>
           </div>
         </div>
 
         <div className="card panel">
           <div className="panel-head">
             <div>
-              <div className="panel-t">寰呭鏍?路 浼樺厛闃熷垪</div>
-              <div className="panel-s">鎸夌瓑寰呮椂闀夸笌椋庨櫓绛夌骇鎺掑簭</div>
+              <div className="panel-t">&#x5F85;&#x5BA1;&#x6838; &#x00B7; &#x4F18;&#x5148;&#x961F;&#x5217;</div>
+              <div className="panel-s">按等待时长与风险等级排序</div>
             </div>
-            <button className="ghost-btn" onClick={goReview}>鏌ョ湅鍏ㄩ儴 ({ADM_REVIEW_QUEUE.length})<span className="material-symbols-outlined">arrow_forward</span></button>
+            <button className="ghost-btn" onClick={goReview}>&#x67E5;&#x770B;&#x5168;&#x90E8; ({ADM_REVIEW_QUEUE.length})<span className="material-symbols-outlined">arrow_forward</span></button>
           </div>
           <div className="review-list">
             {ADM_REVIEW_QUEUE.slice(0, 3).map(item => (
@@ -334,10 +334,10 @@ function OverviewPage({ goReview, goReports }) {
         <div className="card panel">
           <div className="panel-head">
             <div>
-              <div className="panel-t">鏈€杩戞搷浣滄棩蹇?/div>
-              <div className="panel-s">绠＄悊鍛樺姩浣滄祦</div>
+              <div className="panel-t">最近操作日志</div>
+              <div className="panel-s">管理员动作流</div>
             </div>
-            <button className="ghost-btn">鍏ㄩ儴鏃ュ織<span className="material-symbols-outlined">arrow_forward</span></button>
+            <button className="ghost-btn">&#x5168;&#x90E8;&#x65E5;&#x5FD7;<span className="material-symbols-outlined">arrow_forward</span></button>
           </div>
           <div className="log-list">
             {ADM_LOG.map((l, i) => (
@@ -356,8 +356,8 @@ function OverviewPage({ goReview, goReports }) {
   );
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-// 2) Review
+// Review page
+// -----------------------------------------------------------------------------
 function ReviewPage() {
   const [tab, setTab] = useStateAdm('all');
   const [selected, setSelected] = useStateAdm(new Set());
@@ -398,12 +398,12 @@ function ReviewPage() {
     <div className="page-fade">
       <div className="page-head">
         <div className="ttl-block">
-          <div className="ttl">鍐呭瀹℃牳</div>
-          <div className="sub">鍏?<b style={{color:'var(--cs-ink)'}}>{queue.length}</b> 椤瑰緟瀹?路 骞冲潎澶勭悊鏃堕暱 <b style={{color:'var(--cs-ink)'}}>4.2 min</b></div>
+          <div className="ttl">&#x5185;&#x5BB9;&#x5BA1;&#x6838;</div>
+          <div className="sub">&#x5171; <b style={{color:'var(--cs-ink)'}}>{queue.length}</b> &#x9879;&#x5F85;&#x5BA1; &#x00B7; &#x5E73;&#x5747;&#x5904;&#x7406;&#x65F6;&#x957F; <b style={{color:'var(--cs-ink)'}}>4.2 min</b></div>
         </div>
         <div className="actions">
-          <button className="ghost-btn"><span className="material-symbols-outlined">history</span>鍘嗗彶瀹℃牳</button>
-          <button className="ghost-btn"><span className="material-symbols-outlined">rule</span>瀹℃牳瑙勫垯</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">history</span>&#x5386;&#x53F2;&#x5BA1;&#x6838;</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">rule</span>&#x5BA1;&#x6838;&#x89C4;&#x5219;</button>
         </div>
       </div>
 
@@ -418,12 +418,12 @@ function ReviewPage() {
       <div className="toolbar">
         <div className="search-mini">
           <span className="material-symbols-outlined">search</span>
-          <input placeholder="鎼滅储鏍囬銆佺敤鎴枫€両D鈥? />
+          <input placeholder="搜索标题、用户、ID" />
         </div>
         <div className="toolbar-right">
-          <button className="ghost-btn"><span className="material-symbols-outlined">sort</span>绛夊緟鏃堕暱</button>
-          <button className="ghost-btn"><span className="material-symbols-outlined">tune</span>椋庨櫓绛夌骇</button>
-          <button className="ghost-btn"><span className="material-symbols-outlined">checklist</span>鎵归噺澶勭悊</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">sort</span>等待时长</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">tune</span>风险等级</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">checklist</span>批量处理</button>
         </div>
       </div>
 
@@ -438,8 +438,8 @@ function ReviewPage() {
   );
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-// 3) Reports
+// Reports page
+// -----------------------------------------------------------------------------
 function ReportsPage() {
   const [sev, setSev] = useStateAdm('all');
   const [loading, setLoading] = useStateAdm(true);
@@ -475,7 +475,7 @@ function ReportsPage() {
     setReports(prev => prev.filter(item => item.id !== report.id));
   };
 
-  const sevLabel = { high: '楂樹紭鍏?, med: '涓?, low: '浣? };
+  const sevLabel = { high: '高优先', med: '中', low: '低' };
   const counts = {
     all: reports.length,
     high: reports.filter(r => r.severity === 'high').length,
@@ -487,20 +487,20 @@ function ReportsPage() {
     <div className="page-fade">
       <div className="page-head">
         <div className="ttl-block">
-          <div className="ttl">涓炬姤澶勭悊</div>
-          <div className="sub">鐢ㄦ埛鎻愪氦涓庣郴缁熸娴嬬殑杩濊绾跨储 路 24h 鍐呭搷搴?<b style={{color:'var(--cs-ink)'}}>96.4%</b></div>
+          <div className="ttl">举报处理</div>
+          <div className="sub">&#x7528;&#x6237;&#x63D0;&#x4EA4;&#x4E0E;&#x7CFB;&#x7EDF;&#x68C0;&#x6D4B;&#x7684;&#x8FDD;&#x89C4;&#x7EBF;&#x7D22; &#x00B7; 24h &#x5185;&#x54CD;&#x5E94; <b style={{color:'var(--cs-ink)'}}>96.4%</b></div>
         </div>
         <div className="actions">
-          <button className="ghost-btn"><span className="material-symbols-outlined">policy</span>澶勭悊瑙勮寖</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">policy</span>处理规范</button>
         </div>
       </div>
 
       <div className="seg">
         {[
-          ['all',  '鍏ㄩ儴', counts.all],
-          ['high', '楂樹紭鍏?, counts.high],
-          ['med',  '涓?, counts.med],
-          ['low',  '浣?, counts.low]
+          ['all',  '\u5168\u90e8', counts.all],
+          ['high', '高优先', counts.high],
+          ['med',  '中', counts.med],
+          ['low',  '低', counts.low]
         ].map(([id, lab, n]) => (
           <button key={id} className={sev === id ? 'on' : ''} onClick={() => setSev(id)}>
             {lab}<span className="n">{n}</span>
@@ -511,21 +511,21 @@ function ReportsPage() {
       <div className="toolbar">
         <div className="search-mini">
           <span className="material-symbols-outlined">search</span>
-          <input placeholder="鎼滅储涓炬姤 ID銆佺洰鏍囥€佷妇鎶ヤ汉鈥? />
+          <input placeholder="搜索举报 ID、目标、举报人" />
         </div>
         <div className="toolbar-right">
-          <button className="ghost-btn"><span className="material-symbols-outlined">date_range</span>杩?7 澶?/button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">date_range</span>近 7 天</button>
         </div>
       </div>
 
       <div className="report-table card">
         <div className="rt-head">
-          <span>涓炬姤 ID</span>
-          <span>绫诲埆</span>
-          <span>鐩爣</span>
-          <span>涓炬姤浜?/span>
-          <span>鏃堕棿</span>
-          <span>鎿嶄綔</span>
+          <span>举报 ID</span>
+          <span>类别</span>
+          <span>&#x76EE;&#x6807;</span>
+          <span>举报人</span>
+          <span>时间</span>
+          <span>操作</span>
         </div>
         {loading ? (
           <div className="rt-row"><span>Loading</span><span></span><span>CampusShare API</span><span></span><span></span><span></span></div>
@@ -547,7 +547,7 @@ function ReportsPage() {
             <span className="rt-time">{r.reportedAt}</span>
             <span className="rt-acts">
               <button className="btn-sm">鏌ョ湅</button>
-              <button className="btn-sm primary" onClick={() => reviewReport(r, true)}><span className="material-symbols-outlined">gavel</span>澶勭悊</button>
+              <button className="btn-sm primary" onClick={() => reviewReport(r, true)}><span className="material-symbols-outlined">gavel</span>处理</button>
             </span>
           </div>
         ))}
@@ -556,8 +556,8 @@ function ReportsPage() {
   );
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-// 4) Users
+// Users page
+// -----------------------------------------------------------------------------
 function UsersPage() {
   const [scope, setScope] = useStateAdm('all');
   const [loading, setLoading] = useStateAdm(true);
@@ -582,28 +582,28 @@ function UsersPage() {
     return () => { alive = false; };
   }, []);
 
-  const statusLabel = { active: '姝ｅ父', warned: '宸茶鍛?, restricted: '鍙楅檺' };
+  const statusLabel = { active: '正常', warned: '已警告', restricted: '受限' };
   const statusTone  = { active: 'green', warned: 'amber', restricted: 'rose' };
 
   return (
     <div className="page-fade">
       <div className="page-head">
         <div className="ttl-block">
-          <div className="ttl">鐢ㄦ埛绠＄悊</div>
-          <div className="sub">绱娉ㄥ唽 <b style={{color:'var(--cs-ink)'}}>12,648</b> 路 7 鏃ユ柊澧?<b style={{color:'var(--cs-ink)'}}>+486</b> 路 璁よ瘉鐜?<b style={{color:'var(--cs-ink)'}}>93.2%</b></div>
+          <div className="ttl">&#x7528;&#x6237;&#x7BA1;&#x7406;</div>
+          <div className="sub">&#x7D2F;&#x8BA1;&#x6CE8;&#x518C; <b style={{color:'var(--cs-ink)'}}>12,648</b> &#x00B7; 7 &#x65E5;&#x65B0;&#x589E; <b style={{color:'var(--cs-ink)'}}>+486</b> &#x00B7; &#x8BA4;&#x8BC1;&#x7387; <b style={{color:'var(--cs-ink)'}}>93.2%</b></div>
         </div>
         <div className="actions">
-          <button className="ghost-btn"><span className="material-symbols-outlined">file_download</span>瀵煎嚭</button>
-          <button className="ghost-btn"><span className="material-symbols-outlined">verified_user</span>璁よ瘉瀹℃牳</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">file_download</span>导出</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">verified_user</span>&#x8BA4;&#x8BC1;&#x5BA1;&#x6838;</button>
         </div>
       </div>
 
       <div className="seg">
         {[
-          ['all', '鍏ㄩ儴', users.length],
-          ['active', '姝ｅ父', users.filter(u => u.status === 'active').length],
-          ['warned', '宸茶鍛?, users.filter(u => u.status === 'warned').length],
-          ['restricted', '鍙楅檺', users.filter(u => u.status === 'restricted').length]
+          ['all', '\u5168\u90e8', users.length],
+          ['active', '正常', users.filter(u => u.status === 'active').length],
+          ['warned', '已警告', users.filter(u => u.status === 'warned').length],
+          ['restricted', '受限', users.filter(u => u.status === 'restricted').length]
         ].map(([id, lab, n]) => (
           <button key={id} className={scope === id ? 'on' : ''} onClick={() => setScope(id)}>
             {lab}<span className="n">{n}</span>
@@ -614,23 +614,23 @@ function UsersPage() {
       <div className="toolbar">
         <div className="search-mini">
           <span className="material-symbols-outlined">search</span>
-          <input placeholder="鎼滅储鏄电О銆佸闄€佺敤鎴?ID鈥? />
+          <input placeholder="搜索昵称、学院、用户 ID" />
         </div>
         <div className="toolbar-right">
-          <button className="ghost-btn"><span className="material-symbols-outlined">sort</span>娉ㄥ唽鏃堕棿</button>
+          <button className="ghost-btn"><span className="material-symbols-outlined">sort</span>&#x6CE8;&#x518C;&#x65F6;&#x95F4;</button>
         </div>
       </div>
 
       <div className="user-table card">
         <div className="ut-head">
           <span>鐢ㄦ埛</span>
-          <span>瀛﹂櫌 / 绛夌骇</span>
-          <span>鍙戝竷 / 鎴愪氦</span>
-          <span>璇勫垎</span>
-          <span>涓炬姤</span>
-          <span>娉ㄥ唽鏃堕棿</span>
-          <span>鐘舵€?/span>
-          <span>鎿嶄綔</span>
+          <span>&#x5B66;&#x9662; / &#x7B49;&#x7EA7;</span>
+          <span>发布 / 成交</span>
+          <span>评分</span>
+          <span>举报</span>
+          <span>&#x6CE8;&#x518C;&#x65F6;&#x95F4;</span>
+          <span>状态</span>
+          <span>操作</span>
         </div>
         {loading ? (
           <div className="ut-row"><span>Loading</span><span>CampusShare API</span><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -648,13 +648,13 @@ function UsersPage() {
               <em className="ut-lv">{u.level}{u.verified && <span className="material-symbols-outlined" style={{fontSize:13,color:'var(--green)',marginLeft:4,verticalAlign:-2,fontVariationSettings:"'FILL' 1"}}>verified</span>}</em>
             </span>
             <span><b>{u.posts}</b> / <b>{u.sold}</b></span>
-            <span>{u.rating > 0 ? <span className="ut-rating">鈽?{u.rating}</span> : <em>鈥?/em>}</span>
+            <span>{u.rating > 0 ? <span className="ut-rating">★ {u.rating}</span> : <em>-</em>}</span>
             <span>{u.reports > 0 ? <span className="ut-rep">{u.reports}</span> : <em>0</em>}</span>
             <span className="mono ut-date">{u.joined}</span>
             <span><span className={'st-pill ' + statusTone[u.status]}>{statusLabel[u.status]}</span></span>
             <span className="ut-acts">
               <button className="btn-sm">璇︽儏</button>
-              <button className="btn-sm">路路路</button>
+              <button className="btn-sm">···</button>
             </span>
           </div>
         ))}
@@ -663,29 +663,29 @@ function UsersPage() {
   );
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-// 5) Trades (lightweight)
+// Trades page
+// -----------------------------------------------------------------------------
 function TradesPage() {
   return (
     <div className="page-fade">
       <div className="page-head">
         <div className="ttl-block">
-          <div className="ttl">浜ゆ槗鐩戞帶</div>
-          <div className="sub">瀹炴椂瑙傛祴骞冲彴浜ゆ槗銆侀潰浜や笌閫€娆炬儏鍐?/div>
+          <div className="ttl">&#x4EA4;&#x6613;&#x76D1;&#x63A7;</div>
+          <div className="sub">实时观察平台交易、面交与退款情况</div>
         </div>
       </div>
       <div className="kpi-grid">
-        <KpiCard k="gmv" label="浠婃棩 GMV" value="楼48,260" delta="+22.1%" up hint="鏄ㄦ棩 楼39,520" icon="paid" tone="blue" />
-        <KpiCard k="ord" label="浠婃棩璁㈠崟" value="184" delta="+18" up hint="鍧囦环 楼262" icon="receipt_long" tone="primary" />
-        <KpiCard k="meet" label="浠婃棩闈氦" value="142" delta="+12.6%" up hint="瀹屾垚鐜?96.3%" icon="handshake" tone="green" />
-        <KpiCard k="ref" label="浠婃棩閫€娆? value="3" delta="-2" up={false} hint="閫€娆剧巼 1.6%" icon="undo" tone="amber" />
+        <KpiCard k="gmv" label="今日 GMV" value="¥48,260" delta="+22.1%" up hint="昨日 ¥39,520" icon="paid" tone="blue" />
+        <KpiCard k="ord" label="今日订单" value="184" delta="+18" up hint="均价 ¥262" icon="receipt_long" tone="primary" />
+        <KpiCard k="meet" label="今日面交" value="142" delta="+12.6%" up hint="完成率 96.3%" icon="handshake" tone="green" />
+        <KpiCard k="ref" label="今日退款" value="3" delta="-2" up={false} hint="退款率 1.6%" icon="undo" tone="amber" />
       </div>
       <div className="card panel" style={{marginTop:18, padding:24}}>
         <div className="placeholder-block">
           <div className="ph-icn"><span className="material-symbols-outlined">timeline</span></div>
           <div>
-            <div className="ph-t">瀹炴椂浜ゆ槗娴?路 鍗犱綅</div>
-            <div className="ph-s">姝ゅ灏嗗睍绀烘寜鏃堕棿鎺掑簭鐨勪氦鏄撲簨浠舵祦銆侀€€娆惧伐鍗曘€佸紓甯歌鍗曞憡璀︺€?/div>
+            <div className="ph-t">&#x5B9E;&#x65F6;&#x4EA4;&#x6613;&#x6D41; &#x00B7; &#x5360;&#x4F4D;</div>
+            <div className="ph-s">此处将展示按时间排序的交易事件流、退款工单、异常订单告警。</div>
           </div>
         </div>
       </div>
@@ -693,7 +693,8 @@ function TradesPage() {
   );
 }
 
-// 6) Stats (placeholder)
+// Stats page
+// -----------------------------------------------------------------------------
 function StatsPage() {
   const [loading, setLoading] = useStateAdm(true);
   const [kpis, setKpis] = useStateAdm(ADM_KPIS);
@@ -717,8 +718,8 @@ function StatsPage() {
     <div className="page-fade">
       <div className="page-head">
         <div className="ttl-block">
-          <div className="ttl">鏁版嵁鍒嗘瀽</div>
-          <div className="sub">闀垮懆鏈熻秼鍔裤€佺暀瀛樸€佽浆鍖栨紡鏂楃瓑</div>
+          <div className="ttl">数据分析</div>
+          <div className="sub">&#x957F;&#x5468;&#x671F;&#x8D8B;&#x52BF;&#x3001;&#x7559;&#x5B58;&#x3001;&#x8F6C;&#x5316;&#x6F0F;&#x6597;&#x7B49;</div>
         </div>
       </div>
       <div className="kpi-grid">
@@ -728,39 +729,40 @@ function StatsPage() {
         <div className="placeholder-block">
           <div className="ph-icn"><span className="material-symbols-outlined">insights</span></div>
           <div>
-            <div className="ph-t">娣卞害鏁版嵁鐪嬫澘 路 鍗犱綅</div>
-            <div className="ph-s">姝ゅ瑙勫垝锛欴AU/WAU/MAU 鐣欏瓨鏇茬嚎銆佸搧绫昏浆鍖栨紡鏂椼€侀潰浜ゆ垚鍔熺巼鐑姏鍥俱€佸闄㈤棿浜掗€氱煩闃点€?/div>
+            <div className="ph-t">&#x6DF1;&#x5EA6;&#x6570;&#x636E;&#x770B;&#x677F; &#x00B7; &#x5360;&#x4F4D;</div>
+            <div className="ph-s">此处规划：DAU/WAU/MAU 留存曲线、品类转化漏斗、面交成功率热力图、学院间互通矩阵。</div>
           </div>
         </div>
       </div>
     </div>
   );
 }
+// System page
 
-// 7) System (placeholder)
+// -----------------------------------------------------------------------------
 function SystemPage() {
   return (
     <div className="page-fade">
       <div className="page-head">
         <div className="ttl-block">
-          <div className="ttl">绯荤粺璁剧疆</div>
-          <div className="sub">骞冲彴绾ч厤缃?路 浠呰秴绾х鐞嗗憳鍙</div>
+          <div className="ttl">系统设置</div>
+          <div className="sub">&#x5E73;&#x53F0;&#x7EA7;&#x914D;&#x7F6E; &#x00B7; &#x4EC5;&#x8D85;&#x7EA7;&#x7BA1;&#x7406;&#x5458;&#x53EF;&#x89C1;</div>
         </div>
       </div>
       <div className="sys-grid">
         {[
-          ['psychology_alt', '瀹℃牳绛栫暐', '鑷姩瀹℃牳闃堝€笺€佸叧閿瘝瑙﹀彂銆佷汉宸ュ厹搴?],
-          ['block', '杩濈璇嶈瘝搴?, '褰撳墠 184 涓?路 涓婃鏇存柊 5/14'],
-          ['category', '鍒嗙被涓庢爣绛?, '鍟嗗搧 14 绫汇€佽祫鏂?9 绫汇€佹嫑鍕?6 绫?],
-          ['redeem', '绉垎瑙勫垯', '鍙戝竷 / 璇勪环 / 涓嬭浇绉垎濂栧姳閰嶇疆'],
-          ['campaign', '鍏憡涓庢í骞?, '瀹樻柟鎺ㄩ€佷笌棣栭〉 banner 绠＄悊'],
-          ['groups', '绠＄悊鍛樹笌鏉冮檺', '4 涓鑹?路 12 鍚嶈繍钀ユ垚鍛?]
+          ['psychology_alt', '审核策略', '自动审核阈值、关键词触发、人工兜底'],
+          ['block', '违禁词词库', '当前 184 条 · 上次更新 5/14'],
+          ['category', '分类与标签', '商品 14 类、资料 9 类、招募 6 类'],
+          ['redeem', '\u79ef\u5206\u89c4\u5219', '\u53d1\u5e03 / \u8bc4\u4ef7 / \u4e0b\u8f7d\u79ef\u5206\u5956\u52b1\u914d\u7f6e'],
+          ['campaign', '公告与横幅', '官方推送与首页 banner 管理'],
+          ['groups', '管理员与权限', '4 个角色 · 12 名运营成员']
         ].map(([icn, t, s], i) => (
           <div key={i} className="card sys-card">
             <div className="sys-icn"><span className="material-symbols-outlined">{icn}</span></div>
             <div className="sys-t">{t}</div>
             <div className="sys-s">{s}</div>
-            <button className="ghost-btn" style={{marginTop:14}}><span className="material-symbols-outlined">arrow_forward</span>鎵撳紑</button>
+            <button className="ghost-btn" style={{marginTop:14}}><span className="material-symbols-outlined">arrow_forward</span>打开</button>
           </div>
         ))}
       </div>

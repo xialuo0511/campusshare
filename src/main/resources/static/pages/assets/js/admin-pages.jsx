@@ -123,6 +123,13 @@ function KindTag({ kind }) {
 // Activity chart
 function ActivityChart() {
   const data = ADM_TREND;
+  if (!data || !data.length) {
+    return (
+      <div style={{padding: '40px 0', textAlign: 'center', color: 'var(--cs-muted)', fontSize: 13}}>
+        暂无趋势数据
+      </div>
+    );
+  }
   const W = 720, H = 220, P = { l: 36, r: 16, t: 16, b: 28 };
   const innerW = W - P.l - P.r, innerH = H - P.t - P.b;
   const maxV = Math.max(...data.map(d => d.goods + d.notes + d.team));
@@ -241,19 +248,19 @@ function ReviewRow({ item, compact }) {
 // -----------------------------------------------------------------------------
 function OverviewPage({ goReview, goReports }) {
   const [loading, setLoading] = useStateAdm(true);
-  const [kpis, setKpis] = useStateAdm(ADM_KPIS);
+  const [kpis, setKpis] = useStateAdm([]);
+  const [summary, setSummary] = useStateAdm(null);
 
   useEffectAdm(() => {
     let alive = true;
     const Api = window.CampusShareApi;
     if (!Api || !Api.GetAdminDashboardSummary) {
-      setKpis(ADM_KPIS);
       setLoading(false);
       return () => { alive = false; };
     }
     Api.GetAdminDashboardSummary()
-      .then(summary => { if (alive) setKpis(adminPageSummaryKpis(summary)); })
-      .catch(() => { if (alive) setKpis(ADM_KPIS); })
+      .then(s => { if (alive) { setSummary(s); setKpis(adminPageSummaryKpis(s)); } })
+      .catch(() => { if (alive) { setSummary(null); setKpis([]); } })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);
@@ -265,7 +272,7 @@ function OverviewPage({ goReview, goReports }) {
       <div className="page-head">
         <div className="ttl-block">
           <div className="ttl">&#x8FD0;&#x8425;&#x603B;&#x89C8;</div>
-          <div className="sub">CampusShare &#x5E73;&#x53F0;&#x5065;&#x5EB7;&#x5EA6; &#x00B7; 2026-05-16 &#x00B7; 14:24 &#x66F4;&#x65B0;</div>
+          <div className="sub">CampusShare &#x5E73;&#x53F0;&#x5065;&#x5EB7;&#x5EA6; &#x00B7; {new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})} &#x66F4;&#x65B0;</div>
         </div>
         <div className="actions">
           <button className="ghost-btn"><span className="material-symbols-outlined">download</span>&#x5BFC;&#x51FA;&#x65E5;&#x62A5;</button>
@@ -292,10 +299,10 @@ function OverviewPage({ goReview, goReports }) {
           </div>
           <ActivityChart />
           <div className="trend-stats">
-            <div><span className="lab">&#x672C;&#x5468;&#x65B0;&#x589E;</span><span className="val">1,612</span><span className="dlt up">+18.3%</span></div>
-            <div><span className="lab">&#x672C;&#x5468;&#x6210;&#x4EA4;</span><span className="val">&#x00A5;284k</span><span className="dlt up">+22.1%</span></div>
-            <div><span className="lab">&#x6D3B;&#x8DC3;&#x4E70;&#x5BB6;</span><span className="val">3,284</span><span className="dlt up">+6.1%</span></div>
-            <div><span className="lab">人均会话</span><span className="val">4.8</span><span className="dlt up">+0.4</span></div>
+            <div><span className="lab">7日新增用户</span><span className="val">{summary ? (summary.sevenDayNewUserCount ?? '-') : '-'}</span></div>
+            <div><span className="lab">订单总数</span><span className="val">{summary ? (summary.totalOrderCount ?? '-') : '-'}</span></div>
+            <div><span className="lab">活跃用户</span><span className="val">{summary ? (summary.activeUserCount ?? '-') : '-'}</span></div>
+            <div><span className="lab">7日新增订单</span><span className="val">{summary ? (summary.sevenDayNewOrderCount ?? '-') : '-'}</span></div>
           </div>
         </div>
 
@@ -307,12 +314,12 @@ function OverviewPage({ goReview, goReports }) {
             </div>
           </div>
           <div className="qa-grid">
-            <button className="qa-btn"><span className="material-symbols-outlined">verified</span><b>&#x6279;&#x91CF;&#x5BA1;&#x6838;</b><i>38 &#x9879;&#x5F85;&#x5904;&#x7406;</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">flag</span><b>处理举报</b><i>7 项待处理</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">block</span><b>违禁词词库</b><i>当前 184 条</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">campaign</span><b>发布公告</b><i>已发布 12 条</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">redeem</span><b>&#x79EF;&#x5206;&#x6D3B;&#x52A8;</b><i>2 &#x4E2A;&#x8FDB;&#x884C;&#x4E2D;</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">support_agent</span><b>&#x5BA2;&#x670D;&#x5DE5;&#x5355;</b><i>4 &#x4E2A;&#x5F85;&#x56DE;&#x590D;</i></button>
+            <button className="qa-btn" onClick={goReview}><span className="material-symbols-outlined">verified</span><b>批量审核</b><i>{ADM_REVIEW_QUEUE.length} 项待处理</i></button>
+            <button className="qa-btn" onClick={goReports}><span className="material-symbols-outlined">flag</span><b>处理举报</b><i>{ADM_REPORTS.length} 项待处理</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">block</span><b>违禁词词库</b><i>规则配置</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">campaign</span><b>发布公告</b><i>系统公告管理</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">redeem</span><b>积分活动</b><i>积分规则配置</i></button>
+            <button className="qa-btn"><span className="material-symbols-outlined">support_agent</span><b>客服工单</b><i>工单管理</i></button>
           </div>
         </div>
 
@@ -362,7 +369,7 @@ function ReviewPage() {
   const [tab, setTab] = useStateAdm('all');
   const [selected, setSelected] = useStateAdm(new Set());
   const [loading, setLoading] = useStateAdm(true);
-  const [queue, setQueue] = useStateAdm(ADM_REVIEW_QUEUE);
+  const [queue, setQueue] = useStateAdm([]);
   const filtered = useMemoAdm(() => {
     if (tab === 'all') return queue;
     return queue.filter(r => r.kind === tab);
@@ -376,7 +383,7 @@ function ReviewPage() {
     let alive = true;
     const Api = window.CampusShareApi;
     if (!Api || !Api.ListPendingProductsByAdmin || !Api.ListPendingMaterials || !Api.ListPendingTeamRecruitmentsByAdmin) {
-      setQueue(ADM_REVIEW_QUEUE);
+      setQueue([]);
       setLoading(false);
       return () => { alive = false; };
     }
@@ -389,7 +396,7 @@ function ReviewPage() {
         .concat(adminPageListOf(materials).map(adminPageMapMaterial))
         .concat(adminPageListOf(teams).map(adminPageMapRecruitment));
       if (alive) setQueue(nextQueue);
-    }).catch(() => { if (alive) setQueue(ADM_REVIEW_QUEUE); })
+    }).catch(() => { if (alive) setQueue([]); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);
@@ -399,7 +406,7 @@ function ReviewPage() {
       <div className="page-head">
         <div className="ttl-block">
           <div className="ttl">&#x5185;&#x5BB9;&#x5BA1;&#x6838;</div>
-          <div className="sub">&#x5171; <b style={{color:'var(--cs-ink)'}}>{queue.length}</b> &#x9879;&#x5F85;&#x5BA1; &#x00B7; &#x5E73;&#x5747;&#x5904;&#x7406;&#x65F6;&#x957F; <b style={{color:'var(--cs-ink)'}}>4.2 min</b></div>
+          <div className="sub">共 <b style={{color:'var(--cs-ink)'}}>{queue.length}</b> 项待审核</div>
         </div>
         <div className="actions">
           <button className="ghost-btn"><span className="material-symbols-outlined">history</span>&#x5386;&#x53F2;&#x5BA1;&#x6838;</button>
@@ -443,7 +450,7 @@ function ReviewPage() {
 function ReportsPage() {
   const [sev, setSev] = useStateAdm('all');
   const [loading, setLoading] = useStateAdm(true);
-  const [reports, setReports] = useStateAdm(ADM_REPORTS);
+  const [reports, setReports] = useStateAdm([]);
   const filtered = useMemoAdm(() => {
     if (sev === 'all') return reports;
     return reports.filter(r => r.severity === sev);
@@ -453,13 +460,13 @@ function ReportsPage() {
     let alive = true;
     const Api = window.CampusShareApi;
     if (!Api || !Api.ListPendingReports) {
-      setReports(ADM_REPORTS);
+      setReports([]);
       setLoading(false);
       return () => { alive = false; };
     }
     Api.ListPendingReports()
       .then(result => { if (alive) setReports(adminPageListOf(result).map(adminPageMapReport)); })
-      .catch(() => { if (alive) setReports(ADM_REPORTS); })
+      .catch(() => { if (alive) setReports([]); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);
@@ -488,7 +495,7 @@ function ReportsPage() {
       <div className="page-head">
         <div className="ttl-block">
           <div className="ttl">举报处理</div>
-          <div className="sub">&#x7528;&#x6237;&#x63D0;&#x4EA4;&#x4E0E;&#x7CFB;&#x7EDF;&#x68C0;&#x6D4B;&#x7684;&#x8FDD;&#x89C4;&#x7EBF;&#x7D22; &#x00B7; 24h &#x5185;&#x54CD;&#x5E94; <b style={{color:'var(--cs-ink)'}}>96.4%</b></div>
+          <div className="sub">用户提交与系统检测的违规线索</div>
         </div>
         <div className="actions">
           <button className="ghost-btn"><span className="material-symbols-outlined">policy</span>处理规范</button>
@@ -561,7 +568,7 @@ function ReportsPage() {
 function UsersPage() {
   const [scope, setScope] = useStateAdm('all');
   const [loading, setLoading] = useStateAdm(true);
-  const [users, setUsers] = useStateAdm(ADM_USERS);
+  const [users, setUsers] = useStateAdm([]);
   const filtered = useMemoAdm(() => {
     if (scope === 'all') return users;
     return users.filter(u => u.status === scope);
@@ -571,13 +578,13 @@ function UsersPage() {
     let alive = true;
     const Api = window.CampusShareApi;
     if (!Api || !Api.ListUsersByAdmin) {
-      setUsers(ADM_USERS);
+      setUsers([]);
       setLoading(false);
       return () => { alive = false; };
     }
     Api.ListUsersByAdmin(1, 50)
       .then(result => { if (alive) setUsers(adminPageListOf(result).map(adminPageMapUser)); })
-      .catch(() => { if (alive) setUsers(ADM_USERS); })
+      .catch(() => { if (alive) setUsers([]); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);
@@ -590,7 +597,7 @@ function UsersPage() {
       <div className="page-head">
         <div className="ttl-block">
           <div className="ttl">&#x7528;&#x6237;&#x7BA1;&#x7406;</div>
-          <div className="sub">&#x7D2F;&#x8BA1;&#x6CE8;&#x518C; <b style={{color:'var(--cs-ink)'}}>12,648</b> &#x00B7; 7 &#x65E5;&#x65B0;&#x589E; <b style={{color:'var(--cs-ink)'}}>+486</b> &#x00B7; &#x8BA4;&#x8BC1;&#x7387; <b style={{color:'var(--cs-ink)'}}>93.2%</b></div>
+          <div className="sub">累计注册 <b style={{color:'var(--cs-ink)'}}>{ADM_SUMMARY ? (ADM_SUMMARY.totalUserCount ?? '-') : '-'}</b> · 7 日新增 <b style={{color:'var(--cs-ink)'}}>+{ADM_SUMMARY ? (ADM_SUMMARY.sevenDayNewUserCount ?? '-') : '-'}</b> · 活跃 <b style={{color:'var(--cs-ink)'}}>{ADM_SUMMARY ? (ADM_SUMMARY.activeUserCount ?? '-') : '-'}</b></div>
         </div>
         <div className="actions">
           <button className="ghost-btn"><span className="material-symbols-outlined">file_download</span>导出</button>
@@ -666,25 +673,46 @@ function UsersPage() {
 // Trades page
 // -----------------------------------------------------------------------------
 function TradesPage() {
+  const [loading, setLoading] = useStateAdm(true);
+  const [summary, setSummary] = useStateAdm(null);
+
+  useEffectAdm(() => {
+    let alive = true;
+    const Api = window.CampusShareApi;
+    if (!Api || !Api.GetAdminDashboardSummary) {
+      setLoading(false);
+      return () => { alive = false; };
+    }
+    Api.GetAdminDashboardSummary()
+      .then(s => { if (alive) setSummary(s); })
+      .catch(() => { if (alive) setSummary(null); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []);
+
+  const v = (field) => summary && summary[field] != null ? String(summary[field]) : '-';
+
   return (
     <div className="page-fade">
       <div className="page-head">
         <div className="ttl-block">
-          <div className="ttl">&#x4EA4;&#x6613;&#x76D1;&#x63A7;</div>
-          <div className="sub">实时观察平台交易、面交与退款情况</div>
+          <div className="ttl">交易监控</div>
+          <div className="sub">平台交易订单状态总览</div>
         </div>
       </div>
-      <div className="kpi-grid">
-        <KpiCard k="gmv" label="今日 GMV" value="¥48,260" delta="+22.1%" up hint="昨日 ¥39,520" icon="paid" tone="blue" />
-        <KpiCard k="ord" label="今日订单" value="184" delta="+18" up hint="均价 ¥262" icon="receipt_long" tone="primary" />
-        <KpiCard k="meet" label="今日面交" value="142" delta="+12.6%" up hint="完成率 96.3%" icon="handshake" tone="green" />
-        <KpiCard k="ref" label="今日退款" value="3" delta="-2" up={false} hint="退款率 1.6%" icon="undo" tone="amber" />
-      </div>
+      {loading ? adminPageLoading('交易监控') : (
+        <div className="kpi-grid">
+          <KpiCard k="ord" label="订单总数" value={v('totalOrderCount')} delta="" up hint={'进行中 ' + v('ongoingOrderCount')} icon="receipt_long" tone="primary" />
+          <KpiCard k="done" label="已完成订单" value={v('completedOrderCount')} delta="" up hint="交易完成" icon="handshake" tone="green" />
+          <KpiCard k="cancel" label="已取消订单" value={v('canceledOrderCount')} delta="" up={false} hint="买家取消" icon="cancel" tone="amber" />
+          <KpiCard k="close" label="已关闭订单" value={v('closedOrderCount')} delta="" up={false} hint="纠纷关闭" icon="lock" tone="rose" />
+        </div>
+      )}
       <div className="card panel" style={{marginTop:18, padding:24}}>
         <div className="placeholder-block">
           <div className="ph-icn"><span className="material-symbols-outlined">timeline</span></div>
           <div>
-            <div className="ph-t">&#x5B9E;&#x65F6;&#x4EA4;&#x6613;&#x6D41; &#x00B7; &#x5360;&#x4F4D;</div>
+            <div className="ph-t">实时交易流 · 占位</div>
             <div className="ph-s">此处将展示按时间排序的交易事件流、退款工单、异常订单告警。</div>
           </div>
         </div>
@@ -697,19 +725,18 @@ function TradesPage() {
 // -----------------------------------------------------------------------------
 function StatsPage() {
   const [loading, setLoading] = useStateAdm(true);
-  const [kpis, setKpis] = useStateAdm(ADM_KPIS);
+  const [kpis, setKpis] = useStateAdm([]);
 
   useEffectAdm(() => {
     let alive = true;
     const Api = window.CampusShareApi;
     if (!Api || !Api.GetAdminDashboardSummary) {
-      setKpis(ADM_KPIS);
       setLoading(false);
       return () => { alive = false; };
     }
     Api.GetAdminDashboardSummary()
       .then(summary => { if (alive) setKpis(adminPageSummaryKpis(summary)); })
-      .catch(() => { if (alive) setKpis(ADM_KPIS); })
+      .catch(() => { if (alive) setKpis([]); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);

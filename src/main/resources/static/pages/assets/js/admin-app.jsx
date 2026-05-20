@@ -139,14 +139,15 @@ async function LoadAdminConsoleData() {
   const Api = window.CampusShareApi;
   if (!Api) return;
   if (Api.EnsureAdminSession) await Api.EnsureAdminSession();
-  const [summaryResult, pendingProductsResult, pendingMaterialsResult, pendingTeamsResult, reportsResult, usersResult, logsResult] = await Promise.allSettled([
+  const [summaryResult, pendingProductsResult, pendingMaterialsResult, pendingTeamsResult, reportsResult, usersResult, logsResult, opsResult] = await Promise.allSettled([
     Api.GetAdminDashboardSummary ? Api.GetAdminDashboardSummary() : Promise.resolve(null),
     Api.ListPendingProductsByAdmin ? Api.ListPendingProductsByAdmin(1, 30) : Promise.resolve([]),
     Api.ListPendingMaterials ? Api.ListPendingMaterials(1, 30) : Promise.resolve([]),
     Api.ListPendingTeamRecruitmentsByAdmin ? Api.ListPendingTeamRecruitmentsByAdmin(1, 30) : Promise.resolve([]),
     Api.ListPendingReports ? Api.ListPendingReports() : Promise.resolve([]),
     Api.ListUsersByAdmin ? Api.ListUsersByAdmin(1, 50) : Promise.resolve([]),
-    Api.ListAuditLogsByAdmin ? Api.ListAuditLogsByAdmin({ pageNo: 1, pageSize: 20 }) : Promise.resolve([])
+    Api.ListAuditLogsByAdmin ? Api.ListAuditLogsByAdmin({ pageNo: 1, pageSize: 20 }) : Promise.resolve([]),
+    Api.GetAdminOpsSummary ? Api.GetAdminOpsSummary() : Promise.resolve(null)
   ]);
   const pendingProducts = pendingProductsResult.status === 'fulfilled' ? admListOf(pendingProductsResult.value).map(admMapProduct) : [];
   const pendingMaterials = pendingMaterialsResult.status === 'fulfilled' ? admListOf(pendingMaterialsResult.value).map(admMapMaterial) : [];
@@ -186,6 +187,16 @@ async function LoadAdminConsoleData() {
     if (item.id === 'reports') return { ...item, badge: reportCount ? String(reportCount) : '' };
     return item;
   });
+
+  window.ADM_SUMMARY = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
+  const opsValue = opsResult.status === 'fulfilled' ? opsResult.value : null;
+  if (opsValue) window.ADM_OPS = opsValue;
+
+  const sessionProfile = Api.GetCurrentUserProfile ? Api.GetCurrentUserProfile() : null;
+  if (sessionProfile && (sessionProfile.nickname || sessionProfile.realName)) {
+    const n = sessionProfile.nickname || sessionProfile.realName || '管理员';
+    window.ADM_USER = { name: n, role: '超级管理员', letter: n[0] || '管', avatarC1: '#5b87c0', avatarC2: '#1e3a5f' };
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -212,33 +223,28 @@ function AdminTopNav({ activeId, onGoHome, showHealthBar }) {
         </div>
         {showHealthBar && (
           <div className="health-bar">
-            <span className="hb-item">
-              <span className="hb-dot ok" />
-              <span>API</span>
-              <b>98ms</b>
-            </span>
-            <span className="hb-item">
-              <span className="hb-dot ok" />
-              <span>消息</span>
-              <b>正常</b>
-            </span>
-            <span className="hb-item">
-              <span className="hb-dot warn" />
-              <span>支付</span>
-              <b>偶发延迟</b>
-            </span>
+            {[['系统', ADM_OPS ? ADM_OPS.overallStatus : null], ['数据库', ADM_OPS ? ADM_OPS.databaseStatus : null], ['Redis', ADM_OPS ? ADM_OPS.redisStatus : null]].map(([label, status]) => {
+              const s = String(status || '').toUpperCase();
+              const dot = (s === 'HEALTHY' || s === 'UP' || s === 'OK') ? 'ok' : s === 'DEGRADED' ? 'warn' : s ? 'err' : 'ok';
+              const text = (s === 'HEALTHY' || s === 'UP' || s === 'OK') ? '正常' : s === 'DEGRADED' ? '降级' : s ? '异常' : '-';
+              return (
+                <span key={label} className="hb-item">
+                  <span className={'hb-dot ' + dot} />
+                  <span>{label}</span>
+                  <b>{text}</b>
+                </span>
+              );
+            })}
           </div>
         )}
         <div className="nav-right">
           <button className="icon-btn" title="工单">
             <span className="material-symbols-outlined">support_agent</span>
-            <span className="dot-badge">4</span>
           </button>
-          <button className="icon-btn" title="日志">
+          <button className="icon-btn" title="通知">
             <span className="material-symbols-outlined">notifications</span>
-            <span className="dot-badge">9</span>
           </button>
-          <button className="avatar-btn" style={{background:'linear-gradient(135deg, #5b87c0, #1e3a5f)'}} title={ADM_USER.name}>{ADM_USER.letter}</button>
+          <button className="avatar-btn" style={{background:`linear-gradient(135deg, ${ADM_USER.avatarC1}, ${ADM_USER.avatarC2})`}} title={ADM_USER.name}>{ADM_USER.letter}</button>
         </div>
       </div>
     </header>
@@ -261,9 +267,8 @@ function AdminRail({ activeId, onChange }) {
           </div>
         </div>
         <div className="ws-mini-stats" style={{flexWrap:'wrap', gap: 10}}>
-          <span><b>184</b>今日审核</span>
-          <span><b>4.2m</b>平均时长</span>
-          <span><b>99.1%</b>准确率</span>
+          <span><b>{ADM_REVIEW_QUEUE.length}</b>待审核</span>
+          <span><b>{ADM_REPORTS.length}</b>待举报处理</span>
         </div>
       </div>
 
@@ -279,20 +284,13 @@ function AdminRail({ activeId, onChange }) {
           </button>
         ))}
         <div className="ws-divider" />
-        <div className="ws-label">值班</div>
+        <div className="ws-label">当前管理员</div>
         <div style={{padding: '4px 12px 8px'}}>
           <div className="duty-row">
-            <span className="duty-av" style={{background:'linear-gradient(135deg, #5b87c0, #1e3a5f)'}}>王</span>
+            <span className="duty-av" style={{background:`linear-gradient(135deg, ${ADM_USER.avatarC1}, ${ADM_USER.avatarC2})`}}>{ADM_USER.letter}</span>
             <div className="duty-info">
-              <div className="duty-name">王老师 <span className="duty-tag">值班中</span></div>
-              <div className="duty-sub">09:00 – 21:00</div>
-            </div>
-          </div>
-          <div className="duty-row">
-            <span className="duty-av" style={{background:'linear-gradient(135deg, #f0a35a, #b45309)'}}>李</span>
-            <div className="duty-info">
-              <div className="duty-name">李老师 <span className="duty-tag off">休息</span></div>
-              <div className="duty-sub">21:00 – 次日 09:00</div>
+              <div className="duty-name">{ADM_USER.name} <span className="duty-tag">值班中</span></div>
+              <div className="duty-sub">{ADM_USER.role}</div>
             </div>
           </div>
         </div>

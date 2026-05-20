@@ -1,4 +1,4 @@
-// CampusShare Admin page renderers
+﻿﻿// CampusShare Admin page renderers
 const { useState: useStateAdm, useMemo: useMemoAdm, useEffect: useEffectAdm } = React;
 
 function adminPageListOf(result) {
@@ -29,13 +29,13 @@ function adminPageLoading(label) {
 }
 
 function adminPageSummaryKpis(summary) {
-  const source = summary || {};
+  const s = summary || {};
   return [
-    { k: 'users', label: 'Users', value: String(adminPageFirst(source.totalUsers, '-')), delta: '', up: true, hint: 'Admin summary', icon: 'group', tone: 'primary' },
-    { k: 'content', label: 'Content', value: String(adminPageFirst(source.totalContents, '-')), delta: '', up: true, hint: 'Products / materials / teams', icon: 'note_add', tone: 'green' },
-    { k: 'pending', label: 'Pending review', value: String(adminPageFirst(source.pendingReviewCount, adminPageFirst(source.pendingContents, '-'))), delta: '', up: true, hint: 'Review queue', icon: 'pending_actions', tone: 'amber' },
-    { k: 'reports', label: 'Pending reports', value: String(adminPageFirst(source.pendingReportCount, '-')), delta: '', up: true, hint: 'Report queue', icon: 'report', tone: 'rose' },
-    { k: 'orders', label: 'Orders', value: String(adminPageFirst(source.totalOrders, '-')), delta: '', up: true, hint: 'Trade monitor', icon: 'trending_up', tone: 'blue' }
+    { k: 'users',   label: '用户总数',   value: String(s.totalUserCount ?? '-'),           delta: '', up: true, hint: '活跃 ' + (s.activeUserCount ?? '-'),       icon: 'group',           tone: 'primary' },
+    { k: 'content', label: '商品总数',   value: String(s.totalProductCount ?? '-'),         delta: '', up: true, hint: '已发布 ' + (s.publishedProductCount ?? '-'), icon: 'storefront',      tone: 'green'   },
+    { k: 'pending', label: '待审核资料', value: String(s.pendingMaterialReviewCount ?? '-'), delta: '', up: true, hint: '审核队列',                                  icon: 'pending_actions', tone: 'amber'   },
+    { k: 'reports', label: '待处理举报', value: String(s.pendingReportCount ?? '-'),         delta: '', up: true, hint: '举报队列',                                  icon: 'report',          tone: 'rose'    },
+    { k: 'orders',  label: '订单总数',   value: String(s.totalOrderCount ?? '-'),            delta: '', up: true, hint: '进行中 ' + (s.ongoingOrderCount ?? '-'),    icon: 'trending_up',     tone: 'blue'    }
   ];
 }
 
@@ -73,8 +73,24 @@ function adminPageMapReport(item) {
 function adminPageMapUser(item) {
   const mapper = window.admMapUser;
   if (typeof mapper === 'function') return mapper(item);
-  const name = adminPageFirst(item.nickname, adminPageFirst(item.realName, adminPageFirst(item.username, adminPageFirst(item.userName, 'User'))));
-  return { id: adminPageFirst(item.userId, adminPageFirst(item.id, '-')), name, letter: adminPageFirst(name[0], 'U'), av1: '#9ec5e8', av2: '#5b87c0', school: adminPageFirst(item.schoolName, adminPageFirst(item.school, '')), level: adminPageFirst(item.userRole, adminPageFirst(item.role, 'USER')), verified: !!(item.verified || item.sellerVerified || item.realNameVerified), posts: adminPageFirst(item.postCount, 0), sold: adminPageFirst(item.soldCount, 0), rating: adminPageFirst(item.rating, 0), reports: adminPageFirst(item.reportCount, 0), joined: adminPageFirst(item.createTime, '-'), status: String(adminPageFirst(item.userStatus, adminPageFirst(item.status, 'active'))).toLowerCase(), raw: item };
+  const name = adminPageFirst(item.displayName, adminPageFirst(item.nickname, adminPageFirst(item.realName, 'User')));
+  const roleLabels = { VISITOR: '访客', STUDENT: '学生', VERIFIED_SELLER: '认证卖家', ADMINISTRATOR: '管理员' };
+  const statusKeys = { ACTIVE: 'active', FROZEN: 'restricted', PENDING_REVIEW: 'pending', REJECTED: 'restricted' };
+  const rawStatus = String(item.userStatus || '').toUpperCase();
+  return {
+    id: adminPageFirst(item.userId, adminPageFirst(item.id, '-')),
+    name,
+    letter: adminPageFirst(name[0], 'U'),
+    av1: '#9ec5e8',
+    av2: '#5b87c0',
+    school: adminPageFirst(item.college, adminPageFirst(item.schoolName, adminPageFirst(item.school, ''))),
+    grade: adminPageFirst(item.grade, ''),
+    level: roleLabels[String(item.userRole || '').toUpperCase()] || adminPageFirst(item.userRole, 'USER'),
+    verified: item.userRole === 'VERIFIED_SELLER' || item.userRole === 'ADMINISTRATOR',
+    joined: adminPageFirst(item.lastLoginTime, adminPageFirst(item.createTime, '-')),
+    status: statusKeys[rawStatus] || 'active',
+    raw: item
+  };
 }
 
 // Reusable bits
@@ -553,7 +569,7 @@ function ReportsPage() {
             </span>
             <span className="rt-time">{r.reportedAt}</span>
             <span className="rt-acts">
-              <button className="btn-sm">鏌ョ湅</button>
+              <button className="btn-sm">查看</button>
               <button className="btn-sm primary" onClick={() => reviewReport(r, true)}><span className="material-symbols-outlined">gavel</span>处理</button>
             </span>
           </div>
@@ -589,8 +605,8 @@ function UsersPage() {
     return () => { alive = false; };
   }, []);
 
-  const statusLabel = { active: '正常', warned: '已警告', restricted: '受限' };
-  const statusTone  = { active: 'green', warned: 'amber', restricted: 'rose' };
+  const statusLabel = { active: '正常', pending: '待审核', restricted: '冻结' };
+  const statusTone  = { active: 'green', pending: 'amber', restricted: 'rose' };
 
   return (
     <div className="page-fade">
@@ -609,8 +625,8 @@ function UsersPage() {
         {[
           ['all', '\u5168\u90e8', users.length],
           ['active', '正常', users.filter(u => u.status === 'active').length],
-          ['warned', '已警告', users.filter(u => u.status === 'warned').length],
-          ['restricted', '受限', users.filter(u => u.status === 'restricted').length]
+          ['pending', '待审核', users.filter(u => u.status === 'pending').length],
+          ['restricted', '冻结', users.filter(u => u.status === 'restricted').length]
         ].map(([id, lab, n]) => (
           <button key={id} className={scope === id ? 'on' : ''} onClick={() => setScope(id)}>
             {lab}<span className="n">{n}</span>
@@ -630,12 +646,12 @@ function UsersPage() {
 
       <div className="user-table card">
         <div className="ut-head">
-          <span>鐢ㄦ埛</span>
-          <span>&#x5B66;&#x9662; / &#x7B49;&#x7EA7;</span>
-          <span>发布 / 成交</span>
-          <span>评分</span>
-          <span>举报</span>
-          <span>&#x6CE8;&#x518C;&#x65F6;&#x95F4;</span>
+          <span>用户</span>
+          <span>学院 / 角色</span>
+          <span>积分</span>
+          <span>账号</span>
+          <span>邮箱</span>
+          <span>末次登录</span>
           <span>状态</span>
           <span>操作</span>
         </div>
@@ -654,14 +670,18 @@ function UsersPage() {
               {u.school}
               <em className="ut-lv">{u.level}{u.verified && <span className="material-symbols-outlined" style={{fontSize:13,color:'var(--green)',marginLeft:4,verticalAlign:-2,fontVariationSettings:"'FILL' 1"}}>verified</span>}</em>
             </span>
-            <span><b>{u.posts}</b> / <b>{u.sold}</b></span>
-            <span>{u.rating > 0 ? <span className="ut-rating">★ {u.rating}</span> : <em>-</em>}</span>
-            <span>{u.reports > 0 ? <span className="ut-rep">{u.reports}</span> : <em>0</em>}</span>
-            <span className="mono ut-date">{u.joined}</span>
+            <span>{u.raw ? (u.raw.pointBalance ?? '-') : '-'}</span>
+            <span className="mono">{u.raw ? (u.raw.account ?? '-') : '-'}</span>
+            <span>{u.raw ? (u.raw.email ?? '-') : '-'}</span>
+            <span className="mono ut-date">{u.joined ? String(u.joined).replace('T', ' ').slice(0, 16) : '-'}</span>
             <span><span className={'st-pill ' + statusTone[u.status]}>{statusLabel[u.status]}</span></span>
             <span className="ut-acts">
-              <button className="btn-sm">璇︽儏</button>
-              <button className="btn-sm">···</button>
+              <button className="btn-sm" onClick={() => { const info = u.raw || {}; window.alert("昵称: " + u.name + "\nID: " + u.id + "\n学院: " + u.school + (u.grade ? " " + u.grade : "") + "\n角色: " + u.level + "\n状态: " + (info.userStatus || u.status) + "\n积分: " + (info.pointBalance ?? "-") + "\n邮箱: " + (info.email || info.account || "-")); }}>详情</button>
+              {u.status !== "restricted" ? (
+                <button className="btn-sm danger" onClick={() => { const Api = window.CampusShareApi; if (!Api || !Api.FreezeUserByAdmin) return; if (!window.confirm("确认冻结用户 " + u.name + "？")) return; Api.FreezeUserByAdmin(u.id).then(() => window.location.reload()).catch(e => window.alert("操作失败: " + e.message)); }}>冻结</button>
+              ) : (
+                <button className="btn-sm" onClick={() => { const Api = window.CampusShareApi; if (!Api || !Api.UnfreezeUserByAdmin) return; if (!window.confirm("确认解冻用户 " + u.name + "？")) return; Api.UnfreezeUserByAdmin(u.id).then(() => window.location.reload()).catch(e => window.alert("操作失败: " + e.message)); }}>解冻</button>
+              )}
             </span>
           </div>
         ))}

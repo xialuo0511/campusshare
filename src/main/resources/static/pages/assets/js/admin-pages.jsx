@@ -291,8 +291,8 @@ function OverviewPage({ goReview, goReports }) {
           <div className="sub">CampusShare &#x5E73;&#x53F0;&#x5065;&#x5EB7;&#x5EA6; &#x00B7; {new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})} &#x66F4;&#x65B0;</div>
         </div>
         <div className="actions">
-          <button className="ghost-btn"><span className="material-symbols-outlined">download</span>&#x5BFC;&#x51FA;&#x65E5;&#x62A5;</button>
-          <button className="primary-btn"><span className="material-symbols-outlined">campaign</span>&#x53D1;&#x5E03;&#x516C;&#x544A;</button>
+          <button className="ghost-btn" onClick={() => alert('敬请期待')}><span className="material-symbols-outlined">download</span>&#x5BFC;&#x51FA;&#x65E5;&#x62A5;</button>
+          <button className="primary-btn" onClick={() => alert('敬请期待')}><span className="material-symbols-outlined">campaign</span>&#x53D1;&#x5E03;&#x516C;&#x544A;</button>
         </div>
       </div>
 
@@ -333,7 +333,7 @@ function OverviewPage({ goReview, goReports }) {
             <button className="qa-btn" onClick={goReview}><span className="material-symbols-outlined">verified</span><b>批量审核</b><i>{ADM_REVIEW_QUEUE.length} 项待处理</i></button>
             <button className="qa-btn" onClick={goReports}><span className="material-symbols-outlined">flag</span><b>处理举报</b><i>{ADM_REPORTS.length} 项待处理</i></button>
             <button className="qa-btn"><span className="material-symbols-outlined">block</span><b>违禁词词库</b><i>规则配置</i></button>
-            <button className="qa-btn"><span className="material-symbols-outlined">campaign</span><b>发布公告</b><i>系统公告管理</i></button>
+            <button className="qa-btn" onClick={() => alert('敬请期待')}><span className="material-symbols-outlined">campaign</span><b>发布公告</b><i>系统公告管理</i></button>
             <button className="qa-btn"><span className="material-symbols-outlined">redeem</span><b>积分活动</b><i>积分规则配置</i></button>
             <button className="qa-btn"><span className="material-symbols-outlined">support_agent</span><b>客服工单</b><i>工单管理</i></button>
           </div>

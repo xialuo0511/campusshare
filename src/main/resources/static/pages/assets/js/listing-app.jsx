@@ -86,6 +86,9 @@ function resolveInitialModeFromUrl() {
   if (viewText === 'MATERIAL' || viewText === 'RESOURCE' || viewText === 'RESOURCES') {
     return 'materials';
   }
+  if (viewText === 'FORUM' || viewText === 'RECRUIT' || viewText === 'RECRUITMENT' || viewText === 'RECRUITMENTS') {
+    return 'recruitments';
+  }
   return '';
 }
 
@@ -253,10 +256,21 @@ const SORT_OPTIONS = {
 // ─── Nav ───
 function Nav({ keyword, onKeyword, unreadCount, mode, onMode }) {
   const searchRef = useRef(null);
+  const [navProfile, setNavProfile] = useState(null);
   const isMac = useMemo(
     () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent),
     []
   );
+
+  useEffect(() => {
+    const Api = window.CampusShareApi;
+    if (!Api) return;
+    const cached = Api.GetCurrentUserProfile ? Api.GetCurrentUserProfile() : null;
+    if (cached) setNavProfile(cached);
+    if (Api.SyncSessionProfile) {
+      Api.SyncSessionProfile().then(p => { if (p) setNavProfile(p); }).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const onDown = (e) => {
@@ -307,11 +321,18 @@ function Nav({ keyword, onKeyword, unreadCount, mode, onMode }) {
           <button className="icon-btn" title="收藏">
             <span className="material-symbols-outlined">favorite</span>
           </button>
-          <button className="primary-btn">
+          <button className="primary-btn" onClick={() => window.location.href = '/pages/publish_center.html'}>
             <span className="material-symbols-outlined">add</span>
             发布
           </button>
-          <button className="avatar-btn" title="我的">我</button>
+          <button className="avatar-btn"
+            style={navProfile && navProfile.avatarUrl ? {padding:0,overflow:'hidden'} : {}}
+            title={navProfile ? (navProfile.displayName || navProfile.account || '我') : '我'}
+            onClick={() => window.location.href = '/pages/user_workspace.html'}>
+            {navProfile && navProfile.avatarUrl
+              ? <img src={navProfile.avatarUrl} alt="头像" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit'}} />
+              : (navProfile ? (navProfile.displayName || navProfile.account || '我')[0] : '我')}
+          </button>
         </div>
       </div>
     </header>

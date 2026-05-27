@@ -368,7 +368,7 @@
 
         container.querySelectorAll(".recruit-item[data-recruit-id]").forEach(function (item) {
             item.addEventListener("click", function () {
-                Api.NavigateToPage("/pages/recruitment_board.html");
+                Api.NavigateToPage("/pages/market_listing.html?view=FORUM");
             });
         });
     }

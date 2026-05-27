@@ -193,9 +193,9 @@ async function LoadAdminConsoleData() {
   if (opsValue) window.ADM_OPS = opsValue;
 
   const sessionProfile = Api.GetCurrentUserProfile ? Api.GetCurrentUserProfile() : null;
-  if (sessionProfile && (sessionProfile.nickname || sessionProfile.realName)) {
-    const n = sessionProfile.nickname || sessionProfile.realName || '管理员';
-    window.ADM_USER = { name: n, role: '超级管理员', letter: n[0] || '管', avatarC1: '#5b87c0', avatarC2: '#1e3a5f' };
+  if (sessionProfile) {
+    const n = sessionProfile.displayName || sessionProfile.account || '管理员';
+    window.ADM_USER = { name: n, role: '超级管理员', letter: n[0] || '管', avatarC1: '#5b87c0', avatarC2: '#1e3a5f', avatarUrl: sessionProfile.avatarUrl || '' };
   }
 }
 
@@ -244,7 +244,9 @@ function AdminTopNav({ activeId, onGoHome, showHealthBar }) {
           <button className="icon-btn" title="通知">
             <span className="material-symbols-outlined">notifications</span>
           </button>
-          <button className="avatar-btn" style={{background:`linear-gradient(135deg, ${ADM_USER.avatarC1}, ${ADM_USER.avatarC2})`}} title={ADM_USER.name}>{ADM_USER.letter}</button>
+          <button className="avatar-btn" style={ADM_USER.avatarUrl ? {padding:0,overflow:'hidden'} : {background:`linear-gradient(135deg, ${ADM_USER.avatarC1}, ${ADM_USER.avatarC2})`}} title={ADM_USER.name}>
+            {ADM_USER.avatarUrl ? <img src={ADM_USER.avatarUrl} alt="头像" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit'}} /> : ADM_USER.letter}
+          </button>
         </div>
       </div>
     </header>
@@ -257,7 +259,9 @@ function AdminRail({ activeId, onChange }) {
     <aside className="ws-rail">
       <div className="glass ws-profile adm-profile">
         <div className="ws-prof-row">
-          <div className="ws-avatar" style={{background:'linear-gradient(135deg, #5b87c0, #1e3a5f)'}}>{ADM_USER.letter}</div>
+          <div className="ws-avatar" style={ADM_USER.avatarUrl ? {padding:0,overflow:'hidden'} : {background:'linear-gradient(135deg, #5b87c0, #1e3a5f)'}}>
+            {ADM_USER.avatarUrl ? <img src={ADM_USER.avatarUrl} alt="头像" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit'}} /> : ADM_USER.letter}
+          </div>
           <div className="ws-prof-info">
             <div className="name">{ADM_USER.name}</div>
             <div className="role">
@@ -287,7 +291,9 @@ function AdminRail({ activeId, onChange }) {
         <div className="ws-label">当前管理员</div>
         <div style={{padding: '4px 12px 8px'}}>
           <div className="duty-row">
-            <span className="duty-av" style={{background:`linear-gradient(135deg, ${ADM_USER.avatarC1}, ${ADM_USER.avatarC2})`}}>{ADM_USER.letter}</span>
+            <span className="duty-av" style={ADM_USER.avatarUrl ? {padding:0,overflow:'hidden'} : {background:`linear-gradient(135deg, ${ADM_USER.avatarC1}, ${ADM_USER.avatarC2})`}}>
+              {ADM_USER.avatarUrl ? <img src={ADM_USER.avatarUrl} alt="头像" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit'}} /> : ADM_USER.letter}
+            </span>
             <div className="duty-info">
               <div className="duty-name">{ADM_USER.name} <span className="duty-tag">值班中</span></div>
               <div className="duty-sub">{ADM_USER.role}</div>

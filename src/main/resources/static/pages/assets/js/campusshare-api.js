@@ -129,7 +129,7 @@
         ORDER: "/pages/order_center.html",
         ORDER_DETAIL: "/pages/order_detail.html",
         PUBLISH: "/pages/publish_center.html",
-        RECRUITMENT: "/pages/recruitment_board.html",
+        RECRUITMENT: "/pages/market_listing.html?view=FORUM",
         NOTIFICATION: "/pages/notification_center.html",
         PROFILE: "/pages/user_profile.html",
         MY_PUBLISH: "/pages/my_publish.html",

@@ -455,7 +455,7 @@
             return "/pages/user_profile.html";
         }
         if (bizType === "TEAM_RECRUITMENT") {
-            return "/pages/recruitment_board.html";
+            return "/pages/market_listing.html?view=FORUM";
         }
         if (bizType === "REPORT") {
             return "/pages/admin_console.html#reports";

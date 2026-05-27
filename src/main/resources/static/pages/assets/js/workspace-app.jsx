@@ -24,7 +24,7 @@ function goHome() {
 }
 
 // ─────────────────────────────────────────────────────────────
-function TopNav({ activeId, userName, unreadCount }) {
+function TopNav({ activeId, userName, unreadCount, avatarUrl }) {
   const here = WS_PAGES.find(p => p.id === activeId);
   return (
     <header className="nav">
@@ -53,7 +53,9 @@ function TopNav({ activeId, userName, unreadCount }) {
             <span className="material-symbols-outlined">add</span>
             发布
           </button>
-          <button className="avatar-btn" title={userName}>{(userName || '同')[0]}</button>
+          <button className="avatar-btn" style={avatarUrl ? {padding:0,overflow:'hidden'} : {}} title={userName}>
+            {avatarUrl ? <img src={avatarUrl} alt="头像" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit'}} /> : (userName || '同')[0]}
+          </button>
         </div>
       </div>
     </header>
@@ -73,7 +75,9 @@ function WorkspaceRail({ activeId, onChange, showPoints, user, unreadCount, pend
     <aside className="ws-rail">
       <div className="glass ws-profile">
         <div className="ws-prof-row">
-          <div className="ws-avatar">{u.letter}</div>
+          <div className="ws-avatar" style={u.avatarUrl ? {padding:0,overflow:'hidden'} : {}}>
+            {u.avatarUrl ? <img src={u.avatarUrl} alt="头像" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit'}} /> : u.letter}
+          </div>
           <div className="ws-prof-info">
             <div className="name">{u.name}</div>
             <div className="role">
@@ -185,6 +189,7 @@ function WSApp() {
         letter: displayName[0] || '用',
         role: [profile.college, profile.major].filter(Boolean).join(' · ') || window.WS_USER.role,
         verified: profile.userRole === 'VERIFIED_SELLER' || profile.userRole === 'ADMINISTRATOR',
+        avatarUrl: profile.avatarUrl || '',
         stats: { posts: window.WS_USER.stats.posts, sold: window.WS_USER.stats.sold, rating: window.WS_USER.stats.rating, points: window.WS_USER.stats.points }
       });
       setTweak('userName', displayName);
@@ -261,7 +266,7 @@ function WSApp() {
 
   return (
     <>
-      <TopNav activeId={activeId} userName={(user || window.WS_USER).name} unreadCount={unreadCount} />
+      <TopNav activeId={activeId} userName={(user || window.WS_USER).name} unreadCount={unreadCount} avatarUrl={user ? user.avatarUrl : ''} />
       <main className="shell">
         <WorkspaceRail
           activeId={activeId}

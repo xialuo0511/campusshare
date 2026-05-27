@@ -2,12 +2,6 @@
 
 const { useState: useStPub, useEffect: useEffPub, useMemo: useMemoPub } = React;
 
-const PUB_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "accent": "#005d90",
-  "kind": "goods",
-  "showTips": true
-}/*EDITMODE-END*/;
-
 // ───────── Tab definitions ─────────
 const PUB_KINDS = [
   {
@@ -219,14 +213,13 @@ function TagPicker({ value, onChange, suggestions }) {
   );
 }
 
-function ImageUploader({ slots = 6, kind, uploadedCount = 0, uploading = false, onFilesSelected }) {
+function ImageUploader({ slots = 6, kind, uploadedCount = 0, uploading = false, onFilesSelected, previews = [] }) {
   const controlled = typeof onFilesSelected === 'function';
-  const [imgs, setImgs] = useStPub([
-    { id: 1, ph: '主图' },
-    { id: 2, ph: '细节 1' }
-  ]);
+  const [imgs, setImgs] = useStPub([]);
   const shownImgs = controlled
-    ? Array.from({ length: uploadedCount }, (_, i) => ({ id: i + 1, ph: i === 0 ? 'Cover' : `Image ${i + 1}` }))
+    ? (previews.length > 0
+        ? previews.map((p, i) => ({ id: i + 1, ph: p.ph || (i === 0 ? '封面' : `图片 ${i + 1}`), previewUrl: p.previewUrl }))
+        : Array.from({ length: uploadedCount }, (_, i) => ({ id: i + 1, ph: i === 0 ? '封面' : `图片 ${i + 1}` })))
     : imgs;
   const remain = slots - shownImgs.length;
   const phLabel = kind === 'goods' ? '物品照片'
@@ -245,11 +238,13 @@ function ImageUploader({ slots = 6, kind, uploadedCount = 0, uploading = false, 
         />
       )}
       {shownImgs.map((im, i) => (
-        <div key={im.id} className={'img-slot filled' + (i === 0 ? ' cover' : '')}>
-          <div className="img-ph">
-            <span className="material-symbols-outlined">image</span>
-            <span>{im.ph}</span>
-          </div>
+        <div key={im.id} className={'img-slot filled' + (i === 0 ? ' cover' : '')} style={im.previewUrl ? {padding:0,overflow:'hidden'} : {}}>
+          {im.previewUrl
+            ? <img src={im.previewUrl} alt={im.ph} style={{width:'100%',height:'100%',objectFit:'cover',display:'block',borderRadius:'inherit'}} />
+            : <div className="img-ph">
+                <span className="material-symbols-outlined">image</span>
+                <span>{im.ph}</span>
+              </div>}
           {i === 0 && <span className="img-cover-tag">封面</span>}
           {!controlled && <button className="img-rm"
             onClick={() => setImgs(imgs.filter(x => x.id !== im.id))}>
@@ -263,7 +258,7 @@ function ImageUploader({ slots = 6, kind, uploadedCount = 0, uploading = false, 
             ? document.getElementById(`publish-${kind}-images`)?.click()
             : setImgs([...imgs, { id: Date.now(), ph: `图 ${imgs.length + 1}` }])}>
           <span className="material-symbols-outlined">add_photo_alternate</span>
-          <span>{uploading ? 'Uploading...' : `添加 ${phLabel}`}</span>
+          <span>{uploading ? '上传中...' : `添加 ${phLabel}`}</span>
           <i>{shownImgs.length}/{slots}</i>
         </button>
       )}
@@ -278,9 +273,15 @@ function GoodsForm({ state, set }) {
     if (!files.length) return;
     const Api = PUB_API();
     if (!Api || !Api.UploadProductImage) {
-      window.alert('Product image upload API unavailable');
+      window.alert('图片上传接口不可用');
       return;
     }
+    const currentCount = (state.imageFileIds || []).length;
+    const newPreviews = files.map((file, i) => ({
+      previewUrl: URL.createObjectURL(file),
+      ph: currentCount + i === 0 ? '封面' : `图片 ${currentCount + i + 1}`
+    }));
+    set('imagePreviews', [...(state.imagePreviews || []), ...newPreviews]);
     set('uploadingImages', true);
     try {
       const uploadedIds = [];
@@ -291,7 +292,7 @@ function GoodsForm({ state, set }) {
       }
       set('imageFileIds', [...(state.imageFileIds || []), ...uploadedIds]);
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : 'Image upload failed');
+      window.alert(error instanceof Error ? error.message : '图片上传失败');
     } finally {
       set('uploadingImages', false);
       event.target.value = '';
@@ -301,10 +302,10 @@ function GoodsForm({ state, set }) {
   return (
     <>
       <FormCard icon="image" title="商品图片" desc="第 1 张为封面，建议 4–6 张，覆盖正面、细节、瑕疵">
-        <ImageUploader slots={6} kind="goods" uploadedCount={(state.imageFileIds || []).length} uploading={state.uploadingImages} onFilesSelected={uploadImages} />
-        <div className="file-sub">Uploaded {(state.imageFileIds || []).length}/6 images{state.uploadingImages ? ' - uploading...' : ''}</div>
+        <ImageUploader slots={6} kind="goods" uploadedCount={(state.imageFileIds || []).length} uploading={state.uploadingImages} onFilesSelected={uploadImages} previews={state.imagePreviews || []} />
+        <div className="file-sub">已上传 {(state.imageFileIds || []).length}/6 张图片{state.uploadingImages ? ' · 上传中...' : ''}</div>
         <button className="btn-sm primary" onClick={() => document.getElementById('publish-goods-images')?.click()}>
-          <span className="material-symbols-outlined">add</span>{state.uploadingImages ? 'Uploading...' : 'Select images'}
+          <span className="material-symbols-outlined">add</span>{state.uploadingImages ? '上传中...' : '选择图片'}
         </button>
       </FormCard>
 
@@ -332,7 +333,7 @@ function GoodsForm({ state, set }) {
         <Field label="详细描述" required help="说清来源、使用情况、瑕疵，越具体越好成交">
           <textarea className="inp ta" rows={4}
             value={state.desc} onChange={e=>set('desc', e.target.value)}
-            placeholder="自用 8 个月，平时仅在宿舍使用。屏幕无划痕，电池效率 96%，附原装包装盒、充电器、Apple Pencil 二代，已贴磨砂膜。仅限校内当面验机。"></textarea>
+            placeholder="描述商品的使用情况、新旧程度、附件及瑕疵，越详细越容易成交"></textarea>
         </Field>
         <Field label="标签" help="便于学弟学妹搜到">
           <TagPicker value={state.tags} onChange={(v)=>set('tags', v)} suggestions={COMMON_TAGS_GOODS} />
@@ -372,7 +373,7 @@ function GoodsForm({ state, set }) {
         </Field>
         <Field label="面交地点" help="多选，仅在选择面交时使用">
           <div className="multi-chip">
-            {['西门交易点','宿舍楼下','图书馆门口','工学院楼下','体育馆','约定地点'].map(p=>(
+            {['图书馆附近','宿舍楼下','食堂附近','操场附近','教学楼附近','约定地点'].map(p=>(
               <span key={p}
                 className={'mc-chip' + (state.places.includes(p) ? ' on':'')}
                 onClick={()=>set('places', state.places.includes(p) ? state.places.filter(x=>x!==p) : [...state.places, p])}>
@@ -440,29 +441,6 @@ function NotesForm({ state, set }) {
             </div>
           </div>
         )}
-        <div className="file-list">
-          <div className="file-row">
-            <span className="file-thumb pdf"><span className="material-symbols-outlined">picture_as_pdf</span></span>
-            <div className="file-info">
-              <div className="file-name">机器学习导论 · 全套手写笔记.pdf</div>
-              <div className="file-sub">12.4 MB · 28 页 · 已扫描</div>
-            </div>
-            <div className="file-prog"><div className="bar" style={{width:'100%'}} /></div>
-            <span className="file-status ok">完成</span>
-            <button className="img-rm"><span className="material-symbols-outlined">close</span></button>
-          </div>
-          <div className="file-row">
-            <span className="file-thumb img"><span className="material-symbols-outlined">image</span></span>
-            <div className="file-info">
-              <div className="file-name">第 5 章思维导图.png</div>
-              <div className="file-sub">2.8 MB · 1080 × 1920</div>
-            </div>
-            <div className="file-prog"><div className="bar" style={{width:'72%'}} /></div>
-            <span className="file-status">72%</span>
-            <button className="img-rm"><span className="material-symbols-outlined">close</span></button>
-          </div>
-        </div>
-        <button className="btn-sm" style={{marginTop:8}}><span className="material-symbols-outlined">add</span>继续添加文件</button>
       </FormCard>
 
       <FormCard icon="title" title="资料信息">
@@ -508,7 +486,7 @@ function NotesForm({ state, set }) {
         <Field label="资料简介" required help="概括内容、范围、用法">
           <textarea className="inp ta" rows={4}
             value={state.desc} onChange={e=>set('desc', e.target.value)}
-            placeholder="涵盖第 1–9 章核心公式与典型例题，附 5 套近 5 年期末真题完整解析。手写工整，重点彩色标注，适合期末突击与考研复习。"></textarea>
+            placeholder="概括资料内容、覆盖章节、适用场景，便于同学判断是否合适"></textarea>
         </Field>
         <Field label="标签">
           <TagPicker value={state.tags} onChange={(v)=>set('tags', v)} suggestions={COMMON_TAGS_NOTES} />
@@ -593,7 +571,7 @@ function TeamForm({ state, set }) {
         <Field label="项目简介" required help="目标、阶段成果、亮点">
           <textarea className="inp ta" rows={4}
             value={state.desc} onChange={e=>set('desc', e.target.value)}
-            placeholder="目标参加 2026 挑战杯，研究方向：基于大模型的校园 AI 助手，已有原型 demo。目前团队 3 人（队长 + 算法 + 产品）。"></textarea>
+            placeholder="简介项目目标、阶段成果、团队现状，让感兴趣的同学快速了解项目"></textarea>
         </Field>
         <Field label="标签">
           <TagPicker value={state.tags} onChange={(v)=>set('tags', v)} suggestions={COMMON_TAGS_TEAM} />
@@ -783,73 +761,68 @@ function TipsCard({ kind }) {
   );
 }
 
+// ───────── Step completion logic ─────────
+function computeStepsDone(kind, state) {
+  if (kind === 'goods') return [
+    (state.imageFileIds || []).length > 0,
+    !!(state.title && state.title.trim() && state.cat),
+    !!(state.price) && (state.deliver === 'ship' || ((state.places || []).length > 0))
+  ];
+  if (kind === 'notes') return [
+    !!state.uploadedFile,
+    !!(state.title && state.title.trim() && state.cat),
+    !!state.priceMode
+  ];
+  return [
+    true,
+    !!(state.title && state.title.trim() && state.kind),
+    !!(state.deadline && (state.roles || []).some(r => (r.name || '').trim()))
+  ];
+}
+
 // ───────── Main App ─────────
 const INIT_GOODS = {
-  title: 'iPad Air 4 · 64G · 自用一年配触控笔',
-  cat: 'elec',
-  cond: '90',
-  desc: '自用 8 个月，平时仅在宿舍使用。屏幕无划痕，电池效率 96%，附原装包装盒、充电器、Apple Pencil 二代，已贴磨砂膜。仅限校内当面验机。',
-  tags: ['九成新', '可面交', '原盒齐全'],
-  price: '2680', orig: '4799',
-  bargain: 'yes',
-  deliver: 'meet',
-  places: ['西门交易点', '工学院楼下'],
-  imageFileIds: [],
-  uploadingImages: false
+  title: '', cat: '', cond: '90', desc: '',
+  tags: [], price: '', orig: '',
+  bargain: 'no', deliver: 'meet',
+  places: [], imageFileIds: [], imagePreviews: [], uploadingImages: false
 };
 const INIT_NOTES = {
-  title: '机器学习导论 · 全套手写笔记 + 真题解析',
-  cat: 'note',
-  course: '机器学习导论',
-  college: '工学院',
-  teacher: '张教授',
-  grades: ['大三', '大四', '考研'],
-  desc: '涵盖第 1–9 章核心公式与典型例题，附 5 套近 3 年期末真题完整解析。手写工整，重点彩色标注，适合期末突击与考研复习。',
-  tags: ['期末复习', '彩色手写', '含真题'],
-  priceMode: 'point',
-  points: '200', price: '18',
-  preview: '3'
+  title: '', cat: '', course: '', college: '工学院',
+  teacher: '', grades: [], desc: '',
+  tags: [], priceMode: 'free',
+  points: '', price: '', preview: '3',
+  uploadedFile: null, uploading: false
 };
 const INIT_TEAM = {
-  title: '挑战杯参赛队 · 校园 AI 助手项目',
-  kind: 'race',
-  desc: '目标参加 2026 挑战杯，研究方向：基于大模型的校园 AI 助手，已有原型 demo。目前团队 3 人（队长 + 算法 + 产品）。希望招到稳定参与到 7 月项目结题的同学。',
-  tags: ['长期', '可远程', '面向大二+'],
-  roles: [
-    { name: '后端开发', need: '熟悉 Python / FastAPI', n: 2 },
-    { name: '前端开发', need: '熟悉 React / TS', n: 1 }
-  ],
-  duration: 'long',
-  deadline: '2026-05-30',
-  commit: '5-10',
-  mode: 'hybrid',
-  req: '大二及以上，有基础 Web 项目经验，能稳定参与到 7 月项目结题。',
-  reward: '校级 / 省级证书、署名论文、可作保研材料'
+  title: '', kind: '', desc: '', tags: [],
+  roles: [{ name: '', need: '', n: 1 }],
+  duration: '', deadline: '', commit: '', mode: 'hybrid',
+  req: '', reward: ''
 };
 
 function PubApp() {
-  const [tweaks, setTweak] = useTweaks(PUB_TWEAK_DEFAULTS);
-  const [kind, setKind] = useStPub(tweaks.kind || 'goods');
+  const [kind, setKind] = useStPub('goods');
   const [goods, setGoodsState] = useStPub(INIT_GOODS);
   const [notes, setNotesState] = useStPub(INIT_NOTES);
   const [team, setTeamState]   = useStPub(INIT_TEAM);
   const [submitting, setSubmitting] = useStPub(false);
   const [message, setMessage] = useStPub('');
+  const [profile, setProfile] = useStPub(null);
 
   useEffPub(() => {
-    document.documentElement.style.setProperty('--cs-primary', tweaks.accent);
-  }, [tweaks.accent]);
+    const p = window.CampusShareApi?.GetCurrentUserProfile?.();
+    if (p) setProfile(p);
+  }, []);
 
-  useEffPub(() => {
-    if (tweaks.kind && tweaks.kind !== kind) setKind(tweaks.kind);
-    // eslint-disable-next-line
-  }, [tweaks.kind]);
-
-  const setG = (k, v) => setGoodsState({ ...goods, [k]: v });
-  const setN = (k, v) => setNotesState({ ...notes, [k]: v });
-  const setT = (k, v) => setTeamState({ ...team, [k]: v });
+  const setG = (k, v) => setGoodsState(prev => ({ ...prev, [k]: v }));
+  const setN = (k, v) => setNotesState(prev => ({ ...prev, [k]: v }));
+  const setT = (k, v) => setTeamState(prev => ({ ...prev, [k]: v }));
   const state = kind === 'goods' ? goods : kind === 'notes' ? notes : team;
   const setState = kind === 'goods' ? setG : kind === 'notes' ? setN : setT;
+  const stepsDone = computeStepsDone(kind, state);
+  const firstIncomplete = stepsDone.findIndex(d => !d);
+  const allContentDone = stepsDone.every(Boolean);
 
   const here = PUB_KINDS.find(p => p.id === kind);
   const goHome = () => window.location.href = '/pages/market_overview.html';
@@ -898,8 +871,8 @@ function PubApp() {
           </div>
           <div className="nav-right">
             <button className="ghost-btn"><span className="material-symbols-outlined">help_outline</span>发布规范</button>
-            <button className="ghost-btn"><span className="material-symbols-outlined">drafts</span>我的草稿 (2)</button>
-            <button className="avatar-btn" title="晓璐">晓</button>
+            <button className="ghost-btn" onClick={() => window.location.href='/pages/my_publish.html'}><span className="material-symbols-outlined">drafts</span>我的发布</button>
+            {profile && <button className="avatar-btn" title={profile.displayName || profile.account || '我'}>{(profile.displayName || profile.account || '我').charAt(0)}</button>}
           </div>
         </div>
       </header>
@@ -918,7 +891,7 @@ function PubApp() {
             {PUB_KINDS.map(k => (
               <button key={k.id}
                 className={'kind-tab' + (kind === k.id ? ' on' : '') + ' tone-' + k.tone}
-                onClick={() => { setKind(k.id); setTweak('kind', k.id); }}>
+                onClick={() => setKind(k.id)}>
                 <span className="material-symbols-outlined">{k.icon}</span>
                 <span>
                   <b>{k.label}</b>
@@ -937,15 +910,21 @@ function PubApp() {
             ['edit_note', '基本信息'],
             ['payments', kind === 'team' ? '角色 & 时间' : kind === 'notes' ? '定价' : '价格 & 交易'],
             ['rate_review', '提交审核']
-          ].map(([icn, l], i) => (
-            <div key={i} className={'step' + (i < 2 ? ' done' : i === 2 ? ' on' : '')}>
-              <span className="step-num">
-                {i < 2 ? <span className="material-symbols-outlined">check</span> : i + 1}
-              </span>
-              <span className="step-label"><b>{l}</b></span>
-              {i < 3 && <span className="step-line" />}
-            </div>
-          ))}
+          ].map(([icn, l], i) => {
+            const cls = i < 3
+              ? (stepsDone[i] ? ' done' : firstIncomplete === i ? ' on' : '')
+              : (allContentDone ? ' on' : '');
+            const showCheck = i < 3 ? stepsDone[i] : false;
+            return (
+              <div key={i} className={'step' + cls}>
+                <span className="step-num">
+                  {showCheck ? <span className="material-symbols-outlined">check</span> : i + 1}
+                </span>
+                <span className="step-label"><b>{l}</b></span>
+                {i < 3 && <span className="step-line" />}
+              </div>
+            );
+          })}
         </div>
 
         <div className="pub-grid">
@@ -969,12 +948,10 @@ function PubApp() {
             </FormCard>
           </div>
 
-          {tweaks.showTips && (
-            <aside className="pub-side">
-              <PreviewCard kind={kind} state={state} />
-              <TipsCard kind={kind} />
-            </aside>
-          )}
+          <aside className="pub-side">
+            <PreviewCard kind={kind} state={state} />
+            <TipsCard kind={kind} />
+          </aside>
         </div>
 
         {/* Sticky footer actions */}
@@ -984,33 +961,13 @@ function PubApp() {
             {message || '填写完成后提交审核'}
           </div>
           <div className="foot-right">
-            <button className="ghost-btn"><span className="material-symbols-outlined">visibility</span>预览</button>
-            <button className="ghost-btn"><span className="material-symbols-outlined">drafts</span>保存草稿</button>
+            <button className="ghost-btn" onClick={() => alert('敬请期待')}><span className="material-symbols-outlined">visibility</span>预览</button>
+            <button className="ghost-btn" onClick={() => alert('敬请期待')}><span className="material-symbols-outlined">drafts</span>保存草稿</button>
             <button className="primary-btn" disabled={submitting} onClick={submitPublish}><span className="material-symbols-outlined">send</span>{submitting ? '提交中...' : '提交审核'}</button>
           </div>
         </div>
       </main>
 
-      <TweaksPanel title="Tweaks">
-        <TweakSection label="主题">
-          <TweakColor label="主色" value={tweaks.accent}
-            options={['#005d90', '#0a8a4f', '#7c3aed', '#b45309', '#be123c']}
-            onChange={(v) => setTweak('accent', v)} />
-        </TweakSection>
-        <TweakSection label="切换">
-          <TweakRadio label="发布类型" value={tweaks.kind}
-            options={[
-              { value: 'goods', label: '商品' },
-              { value: 'notes', label: '资料' },
-              { value: 'team',  label: '招募' }
-            ]}
-            onChange={(v) => setTweak('kind', v)} />
-        </TweakSection>
-        <TweakSection label="布局">
-          <TweakToggle label="显示侧边预览/提示" value={tweaks.showTips}
-            onChange={(v) => setTweak('showTips', v)} />
-        </TweakSection>
-      </TweaksPanel>
     </>
   );
 }

@@ -31,9 +31,24 @@ function admFirst(value, fallback) {
   return value === undefined || value === null || value === '' ? fallback : value;
 }
 
+function admCalcWaited(createTime) {
+  if (!createTime) return '-';
+  const created = new Date(createTime);
+  if (isNaN(created.getTime())) return '-';
+  const diffMs = Date.now() - created.getTime();
+  if (diffMs < 0) return '刚刚';
+  const diffMinutes = Math.floor(diffMs / 60000);
+  if (diffMinutes < 1) return '刚刚';
+  if (diffMinutes < 60) return diffMinutes + ' 分钟';
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return diffHours + ' 小时';
+  const diffDays = Math.floor(diffHours / 24);
+  return diffDays + ' 天';
+}
+
 function admMapProduct(item) {
   const title = admFirst(item.title, admFirst(item.productTitle, '未命名商品'));
-  const seller = admFirst(item.sellerNickname, admFirst(item.sellerName, '发布者'));
+  const seller = admFirst(item.sellerDisplayName, '发布者');
   return {
     id: 'P-' + admFirst(item.productId, admFirst(item.id, '')),
     kind: 'goods',
@@ -42,7 +57,7 @@ function admMapProduct(item) {
     desc: admFirst(item.description, '待审核商品'),
     user: { name: seller, school: admFirst(item.school, ''), letter: admFirst(seller[0], '商'), av1: '#ffd089', av2: '#f0a35a' },
     submittedAt: admFirst(item.createTime, admFirst(item.submitTime, '-')),
-    waited: '-',
+    waited: admCalcWaited(admFirst(item.createTime, item.submitTime)),
     flags: [],
     risk: 'low',
     price: item.price == null ? '-' : '¥' + item.price,
@@ -56,7 +71,7 @@ function admMapProduct(item) {
 
 function admMapRecruitment(item) {
   const title = admFirst(item.eventName, admFirst(item.title, '未命名招募'));
-  const publisher = admFirst(item.publisherName, '发布者');
+  const publisher = admFirst(item.publisherDisplayName, '发布者');
   return {
     id: 'T-' + admFirst(item.recruitmentId, admFirst(item.id, '')),
     kind: 'team',
@@ -65,7 +80,7 @@ function admMapRecruitment(item) {
     desc: admFirst(item.skillRequirement, admFirst(item.description, '待审核招募')),
     user: { name: publisher, school: '', letter: admFirst(publisher[0], '招'), av1: '#a7f3d0', av2: '#0a8a4f' },
     submittedAt: admFirst(item.createTime, admFirst(item.submitTime, '-')),
-    waited: '-',
+    waited: admCalcWaited(admFirst(item.createTime, item.submitTime)),
     flags: [],
     risk: 'low',
     price: admFirst(item.direction, '招募'),
@@ -79,7 +94,7 @@ function admMapRecruitment(item) {
 
 function admMapMaterial(item) {
   const title = admFirst(item.courseName, admFirst(item.title, admFirst(item.materialTitle, '未命名资料')));
-  const owner = admFirst(item.uploaderName, admFirst(item.ownerName, '发布者'));
+  const owner = admFirst(item.uploaderDisplayName, '发布者');
   return {
     id: 'M-' + admFirst(item.materialId, admFirst(item.id, '')),
     kind: 'notes',
@@ -88,7 +103,7 @@ function admMapMaterial(item) {
     desc: admFirst(item.description, '待审核资料'),
     user: { name: owner, school: admFirst(item.school, ''), letter: admFirst(owner[0], '资'), av1: '#c4b5fd', av2: '#7c3aed' },
     submittedAt: admFirst(item.createTime, admFirst(item.submitTime, '-')),
-    waited: '-',
+    waited: admCalcWaited(admFirst(item.createTime, item.submitTime)),
     flags: [],
     risk: 'low',
     price: admFirst(item.fileType, '资料'),

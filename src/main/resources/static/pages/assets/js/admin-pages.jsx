@@ -39,28 +39,42 @@ function adminPageSummaryKpis(summary) {
   ];
 }
 
+function adminPageCalcWaited(createTime) {
+  if (!createTime) return '-';
+  const created = new Date(createTime);
+  if (isNaN(created.getTime())) return '-';
+  const diffMs = Date.now() - created.getTime();
+  if (diffMs < 0) return '刚刚';
+  const diffMinutes = Math.floor(diffMs / 60000);
+  if (diffMinutes < 1) return '刚刚';
+  if (diffMinutes < 60) return diffMinutes + ' 分钟';
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return diffHours + ' 小时';
+  return Math.floor(diffHours / 24) + ' 天';
+}
+
 function adminPageMapProduct(item) {
   const mapper = window.admMapProduct;
   if (typeof mapper === 'function') return mapper(item);
   const title = adminPageFirst(item.title, adminPageFirst(item.productTitle, 'Product'));
-  const seller = adminPageFirst(item.sellerNickname, adminPageFirst(item.sellerName, 'User'));
-  return { id: 'P-' + adminPageFirst(item.productId, adminPageFirst(item.id, '')), kind: 'goods', title, desc: adminPageFirst(item.description, ''), user: { name: seller, school: adminPageFirst(item.school, ''), letter: adminPageFirst(seller[0], 'U'), av1: '#ffd089', av2: '#f0a35a' }, waited: '-', flags: [], risk: 'low', price: item.price == null ? '-' : String(item.price), meta: adminPageFirst(item.category, 'Product'), ph: String(title).slice(0, 2), c1: '#dbeafe', c2: '#1d6fe0', raw: item };
+  const seller = adminPageFirst(item.sellerDisplayName, 'User');
+  return { id: 'P-' + adminPageFirst(item.productId, adminPageFirst(item.id, '')), kind: 'goods', title, desc: adminPageFirst(item.description, ''), user: { name: seller, school: adminPageFirst(item.school, ''), letter: adminPageFirst(seller[0], 'U'), av1: '#ffd089', av2: '#f0a35a' }, waited: adminPageCalcWaited(item.createTime), flags: [], risk: 'low', price: item.price == null ? '-' : String(item.price), meta: adminPageFirst(item.category, 'Product'), ph: String(title).slice(0, 2), c1: '#dbeafe', c2: '#1d6fe0', raw: item };
 }
 
 function adminPageMapMaterial(item) {
   const mapper = window.admMapMaterial;
   if (typeof mapper === 'function') return mapper(item);
   const title = adminPageFirst(item.courseName, adminPageFirst(item.title, adminPageFirst(item.materialTitle, 'Material')));
-  const owner = adminPageFirst(item.uploaderName, adminPageFirst(item.ownerName, 'User'));
-  return { id: 'M-' + adminPageFirst(item.materialId, adminPageFirst(item.id, '')), kind: 'notes', title, desc: adminPageFirst(item.description, ''), user: { name: owner, school: adminPageFirst(item.school, ''), letter: adminPageFirst(owner[0], 'U'), av1: '#c4b5fd', av2: '#7c3aed' }, waited: '-', flags: [], risk: 'low', price: adminPageFirst(item.fileType, 'Material'), meta: adminPageFirst(item.category, 'Material'), ph: String(title).slice(0, 2), c1: '#c4b5fd', c2: '#7c3aed', raw: item };
+  const owner = adminPageFirst(item.uploaderDisplayName, 'User');
+  return { id: 'M-' + adminPageFirst(item.materialId, adminPageFirst(item.id, '')), kind: 'notes', title, desc: adminPageFirst(item.description, ''), user: { name: owner, school: adminPageFirst(item.school, ''), letter: adminPageFirst(owner[0], 'U'), av1: '#c4b5fd', av2: '#7c3aed' }, waited: adminPageCalcWaited(item.createTime), flags: [], risk: 'low', price: adminPageFirst(item.fileType, 'Material'), meta: adminPageFirst(item.category, 'Material'), ph: String(title).slice(0, 2), c1: '#c4b5fd', c2: '#7c3aed', raw: item };
 }
 
 function adminPageMapRecruitment(item) {
   const mapper = window.admMapRecruitment;
   if (typeof mapper === 'function') return mapper(item);
   const title = adminPageFirst(item.eventName, adminPageFirst(item.title, 'Team'));
-  const publisher = adminPageFirst(item.publisherName, 'User');
-  return { id: 'T-' + adminPageFirst(item.recruitmentId, adminPageFirst(item.id, '')), kind: 'team', title, desc: adminPageFirst(item.skillRequirement, adminPageFirst(item.description, '')), user: { name: publisher, school: '', letter: adminPageFirst(publisher[0], 'U'), av1: '#a7f3d0', av2: '#0a8a4f' }, waited: '-', flags: [], risk: 'low', price: adminPageFirst(item.direction, 'Team'), meta: adminPageFirst(item.direction, 'Team'), ph: String(title).slice(0, 2), c1: '#a7f3d0', c2: '#0a8a4f', raw: item };
+  const publisher = adminPageFirst(item.publisherDisplayName, 'User');
+  return { id: 'T-' + adminPageFirst(item.recruitmentId, adminPageFirst(item.id, '')), kind: 'team', title, desc: adminPageFirst(item.skillRequirement, adminPageFirst(item.description, '')), user: { name: publisher, school: '', letter: adminPageFirst(publisher[0], 'U'), av1: '#a7f3d0', av2: '#0a8a4f' }, waited: adminPageCalcWaited(item.createTime), flags: [], risk: 'low', price: adminPageFirst(item.direction, 'Team'), meta: adminPageFirst(item.direction, 'Team'), ph: String(title).slice(0, 2), c1: '#a7f3d0', c2: '#0a8a4f', raw: item };
 }
 
 function adminPageMapReport(item) {
@@ -201,6 +215,7 @@ function ActivityChart() {
 
 // Review queue row
 function ReviewRow({ item, compact }) {
+  const [expanded, setExpanded] = useStateAdm(false);
   const reviewItem = async (approved) => {
     const Api = window.CampusShareApi;
     if (!Api) return;
@@ -221,13 +236,16 @@ function ReviewRow({ item, compact }) {
     window.location.reload();
   };
 
+  const raw = item.raw || {};
+  const imageFileIds = Array.isArray(raw.imageFileIds) ? raw.imageFileIds : [];
+
   return (
-    <div className={'review-row' + (compact ? ' compact' : '')}>
+    <div className={'review-row' + (compact ? ' compact' : '') + (expanded ? ' rv-has-detail' : '')}>
       <div className="rv-thumb" style={{'--c1': item.c1, '--c2': item.c2}}>{item.ph}</div>
       <div className="rv-body">
         <div className="rv-top">
           <KindTag kind={item.kind} />
-          {item.flags.map((f, i) => <span key={i} className="flag-tag">&#x63D0;&#x793A; &#x00B7; {f}</span>)}
+          {item.flags.map((f, i) => <span key={i} className="flag-tag">提示 · {f}</span>)}
           <RiskTag risk={item.risk} />
         </div>
         <div className="rv-title">{item.title}</div>
@@ -235,7 +253,7 @@ function ReviewRow({ item, compact }) {
         <div className="rv-meta">
           <span className="rv-user">
             <span className="rv-av" style={{background: `linear-gradient(135deg, ${item.user.av1}, ${item.user.av2})`}}>{item.user.letter}</span>
-            {item.user.name} &#x00B7; {item.user.school}
+            {item.user.name}{item.user.school ? ' · ' + item.user.school : ''}
           </span>
           <span className="rv-dot" />
           <span>{item.meta}</span>
@@ -248,14 +266,96 @@ function ReviewRow({ item, compact }) {
       <div className="rv-side">
         <div className="rv-waited">
           <span className="material-symbols-outlined">schedule</span>
-          &#x5DF2;&#x7B49;&#x5F85; <b>{item.waited}</b>
+          已等待 <b>{item.waited}</b>
         </div>
+        {!compact && (
+          <button className="btn-sm rv-toggle-btn" onClick={() => setExpanded(function(e) { return !e; })}>
+            <span className="material-symbols-outlined">{expanded ? 'expand_less' : 'image_search'}</span>
+            {expanded ? '收起详情' : '查看详情'}
+          </button>
+        )}
         <div className="rv-actions">
           <button className="btn-sm danger" onClick={() => reviewItem(false)}><span className="material-symbols-outlined">close</span>驳回</button>
-          <button className="btn-sm"><span className="material-symbols-outlined">flag</span>&#x9700;&#x4FEE;&#x6539;</button>
+          <button className="btn-sm"><span className="material-symbols-outlined">flag</span>需修改</button>
           <button className="btn-sm primary" onClick={() => reviewItem(true)}><span className="material-symbols-outlined">check</span>通过</button>
         </div>
       </div>
+
+      {!compact && expanded && (
+        <div className="rv-detail-panel">
+          {item.kind === 'goods' && (
+            <div className="rv-detail-images">
+              {imageFileIds.length > 0 ? imageFileIds.map(function(fid, i) {
+                return (
+                  <div key={i} className="rv-img-slot">
+                    <img
+                      src={'/api/v1/files/' + fid}
+                      alt={i === 0 ? '封面' : '图片' + (i + 1)}
+                      className="rv-img-thumb"
+                      onError={function(e) { e.currentTarget.style.display='none'; }}
+                    />
+                    <div className="rv-img-caption">{i === 0 ? '封面' : '图片 ' + (i + 1)}</div>
+                  </div>
+                );
+              }) : (
+                <div className="rv-img-none">
+                  <span className="material-symbols-outlined">hide_image</span>
+                  暂无图片
+                </div>
+              )}
+            </div>
+          )}
+          <div className="rv-detail-fields">
+            {item.kind === 'goods' && [
+              ['分类', raw.category],
+              ['成色', raw.conditionLevel],
+              ['定价', raw.price != null ? '¥' + raw.price : null],
+              ['交易地点', raw.tradeLocation],
+              ['卖家', item.user.name],
+              ['提交时间', raw.createTime ? String(raw.createTime).replace('T', ' ').slice(0, 16) : null]
+            ].map(function(pair, i) {
+              var k = pair[0], v = pair[1];
+              return (
+                <div key={i} className="rv-df-item">
+                  <span className="rv-df-k">{k}</span>
+                  <span style={k === '定价' ? {color:'var(--cs-primary)',fontWeight:700} : {}}>{v || '-'}</span>
+                </div>
+              );
+            })}
+            {item.kind === 'notes' && [
+              ['课程名', raw.courseName],
+              ['标签', Array.isArray(raw.tags) ? raw.tags.join('、') : raw.tags],
+              ['文件类型', raw.fileType],
+              ['上传者', item.user.name],
+              ['提交时间', raw.createTime ? String(raw.createTime).replace('T', ' ').slice(0, 16) : null]
+            ].map(function(pair, i) {
+              var k = pair[0], v = pair[1];
+              return (
+                <div key={i} className="rv-df-item">
+                  <span className="rv-df-k">{k}</span>
+                  <span>{v || '-'}</span>
+                </div>
+              );
+            })}
+            {item.kind === 'team' && [
+              ['活动名称', raw.eventName],
+              ['方向', raw.direction],
+              ['截止日期', raw.deadline ? String(raw.deadline).slice(0, 10) : null],
+              ['技能要求', raw.skillRequirement],
+              ['发布者', item.user.name],
+              ['提交时间', raw.createTime ? String(raw.createTime).replace('T', ' ').slice(0, 16) : null]
+            ].map(function(pair, i) {
+              var k = pair[0], v = pair[1];
+              return (
+                <div key={i} className="rv-df-item">
+                  <span className="rv-df-k">{k}</span>
+                  <span>{v || '-'}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -97,7 +97,7 @@
                     return;
                 }
                 if (action === "edit-product") {
-                    window.location.href = `/pages/publish_create.html?productId=${encodeURIComponent(String(itemId))}`;
+                    window.location.href = `/pages/publish_center.html?productId=${encodeURIComponent(String(itemId))}`;
                     return;
                 }
                 if (action === "offline-product") {
@@ -111,7 +111,7 @@
                     await TriggerMaterialFileDownload(downloadResult, itemId);
                     return;
                 } else if (action === "go-publish") {
-                    window.location.href = "/pages/publish_create.html";
+                    window.location.href = "/pages/publish_center.html";
                     return;
                 }
 

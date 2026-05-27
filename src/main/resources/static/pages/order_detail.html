@@ -1,361 +1,1084 @@
-<!DOCTYPE html>
-<html class="light" lang="zh-CN">
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>订单详情 - CampusShare</title>
-<script src="/pages/assets/vendor/tailwindcss.js"></script>
-<link href="/pages/assets/fonts/campusshare-fonts.css" rel="stylesheet"/>
-<link href="/pages/assets/fonts/material-symbols.css" rel="stylesheet"/>
-<link href="/pages/assets/css/campusshare-modern.css" rel="stylesheet"/>
-<script id="tailwind-config">
-tailwind.config = {
-    darkMode: "class",
-    theme: {
-        extend: {
-            colors: {
-                primary: "#005d90",
-                "primary-strong": "#004b74",
-                "primary-container": "#0077b6",
-                "on-primary": "#ffffff",
-                "primary-soft": "#eef6fb",
-                surface: "#f5f5f7",
-                "surface-container-lowest": "#ffffff",
-                "surface-container-low": "#f5f5f7",
-                "surface-container": "#edeeef",
-                "surface-container-high": "#e7e8e9",
-                card: "#ffffff",
-                line: "rgba(120,133,150,0.16)",
-                muted: "#64748b",
-                ink: "#172033",
-                "on-surface": "#172033",
-                "on-surface-variant": "#566273",
-                "outline-variant": "#c8d0da",
-                outline: "#64748b",
-                secondary: "#006878",
-                error: "#b42318",
-                "error-container": "#ffdad6",
-                "on-error": "#ffffff"
-            },
-            borderRadius: { DEFAULT: "8px", md: "10px", lg: "12px", xl: "16px", full: "999px" },
-            fontFamily: {
-                headline: ["Manrope", "Noto Sans SC", "Microsoft YaHei", "sans-serif"],
-                body: ["Inter", "Noto Sans SC", "Microsoft YaHei", "sans-serif"]
-            }
-        }
-    }
-};
-</script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CampusShare · 订单详情</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
 <style>
-    * { box-sizing: border-box; }
-    html { text-rendering: optimizeLegibility; }
+  :root {
+    --cs-primary: #005d90;
+    --cs-primary-strong: #004b74;
+    --cs-primary-soft: #eef6fb;
+    --cs-accent: #3454d1;
+    --cs-ink: #0b1320;
+    --cs-ink-soft: #172033;
+    --cs-muted: #64748b;
+    --cs-muted-2: #94a3b8;
+    --cs-line: rgba(120, 133, 150, 0.18);
+    --cs-line-strong: rgba(120, 133, 150, 0.32);
+    --cs-card-bg: rgba(255, 255, 255, 0.78);
+    --cs-card-solid: #ffffff;
+    --cs-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px -8px rgba(15, 23, 42, 0.08);
+    --cs-shadow-md: 0 14px 36px -16px rgba(8, 25, 53, 0.18);
+    --cs-shadow-lg: 0 30px 60px -24px rgba(8, 25, 53, 0.22);
+    --cs-shadow-focus: 0 0 0 4px rgba(0, 93, 144, 0.16);
+    --cs-r-xs: 8px;
+    --cs-r-sm: 10px;
+    --cs-r-md: 14px;
+    --cs-r-lg: 18px;
+    --cs-r-xl: 24px;
+    --cs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --bg-base: #f4f6fa;
 
-    body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: var(--cs-font-body);
-        color: var(--cs-ink);
-        background: var(--cs-surface);
-        text-wrap: pretty;
-    }
+    --green: #0a8a4f;
+    --green-soft: #e7f6ee;
+    --amber: #b45309;
+    --amber-soft: #fff4e0;
+    --rose: #be123c;
+    --rose-soft: #ffe4e9;
+    --violet: #7c3aed;
+    --violet-soft: #f1ebff;
+    --blue: #1d6fe0;
+    --blue-soft: #e8f0fb;
+    --muted-bg: rgba(0,0,0,0.04);
+  }
 
-    h1, h2, h3 { font-family: var(--cs-font-headline); letter-spacing: 0; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg-base);
+    color: var(--cs-ink);
+    font-family: 'Inter', 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(900px 480px at 8% -10%, rgba(0,93,144,0.10), transparent 60%),
+      radial-gradient(900px 480px at 110% 0%, rgba(52,84,209,0.08), transparent 60%),
+      linear-gradient(180deg, #ffffff 0%, #f4f6fa 280px);
+    text-wrap: pretty;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings: 'FILL' 0, 'wght' 430, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+    line-height: 1;
+  }
 
-    .material-symbols-outlined {
-        font-variation-settings: "FILL" 0, "wght" 430, "GRAD" 0, "opsz" 24;
-        line-height: 1;
-    }
+  /* ═══ Top nav (matches workspace exactly) ═══ */
+  .nav {
+    position: sticky; top: 0; z-index: 30;
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    background: rgba(255,255,255,0.78);
+    border-bottom: 1px solid var(--cs-line);
+  }
+  .nav-inner {
+    max-width: 1280px; margin: 0 auto;
+    height: 64px; padding: 0 clamp(16px, 3vw, 32px);
+    display: flex; align-items: center; gap: 20px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; flex-shrink: 0; }
+  .brand .logo {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--cs-primary), var(--cs-accent));
+    display: grid; place-items: center; color: #fff;
+    box-shadow: 0 8px 20px -8px rgba(0,93,144,0.55), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .brand .logo .material-symbols-outlined { font-size: 19px; font-variation-settings: 'FILL' 1; }
+  .brand .name {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800; font-size: 19px;
+    color: var(--cs-ink); letter-spacing: -0.01em;
+  }
+  .crumbs {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--cs-muted);
+    margin-left: 8px; padding-left: 16px;
+    border-left: 1px solid var(--cs-line);
+    flex: 1; min-width: 0;
+  }
+  .crumbs a { color: var(--cs-muted); text-decoration: none; cursor: pointer; }
+  .crumbs a:hover { color: var(--cs-primary); }
+  .crumbs .here { color: var(--cs-ink); font-weight: 600; }
+  .crumbs .material-symbols-outlined { font-size: 14px; color: var(--cs-muted-2); }
+  .nav-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .icon-btn {
+    width: 38px; height: 38px; border-radius: 10px;
+    border: 1px solid var(--cs-line);
+    background: rgba(255,255,255,0.6);
+    cursor: pointer; display: grid; place-items: center;
+    position: relative; transition: all 180ms var(--cs-ease);
+    color: var(--cs-ink-soft);
+  }
+  .icon-btn:hover { border-color: var(--cs-line-strong); background: #fff; transform: translateY(-1px); }
+  .icon-btn .material-symbols-outlined { font-size: 19px; }
+  .icon-btn .dot-badge {
+    position: absolute; top: -5px; right: -5px;
+    min-width: 18px; height: 18px;
+    border-radius: 999px;
+    background: #ef4444; color: #fff;
+    font-size: 10px; font-weight: 700;
+    padding: 0 5px;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 1; border: 2px solid #fff;
+  }
+  .ghost-btn {
+    height: 36px; padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--cs-line);
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    color: var(--cs-ink-soft); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 160ms var(--cs-ease);
+  }
+  .ghost-btn:hover { border-color: var(--cs-primary); color: var(--cs-primary); background: #fff; }
+  .ghost-btn .material-symbols-outlined { font-size: 16px; }
+  .avatar-btn {
+    width: 38px; height: 38px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffd089, #f0a35a);
+    color: #fff;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700; font-size: 14px;
+    display: grid; place-items: center; cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: var(--cs-shadow-sm);
+  }
 
-    /* Embedded mode */
-    [data-user-topbar], [data-user-sidebar], footer { display: none; }
-    body:not(.campusshare-embedded-page) [data-user-main] { margin-left: 16.75rem; }
-    .campusshare-embedded-page [data-user-main] {
-        margin-left: 0 !important;
-        padding: 1.5rem !important;
-    }
+  .card {
+    background: var(--cs-card-solid);
+    border: 1px solid var(--cs-line);
+    border-radius: var(--cs-r-lg);
+    box-shadow: var(--cs-shadow-sm);
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(0,0,0,0.04);
+    color: var(--cs-muted);
+    font-size: 11.5px; font-weight: 600;
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .chip.primary { background: var(--cs-primary-soft); color: var(--cs-primary); }
+  .chip.green   { background: var(--green-soft);     color: var(--green); }
+  .chip.tiny    { font-size: 10px; padding: 1px 7px; }
+  .chip .material-symbols-outlined { font-size: 12px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+  .pill::before { content: ''; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+  .pill.live   { background: var(--green-soft); color: var(--green); }
+  .pill.amber  { background: var(--amber-soft); color: var(--amber); }
+  .pill.review { background: var(--violet-soft); color: var(--violet); }
+  .pill.sold   { background: var(--blue-soft); color: var(--blue); }
+  .pill.off    { background: rgba(0,0,0,0.06); color: var(--cs-muted); }
+  .pill.red    { background: var(--rose-soft); color: var(--rose); }
 
-    /* Timeline steps - JS rewrites these classes so they must remain in Tailwind */
-    .step-circle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-    }
+  /* ═══ Page shell ═══ */
+  .od-shell {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: clamp(20px, 3vw, 32px) clamp(16px, 3vw, 32px) 80px;
+    display: flex; flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ═══ Hero status banner ═══ */
+  .od-hero {
+    position: relative;
+    border-radius: var(--cs-r-xl);
+    padding: 28px 32px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,255,255,0.78));
+    border: 1px solid var(--cs-line);
+    box-shadow: var(--cs-shadow-md);
+  }
+  .od-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(600px 220px at 0% 0%, var(--tone-glow, rgba(0,93,144,0.10)), transparent 60%),
+      radial-gradient(420px 200px at 100% 110%, var(--tone-glow-2, rgba(52,84,209,0.06)), transparent 60%);
+  }
+  .od-hero > * { position: relative; }
+
+  .od-tone-amber  { --tone-glow: rgba(180,83,9,0.10);  --tone-glow-2: rgba(180,83,9,0.05);
+                   --tone-fg: var(--amber); --tone-bg: var(--amber-soft); }
+  .od-tone-violet { --tone-glow: rgba(124,58,237,0.10); --tone-glow-2: rgba(124,58,237,0.05);
+                   --tone-fg: var(--violet); --tone-bg: var(--violet-soft); }
+  .od-tone-green  { --tone-glow: rgba(10,138,79,0.10); --tone-glow-2: rgba(10,138,79,0.05);
+                   --tone-fg: var(--green); --tone-bg: var(--green-soft); }
+  .od-tone-blue   { --tone-glow: rgba(29,111,224,0.10); --tone-glow-2: rgba(29,111,224,0.05);
+                   --tone-fg: var(--blue);  --tone-bg: var(--blue-soft); }
+  .od-tone-rose   { --tone-glow: rgba(190,18,60,0.10); --tone-glow-2: rgba(190,18,60,0.05);
+                   --tone-fg: var(--rose);  --tone-bg: var(--rose-soft); }
+  .od-tone-muted  { --tone-glow: rgba(100,116,139,0.10); --tone-glow-2: rgba(100,116,139,0.05);
+                   --tone-fg: var(--cs-muted); --tone-bg: rgba(0,0,0,0.04); }
+
+  .od-hero-grid {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .od-hero-icn {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    background: var(--tone-bg);
+    color: var(--tone-fg);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 8px 22px -10px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .od-hero-icn .material-symbols-outlined { font-size: 32px; font-variation-settings: 'FILL' 1; }
+  .od-hero-main { min-width: 0; }
+  .od-hero-meta {
+    display: flex; gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .od-hero-id { font-size: 12px; color: var(--cs-muted); font-weight: 500; }
+  .od-hero-title {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: clamp(22px, 2.6vw, 30px);
+    letter-spacing: -0.02em;
+    color: var(--cs-ink);
+    margin: 0 0 6px;
+    line-height: 1.15;
+  }
+  .od-hero-desc {
+    margin: 0;
+    font-size: 14px;
+    color: var(--cs-muted);
+    line-height: 1.55;
+    max-width: 720px;
+  }
+  .od-hero-count {
+    text-align: right;
+    flex-shrink: 0;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: var(--tone-bg);
+    color: var(--tone-fg);
+    min-width: 200px;
+  }
+  .od-hero-count .lab {
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.85;
+  }
+  .od-hero-count .val {
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  .od-hero-actions {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--cs-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .od-action-help {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12.5px; color: var(--cs-muted);
+  }
+  .od-action-help .material-symbols-outlined { font-size: 15px; color: var(--cs-muted-2); }
+
+  .od-hero-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ═══ Buttons (richer than ghost-btn) ═══ */
+  .od-btn {
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: 1px solid var(--cs-line);
+    background: #fff;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--cs-ink-soft);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 160ms var(--cs-ease);
+  }
+  .od-btn:hover { border-color: var(--cs-primary); color: var(--cs-primary); transform: translateY(-1px); }
+  .od-btn.primary {
+    background: linear-gradient(135deg, var(--cs-primary), var(--cs-accent));
+    color: #fff; border-color: transparent;
+    box-shadow: 0 12px 28px -10px rgba(0,93,144,0.55), inset 0 1px 0 rgba(255,255,255,0.22);
+  }
+  .od-btn.primary:hover { color: #fff; transform: translateY(-1px); box-shadow: 0 16px 32px -10px rgba(0,93,144,0.7); }
+  .od-btn.danger { color: var(--rose); }
+  .od-btn.danger:hover { border-color: var(--rose); color: var(--rose); background: var(--rose-soft); }
+  .od-btn .material-symbols-outlined { font-size: 17px; }
+
+  /* ═══ Compact timeline strip (in hero) ═══ */
+  .od-strip {
+    background: #fff;
+    border: 1px solid var(--cs-line);
+    border-radius: var(--cs-r-lg);
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: var(--cs-shadow-sm);
+    overflow-x: auto;
+  }
+  .strip-step {
+    display: flex; align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .strip-step .dot {
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.06);
+    color: var(--cs-muted);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    transition: all 200ms var(--cs-ease);
+  }
+  .strip-step .dot .material-symbols-outlined { font-size: 17px; }
+  .strip-step .lab {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--cs-muted);
+    white-space: nowrap;
+  }
+  .strip-step.done .dot { background: var(--cs-primary); color: #fff; }
+  .strip-step.done .lab { color: var(--cs-ink); }
+  .strip-step.now  .dot {
+    background: #fff;
+    color: var(--cs-primary);
+    border: 2px solid var(--cs-primary);
+    box-shadow: 0 0 0 5px rgba(0,93,144,0.10);
+  }
+  .strip-step.now .lab { color: var(--cs-primary); font-weight: 700; }
+  .strip-step.branch .dot { background: var(--cs-ink); color: #fff; }
+  .strip-step.branch.cancel .dot { background: #64748b; }
+  .strip-step.branch.refund .dot { background: var(--blue); }
+  .strip-step.branch.refund-done .dot { background: var(--green); }
+  .strip-step.branch.dispute .dot { background: var(--rose); }
+  .strip-step.branch .lab { color: var(--cs-ink); font-weight: 700; }
+  .strip-step.skipped { opacity: 0.4; }
+  .strip-bar {
+    flex: 1;
+    min-width: 24px;
+    height: 2px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 999px;
+  }
+  .strip-bar.done { background: var(--cs-primary); }
+
+  /* ═══ Two-column body ═══ */
+  .od-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 1024px) {
+    .od-grid { grid-template-columns: 1fr; }
+  }
+  .od-main, .od-side {
+    display: flex; flex-direction: column; gap: 16px;
+    min-width: 0;
+  }
+  .od-side-card { position: relative; }
+
+  /* ═══ Section card ═══ */
+  .od-section { padding: 20px 24px; }
+  .od-sec-head {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .od-sec-head h2 {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    color: var(--cs-ink);
+    margin: 0;
+  }
+  .od-sec-sub { font-size: 12px; color: var(--cs-muted); }
+  .od-sec-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12.5px; font-weight: 600;
+    color: var(--cs-primary);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .od-sec-link:hover { text-decoration: underline; }
+  .od-sec-link .material-symbols-outlined { font-size: 14px; }
+
+  /* ═══ Product block ═══ */
+  .od-prod {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .od-prod-thumb {
+    width: 120px; height: 120px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--c1), var(--c2));
+    color: #fff;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 30px;
+    display: grid; place-items: center;
+    letter-spacing: -0.02em;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 8px 22px -10px rgba(0,0,0,0.18);
+    flex-shrink: 0;
+  }
+  .od-prod-body { min-width: 0; }
+  .od-prod-title {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--cs-ink);
+    margin: 0 0 10px;
+    line-height: 1.4;
+  }
+  .od-prod-tags {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .od-spec {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 24px;
+    font-size: 12.5px;
+  }
+  .od-spec li {
+    display: flex; justify-content: space-between;
+    padding: 4px 0;
+    color: var(--cs-muted);
+    border-bottom: 1px dashed transparent;
+  }
+  .od-spec li span:first-child { color: var(--cs-muted); }
+  .od-spec li b { color: var(--cs-ink-soft); font-weight: 600; }
+  .od-prod-price {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--cs-ink);
+    letter-spacing: -0.01em;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .od-prod-price .y {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--cs-muted);
+    font-weight: 600;
+    margin-right: 2px;
+  }
+  .od-prod-price .unit {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    color: var(--cs-muted);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* ═══ Price breakdown ═══ */
+  .od-price-grid { display: flex; flex-direction: column; gap: 2px; }
+  .od-price-grid .row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--cs-line);
+    font-size: 13px;
+    color: var(--cs-ink-soft);
+  }
+  .od-price-grid .row small {
+    color: var(--cs-muted-2);
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  .od-price-grid .row.total {
+    margin-top: 6px;
+    padding-top: 16px;
+    padding-bottom: 4px;
+    border-bottom: none;
+    border-top: 2px solid var(--cs-ink);
+  }
+  .od-price-grid .row.total > span:first-child {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--cs-ink);
+  }
+  .od-price-grid .price {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--cs-ink);
+    letter-spacing: -0.01em;
+  }
+  .od-price-grid .price .y {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--cs-muted);
+    margin-right: 2px;
+    font-weight: 600;
+  }
+  .od-price-grid .price small {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    color: var(--cs-muted);
+    margin-left: 1px;
+    font-weight: 700;
+  }
+  .od-price-grid .mono.negative { color: var(--rose); }
+  .od-price-grid .refund-row {
+    margin-top: 4px;
+    background: var(--blue-soft);
+    border-radius: 12px;
+    padding: 12px 14px;
+    border-bottom: none;
+  }
+  .od-price-grid .refund-row > span:first-child {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--blue);
+    font-weight: 600;
+  }
+  .od-price-grid .refund-row .material-symbols-outlined { font-size: 14px; }
+  .od-price-grid .price.refund { color: var(--blue); }
+
+  /* ═══ Detailed timeline ═══ */
+  .od-timeline {
+    list-style: none;
+    margin: 0; padding: 4px 0 0 0;
+  }
+  .od-tl-item {
+    position: relative;
+    padding-left: 44px;
+    padding-bottom: 22px;
+    min-height: 44px;
+  }
+  .od-tl-item:last-child { padding-bottom: 0; }
+  .od-tl-bar {
+    position: absolute;
+    left: 13px;
+    top: 28px;
+    bottom: -6px;
+    width: 2px;
+    background: rgba(0,0,0,0.08);
+  }
+  .od-tl-item.done .od-tl-bar { background: var(--cs-primary); }
+  .od-tl-item.branch.cancel .od-tl-bar,
+  .od-tl-item.branch.refund .od-tl-bar { background: rgba(0,0,0,0.08); }
+  .od-tl-dot {
+    position: absolute;
+    left: 0; top: 0;
+    width: 28px; height: 28px;
+    border-radius: 999px;
+    background: #fff;
+    border: 2px solid rgba(0,0,0,0.10);
+    color: var(--cs-muted);
+    display: grid; place-items: center;
+    z-index: 1;
+  }
+  .od-tl-dot .material-symbols-outlined { font-size: 14px; }
+  .od-tl-item.done .od-tl-dot {
+    background: var(--cs-primary);
+    border-color: var(--cs-primary);
+    color: #fff;
+  }
+  .od-tl-item.now .od-tl-dot {
+    background: #fff;
+    border-color: var(--cs-primary);
+    color: var(--cs-primary);
+    box-shadow: 0 0 0 5px rgba(0,93,144,0.12);
+  }
+  .od-tl-item.branch.cancel .od-tl-dot     { background: var(--cs-muted); border-color: var(--cs-muted); color: #fff; }
+  .od-tl-item.branch.refund .od-tl-dot     { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .od-tl-item.branch.refund-done .od-tl-dot{ background: var(--green); border-color: var(--green); color: #fff; }
+  .od-tl-item.branch.dispute .od-tl-dot    { background: var(--rose); border-color: var(--rose); color: #fff; }
+
+  .od-tl-label {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--cs-ink);
+    display: flex; align-items: center; gap: 8px;
+    line-height: 1.3;
+  }
+  .od-tl-item.pending .od-tl-label { color: var(--cs-muted); }
+  .od-tl-detail {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: var(--cs-muted);
+    font-weight: 500;
+  }
+  .od-tl-sub {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--cs-muted);
+    line-height: 1.5;
+  }
+
+  /* ═══ Anomaly panels (cancel / refund / dispute) ═══ */
+  .od-anomaly {
+    padding: 20px 24px;
+    border-radius: var(--cs-r-lg);
+    border: 1px solid var(--cs-line);
+  }
+  .od-anomaly-muted { background: linear-gradient(135deg, rgba(100,116,139,0.05), transparent); border-color: var(--cs-line); }
+  .od-anomaly-blue  { background: linear-gradient(135deg, rgba(29,111,224,0.05), transparent); border-color: rgba(29,111,224,0.20); }
+  .od-anomaly-green { background: linear-gradient(135deg, rgba(10,138,79,0.05), transparent); border-color: rgba(10,138,79,0.20); }
+  .od-anomaly-rose  { background: linear-gradient(135deg, rgba(190,18,60,0.05), transparent); border-color: rgba(190,18,60,0.20); }
+
+  .anomaly-head {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px dashed var(--cs-line);
+  }
+  .od-anomaly-muted .anomaly-head > .material-symbols-outlined { color: var(--cs-muted); background: rgba(100,116,139,0.10); }
+  .od-anomaly-blue  .anomaly-head > .material-symbols-outlined { color: var(--blue); background: var(--blue-soft); }
+  .od-anomaly-green .anomaly-head > .material-symbols-outlined { color: var(--green); background: var(--green-soft); }
+  .od-anomaly-rose  .anomaly-head > .material-symbols-outlined { color: var(--rose); background: var(--rose-soft); }
+  .anomaly-head > .material-symbols-outlined {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: grid; place-items: center;
+    font-size: 22px;
+    font-variation-settings: 'FILL' 1;
+  }
+  .anomaly-head h3 {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--cs-ink);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .anomaly-head p {
+    margin: 3px 0 0;
+    font-size: 12px;
+    color: var(--cs-muted);
+  }
+  .anomaly-stage {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .stage-step {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.04);
+    color: var(--cs-muted);
+    position: relative;
+  }
+  .stage-step.done {
+    background: var(--blue-soft);
+    color: var(--blue);
+  }
+  .stage-step.active {
+    background: var(--blue);
+    color: #fff;
+  }
+  .anomaly-body { display: flex; flex-direction: column; gap: 10px; }
+  .anomaly-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    align-items: flex-start;
+    font-size: 13px;
+  }
+  .anomaly-row .k { color: var(--cs-muted); }
+  .anomaly-row .v { color: var(--cs-ink); line-height: 1.55; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .anomaly-row .v.price {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--blue);
+    letter-spacing: -0.01em;
+  }
+  .od-anomaly-green .anomaly-row .v.price { color: var(--green); }
+  .anomaly-tip {
+    margin-top: 4px;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.025);
+    border-radius: 10px;
+    font-size: 12.5px;
+    color: var(--cs-muted);
+    display: flex; gap: 8px;
+    line-height: 1.5;
+  }
+  .anomaly-tip .material-symbols-outlined { font-size: 16px; color: var(--cs-muted-2); flex-shrink: 0; margin-top: 1px; }
+  .anomaly-tip.rose-tip { background: var(--rose-soft); color: var(--rose); }
+  .anomaly-tip.rose-tip .material-symbols-outlined { color: var(--rose); }
+  .rose-chip {
+    background: var(--rose-soft);
+    color: var(--rose);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .rose-chip .material-symbols-outlined { font-size: 13px; }
+
+  /* ═══ After-care grid ═══ */
+  .od-aftercare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (max-width: 720px) {
+    .od-aftercare-grid { grid-template-columns: 1fr; }
+  }
+  .od-aftercare-card {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: var(--cs-r-md);
+    border: 1px solid var(--cs-line);
+    background: #fff;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: all 160ms var(--cs-ease);
+  }
+  .od-aftercare-card:hover:not(:disabled) {
+    border-color: var(--cs-primary);
+    box-shadow: var(--cs-shadow-sm);
+    transform: translateY(-1px);
+  }
+  .od-aftercare-card:disabled { opacity: 0.45; cursor: not-allowed; }
+  .ac-icn {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: grid; place-items: center;
+  }
+  .ac-icn .material-symbols-outlined { font-size: 20px; font-variation-settings: 'FILL' 1; }
+  .ac-icn.green-i { background: var(--green-soft); color: var(--green); }
+  .ac-icn.rose-i  { background: var(--rose-soft); color: var(--rose); }
+  .ac-icn.blue-i  { background: var(--blue-soft); color: var(--blue); }
+  .ac-icn.amber-i { background: var(--amber-soft); color: var(--amber); }
+  .ac-t {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--cs-ink);
+  }
+  .ac-s {
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: var(--cs-muted);
+  }
+  .od-chev { font-size: 18px; color: var(--cs-muted-2); }
+
+  /* ═══ Audit log ═══ */
+  .od-audit {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .od-audit li {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 12.5px;
+    color: var(--cs-ink-soft);
+    border-bottom: 1px dashed var(--cs-line);
+  }
+  .od-audit li:last-child { border-bottom: none; }
+  .od-audit .who {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-align: center;
+    color: var(--cs-muted);
+    background: rgba(0,0,0,0.04);
+  }
+  .od-audit .who.b   { background: var(--cs-primary-soft); color: var(--cs-primary); }
+  .od-audit .who.s   { background: var(--amber-soft); color: var(--amber); }
+  .od-audit .who.sys { background: var(--green-soft); color: var(--green); }
+  .od-audit .time { font-size: 11px; color: var(--cs-muted); }
+
+  /* ═══ Side: counterparty ═══ */
+  .od-party {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--cs-line);
+  }
+  .party-av {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    color: #fff;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    display: grid; place-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .party-name {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--cs-ink);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .verified-icn {
+    color: var(--green);
+    font-size: 16px;
+    font-variation-settings: 'FILL' 1;
+  }
+  .party-school {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--cs-muted);
+  }
+  .party-stats {
+    margin-top: 6px;
+    display: flex; gap: 10px;
+    font-size: 11.5px;
+    color: var(--cs-muted);
+  }
+  .party-stats b {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--cs-ink);
+    margin-right: 2px;
+  }
+  .party-stats .material-symbols-outlined {
+    font-size: 13px;
+    color: var(--amber);
+    font-variation-settings: 'FILL' 1;
+    vertical-align: -2px;
+  }
+  .od-party-actions {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .od-party-actions .od-btn { height: 36px; padding: 0 12px; font-size: 12.5px; }
+  .od-party-phone {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.03);
+    font-size: 12px;
+    color: var(--cs-muted);
+    display: inline-flex; align-items: center; gap: 6px;
+    width: 100%;
+  }
+  .od-party-phone b { color: var(--cs-ink-soft); }
+  .od-party-phone .material-symbols-outlined { font-size: 15px; color: var(--cs-muted-2); }
+  .reveal-btn {
+    margin-left: auto;
+    color: var(--cs-primary);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .reveal-btn:hover { text-decoration: underline; }
+
+  /* ═══ Side: map preview ═══ */
+  .od-map {
+    position: relative;
+    height: 140px;
+    border-radius: 14px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(0,93,144,0.10), transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(124,58,237,0.06), transparent 60%),
+      linear-gradient(135deg, #eef6fb, #f4f6fa);
+    border: 1px solid var(--cs-line);
+    margin-bottom: 14px;
+  }
+  .map-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(0,93,144,0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,93,144,0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.6;
+  }
+  .map-pin {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -100%);
+    color: var(--cs-primary);
+    filter: drop-shadow(0 4px 6px rgba(0,93,144,0.30));
+  }
+  .map-pin::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 100%;
+    transform: translate(-50%, 0);
+    width: 18px; height: 6px;
+    border-radius: 999px;
+    background: rgba(0,93,144,0.20);
+    filter: blur(2px);
+  }
+  .map-pin .material-symbols-outlined {
+    font-size: 38px;
+    font-variation-settings: 'FILL' 1;
+  }
+  .map-label {
+    position: absolute;
+    left: 12px; top: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(8px);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--cs-ink);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .map-label .material-symbols-outlined { font-size: 13px; color: var(--cs-primary); }
+
+  /* ═══ Side: meta list ═══ */
+  .od-meta-list {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .od-meta-list li {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 12.5px;
+  }
+  .od-meta-list > li > .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--cs-muted-2);
+    margin-top: 2px;
+  }
+  .od-meta-list .k {
+    display: block;
+    font-size: 11.5px;
+    color: var(--cs-muted);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .od-meta-list .v {
+    display: block;
+    font-size: 13px;
+    color: var(--cs-ink);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .od-meta-list .hint {
+    display: block;
+    margin-top: 3px;
+    font-size: 11px;
+    color: var(--cs-muted);
+  }
+  .reveal-inline { color: var(--cs-primary); cursor: pointer; }
+  .reveal-inline:hover { text-decoration: underline; }
+
+  .od-meta-list.compact {
+    gap: 8px;
+  }
+  .od-meta-list.compact li {
+    grid-template-columns: 100px 1fr;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--cs-line);
+    gap: 12px;
+  }
+  .od-meta-list.compact li:last-child { border-bottom: none; }
+  .od-meta-list.compact .k {
+    margin: 0;
+    font-weight: 500;
+    color: var(--cs-muted);
+    font-size: 12px;
+  }
+  .od-meta-list.compact .v {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--cs-ink-soft);
+    text-align: right;
+  }
+  .od-copy-id {
+    margin-top: 14px;
+    width: 100%;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px dashed var(--cs-line);
+    background: transparent;
+    color: var(--cs-muted);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 160ms var(--cs-ease);
+  }
+  .od-copy-id:hover { color: var(--cs-primary); border-color: var(--cs-primary); background: var(--cs-primary-soft); }
+  .od-copy-id .material-symbols-outlined { font-size: 15px; }
+
+  /* page fade-in */
+  body { animation: pageFade 380ms var(--cs-ease); }
+  @keyframes pageFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* tweaks panel z-index */
+  .twk-fab { z-index: 60 !important; }
 </style>
 </head>
 <body>
-<header data-user-topbar></header>
-<div class="flex min-h-screen" data-user-shell>
-<aside data-user-sidebar></aside>
-<main class="flex-1 p-8 bg-surface-container-low min-h-screen" data-user-main>
-<div class="mx-auto max-w-6xl">
-
-    <!-- Breadcrumb -->
-    <nav class="mb-6 flex items-center gap-1.5 text-sm" style="color:var(--cs-muted);">
-        <a class="hover:underline" data-nav-target="/pages/order_center.html" href="#"
-           style="color:var(--cs-primary);">我的交易</a>
-        <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
-        <span>订单详情</span>
-    </nav>
-
-    <!-- Page header -->
-    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <h1 class="text-2xl font-bold" style="font-family:var(--cs-font-headline);color:var(--cs-ink);"
-            data-role="order-heading">订单编号: -</h1>
-        <span class="cs-pill cs-pill--warning" data-role="order-status-pill">待加载</span>
-    </div>
-
-    <!-- Terminal state banner (hidden by default) -->
-    <div class="cs-banner cs-banner--error hidden mb-6" data-role="order-terminal-banner">
-        <span class="material-symbols-outlined shrink-0" data-role="order-terminal-icon"
-              style="font-size:20px;">block</span>
-        <div class="min-w-0">
-            <p class="font-semibold" data-role="order-terminal-title">订单已关闭</p>
-            <p class="mt-0.5 text-sm" data-role="order-terminal-description">该订单已终止，后续不会继续推进。</p>
-        </div>
-    </div>
-
-    <!-- Timeline -->
-    <div class="mb-8 rounded-xl border p-8"
-         style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
-        <div class="relative flex justify-between">
-            <!-- Connector line -->
-            <div class="absolute left-0 top-5 z-0 h-0.5 w-full" style="background:var(--cs-line);">
-                <div class="h-full" style="background:var(--cs-primary);width:0%;"
-                     data-role="order-timeline-progress"></div>
-            </div>
-
-            <!-- Step 1 -->
-            <div class="relative z-10 flex flex-col items-center gap-2">
-                <div class="step-circle bg-primary text-on-primary" data-role="order-step-circle-1">
-                    <span class="material-symbols-outlined" data-role="order-step-icon-1" style="font-size:18px;">check</span>
-                </div>
-                <span class="text-xs font-semibold" style="color:var(--cs-ink);" data-role="order-step-label-1">提交订单</span>
-                <span class="text-xs cs-micro" data-role="order-step-time-1">-</span>
-            </div>
-
-            <!-- Step 2 -->
-            <div class="relative z-10 flex flex-col items-center gap-2">
-                <div class="step-circle bg-primary text-on-primary" data-role="order-step-circle-2">
-                    <span class="material-symbols-outlined" data-role="order-step-icon-2" style="font-size:18px;">check</span>
-                </div>
-                <span class="text-xs font-semibold" style="color:var(--cs-ink);" data-role="order-step-label-2">卖家确认</span>
-                <span class="text-xs cs-micro" data-role="order-step-time-2">-</span>
-            </div>
-
-            <!-- Step 3 (active) -->
-            <div class="relative z-10 flex flex-col items-center gap-2">
-                <div class="step-circle bg-surface-container-lowest border-4 border-primary text-primary"
-                     data-role="order-step-circle-3">
-                    <span class="material-symbols-outlined" data-role="order-step-icon-3" style="font-size:18px;">handshake</span>
-                </div>
-                <span class="text-xs font-semibold" style="color:var(--cs-primary);" data-role="order-step-label-3">线下交付</span>
-                <span class="text-xs cs-micro" data-role="order-step-time-3">-</span>
-            </div>
-
-            <!-- Step 4 -->
-            <div class="relative z-10 flex flex-col items-center gap-2">
-                <div class="step-circle bg-surface-container-high text-outline-variant" data-role="order-step-circle-4">
-                    <span class="material-symbols-outlined" data-role="order-step-icon-4" style="font-size:18px;">verified</span>
-                </div>
-                <span class="text-xs font-semibold" style="color:var(--cs-muted);" data-role="order-step-label-4">买家确认</span>
-                <span class="text-xs cs-micro" data-role="order-step-time-4">-</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Content grid -->
-    <div class="grid grid-cols-12 gap-6">
-
-        <!-- Left: Details -->
-        <div class="col-span-12 space-y-6 lg:col-span-8">
-
-            <!-- Product snapshot -->
-            <section class="rounded-xl border overflow-hidden"
-                     style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
-                <div class="border-b px-5 py-4" style="border-color:var(--cs-line);">
-                    <h2 class="text-sm font-semibold uppercase tracking-wider" style="color:var(--cs-muted);">物品清单</h2>
-                </div>
-                <div class="flex items-start gap-5 p-5">
-                    <div class="h-28 w-28 shrink-0 overflow-hidden rounded-lg" style="background:rgba(120,133,150,0.06);">
-                        <img alt="商品图片" class="h-full w-full object-cover"
-                             data-role="order-product-image" src="/pages/assets/img/campusshare-placeholder.svg"/>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex items-start justify-between gap-3">
-                            <h3 class="text-lg font-bold" data-role="order-product-title"
-                                style="color:var(--cs-ink);">加载中...</h3>
-                            <span class="text-xl font-bold cs-numeric" data-role="order-product-price"
-                                  style="color:var(--cs-primary);">¥0.00</span>
-                        </div>
-                        <div class="mt-2 space-y-1.5 text-sm" style="color:var(--cs-muted);">
-                            <p>物品状况：<span class="cs-tag" data-role="order-product-condition">-</span></p>
-                            <p>分类：<span data-role="order-product-category">-</span></p>
-                            <p class="mt-2 text-xs leading-relaxed" data-role="order-product-description">暂无描述</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Buyer / Seller -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-                <div class="rounded-xl border p-5"
-                     style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
-                    <p class="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider"
-                       style="color:var(--cs-muted);">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--cs-primary);">person</span>
-                        买家信息
-                    </p>
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold"
-                             data-role="order-buyer-avatar"
-                             style="background:var(--cs-primary-soft);color:var(--cs-primary);">买</div>
-                        <div>
-                            <p class="font-semibold" data-role="order-buyer-name" style="color:var(--cs-ink);">买家信息加载中</p>
-                            <p class="text-xs" data-role="order-buyer-subtitle" style="color:var(--cs-muted);">-</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="rounded-xl border p-5"
-                     style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
-                    <p class="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider"
-                       style="color:var(--cs-muted);">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--cs-primary);">storefront</span>
-                        卖家信息
-                    </p>
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold"
-                             data-role="order-seller-avatar"
-                             style="background:var(--cs-primary-soft);color:var(--cs-primary);">卖</div>
-                        <div>
-                            <p class="font-semibold" data-role="order-seller-name" style="color:var(--cs-ink);">卖家信息加载中</p>
-                            <p class="text-xs" data-role="order-seller-subtitle" style="color:var(--cs-muted);">-</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Trade location -->
-            <section class="rounded-xl border p-5"
-                     style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
-                <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider" style="color:var(--cs-muted);">交易地点</h3>
-                <div class="flex items-center gap-2 text-base font-bold" style="color:var(--cs-ink);">
-                    <span class="material-symbols-outlined" style="color:var(--cs-error);font-size:20px;">location_on</span>
-                    <span data-role="order-trade-location">待协商</span>
-                </div>
-                <p class="mt-1 text-xs" data-role="order-trade-location-sub"
-                   style="color:var(--cs-muted);padding-left:28px;">请与交易对方沟通具体地点</p>
-                <div class="mt-4 rounded-lg p-3" style="background:var(--cs-primary-soft);">
-                    <p class="text-xs leading-relaxed" style="color:var(--cs-primary);">
-                        线下交易时请务必在公共场所或监控区域进行。请核对物品状态后再行确认付款。
-                    </p>
-                </div>
-            </section>
-
-        </div>
-
-        <!-- Right: Actions + Metadata -->
-        <div class="col-span-12 space-y-5 lg:col-span-4">
-
-            <!-- Action panel -->
-            <div class="rounded-xl border p-6"
-                 style="background:var(--cs-card);border-color:var(--cs-line);box-shadow:var(--cs-shadow-sm);">
-                <h3 class="mb-5 text-sm font-semibold" style="color:var(--cs-ink);">交易操作</h3>
-                <div class="space-y-3">
-                    <button class="cs-btn cs-btn--primary w-full" data-role="order-action-primary" type="button">
-                        <span class="material-symbols-outlined" style="font-size:18px;">verified</span>
-                        <span data-role="order-action-primary-text">确认交易已完成</span>
-                    </button>
-                    <button class="cs-btn cs-btn--secondary w-full" data-role="order-action-secondary" type="button">
-                        <span class="material-symbols-outlined" style="font-size:18px;">chat_bubble</span>
-                        <span data-role="order-action-secondary-text">联系交易对方</span>
-                    </button>
-                    <button class="cs-btn w-full" data-role="order-action-danger" type="button"
-                            style="background:transparent;border:1px solid rgba(180,35,24,0.24);color:var(--cs-error);">
-                        取消订单
-                    </button>
-                </div>
-
-                <div class="mt-6 border-t pt-5" style="border-color:var(--cs-line);">
-                    <div class="mb-3 flex items-center justify-between">
-                        <span class="text-xs" style="color:var(--cs-muted);">支付金额</span>
-                        <span class="text-xl font-bold cs-numeric" data-role="order-amount-main"
-                              style="color:var(--cs-ink);">¥0.00</span>
-                    </div>
-                    <div class="space-y-2 text-xs" style="color:var(--cs-muted);">
-                        <div class="flex justify-between">
-                            <span>商品总价</span>
-                            <span class="cs-numeric" data-role="order-amount-item">¥0.00</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>校园服务费</span>
-                            <span style="color:var(--cs-success);font-weight:600;">免手续费</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>支付方式</span>
-                            <span>线下确认</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Metadata -->
-            <div class="rounded-xl border p-5"
-                 style="background:rgba(120,133,150,0.04);border-color:var(--cs-line);">
-                <h3 class="mb-4 text-xs font-semibold uppercase tracking-wider" style="color:var(--cs-muted);">交易详情明细</h3>
-                <div class="space-y-3">
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">订单编号</p>
-                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-order-no"
-                           style="color:var(--cs-ink);">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">创建时间</p>
-                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-create-time"
-                           style="color:var(--cs-ink);">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">最近更新</p>
-                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-update-time"
-                           style="color:var(--cs-ink);">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">卖家确认时间</p>
-                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-seller-confirm-time"
-                           style="color:var(--cs-ink);">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">买家确认时间</p>
-                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-buyer-confirm-time"
-                           style="color:var(--cs-ink);">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">当前状态</p>
-                        <p class="mt-0.5 text-xs font-bold" data-role="order-meta-status-text"
-                           style="color:var(--cs-primary);">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs" style="color:var(--cs-muted);">关闭原因</p>
-                        <p class="mt-0.5 text-xs font-semibold" data-role="order-meta-close-reason"
-                           style="color:var(--cs-ink);">-</p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-</div>
-</main>
-</div>
-
-<script src="/pages/assets/js/campusshare-api.js?v=20260515"></script>
-<script src="/pages/assets/js/order-detail.js?v=20260515"></script>
+  <div id="root"></div>
+  <script src="/pages/assets/js/campusshare-api.js"></script>
+  <script type="text/babel" src="/pages/assets/js/order-detail.js"></script>
 </body>
 </html>

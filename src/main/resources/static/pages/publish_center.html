@@ -269,6 +269,9 @@
     border: 1px solid var(--cs-line);
     border-radius: var(--cs-r-lg);
     box-shadow: var(--cs-shadow-sm);
+    position: sticky;
+    top: 64px;
+    z-index: 20;
   }
   @media (max-width: 720px) { .step-strip { display: none; } }
   .step {
@@ -1259,7 +1262,6 @@
 <body>
   <div id="root"></div>
   <script src="/pages/assets/js/campusshare-api.js?v=20260517"></script>
-  <script type="text/babel" src="/pages/assets/js/tweaks-panel.jsx?v=20260517"></script>
   <script type="text/babel" src="/pages/assets/js/publish-app.jsx?v=20260517"></script>
 </body>
 </html>

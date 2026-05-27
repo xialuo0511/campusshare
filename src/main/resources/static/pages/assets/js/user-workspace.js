@@ -12,7 +12,6 @@
         "/pages/recruitment_board.html": "组队招募",
         "/pages/notification_center.html": "消息通知",
         "/pages/user_profile.html": "个人设置",
-        "/pages/publish_create.html": "发布内容",
         "/pages/publish_center.html": "发布内容",
         "/pages/market_overview.html": "首页",
         "/pages/market_listing.html": "交易市场"

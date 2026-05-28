@@ -4,6 +4,7 @@ import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.module.material.service.MaterialFileStorageService;
 import com.xialuo.campusshare.module.resource.mapper.ProductMapper;
+import com.xialuo.campusshare.module.resource.service.ProductImageStorageService;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -26,11 +27,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/files")
 public class FileController {
-    /** 文件存储服务 */
+    /** 商品图片存储服务 */
+    private final ProductImageStorageService productImageStorageService;
+    /** 资料文件存储服务 */
     private final MaterialFileStorageService materialFileStorageService;
     private final ProductMapper productMapper;
 
-    public FileController(MaterialFileStorageService materialFileStorageService, ProductMapper productMapper) {
+    public FileController(
+        ProductImageStorageService productImageStorageService,
+        MaterialFileStorageService materialFileStorageService,
+        ProductMapper productMapper
+    ) {
+        this.productImageStorageService = productImageStorageService;
         this.materialFileStorageService = materialFileStorageService;
         this.productMapper = productMapper;
     }
@@ -41,7 +49,7 @@ public class FileController {
     @GetMapping("/{fileId:.+}")
     public ResponseEntity<Resource> GetFile(@PathVariable("fileId") String fileId) {
         ValidatePublicProductImage(fileId);
-        Path filePath = materialFileStorageService.GetMaterialFilePath(fileId);
+        Path filePath = ResolveFilePath(fileId);
         FileSystemResource fileResource = new FileSystemResource(filePath);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(ResolveMediaType(fileId));
@@ -51,6 +59,18 @@ public class FileController {
             .headers(headers)
             .contentLength(ResolveContentLength(fileResource))
             .body(fileResource);
+    }
+
+    /**
+     * 优先从商品图片目录取，找不到再从资料目录取
+     */
+    private Path ResolveFilePath(String fileId) {
+        try {
+            return productImageStorageService.GetProductImagePath(fileId);
+        } catch (BusinessException ignored) {
+            // 不在商品图片目录，继续尝试资料目录
+        }
+        return materialFileStorageService.GetMaterialFilePath(fileId);
     }
 
     private void ValidatePublicProductImage(String fileId) {

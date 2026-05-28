@@ -17,6 +17,8 @@ function AdminImage({ fileId, alt, className }) {
     fetch('/api/v1/admin/files/' + fileId, { headers })
       .then(function(res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
+        var ct = res.headers.get('content-type') || '';
+        if (!ct.startsWith('image/')) throw new Error('非图片响应: ' + ct);
         return res.blob();
       })
       .then(function(blob) {

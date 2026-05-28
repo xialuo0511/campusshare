@@ -17,6 +17,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -115,6 +116,19 @@ public class ProductImageStorageServiceImpl implements ProductImageStorageServic
             return contentType.trim();
         }
         return "image/" + ("jpg".equals(extension) ? "jpeg" : extension);
+    }
+
+    @Override
+    public Path GetProductImagePath(String fileId) {
+        String normalizedFileId = fileId == null ? "" : fileId.trim().toLowerCase(Locale.ROOT);
+        if (!FILE_ID_PATTERN.matcher(normalizedFileId).matches()) {
+            throw new BusinessException(BizCodeEnum.PARAM_INVALID, "文件ID格式错误");
+        }
+        Path filePath = BuildStorageFilePath(normalizedFileId);
+        if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
+            throw new BusinessException(BizCodeEnum.RESOURCE_NOT_FOUND, "图片文件不存在");
+        }
+        return filePath;
     }
 
     private Path BuildStorageFilePath(String fileId) {

@@ -3,6 +3,7 @@ package com.xialuo.campusshare.module.material.controller;
 import com.xialuo.campusshare.common.enums.BizCodeEnum;
 import com.xialuo.campusshare.common.exception.BusinessException;
 import com.xialuo.campusshare.module.material.service.MaterialFileStorageService;
+import com.xialuo.campusshare.module.resource.service.ProductImageStorageService;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -26,20 +27,27 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/admin/files")
 public class AdminFileController {
-    /** 文件存储服务 */
+    /** 商品图片存储服务 */
+    private final ProductImageStorageService productImageStorageService;
+    /** 资料文件存储服务 */
     private final MaterialFileStorageService materialFileStorageService;
 
-    public AdminFileController(MaterialFileStorageService materialFileStorageService) {
+    public AdminFileController(
+        ProductImageStorageService productImageStorageService,
+        MaterialFileStorageService materialFileStorageService
+    ) {
+        this.productImageStorageService = productImageStorageService;
         this.materialFileStorageService = materialFileStorageService;
     }
 
     /**
      * 读取图片文件（管理员专用，不校验商品状态）
+     * 先在商品图片目录中查找，找不到再尝试资料文件目录
      */
     @GetMapping("/{fileId:.+}")
     public ResponseEntity<Resource> GetFile(@PathVariable("fileId") String fileId) {
         ValidateImageFileId(fileId);
-        Path filePath = materialFileStorageService.GetMaterialFilePath(fileId);
+        Path filePath = ResolveFilePath(fileId);
         FileSystemResource fileResource = new FileSystemResource(filePath);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(ResolveMediaType(fileId));
@@ -49,6 +57,18 @@ public class AdminFileController {
             .headers(headers)
             .contentLength(ResolveContentLength(fileResource))
             .body(fileResource);
+    }
+
+    /**
+     * 优先从商品图片目录取，找不到再从资料目录取
+     */
+    private Path ResolveFilePath(String fileId) {
+        try {
+            return productImageStorageService.GetProductImagePath(fileId);
+        } catch (BusinessException ignored) {
+            // 不在商品图片目录，继续尝试资料目录
+        }
+        return materialFileStorageService.GetMaterialFilePath(fileId);
     }
 
     /**

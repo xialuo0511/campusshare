@@ -1,6 +1,53 @@
 ﻿﻿// CampusShare Admin page renderers
 const { useState: useStateAdm, useMemo: useMemoAdm, useEffect: useEffectAdm } = React;
 
+/**
+ * 管理员图片组件：通过 fetch 携带 X-Auth-Token 加载待审核商品图片
+ */
+function AdminImage({ fileId, alt, className }) {
+  const [src, setSrc] = useStateAdm(null);
+  const [status, setStatus] = useStateAdm('loading'); // loading | ok | err
+
+  useEffectAdm(() => {
+    if (!fileId) { setStatus('err'); return; }
+    let revoked = false;
+    const Api = window.CampusShareApi;
+    const token = Api && Api.GetAuthToken ? Api.GetAuthToken() : null;
+    const headers = token ? { 'X-Auth-Token': token } : {};
+    fetch('/api/v1/admin/files/' + fileId, { headers })
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.blob();
+      })
+      .then(function(blob) {
+        if (revoked) return;
+        const url = URL.createObjectURL(blob);
+        setSrc(url);
+        setStatus('ok');
+      })
+      .catch(function() {
+        if (!revoked) setStatus('err');
+      });
+    return function() {
+      revoked = true;
+      if (src) URL.revokeObjectURL(src);
+    };
+  }, [fileId]);
+
+  if (status === 'loading') return (
+    <div className={className} style={{display:'flex',alignItems:'center',justifyContent:'center',background:'var(--cs-bg-2)',borderRadius:10,border:'1px solid var(--cs-line)'}}>
+      <span className="material-symbols-outlined" style={{fontSize:22,color:'var(--cs-muted)',animation:'spin 1s linear infinite'}}>sync</span>
+    </div>
+  );
+  if (status === 'err') return (
+    <div className={className} style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,background:'var(--cs-bg-2)',borderRadius:10,border:'1px dashed var(--cs-line)'}}>
+      <span className="material-symbols-outlined" style={{fontSize:20,color:'var(--cs-muted)'}}>broken_image</span>
+      <span style={{fontSize:11,color:'var(--cs-muted)'}}>加载失败</span>
+    </div>
+  );
+  return <img src={src} alt={alt} className={className} style={{objectFit:'cover',borderRadius:10,border:'1px solid var(--cs-line)',display:'block'}} />;
+}
+
 function adminPageListOf(result) {
   if (Array.isArray(result)) return result;
   if (!result || typeof result !== 'object') return [];
@@ -288,11 +335,10 @@ function ReviewRow({ item, compact }) {
               {imageFileIds.length > 0 ? imageFileIds.map(function(fid, i) {
                 return (
                   <div key={i} className="rv-img-slot">
-                    <img
-                      src={'/api/v1/files/' + fid}
+                    <AdminImage
+                      fileId={fid}
                       alt={i === 0 ? '封面' : '图片' + (i + 1)}
                       className="rv-img-thumb"
-                      onError={function(e) { e.currentTarget.style.display='none'; }}
                     />
                     <div className="rv-img-caption">{i === 0 ? '封面' : '图片 ' + (i + 1)}</div>
                   </div>
